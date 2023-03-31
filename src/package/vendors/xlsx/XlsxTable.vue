@@ -17,11 +17,10 @@ const props = defineProps<{
 }>()
 
 const table = ref<typeof HotTable | null>(null)
-const sheetIndex = ref(1)
+const sheetIndex = ref(0)
 
 // 表格设置，计算属性
 const hotSettings = computed(() => {
-  console.log('xxxxx')
   return {
     language: 'zh-CN',
     readOnly: true,
@@ -301,6 +300,7 @@ const methods = {
 })()
 
 onMounted(() => {
+  if (!sheetIndex.value) sheetIndex.value = sheets.value[0].id;
   methods.parseTheme()
 })
 
