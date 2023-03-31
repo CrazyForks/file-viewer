@@ -17,7 +17,7 @@ const props = defineProps<{
 }>()
 
 const table = ref<typeof HotTable | null>(null)
-const sheetIndex = ref(0)
+const sheetIndex = ref(1)
 
 // 表格设置，计算属性
 const hotSettings = computed(() => {
@@ -316,6 +316,7 @@ onMounted(() => {
         v-for='sheet in sheets'
         :key='sheet.id'
         style='padding: 0 30px'
+        :class='{active: sheetIndex === sheet.id}'
         :type="sheetIndex === sheet.id ? 'primary' : 'default'"
         @click='handleSheet(sheet.id)'
       >
@@ -343,6 +344,22 @@ onMounted(() => {
   display: block;
   border-bottom: 1px solid grey;
   background-color: lightblue;
+}
+
+.btn-group button {
+  outline: 0;
+  border: 0;
+  border-radius: 0;
+  border-left: 1px solid slategrey;
+}
+
+.btn-group button:last-child {
+  border-right: 1px solid grey;
+}
+
+.btn-group button.active {
+  background: #408FFF;
+  color: white;
 }
 
 .table-tool {
