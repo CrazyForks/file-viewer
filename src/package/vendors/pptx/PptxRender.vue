@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import $ from 'jquery'
 import { DefaultOptions } from './options.js'
+import './styles/pptxjs.css'
 // import { displayChart } from './support/chart.js';
 
 const workerURL = new URL('./worker/pptx.worker.js', import.meta.url)
@@ -124,9 +125,6 @@ const wrapper = ref<null | HTMLDivElement>(null);
 </template>
 
 <style scoped>
-
-@import './styles/pptxjs.css';
-
 .pptx-wrapper {
   max-width: 100%;
   margin: 0 auto;

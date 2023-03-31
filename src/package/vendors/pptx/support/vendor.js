@@ -1,5 +1,5 @@
 import tinycolor from 'tinycolor2'
-import tXml from 'txml';
+import { parse } from './txml'
 import * as dingbatToUnicode from "dingbat-to-unicode";
 
 // 共享变量，记录图表信息
@@ -31,7 +31,10 @@ let slideHeight = 0;
 let processFullTheme = true;
 const styleTable = {};
 let tableStyles = {};
+
 let settings = {};
+
+console.log(settings)
 
 export const setters = {
   set processFullTheme(value) {
@@ -56,20 +59,19 @@ export const getters = {
 
 export async function readXmlFile(zip, filename, isSlideContent = false) {
   try {
-    var fileContent = await zip.file(filename).async('text');
+    let fileContent = await zip.file(filename).async('text');
     if (isSlideContent && appVersion <= 12) {
       //< office2007
       //remove "<![CDATA[ ... ]]>" tag
       fileContent = fileContent.replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
     }
-    const xmlData = tXml(fileContent, { simplify: 1 });
-    if (xmlData['?xml'] !== undefined) {
-      return xmlData['?xml'];
-    } else {
-      return xmlData;
+    const xmlData = parse(fileContent, { simplify: true });
+    if (xmlData['?xml']) {
+      delete xmlData['?xml']
     }
+    return xmlData;
   } catch (e) {
-    //console.log("error readXmlFile: the file '", filename, "' not exit")
+    // console.error("error readXmlFile: the file '", filename, "' not exit")
     return null;
   }
 }

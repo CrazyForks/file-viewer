@@ -1,5 +1,4 @@
 import JSZip from 'jszip';
-
 import {
   Charts,
   genGlobalCSS,
@@ -15,7 +14,6 @@ import {
  * @param postMessage 发送回主线程的消息回调
  */
 export default function process(setOnMessage, postMessage) {
-  console.log('xxxxxxx')
   // 设置worker通信回调处理器
   setOnMessage(async ({ type, data, options, IE11 }) => {
     if (type === 'processPPTX') {
@@ -77,7 +75,6 @@ export default function process(setOnMessage, postMessage) {
     } else {
       current = 0;
     }
-
     // 获取内容类型
     const filesInfo = await getContentTypes(zip);
     // 获取总幻灯片张数，并获取默认字体风格
