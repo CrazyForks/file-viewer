@@ -21,6 +21,7 @@ https://blog.csdn.net/wybaby168/article/details/129264431
 > 5. 优化Pptx响应速度，使用重用逻辑
 > 6. 优化Pptx加载项，解耦图表部分，待重构解耦相关NvD3依赖。
 > 7. 使用完全的组合式API构建应用，高性能低占用
+> 8. 解耦了样式依赖，FileViewer组件依赖父节点进行布局，自动填满
 
 
 
@@ -77,33 +78,42 @@ createApp(App).use(FileViewer)
 
 ```
 
-然后，只需要在您的项目中直接使用组件即可。示例如下：
+然后，只需要在您的项目中直接使用组件即可。
+
+注意：您需要自己定义好预览器的父元素，预览器默认会占满父元素。
+
+示例如下，该示例定义了一个全屏的预览控件，并传入了一个url用于展示：
 
 ```html
+<script setup lang='ts'>
+import { onMounted, ref } from 'vue'
+
+const url = ref<string>()
+
+onMounted(() => {
+  url.value = 'http://flyfish.group/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx';
+})
+</script>
 <template>
-  <file-viewer :url="url" />
+  <div class='simple-view'>
+    <file-viewer :url="url" />
+  </div>
 </template>
 
-<script>
-export default {
-  name: "SimpleExample",
-  data() {
-    return {
-      url: 'http://flyfish.group/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx',
-    }
-  },
-}
-</script>
-
 <style scoped>
-
+.simple-view {
+  height: 100vh;
+}
 </style>
+
 
 ```
 
-此外，组件还支持直接传入文件或者二进制进行展示。
+此外，组件还支持直接传入文件或者二进制进行展示。具体请查看`HelloWord.vue`。
 
 ### 2. 使用iframe集成（推荐）
+
+注：本部分示例代码位于`master`分支。
 
 #### 开发集成：
 

@@ -104,6 +104,10 @@ async function handleChange(e: any) {
   display: none;
 }
 
+.hidden .viewport {
+  height: 100vh !important;
+}
+
 .hidden .well {
   height: calc(100vh - 12px);
 }
