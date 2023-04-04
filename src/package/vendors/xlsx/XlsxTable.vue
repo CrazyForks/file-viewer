@@ -4,8 +4,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { HotTable } from '@handsontable/vue3'
 import Handsontable from 'handsontable'
 import { alignToClass, camelCase, captain, fixMatrix, getColor, valueOf, valuesOf } from './util'
-import type { Border, Range } from 'exceljs/index.d'
-import ExcelJS from 'exceljs'
+import type { Border, Range, Workbook } from 'exceljs/index.d'
 
 // 边框类型
 const borders: string[] = ['left', 'right', 'top', 'bottom']
@@ -13,7 +12,7 @@ const borders: string[] = ['left', 'right', 'top', 'bottom']
 const themeTypes = ['lt1', 'dk1', 'lt2', 'dk2', 'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6'];
 
 const props = defineProps<{
-  workbook: ExcelJS.Workbook,
+  workbook: Workbook,
 }>()
 
 const table = ref<typeof HotTable | null>(null)
@@ -317,7 +316,6 @@ onMounted(() => {
         :key='sheet.id'
         style='padding: 0 30px'
         :class='{active: sheetIndex === sheet.id}'
-        :type="sheetIndex === sheet.id ? 'primary' : 'default'"
         @click='handleSheet(sheet.id)'
       >
         {{ sheet.name }}

@@ -1,7 +1,7 @@
 import FileViewer from './components/FileViewer'
-import type { App } from 'vue'
+import type { App, Component } from 'vue'
 
-const components = [
+const components: [[string, Component]] = [
   ['file-viewer', FileViewer]
 ]
 
@@ -19,7 +19,7 @@ class Installer {
   }
 }
 
-export default new Installer();
+export default new Installer()
 
 export {
   FileViewer

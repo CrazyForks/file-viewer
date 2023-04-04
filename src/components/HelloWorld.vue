@@ -24,7 +24,7 @@ const preview = ref('');
 
 // 允许使用预留的消息机制发送二进制数据，必须在url后添加?name=xxx.xxx&from=xxx
 const { from, name } = parse(location.search.substring(1))
-if (from) {
+if (from && typeof name === 'string') {
   window.addEventListener('message', event => {
     const { origin, data: blob } = event
     if (origin === from && blob instanceof Blob) {
