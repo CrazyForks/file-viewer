@@ -78,7 +78,9 @@ async function handleChange(e: any) {
         </h1>
       </div>
     </div>
-    <file-viewer :file="file" :url="preview" />
+    <div class='viewport'>
+      <file-viewer :file="file" :url="preview" />
+    </div>
   </div>
 </template>
 
@@ -89,6 +91,13 @@ async function handleChange(e: any) {
   text-align: center;
   background-color: #12b6ff;
   color: #fff;
+}
+
+.viewport {
+  border: 1px solid #ccc;
+  margin: 5px;
+  width: calc(100% - 12px);
+  height: calc(100vh - 73px);
 }
 
 .hidden .banner {

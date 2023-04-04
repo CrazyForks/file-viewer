@@ -1,10 +1,28 @@
 # 基于Vue3实现的文件在线预览 file-viewer
 本项目作为当前仓库的vue3构建版本，会跟随vue2版本持续更新，敬请期待，欢迎提交issue和交流技术。
 
+注意，当前版本在`v3`分支。如果要使用Vue2版本，请访问
+
+https://blog.csdn.net/wybaby168/article/details/129264431
+
 本项目是本人基于实际工作共享的第一个小项目，诞生于2022年上旬。目前实现了基本格式的预览。
 本项目按计划支持vue3 + vite，并持续优化pptx和word模块。
 
 欢迎各位友友们提交工单和P/R，感谢大家！
+
+
+
+> Vue3版本特性：
+>
+> 1. 高质量的TypeScript代码重构模块，更加优雅的实现等你发现
+> 2. 使用极速响应的Vite架构，畅快开发
+> 3. 完全重构了部分模块，如Word，Excel，Pptx等组件
+> 4. 优化Excel主题颜色解析，完美还原Excel样式
+> 5. 优化Pptx响应速度，使用重用逻辑
+> 6. 优化Pptx加载项，解耦图表部分，待重构解耦相关NvD3依赖。
+> 7. 使用完全的组合式API构建应用，高性能低占用
+
+
 
 ## 快速开始
 
@@ -16,7 +34,7 @@ npm install
 
 ### 2. 项目编译以及支持热加载的开发模式
 ```
-npm run serve
+npm run dev
 ```
 
 ### 3. 编译生产包并最小化文件资源
@@ -40,7 +58,7 @@ npm run lint
 如果您使用了flyfish的私库，请使用以下命令安装依赖即可。
 
 ```
-npm install --save file-viewer
+npm install --save file-viewer3
 ```
 
 常规情况下，请使用`npm link`的方式进行集成。
@@ -50,9 +68,13 @@ npm install --save file-viewer
 首先，打开命令行工具，`cd [你的项目位置]`，然后执行`npm link D:\Works\file-viewer `。最后，在您的项目中引用即可。
 
 ```javascript
-import FileViewer from "file-viewer";
+import { createApp } from 'vue'
+import App from './App.vue'
+import FileViewer from 'file-viewer3'
 
-Vue.use(FileViewer)
+createApp(App).use(FileViewer)
+  .mount('#app')
+
 ```
 
 然后，只需要在您的项目中直接使用组件即可。示例如下：

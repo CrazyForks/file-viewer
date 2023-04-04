@@ -164,15 +164,15 @@ const output = ref<Node>();
 <style scoped>
 .file-viewer {
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .content {
   display: block;
   background-color: #f2f2f2;
-  border: 1px solid #ccc;
-  margin: 5px;
-  width: calc(100% - 12px);
-  height: calc(100vh - 73px);
+  width: 100%;
+  height: 100%;
   overflow: auto;
 }
 
