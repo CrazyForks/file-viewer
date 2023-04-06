@@ -294,13 +294,10 @@ export function parse(S, options) {
  * therefore your program will be more flexible and easier to read.
  *
  * @param {tNode[]} children the childrenList
+ * @param depth 层级深度，保证每个图层不搞错
  */
-const _ctx = {
-  order: 100
-}
-
-export function simplify(children) {
-  var out = {}
+export function simplify(children, depth = 1) {
+  const out = {}
   if (!children || !children.length) {
     return {}
   }
@@ -315,14 +312,14 @@ export function simplify(children) {
     }
     if (!out[child.tagName])
       out[child.tagName] = []
-    var kids = simplify(child.children)
+    const kids = simplify(child.children, depth + 1)
     out[child.tagName].push(kids)
     if (typeof kids !== 'string') {
       if (Object.keys(child.attributes).length) {
         kids.attrs = child.attributes
       }
       if (!kids.attrs) kids.attrs = {}
-      kids.attrs.order = _ctx.order++
+      kids.attrs.order = depth
     }
   })
 

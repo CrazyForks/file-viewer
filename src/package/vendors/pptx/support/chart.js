@@ -1,5 +1,7 @@
-import d3 from 'd3'
 import $ from 'jquery'
+import { format } from 'd3'
+import bb, { area, bar, line, pie, scatter } from 'billboard.js'
+import 'billboard.js/dist/theme/insight.css'
 
 /**
  * 显示图表
@@ -14,80 +16,110 @@ function processMsgQueue(queue) {
   queue.forEach(queue => processSingleMsg(queue?.data))
 }
 
+const generalAxis = (data, cb = a => a) => {
+  const modifier = data => {
+    cb(data)
+    return data
+  }
+  return {
+    axis: modifier({
+      x: {
+        tick: {
+          format(index) {
+            return data[0].xlabels[index] || index
+          }
+        }
+      }
+    })
+  }
+}
+
+const buildScatterData = data => {
+  return data.reduce((result, item, index) => {
+    result
+  }, [])
+}
+
 function processSingleMsg(d) {
   if (!d) return
 
   const chartID = d.chartID
   const chartType = d.chartType
   const chartData = d.chartData
-
-  let data = []
-  let chart = null
+  const chart = {
+    bindto: `#${chartID}`
+  }
   switch (chartType) {
     case 'lineChart':
-      data = chartData
-      chart = nv.models.lineChart()
-        .useInteractiveGuideline(true)
-      chart.xAxis.tickFormat(function(d) {
-        return chartData[0].xlabels[d] || d
+      Object.assign(chart, {
+        data: {
+          columns: chartData.map(c => [c.key, ...c.values.map(({ y }) => y)]),
+          type: line()
+        },
+        ...generalAxis(chartData),
+        interaction: { enabled: true }
       })
       break
     case 'barChart':
-      data = chartData
-      chart = nv.models.multiBarChart()
-      chart.xAxis.tickFormat(function(d) {
-        return chartData[0].xlabels[d] || d
+      Object.assign(chart, {
+        data: {
+          columns: chartData.map(c => [c.key, ...c.values.map(({ y }) => y)]),
+          type: bar()
+        },
+        ...generalAxis(chartData, axis => axis.x.tick.multiline = true)
       })
       break
     case 'pieChart':
     case 'pie3DChart':
-      if (chartData.length > 0) {
-        data = chartData[0].values
-      }
-      chart = nv.models.pieChart()
+      Object.assign(chart, {
+        data: {
+          columns: Object.values(chartData[0].xlabels).map((v, i) => [v, chartData[0].values[i].y]),
+          type: pie()
+        }
+      })
       break
     case 'areaChart':
-      data = chartData
-      chart = nv.models.stackedAreaChart()
-        .clipEdge(true)
-        .useInteractiveGuideline(true)
-      chart.xAxis.tickFormat(function(d) {
-        return chartData[0].xlabels[d] || d
+      Object.assign(chart, {
+        data: {
+          columns: chartData.map(c => [c.key, ...c.values.map(({ y }) => y)]),
+          type: area()
+        },
+        interaction: { enabled: true },
+        ...generalAxis(chartData)
       })
       break
     case 'scatterChart':
-
-      for (var i = 0; i < chartData.length; i++) {
-        var arr = []
-        for (var j = 0; j < chartData[i].length; j++) {
-          arr.push({ x: j, y: chartData[i][j] })
+      Object.assign(chart, {
+        data: {
+          xs: {
+            y: 'x'
+          },
+          columns: chartData.map((c, i) => [i ? 'y' : 'x', ...c]),
+          type: scatter()
+        },
+        axis: {
+          x: {
+            label: 'X',
+            showDist: true,
+            tick: {
+              format: format('.02f')
+            }
+          },
+          y: {
+            label: 'Y',
+            showDist: true,
+            tick: {
+              format: format('.02f')
+            }
+          }
         }
-        data.push({ key: 'data' + (i + 1), values: arr })
-      }
-
-      //data = chartData;
-      chart = nv.models.scatterChart()
-        .showDistX(true)
-        .showDistY(true)
-        .color(d3.scale.category10().range())
-      chart.xAxis.axisLabel('X').tickFormat(d3.format('.02f'))
-      chart.yAxis.axisLabel('Y').tickFormat(d3.format('.02f'))
+      })
       break
     default:
   }
-
-  if (chart !== null) {
-
-    d3.select(`#${chartID}`)
-      .append('svg')
-      .datum(data)
-      .transition()
-      .duration(500)
-      .call(chart)
-
-    nv.utils.windowResize(chart.update)
+  if (chart.data) {
+    bb.generate(chart)
   }
-
 }
 
 function setNumericBullets(elem) {
@@ -231,6 +263,7 @@ var hebrew2Minus = archaicNumbers([
 ])
 
 function archaicNumbers(arr) {
+  // eslint-disable-next-line no-unused-vars
   var arrParse = arr.slice().sort(function(a, b) {
     return b[1].length - a[1].length
   })

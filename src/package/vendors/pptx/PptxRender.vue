@@ -4,7 +4,7 @@ import $ from 'jquery'
 import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
 import PptxWorker from './worker/pptx.worker.js?worker'
-// import { displayChart } from './support/chart.js';
+import { displayChart } from './support/chart.js';
 
 const props = withDefaults(defineProps<{
   // 二进制数据
@@ -91,7 +91,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
         case 'ExecutionTime':
         case 'Done':
           console.log('pptx渲染完成，耗时', msg.data)
-          // displayChart(msg.charts);
+          displayChart(msg.charts);
           data.isDone = true
           break
         case 'WARN':
