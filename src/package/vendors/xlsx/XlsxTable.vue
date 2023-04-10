@@ -19,7 +19,6 @@ const loading = ref(true)
 // 表格设置，计算属性
 const hotSettings = {
   language: 'zh-CN',
-  readOnly: true,
   // columns: columns.value,
   colHeaders: true,
   rowHeaders: true,
@@ -175,6 +174,7 @@ const columns = computed(() => {
   return ws.value?.columns.map(item => ({
     key: item.number,
     title: item.letter,
+    editor: false,
     className: alignToClass(item.alignment || {}),
     renderer: 'styleRender'
   }))
