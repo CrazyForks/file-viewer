@@ -1,5 +1,5 @@
 // 深度扁平化routes
-import type { Alignment, CellValue, Row } from 'exceljs/index.d'
+import type { Alignment, CellErrorValue, CellValue, Row } from 'exceljs/index.d'
 import { ref } from 'vue'
 import { getTintColor, indexedColors } from './color'
 
@@ -23,14 +23,16 @@ export function valuesOf(row: Row): CellValue[] {
 }
 
 // 得到真实的值
-export function valueOf(value: CellValue): string {
+export function valueOf(value: CellValue | { error: CellErrorValue }): string {
   if (value) {
     if (value instanceof Date) {
       return value.toLocaleDateString()
     }
     if (typeof value === 'object') {
-      if ('text' in value) return value.text;
+      if ('text' in value) return value.text
       if ('richText' in value) return value.richText.map(text => text.text).join('')
+      if ('formula' in value || 'sharedFormula' in value) return valueOf(value.result)
+      if ('error' in value) return ''
     }
     return String(value)
   }

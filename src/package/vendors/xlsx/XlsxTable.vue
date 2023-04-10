@@ -1,11 +1,11 @@
 <script setup lang='ts'>
 
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { HotColumn, HotTable } from '@handsontable/vue3'
-import { alignToClass, fixMatrix, getColor, valueOf, valuesOf } from './util'
-import type { Border, Range, Workbook } from 'exceljs/index.d'
+import { HotTable } from '@handsontable/vue3'
+import { alignToClass, fixMatrix, valueOf, valuesOf } from './util'
+import type { Range, Workbook } from 'exceljs/index.d'
 import ExcelJS from 'exceljs'
-import { borders, context, parseTheme } from './render'
+import { parseTheme } from './render'
 
 const props = defineProps<{
   data: ArrayBuffer,
@@ -14,31 +14,30 @@ const props = defineProps<{
 const table = ref<typeof HotTable | null>(null)
 const workbook = ref<null | Workbook>(null)
 const sheetIndex = ref(0)
+const loading = ref(true)
 
 // 表格设置，计算属性
-const hotSettings = computed(() => {
-  return {
-    language: 'zh-CN',
-    readOnly: true,
-    // columns: columns.value,
-    colHeaders: true,
-    rowHeaders: true,
-    autoRowSize: false,
-    autoColumnSize: false,
-    height: 'calc(100vh - 107px)',
-    // contextMenu: true,
-    // manualRowMove: true,
-    // 关闭外部点击取消选中时间的行为
-    outsideClickDeselects: false,
-    // fillHandle: {
-    //   direction: 'vertical',
-    //   autoInsertRow: true
-    // },
-    // afterSelectionEnd: this.afterSelectionEnd,
-    // bindRowsWithHeaders: 'strict',
-    licenseKey: 'non-commercial-and-evaluation'
-  }
-})
+const hotSettings = {
+  language: 'zh-CN',
+  readOnly: true,
+  // columns: columns.value,
+  colHeaders: true,
+  rowHeaders: true,
+  autoRowSize: false,
+  autoColumnSize: false,
+  height: '100%',
+  // contextMenu: true,
+  // manualRowMove: true,
+  // 关闭外部点击取消选中时间的行为
+  outsideClickDeselects: false,
+  // fillHandle: {
+  //   direction: 'vertical',
+  //   autoInsertRow: true
+  // },
+  // afterSelectionEnd: this.afterSelectionEnd,
+  // bindRowsWithHeaders: 'strict',
+  licenseKey: 'non-commercial-and-evaluation'
+}
 
 // 默认值
 const defaults = computed(() => {
@@ -112,6 +111,7 @@ const sheets = computed(() => {
   return []
 })
 
+/*
 // 边框设置，设置边框属性
 const border = computed(() => {
   return ws.value?.getRows(1, ws.value.actualRowCount)?.flatMap((row, ri) => {
@@ -138,6 +138,7 @@ const border = computed(() => {
     }).filter(i => i)
   })
 })
+*/
 
 // 行高
 const rowHeights = computed(() => {
@@ -165,9 +166,7 @@ const colWidths = computed(() => {
 const handleSheet = (index: number) => {
   if (sheetIndex.value !== index) {
     sheetIndex.value = index
-    nextTick(() => {
-      methods.updateTable()
-    })
+    methods.updateTable()
   }
 }
 
@@ -177,7 +176,7 @@ const columns = computed(() => {
     key: item.number,
     title: item.letter,
     className: alignToClass(item.alignment || {}),
-    renderer: 'styleRender',
+    renderer: 'styleRender'
   }))
 })
 
@@ -187,14 +186,19 @@ const methods = {
     return table.value?.hotInstance
   },
   updateTable() {
-    this.hotTable()?.updateSettings({
-      data: data.value,
-      cell: cell.value,
-      columns: columns.value,
-      mergeCells: merge.value,
-      // customBorders: border.value,
-      colWidths: colWidths.value,
-      rowHeights: rowHeights.value
+    loading.value = true;
+    nextTick(() => {
+      setTimeout(() => {
+        this.hotTable()?.updateSettings({
+          data: data.value,
+          cell: cell.value,
+          columns: columns.value,
+          mergeCells: merge.value,
+          // customBorders: border.value,
+          colWidths: colWidths.value,
+          rowHeights: rowHeights.value
+        })
+      }, 0)
     })
   },
   parseTheme() {
@@ -215,20 +219,19 @@ watch(workbook, () => {
 onMounted(async () => {
   workbook.value = await new ExcelJS.Workbook().xlsx.load(props.data)
   methods.parseTheme()
-  methods.updateTable()
-  return nextTick(() => {
-    if (!sheetIndex.value) sheetIndex.value = sheets.value[0].id
-  })
+  methods.hotTable()?.addHook('afterUpdateSettings', () => loading.value = false)
+  const [{ id = 0 } = {}] = sheets.value || []
+  if (!sheetIndex.value) sheetIndex.value = id
+  return methods.updateTable();
 })
 
 </script>
 
 <template>
-  <div>
-    <div>
-      <hot-table ref='table' :settings='hotSettings'>
-        <hot-column v-for='column in columns' :key='column.key' :title='column.title' />
-      </hot-table>
+  <div class='excel-wrapper'>
+    <div class='loading' v-if='loading'>加载中，请耐心等待...</div>
+    <div class='table-wrapper'>
+      <hot-table ref='table' :settings='hotSettings' />
     </div>
     <div class='btn-group'>
       <button
@@ -252,7 +255,35 @@ onMounted(async () => {
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.excel-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
 
+.table-wrapper {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 25px);
+}
+
+.loading {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    flex-direction: column;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    background: white;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 999;
+    color: #0c9d0c;
+}
 .sheet-btn.active {
     background-color: aquamarine;
 }
