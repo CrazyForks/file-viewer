@@ -3,8 +3,8 @@ import { onMounted, ref } from 'vue'
 import $ from 'jquery'
 import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
-import PptxWorker from './worker/pptx.worker.js?worker'
-import { displayChart } from './support/chart';
+import { displayChart } from './support/chart'
+import PptxWorker from './worker'
 
 const props = withDefaults(defineProps<{
   // 二进制数据
@@ -32,7 +32,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
       // 真实的web worker - 使用该方式，我们必须通过blob的方式进行通信
       if (data.worker) data.worker.terminate()
       if (data.timer) clearInterval(data.timer)
-      const worker = data.worker = new PptxWorker();
+      const worker = data.worker = PptxWorker.create()
       worker.addEventListener('message', event => {
         this.processMessage(event.data)
       }, false)
@@ -90,7 +90,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
         case 'ExecutionTime':
         case 'Done':
           console.log('pptx渲染完成，耗时', msg.data)
-          displayChart(msg.charts);
+          displayChart(msg.charts)
           data.isDone = true
           break
         case 'WARN':
@@ -122,7 +122,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
 
 <style scoped>
 .pptx-wrapper {
-  max-width: 100%;
-  margin: 0 auto;
+    max-width: 100%;
+    margin: 0 auto;
 }
 </style>

@@ -1,6 +1,6 @@
 {
   "name": "file-viewer3",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "private": false,
   "description": "基于Vue3+TypeScript+Vite实现的文件在线预览组件，此组件开源，请打赏任意金额即可获取仓库地址",
   "keywords": [
@@ -31,8 +31,8 @@
     "format": "prettier --write src/",
     "build-lib-only": "vite build --mode lib"
   },
-  "main": "dist/main.umd.js",
-  "module": "dist/main.mjs",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.mjs",
   "types": "dist/src/package/index.d.ts",
   "dependencies": {
     "@handsontable/vue3": "^12.3.2",

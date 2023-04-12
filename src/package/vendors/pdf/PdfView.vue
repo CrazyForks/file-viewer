@@ -1,10 +1,9 @@
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue'
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf'
-import { EventBus, PDFViewer, PDFLinkService, PDFFindController, GenericL10n } from 'pdfjs-dist/legacy/web/pdf_viewer'
-import PDFWorker from 'pdfjs-dist/legacy/build/pdf.worker.js?worker'
-
+import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer'
 import './pdf.css'
+import PDFWorker from './worker'
 
 const props = defineProps<{
   data: ArrayBuffer,
@@ -21,11 +20,11 @@ const context = {
   search: '' as string,
   //pdf放大系数
   pdf_scale: 1.0 as number
-};
+}
 
 // 指定worker端口
 if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker' in window) {
-  GlobalWorkerOptions.workerPort = new PDFWorker();
+  GlobalWorkerOptions.workerPort = PDFWorker.create()
 }
 
 // 私有执行
@@ -34,7 +33,7 @@ if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker'
    * 加载文件
    */
   async function loadFile() {
-    if (!container.value) return;
+    if (!container.value) return
     // 初始化viewer
     const eventBus = new EventBus()
 
@@ -55,7 +54,7 @@ if (!GlobalWorkerOptions.workerPort && typeof window !== 'undefined' && 'Worker'
       eventBus,
       linkService: pdfLinkService,
       findController: pdfFindController,
-      l10n: new GenericL10n('zh-CN'),
+      l10n: new GenericL10n('zh-CN')
     })
     pdfLinkService.setViewer(pdfViewer)
 
@@ -131,49 +130,49 @@ function scaleX() {
 
 <style scoped>
 .container {
-  position: relative;
-  width: 100%;
-  height: 100%;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .pdfViewer {
-  margin: 0 auto;
+    margin: 0 auto;
 }
 
 .pdf-wrapper {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .container .pdf_down {
-  position: fixed;
-  display: flex;
-  z-index: 20;
-  right: 26px;
-  bottom: 7%;
+    position: fixed;
+    display: flex;
+    z-index: 20;
+    right: 26px;
+    bottom: 7%;
 }
 
 .container .pdf_down .pdf_set_left {
-  width: 30px;
-  height: 40px;
-  color: #408FFF;
-  font-size: 15px;
-  padding-top: 25px;
-  text-align: center;
-  margin-right: 5px;
-  cursor: pointer;
+    width: 30px;
+    height: 40px;
+    color: #408FFF;
+    font-size: 15px;
+    padding-top: 25px;
+    text-align: center;
+    margin-right: 5px;
+    cursor: pointer;
 }
 
 .container .pdf_down .pdf_set_middle {
-  width: 30px;
-  height: 40px;
-  color: #408FFF;
-  font-size: 15px;
-  padding-top: 25px;
-  text-align: center;
-  margin-right: 5px;
-  cursor: pointer;
+    width: 30px;
+    height: 40px;
+    color: #408FFF;
+    font-size: 15px;
+    padding-top: 25px;
+    text-align: center;
+    margin-right: 5px;
+    cursor: pointer;
 }
 </style>

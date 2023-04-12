@@ -4,8 +4,8 @@ import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { HotTable } from '@handsontable/vue3'
 import { cellKey } from './util'
 import type SheetData from './worker/SheetData'
+import XlsxWorker from './worker'
 import './render'
-import XlsxWorker from './worker/xlsx.worker?worker'
 
 const props = defineProps<{
   data: ArrayBuffer,
@@ -81,14 +81,14 @@ const methods = {
     return table.value?.hotInstance
   },
   parseWorkbook() {
-    loading.value = true;
+    loading.value = true
     worker?.postMessage({
       type: 'parseWorkbook',
       workbook: props.data
     })
   },
   parseSheet() {
-    loading.value = true;
+    loading.value = true
     worker?.postMessage({
       type: 'parseSheet',
       sheet: sheetIndex.value || sheets.value[0].id
@@ -115,20 +115,20 @@ watch(() => props.data, () => {
 // 挂载完成，加载异步任务
 onMounted(async () => {
   // 初始化worker
-  worker = new XlsxWorker()
+  worker = XlsxWorker.create()
   worker?.addEventListener('message', event => {
     const { type, sheetData: ws, sheets: list } = event.data
     switch (type) {
       case 'sheets':
         // 初次解析得到sheets
-        sheets.value = list;
+        sheets.value = list
         if (list.length) {
           // 设定活动表
-          sheetIndex.value = list[0].id;
+          sheetIndex.value = list[0].id
           // 初次解析，必须保证有活动表
-          methods.parseSheet();
+          methods.parseSheet()
         }
-        break;
+        break
       case 'parseSheet':
         sheetData = ws
         // 当且仅当解析完数据后重绘表格

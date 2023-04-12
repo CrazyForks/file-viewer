@@ -24,7 +24,7 @@ export default defineConfig(ctx => {
         // Could also be a dictionary or array of multiple entry points
         entry: fileURLToPath(new URL('src/package/index.ts', import.meta.url)),
         name: 'file-viewer3',
-        fileName: 'main'
+        fileName: 'index'
       },
       rollupOptions: {
         // 确保外部化处理那些你不想打包进库的依赖
@@ -35,10 +35,21 @@ export default defineConfig(ctx => {
             vue: 'Vue'
           },
           // 如果同时导出default和named，需要指定声明
-          exports: 'auto'
+          exports: 'named',
+          // 不输出hash
+          chunkFileNames: 'components/[name].js'
+        }
+      }
+    }
+    config.worker = {
+      rollupOptions: {
+        output: {
+          // 指定worker输出名称
+          entryFileNames: 'worker/[name].js',
         }
       }
     }
   }
+
   return config
 })
