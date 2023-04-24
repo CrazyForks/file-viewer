@@ -1,6 +1,6 @@
 {
   "name": "file-viewer3",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": false,
   "description": "基于Vue3+TypeScript+Vite实现的文件在线预览组件，此组件开源，请打赏任意金额即可获取仓库地址",
   "keywords": [
