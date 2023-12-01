@@ -1,8 +1,14 @@
-import { refWorker } from '@/package/common/worker-ref'
+import ExcelJsWorker from './xlsx'
+import SheetJsWorker from './xls'
+import type SheetJsModel from './xls/SheetJsModel'
+import type ExcelJsModel from './xlsx/ExcelJsModel'
 
-export default {
-  create() {
-    return refWorker('xlsx.worker.js').defaults(() =>
-      new Worker(new URL('./xlsx.worker.ts', import.meta.url), { type: 'module' }))
-  }
+export {
+  ExcelJsWorker,
+  SheetJsWorker
+}
+
+export type {
+  SheetJsModel,
+  ExcelJsModel
 }

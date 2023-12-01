@@ -1,6 +1,6 @@
 import renderDocx from './docx'
 import renderPptx from './pptx'
-import renderSheet from './xlsx'
+import renderXlsx from './xlsx'
 import renderPdf from './pdf'
 import renderImage from './image'
 import renderMd from './md'
@@ -35,11 +35,18 @@ const handlers: Array<FileHandlerComposite> = [
       return createWrapper(target)
     }
   },
-  // 使用sheetjs + handsontable，无样式
+  // 使用exceljs + handsontable，全部样式
   {
     accepts: ['xlsx'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      return renderSheet(buffer, target)
+      return renderXlsx(buffer, target, 'xml')
+    }
+  },
+  // 使用js-xlsx + handsontable，无样式
+  {
+    accepts: ['xlsm', 'xlsb', 'xls', 'csv', 'ods', 'fods', 'numbers'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      return renderXlsx(buffer, target, 'binary')
     }
   },
   // 使用pdfjs，渲染pdf，效果最好

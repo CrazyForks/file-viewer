@@ -13,7 +13,7 @@ const images = computed(() => {
 </script>
 
 <template>
-  <vue-viewer :images='images' style='height: 800px;'>
+  <vue-viewer :images='images' style='height: 100%;'>
     <img v-for='item in images' alt='图片' :src='item.src' :key='item.index' class='image' />
   </vue-viewer>
 </template>
