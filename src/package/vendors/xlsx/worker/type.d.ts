@@ -14,7 +14,7 @@ export declare interface SheetColumn {
 }
 
 export declare interface SheetDefinition {
-  id: string | number,
+  id: number,
   name: string
 }
 
