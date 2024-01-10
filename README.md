@@ -91,7 +91,7 @@ import { onMounted, ref } from 'vue'
 const url = ref<string>()
 
 onMounted(() => {
-  url.value = 'http://flyfish.group/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx';
+  url.value = 'https://flyfish.dev/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx';
 })
 </script>
 <template>

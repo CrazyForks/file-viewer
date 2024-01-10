@@ -19,7 +19,7 @@ const filename = ref('')
 // 文件实例
 const file = ref<FileRef | undefined>()
 // 网址
-const url = ref('http://flyfish.group/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx')
+const url = ref('https://flyfish.dev/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx')
 // 预览网址
 const preview = ref('')
 
