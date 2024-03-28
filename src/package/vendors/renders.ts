@@ -58,7 +58,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 图片过滤器
   {
-    accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg'],
+    accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg','webp'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
       return renderImage(buffer, target)
     }
