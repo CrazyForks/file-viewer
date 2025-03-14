@@ -11,7 +11,7 @@ import type { FileRef } from '@/package/common/type'
 // 隐藏头部，当基于消息机制渲染，将隐藏
 const hidden = ref(false)
 // 使用输入框
-const input = ref(false)
+const input = ref(true)
 // 浮层显示
 const overlay = ref(true)
 // 文件名
@@ -19,9 +19,20 @@ const filename = ref('')
 // 文件实例
 const file = ref<FileRef | undefined>()
 // 网址
-const url = ref('https://flyfish.dev/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%8F%B0%E7%AC%94%E8%AE%B0(1).docx')
+const url = ref('/example/word.docx')
 // 预览网址
 const preview = ref('')
+
+// 预置文件列表
+const presetFiles = [
+  { name: '测试doc文档', url: '/example/test.doc' },
+  { name: '测试word文档', url: '/example/word.docx' },
+  { name: '测试Excel文档', url: '/example/excel.xlsx' },
+  { name: '测试PPT文档', url: '/example/ppt.pptx' },
+  { name: '测试PNG图片', url: '/example/pic.png' },
+  { name: '测试PDF文档', url: '/example/pdf.pdf' },
+  { name: '测试视频', url: '/example/video.mp4' }
+]
 
 // 监听文件推送消息，回调后显示
 listenForFile((body, target) => {
@@ -34,6 +45,18 @@ onMounted(() => {
   // 首次加载，触发预览
   preview.value = url.value
 })
+
+/**
+ * 处理预置文件选择
+ * @param e 事件对象
+ */
+function handlePresetChange(e: any) {
+  const selectedFile = presetFiles.find(file => file.url === e.target.value)
+  if (selectedFile) {
+    url.value = selectedFile.url
+    preview.value = selectedFile.url
+  }
+}
 
 /**
  * 文件输入框改变事件
@@ -64,10 +87,19 @@ async function handleChange(e: any) {
             <button type='button' @click='overlay = !overlay'>{{ overlay ? '🏄‍隐藏浮层' : '👁显示浮层' }}</button>
           </div>
           <div class='overlay' v-if='overlay'>
-            <input v-if='input' type='text' v-model='url' placeholder='http://' />
-            <input v-else type='file' @change='handleChange' />
-            <button type='button' v-if='input' @click.stop='preview = url'>预览</button>
-            <div class='upload-cover' v-else> 📃 {{ filename || '请选择文件上传' }}</div>
+            <template v-if='input'>
+              <select v-model='url' placeholder='请选择预置文件' @change='handlePresetChange' class='preset-select'>
+                <option v-for='file in presetFiles' :key='file.url' :value='file.url'>
+                  {{ file.name }}
+                </option>
+              </select>
+              <input type='text' v-model='url' placeholder='http://' class='url-input' />
+              <button type='button' @click.stop='preview = url'>预览</button>
+            </template>
+            <template v-else>
+              <input type='file' @change='handleChange' />
+              <div class='upload-cover'> 📃 {{ filename || '请选择文件上传' }}</div>
+            </template>
           </div>
           <a href='/'>Vue在线文档查看器</a>
         </h1>
@@ -190,5 +222,26 @@ button {
 
 .messages .warning {
     color: #cc6600;
+}
+
+.preset-select {
+  line-height: 19px;
+  height: 30px;
+  width: 150px;
+  outline: none;
+  border: 1px solid silver;
+  border-radius: 6px;
+  margin-right: 10px;
+  background: white;
+}
+
+.url-input {
+  line-height: 19px;
+  height: 30px;
+  width: 300px;
+  outline: none;
+  border: 1px solid silver;
+  border-radius: 6px;
+  margin-right: 10px;
 }
 </style>
