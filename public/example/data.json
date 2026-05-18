@@ -1,0 +1,6 @@
+{
+  "name": "file-viewer",
+  "features": ["ofd", "cad", "syntax-highlight"],
+  "lazyLoaded": true,
+  "updatedAt": "2026-05-18"
+}

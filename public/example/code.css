@@ -1,0 +1,11 @@
+.viewer-shell {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  min-height: 100vh;
+  background: #f6f8fb;
+}
+
+.viewer-panel {
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}

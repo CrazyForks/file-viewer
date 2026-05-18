@@ -8,11 +8,12 @@ export function getExtend(name: string) {
 }
 
 export async function render(buffer: ArrayBuffer, type: string, target: HTMLDivElement) {
-  const handler = renders.get(type.toLowerCase());
+  const normalizedType = type.toLowerCase()
+  const handler = renders.get(normalizedType);
   if (handler) {
-    return handler(buffer, target);
+    return handler(buffer, target, normalizedType);
   }
   if (errorHandler) {
-    return errorHandler(buffer, target, type)
+    return errorHandler(buffer, target, normalizedType)
   }
 }

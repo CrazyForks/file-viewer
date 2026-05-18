@@ -6,6 +6,8 @@ import renderImage from './image'
 import renderMd from './md'
 import renderText from './text'
 import renderMp4 from './mp4'
+import renderOfd from './ofd'
+import renderCad from './cad'
 import type { AppWrapper, FileHandler, FileHandlerComposite } from '@/package/common/type'
 
 // 假装构造一个vue的包装，让上层统一处理销毁和替换节点
@@ -62,6 +64,20 @@ const handlers: Array<FileHandlerComposite> = [
       return renderPdf(buffer, target)
     }
   },
+  // OFD 是国产版式文档格式，解析和页面渲染依赖较重，必须保持在独立异步块里按需加载。
+  {
+    accepts: ['ofd'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+      return renderOfd(buffer, target)
+    }
+  },
+  // CAD 预览当前内置 DXF。DWG 因专有格式和 GPL 转换器约束，不默认打进库里。
+  {
+    accepts: ['dxf', 'dwg'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      return renderCad(buffer, target, type)
+    }
+  },
   // 图片过滤器
   {
     accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg','webp'],
@@ -75,11 +91,14 @@ const handlers: Array<FileHandlerComposite> = [
       return renderMd(buffer, target)
     }
   },
-  // 纯文本预览
+  // 纯文本 / 代码预览：使用 highlight.js 按扩展名高亮，HTML 也只作为源码显示。
   {
-    accepts: ['txt', 'json', 'js', 'css', 'java', 'py', 'html', 'jsx', 'ts', 'tsx', 'xml', 'log'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      return renderText(buffer, target)
+    accepts: [
+      'txt', 'json', 'js', 'mjs', 'cjs', 'css', 'java', 'py', 'html', 'htm', 'jsx', 'ts', 'tsx', 'xml', 'log',
+      'vue', 'yaml', 'yml', 'ini', 'sh', 'bash', 'sql', 'go', 'rs', 'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff'
+    ],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+      return renderText(buffer, target, type)
     }
   },
   // 视频预览，仅支持MP4
@@ -95,7 +114,7 @@ const handlers: Array<FileHandlerComposite> = [
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持doc、docx、xlsx、pptx、pdf，以及纯文本格式和各种图片格式的在线预览</div>`
+<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、DXF、Markdown、代码/文本、图片和 MP4 的在线预览</div>`
       return createWrapper(target)
     }
   }

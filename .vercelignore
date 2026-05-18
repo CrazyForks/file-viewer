@@ -1,0 +1,8 @@
+.vercel
+node_modules
+dist
+docs/.vitepress/cache
+docs/.vitepress/dist
+.playwright-mcp
+.npm-cache
+file-viewer-v3-*.bundle

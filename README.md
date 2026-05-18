@@ -7,21 +7,24 @@
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - 文档站: [doc.flyfish.dev](https://doc.flyfish.dev)
 - npm: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
-- 仓库: [git.flyfish.dev/flyfish-group/file-viewer](https://git.flyfish.dev/flyfish-group/file-viewer)
+- 公开成品仓库: [github.com/wybaby168/file-viewer](https://github.com/wybaby168/file-viewer)
+- 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
 ![Flyfish Viewer demo](https://doc.flyfish.dev/_images/demo-main.png)
 
 ## 为什么值得接入
 
 - 纯前端渲染。文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端或额外转码链路。
-- 多格式覆盖。当前内置 36 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、Markdown、图片、文本/代码和 MP4，能覆盖绝大多数常见附件场景。
+- 多格式覆盖。当前内置 59 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、CAD、Markdown、图片、代码/文本和 MP4，能覆盖绝大多数常见附件场景。
 - 接入方式灵活。既支持在 Vue 3 项目里直接作为组件使用，也支持作为独立页面通过 iframe 嵌入到任意系统。
 - `.doc` 体验更像 Word。当前版本使用 `msdoc-viewer` 解析 `.doc`，并提供灰色工作台、白色纸张、页面居中的阅读体验。
+- OFD、DXF 和代码高亮都保持按需异步加载，重型解析依赖不会进入其他格式的首屏路径。
+- PDF 工具栏已经补齐缩放、页码状态和可显隐页面导航窗格，更适合长文档阅读。
 - 适合业务交付。父容器自适应、URL 与二进制双输入、静态站点可部署，便于在真实项目里落地。
 
 ## 支持格式
 
-当前版本内置 36 个扩展名映射，覆盖 8 大类文件。
+当前版本内置 59 个扩展名映射，覆盖 11 条预览链路。
 
 | 类别 | 扩展名 | 当前表现 | 适合场景 |
 | --- | --- | --- | --- |
@@ -30,10 +33,13 @@
 | Excel | `xlsx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并和常见样式 | 需要保留表格结构和样式的业务 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | 统一解析，按格式可用信息渐进还原样式 | 老表格、轻量数据查看 |
 | PowerPoint | `pptx` | 浏览幻灯片内容 | 汇报材料、课件、方案 |
-| PDF | `pdf` | 基于 `pdfjs-dist` 预览，版式稳定 | 合同、票据、版式成品 |
+| PDF | `pdf` | 基于 `pdfjs-dist` 预览，支持缩放工具栏、页码状态和可显隐导航窗格 | 合同、票据、版式成品 |
+| OFD | `ofd` | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支 | 电子发票、公文、归档材料 |
+| CAD | `dxf` | 基于 `@cadview/core` 预览图纸，支持缩放、平移、图层控制 | 工程图纸、二维 CAD 附件 |
+| CAD 兼容入口 | `dwg` | 提示转换为 DXF 后预览，不内置 GPL DWG 解析器 | 需要兼容上传入口的业务 |
 | Markdown | `md`、`markdown` | Markdown 阅读样式 | README、知识文档、说明文档 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 原生图片浏览 | 图片附件、设计稿、Logo |
-| 文本/代码 | `txt`、`json`、`js`、`css`、`java`、`py`、`html`、`jsx`、`ts`、`tsx`、`xml`、`log` | 按纯文本显示内容 | 日志、配置、代码片段 |
+| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段 |
 | 视频 | `mp4` | 浏览器原生视频播放 | 演示视频、录屏 |
 
 ## 两条接入路线
@@ -90,6 +96,7 @@ const url = ref('https://example.com/demo.pdf')
 - 预览器会填满父容器，请为父容器提供稳定高度
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
+- OFD、CAD、PDF、Office、Markdown 和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块
 
 ```ts
 const blob = await response.blob()
@@ -97,6 +104,8 @@ const file = new File([blob], 'contract.pdf', { type: blob.type })
 ```
 
 ## 本地开发
+
+下面的命令适用于源码开通后的完整项目。公开 GitHub 成品仓库不包含源码目录，普通用户建议直接通过 npm、`dist/` 或 `artifacts/` 里的 tarball 使用。
 
 ```bash
 pnpm install
@@ -119,15 +128,31 @@ pnpm dev
 pnpm type-check
 pnpm build
 pnpm build-lib
+pnpm obfuscate
 pnpm docs:build
 npm pack
 ```
 
 其中:
 
-- `dist/` 是应用与库构建产物
+- `dist/` 是库构建产物；执行 `pnpm obfuscate` 后会对其中的 `.js` / `.mjs` 进行压缩混淆
+- `pnpm build` 会生成可独立部署的 Demo 静态站点产物
 - `docs/.vitepress/dist/` 是文档站静态产物
 - `npm pack` 会生成可直接发布或分发的 npm 包 tarball
+
+如果只是准备 npm 包，可以直接执行:
+
+```bash
+pnpm release:pack
+```
+
+发布到 npm:
+
+```bash
+npm publish --access public
+```
+
+公开 GitHub 仓库只提交可直接使用的构建产物、示例、文档和 npm tarball，不提交当前源码目录。需要源码、二开包或商业自助开通的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，付费 4.99 后自助开通。
 
 ## 文档导航
 
@@ -142,4 +167,4 @@ npm pack
 
 本项目使用 `Apache-2.0` 许可证。
 
-如果这个项目帮你节省了时间、少走了弯路，欢迎提 issue、提 PR，或者把它分享给也在做文档预览的人。开源世界最动人的地方，往往不是“某个功能终于能用了”，而是大家一起把它打磨到了真的能放心交付。
+二开或商用时，请按许可证要求保留版权、许可证和来源说明，并注明项目来源为 Flyfish Viewer / `@flyfish-group/file-viewer3`。如果你基于本项目修复了通用问题或增强了通用能力，也欢迎通过 issue / PR 一起贡献回来，让这套预览能力继续变得更稳。

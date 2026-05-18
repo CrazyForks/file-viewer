@@ -312,9 +312,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div v-if='displayFilename' class='viewer-footer'>
-        <span class='name-pill'>{{ displayFilename }}</span>
-      </div>
     </div>
   </div>
 </template>
@@ -436,37 +433,6 @@ onBeforeUnmount(() => {
 
 .error-card strong {
   color: #b42318;
-}
-
-.viewer-footer {
-  /* 文件名胶囊必须悬浮在文档上方，不能参与布局挤压预览区域。 */
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 6;
-  display: flex;
-  justify-content: center;
-  padding: 0 14px 18px;
-  pointer-events: none;
-}
-
-.name-pill {
-  max-width: 100%;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: rgba(22, 33, 44, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(18px);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-  text-shadow: 0 1px 2px rgba(18, 28, 40, 0.25);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: 0 12px 26px rgba(18, 28, 40, 0.12);
 }
 
 @keyframes viewer-spin {

@@ -1,0 +1,6 @@
+viewer:
+  lazy: true
+  formats:
+    - ofd
+    - dxf
+    - markdown

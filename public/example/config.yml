@@ -1,0 +1,3 @@
+demo:
+  route: /example/config.yml
+  renderer: highlight.js

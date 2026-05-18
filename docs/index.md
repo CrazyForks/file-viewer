@@ -19,15 +19,18 @@ hero:
     - theme: alt
       text: npm 包
       link: https://www.npmjs.com/package/@flyfish-group/file-viewer3
+    - theme: alt
+      text: GitHub 成品仓库
+      link: https://github.com/wybaby168/file-viewer
 features:
   - title: 最新技术栈
     details: 基于 Vite + Vue2/3 + ts + 组合式 API
   - title: 超高兼容性
-    details: 内置 36 个扩展名映射，覆盖 Office、Markdown、图片、文本和视频
+    details: 内置 59 个扩展名映射，覆盖 Office、PDF、OFD、CAD、Markdown、代码/文本、图片和视频
   - title: 超优质代码
     details: 完全异步组件加载，WebWorker，超高性能
   - title: 面向交付
-    details: 文档、Demo、构建和 npm 打包链路已经完整打通
+    details: 文档、Demo、混淆压缩、构建和 npm 打包链路已经完整打通
 ---
 
 <div class="doc-kicker">Serverless Preview Experience</div>
@@ -64,7 +67,7 @@ features:
   </div>
   <div class="doc-card">
     <h3>文档与构建一起交付</h3>
-    <p>README、VitePress 文档站、本地构建、npm 打包和线上 Demo 一起维护，方便发布和协作。</p>
+    <p>README、VitePress 文档站、本地构建、混淆压缩、npm 打包和线上 Demo 一起维护，方便发布和协作。</p>
   </div>
 </div>
 
@@ -74,6 +77,7 @@ features:
 - 想先看效果再决定接入方式: 查看 [Demo 说明](/guide/demo)。
 - 需要嵌入已有系统: 直接阅读 [Iframe 嵌入](/guide/iframe)。
 - 准备发版: 看 [本地开发与打包](/guide/development)。
+- 需要下载成品或了解源码开通: 看 [发布与成品分发](/guide/distribution)。
 
 <div class="doc-callout">
   <strong>一眼看懂接入路线:</strong> 如果你已经在 Vue 3 项目里开发，优先使用组件集成；如果你希望多系统复用、统一升级或者隔离依赖，优先使用 iframe 独立部署方案。

@@ -1,0 +1,5 @@
+2026-05-18T09:00:00.000Z INFO  Flyfish Viewer demo booted
+2026-05-18T09:00:01.024Z INFO  Loading async renderer for "ofd"
+2026-05-18T09:00:02.381Z INFO  Loading async renderer for "dxf"
+2026-05-18T09:00:03.112Z WARN  DWG preview requires conversion to DXF
+2026-05-18T09:00:04.607Z INFO  highlight.js rendered "code.ts"
