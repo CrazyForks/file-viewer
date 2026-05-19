@@ -1,4 +1,4 @@
-2026-05-19T10:00:00+08:00 INFO  viewer boot version=1.0.6 framework=vue2.7
+2026-05-19T10:00:00+08:00 INFO  viewer boot version=1.0.7 framework=vue2.7
 2026-05-19T10:00:01+08:00 INFO  sample-picker open groups=7 default=document
 2026-05-19T10:00:02+08:00 INFO  preview start file=/example/word.docx source=url
 2026-05-19T10:00:03+08:00 INFO  renderer loaded name=word chunk=docx-preview elapsed=86ms

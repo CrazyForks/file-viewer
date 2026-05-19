@@ -10,7 +10,7 @@
 - npm(Vue2.7): [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
-- 当前版本: `1.0.6`
+- 当前版本: `1.0.7`
 
 ## 为什么值得接入
 
@@ -79,10 +79,10 @@ new Vue({
 
 ## 使用本仓库成品
 
-如果你不想走 npm，可以下载 `artifacts/flyfish-group-file-viewer3-1.0.6.tgz`:
+如果你不想走 npm，可以下载 `artifacts/flyfish-group-file-viewer3-1.0.7.tgz`:
 
 ```bash
-pnpm add ./artifacts/flyfish-group-file-viewer3-1.0.6.tgz
+pnpm add ./artifacts/flyfish-group-file-viewer3-1.0.7.tgz
 ```
 
 如果你要独立部署预览器，可以把 `demo/` 目录直接发布到任意静态资源服务。iframe 集成示例:
