@@ -7,7 +7,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   head: [
-    ['meta', { name: 'theme-color', content: '#0d8bd8' }],
+    ['meta', { name: 'theme-color', content: '#1d6fd6' }],
     ['meta', { property: 'og:title', content: 'Flyfish Viewer' }],
     ['meta', { property: 'og:description', content: '纯前端多格式文件预览组件，适合业务系统直接接入。' }]
   ],
