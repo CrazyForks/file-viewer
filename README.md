@@ -17,8 +17,8 @@
 
 | 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
 | --- | --- | --- | --- | --- |
-| Vue3 | `@flyfish-group/file-viewer3` | `1.0.6` | `v3` | 主推版本，在线 Demo 与后续上线均以此为准 |
-| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.6` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
+| Vue3 | `@flyfish-group/file-viewer3` | `1.0.7` | `v3` | 主推版本，在线 Demo 与后续上线均以此为准 |
+| Vue2.7 | `@flyfish-group/file-viewer` | `1.0.7` | `main` | 兼容 Vue2 项目，格式能力与 Vue3 保持一致 |
 
 ![Flyfish Viewer demo](https://doc.flyfish.dev/_images/demo-main.png)
 

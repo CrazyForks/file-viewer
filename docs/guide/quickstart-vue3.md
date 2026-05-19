@@ -7,7 +7,7 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.6`。在线 Demo `viewer.flyfish.dev` 和后续生产上线均以 `v3` 分支产物作为最终来源。
+当前 Vue3 npm 包是 `@flyfish-group/file-viewer3@1.0.7`。在线 Demo `viewer.flyfish.dev` 和后续生产上线均以 `v3` 分支产物作为最终来源。
 
 ## 安装
 
@@ -151,7 +151,7 @@ import { FileViewer } from '@flyfish-group/file-viewer3'
 
 ## Vue2 项目怎么选
 
-Vue2.7 项目请使用 `@flyfish-group/file-viewer@1.0.6`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和 iframe 协议保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
+Vue2.7 项目请使用 `@flyfish-group/file-viewer@1.0.7`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和 iframe 协议保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## 更适合平台化的方案
 

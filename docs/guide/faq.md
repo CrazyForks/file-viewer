@@ -2,7 +2,7 @@
 
 ## Vue2 和 Vue3 应该安装哪个包
 
-Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.6`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.6`，使用 `Vue.use(FileViewer)` 注册。
+Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.7`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.7`，使用 `Vue.use(FileViewer)` 注册。
 
 两条包线的格式能力、示例文件、`file` / `url` 参数行为和 iframe 协议保持一致。线上 Demo `viewer.flyfish.dev` 始终使用 `v3` 分支产物作为最新体验基准。
 

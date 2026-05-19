@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在两个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.6`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.6`。差异只在插件注册方式。
+这套 API 在两个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.7`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.7`。差异只在插件注册方式。
 
 ## 先记住这 4 条规则
 

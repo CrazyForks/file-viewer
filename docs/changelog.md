@@ -4,6 +4,13 @@
 
 ## 当前主线
 
+### `v1.0.7` PDF 自适应修复版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.7` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.7` 同步发布到 npm `latest`
+- 修复 PDF.js 5 下 canvas 布局尺寸被 DPR backing store 干扰的问题，避免 PDF 页面被裁切或显示不完整
+- 修复 PDF 默认宽度适配计算，导航窗格开启时也能按当前视口宽度给出可读缩放比例
+- 同步刷新线上 Demo、文档说明和公开成品仓库产物
+
 ### `v1.0.6` 成品分发版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.6` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.6` 均已发布到 npm `latest`

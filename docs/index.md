@@ -98,11 +98,11 @@ features:
   </div>
   <div class="doc-card">
     <h3>我在 Vue 3 项目里用</h3>
-    <p>安装 <code>@flyfish-group/file-viewer3@1.0.6</code>，再查看 <a href="/guide/quickstart-vue3">Vue3 集成</a> 接入 URL 或 File 输入。</p>
+    <p>安装 <code>@flyfish-group/file-viewer3@1.0.7</code>，再查看 <a href="/guide/quickstart-vue3">Vue3 集成</a> 接入 URL 或 File 输入。</p>
   </div>
   <div class="doc-card">
     <h3>我还在 Vue2 项目里用</h3>
-    <p>安装 <code>@flyfish-group/file-viewer@1.0.6</code>，按 <a href="/guide/quickstart-vue2">Vue2 集成</a> 使用 <code>Vue.use(FileViewer)</code> 注册。</p>
+    <p>安装 <code>@flyfish-group/file-viewer@1.0.7</code>，按 <a href="/guide/quickstart-vue2">Vue2 集成</a> 使用 <code>Vue.use(FileViewer)</code> 注册。</p>
   </div>
   <div class="doc-card">
     <h3>我要给多个系统共用</h3>
