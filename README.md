@@ -2,21 +2,34 @@
 
 纯前端多格式文件预览组件，支持 Word、Excel、PPT、PDF、OFD、CAD、Markdown、图片、代码/文本和视频等常见附件场景。
 
+这个仓库是 Flyfish Viewer 的公开成品仓库，负责提供可直接下载和接入的构建产物；官方文档和组件主页请访问 [doc.flyfish.dev](https://doc.flyfish.dev)。
+
+- 官方文档/组件主页: [doc.flyfish.dev](https://doc.flyfish.dev)
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - npm: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 - 当前版本: `1.0.6`
 
+## 为什么值得接入
+
+- **纯前端 Serverless。** 文档解析和渲染主要在浏览器完成，不依赖后端 Office 转码服务，适合静态部署、私有化部署和多系统复用。
+- **格式覆盖完整。** 当前内置 59 个扩展名映射，覆盖 Office、PDF、OFD、CAD、Markdown、代码/文本、图片和视频。
+- **按需异步加载。** OFD、CAD、PDF、Office、Markdown 和代码高亮能力按需加载，重型解析器不会拖慢其他格式首屏。
+- **阅读体验更像产品。** PDF 支持缩放、页码状态、导航窗格和宽度自适应；Word 视图保留灰色页面底与白色纸张。
+- **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
+- **接入方式灵活。** Vue 3 项目可安装 npm 包直接使用，也可以独立部署 `demo/` 后通过 iframe 嵌入任意系统。
+- **成品交付友好。** 仓库内提供混淆压缩库产物、Demo 静态站点、文档静态站点、样例文件和可下载 tarball。
+
 ## 这个仓库包含什么
 
-这是 Flyfish Viewer 的公开成品仓库，面向下载和直接接入，不包含源码目录。
+本仓库面向下载和直接接入，不包含源码目录。
 
 | 路径 | 内容 |
 | --- | --- |
 | `dist/` | 混淆压缩后的 Vue 3 组件库产物和类型声明 |
 | `demo/` | 可独立部署的在线预览器静态站点 |
-| `docs/` | VitePress 文档静态站点 |
+| `docs/` | 官方文档站的 VitePress 静态构建产物 |
 | `example/` | 完整样例文件列表，覆盖当前已注册格式 |
 | `artifacts/` | 可下载 tarball，包括 npm 包、Demo、文档和库产物 |
 | `LICENSE` | Apache-2.0 许可证 |
@@ -60,6 +73,8 @@ pnpm add ./artifacts/flyfish-group-file-viewer3-1.0.6.tgz
 ></iframe>
 ```
 
+更完整的组件参数、iframe 二进制推送、格式说明和部署说明，请查看 [官方文档](https://doc.flyfish.dev)。
+
 ## 支持格式
 
 当前内置 59 个扩展名映射，覆盖 11 条预览链路:
@@ -67,8 +82,8 @@ pnpm add ./artifacts/flyfish-group-file-viewer3-1.0.6.tgz
 - Word: `doc`、`docx`
 - Excel: `xlsx`、`xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers`
 - PowerPoint: `pptx`
-- PDF: `pdf`，支持缩放工具栏、页码状态和可显隐导航窗格
-- OFD: `ofd`，基于 `DLTech21/ofd.js` 纯 JS 链路
+- PDF: `pdf`，支持缩放工具栏、页码状态、可显隐导航窗格和宽度自适应
+- OFD: `ofd`，基于 `DLTech21/ofd.js` 源码链路预览
 - CAD: `dxf`，`dwg` 作为转换提示入口
 - Markdown: `md`、`markdown`
 - 图片: `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`
