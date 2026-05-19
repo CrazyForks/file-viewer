@@ -1,6 +1,36 @@
 viewer:
+  name: Flyfish Viewer
+  mode: component
   lazy: true
-  formats:
-    - ofd
-    - dxf
-    - markdown
+  defaultInput: url
+  toolbar:
+    density: compact
+    allowUpload: true
+    allowUrlPreview: true
+  groups:
+    documents:
+      label: Documents
+      formats: [doc, docx, pdf, ofd]
+      defaultScale: fit-width
+    drawings:
+      label: CAD Drawings
+      formats: [dxf, dwg]
+      fallback: convert-dwg-to-dxf
+    source:
+      label: Code and Data
+      renderer: highlight.js
+      escapeHtml: true
+      formats:
+        - json
+        - js
+        - ts
+        - tsx
+        - vue
+        - yaml
+        - sql
+  smoke:
+    browser: chrome
+    assertions:
+      - sample-picker-closes-after-select
+      - pdf-nav-can-toggle
+      - code-viewer-renders-highlight

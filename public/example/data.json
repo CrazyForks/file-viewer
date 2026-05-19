@@ -1,6 +1,34 @@
 {
   "name": "file-viewer",
-  "features": ["ofd", "cad", "syntax-highlight"],
-  "lazyLoaded": true,
-  "updatedAt": "2026-05-18"
+  "version": "1.0.6",
+  "runtime": {
+    "framework": "vue2.7",
+    "viewerSite": "https://viewer.flyfish.dev",
+    "docs": "https://doc.flyfish.dev"
+  },
+  "features": [
+    {
+      "group": "document",
+      "extensions": ["doc", "docx", "pdf", "ofd"],
+      "lazyLoaded": true,
+      "defaultScale": "fit-width"
+    },
+    {
+      "group": "drawing",
+      "extensions": ["dxf", "dwg"],
+      "notes": ["DXF renders in browser", "DWG shows compatibility guidance"]
+    },
+    {
+      "group": "source",
+      "extensions": ["js", "ts", "tsx", "vue", "json", "yaml", "sql"],
+      "renderer": "highlight.js",
+      "executeHtml": false
+    }
+  ],
+  "qualityGate": {
+    "typeCheck": true,
+    "build": true,
+    "browserSmoke": ["sample-picker", "code-preview", "pdf-toolbar"]
+  },
+  "updatedAt": "2026-05-19T10:20:00+08:00"
 }
