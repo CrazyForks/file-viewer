@@ -36,6 +36,7 @@ cv
 
 # Local verification artifacts
 .codex/
+.release/
 .playwright-mcp/
 .npm-cache/
 .pnpm-store/

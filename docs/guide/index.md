@@ -4,7 +4,7 @@
 
 <p class="doc-lead">
   Flyfish Viewer 官方文档同时承担组件主页、接入手册和成品交付说明。
-  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2 或 iframe 嵌入，最后完成打包、发布和成品分发。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2 或 iframe 嵌入，最后了解安装和成品分发。
 </p>
 
 <div class="doc-link-row">
@@ -54,7 +54,7 @@
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
-    <p>发布文档说明了混淆压缩产物、npm tarball、Demo 静态站、文档站和公开成品仓库的交付关系。</p>
+    <p>成品分发说明了 npm 包、在线 Demo、官方文档和公开成品仓库之间的交付关系。</p>
   </div>
 </div>
 

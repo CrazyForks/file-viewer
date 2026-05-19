@@ -42,6 +42,7 @@
     "build-lib-only": "vite build --mode lib",
     "obfuscate": "node scripts/obfuscate-dist.mjs",
     "release:pack": "pnpm type-check && pnpm build-lib-only && pnpm obfuscate && npm pack",
+    "release:public": "node scripts/sync-public-artifacts.mjs",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
