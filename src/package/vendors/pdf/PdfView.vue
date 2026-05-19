@@ -67,7 +67,9 @@ async function loadFile() {
       eventBus,
       linkService: pdfLinkService,
       findController: pdfFindController,
-      l10n: new GenericL10n('zh-CN')
+      l10n: new GenericL10n('zh-CN'),
+      // PDF.js 自动从文本推断 URL 时可能早于注释层渲染，关闭后仍保留 PDF 原生链接注释。
+      enableAutoLinking: false
     })
     context.viewer = pdfViewer
     pdfLinkService.setViewer(pdfViewer)
