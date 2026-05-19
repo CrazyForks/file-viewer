@@ -1,84 +1,83 @@
 # 文档导览
 
-<div class="doc-kicker">Welcome To Flyfish Viewer</div>
+<div class="doc-kicker">Start From The Right Door</div>
 
 <p class="doc-lead">
-  欢迎来到 Flyfish Viewer 文档中心。
-  这里保留了项目最早对外介绍时那套核心表达，也补齐了面向成品交付的使用说明、集成方案与发布流程。你可以先快速浏览项目定位，再按需要进入 Vue3 集成、iframe 嵌入或本地打包章节。
+  Flyfish Viewer 官方文档同时承担组件主页、接入手册和成品交付说明。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue 组件或 iframe 嵌入，最后完成打包、发布和成品分发。
 </p>
 
-<div class="doc-hero-logo">
-  <img src="/_media/logo.svg" alt="Flyfish Viewer Logo" />
-</div>
-
-## Flyfish Viewer
-
-> 一款纯前端Serverless的全能文档预览器
-
-- ✨ **最新技术栈**：基于 Vite + Vue2/3 + ts + 组合式 API
-- 🚀 **超高兼容性**：内置 59 个扩展名映射，覆盖 Office、PDF、OFD、CAD、Markdown、代码/文本、图片和视频
-- ⚡ **超优质代码**：完全异步组件加载，**Web Worker**，超高性能
-
 <div class="doc-link-row">
+  <a href="https://doc.flyfish.dev" target="_blank" rel="noreferrer">官方文档</a>
+  <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
   <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 成品仓库</a>
-  <a href="https://dev.flyfish.group/shop" target="_blank" rel="noreferrer">源码自助开通</a>
   <a href="/guide/quickstart">快速开始</a>
+  <a href="/guide/formats">支持格式</a>
+  <a href="/guide/usage">组件用法</a>
 </div>
 
-## 概述
+## 优秀之处
 
-Flyfish Viewer 可以为您的应用快速集成文档预览能力。不同于市面上的文档预览方案，本项目对文档的所有解析和渲染全部都在浏览器端完成，不会给服务器造成任何额外的压力。与此同时，因其纯前端的特性，非常易于部署，可以部署在任何地方，如容器、服务器、甚至是手机、路由器等等。
-
-查看[快速开始](/guide/quickstart)了解详情。
-
-## 特性
-
-- 📄 **支持海量文件格式。** 支持 `docx`、`pptx`、`xlsx`、`xls`、`pdf`、`ofd`、`dxf`、`markdown`、代码高亮、图片、视频等主流文件格式。
-- 🌐 **现代纯前端文档渲染方案。** 纯前端文档预览解决方案，无需后端。
-- 🛠 **优质代码，优雅实现。** 高质量的 TypeScript 代码，优雅的模块化实现。
-- 🚀 **持续使用最新架构。** 基于最新 **Vite** 开发，并同时支持 **Vue2** 和 **Vue3**。
-- ⚡ **异步渲染和解析。** 所有文件解析使用 **Web Worker** 异步处理，请纵享丝滑。
-- 🧩 **完全响应式数据构建。** 使用完全的组合式 API 构建应用，高性能低占用。
-- 🎨 **支持完全的样式自定义。** 解耦样式依赖，组件样式可以根据外部容器完全自适应。
-- 🔌 **更加灵活的扩展性。** 支持自定义插件和钩子函数。
-- 🎉 **成品开放，持续更新** 🎉🎉🎉
-
-## 开发背景
-
-**Flyfish Viewer**（原file-viewer）是飞鱼开源团队呕心沥血，历时两年打造的纯前端文档预览解决方案。该项目诞生于CSDN博文，旨在降低浏览器段文档预览的门槛，整合市面上成熟的文档预览技术而实现的一套解决方案。原文链接：[https://blog.csdn.net/wybaby168/article/details/122842866](https://blog.csdn.net/wybaby168/article/details/122842866)
-
-## 示例
-
-可以查看 [Demo](https://viewer.flyfish.dev) 立即体验本组件。
-
-公开 GitHub 仓库提供可直接下载使用的混淆压缩成品、示例文件和文档产物；如果需要源码、二开包或商业自助开通，请前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，付费 4.99 后自助开通。
-
-<div class="doc-shot">
-  <img src="/_images/demo1.png" alt="Flyfish Viewer 旧版示例" />
-  <p class="doc-caption">这是项目早期文档中使用的展示图，今天再看，仍然能准确说明这套预览器的使用方式和页面气质。</p>
+<div class="doc-grid">
+  <div class="doc-card">
+    <h3>纯前端 Serverless</h3>
+    <p>主要解析和渲染工作在浏览器完成，减少后端转码服务、临时文件和任务队列带来的维护成本。</p>
+  </div>
+  <div class="doc-card">
+    <h3>覆盖真实附件场景</h3>
+    <p>内置 59 个扩展名映射，覆盖 Office、PDF、OFD、CAD、Markdown、代码/文本、图片和视频。</p>
+  </div>
+  <div class="doc-card">
+    <h3>按需加载更轻</h3>
+    <p>OFD、CAD、PDF、Office、Markdown 和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
+  </div>
+  <div class="doc-card">
+    <h3>阅读体验更完整</h3>
+    <p>Word 保留白色纸张和灰色页面底，PDF 支持缩放、导航窗格和宽度自适应，打开后默认就是可读状态。</p>
+  </div>
 </div>
 
-## 捐赠
+## 推荐阅读顺序
 
-如果你觉得 Flyfish Viewer 对你有帮助，或者想要给我一些项目维护的支持，欢迎给我[捐赠](/donate)。
+<div class="doc-grid">
+  <div class="doc-card">
+    <h3>先看 Demo</h3>
+    <p>在线 Demo 提供按文件类型分组的样例文件盒子，点击样例即可打开并自动收起选择器，适合快速验收全部格式。</p>
+  </div>
+  <div class="doc-card">
+    <h3>确认格式边界</h3>
+    <p>支持格式页列出当前注册的 59 个扩展名、对应渲染链路和真实业务里的适用边界。</p>
+  </div>
+  <div class="doc-card">
+    <h3>选择接入方式</h3>
+    <p>Vue 3 项目可以直接使用组件；多系统复用、隔离依赖或带鉴权文件场景，优先考虑 iframe 嵌入。</p>
+  </div>
+  <div class="doc-card">
+    <h3>准备发布分发</h3>
+    <p>发布文档说明了混淆压缩产物、npm tarball、Demo 静态站、文档站和公开成品仓库的交付关系。</p>
+  </div>
+</div>
 
-> 目前CSDN上售卖的资源因权限问题无法更新，请使用我们的官方渠道进行支持。
+## 当前重点能力
 
-## 社区
+- Word 视图保留灰色页面底和白色纸张，`.docx` 会按当前可用宽度自适应缩放，长文档缺少显式分页时也会补足视觉分页。
+- PDF 视图支持宽度自适应、缩放工具栏、页码状态和可显隐导航窗格。
+- OFD 使用 `DLTech21/ofd.js` 的浏览器端解析和渲染能力，并保持按需异步加载。
+- CAD 支持 DXF 在线预览，DWG 作为兼容入口给出转换提示，避免引入不合适的运行时授权链路。
+- 代码和文本使用 `highlight.js` 轻量高亮，HTML 会按源码展示，不在预览器里执行。
 
-您可以关注我们的微信公众号，及时获取最新进展
+## 常用入口
 
-<img src="/_images/mp.png" alt="微信公众号" style="width: 400px">
+| 你要做什么 | 推荐页面 |
+| --- | --- |
+| 想最快跑起来 | [快速开始](/guide/quickstart) |
+| 想确认所有格式 | [支持格式](/guide/formats) |
+| 想看示例文件和回归建议 | [Demo 说明](/guide/demo) |
+| 想在 Vue 3 中接入 | [Vue3 集成](/guide/quickstart-vue3) |
+| 想让多个系统共用预览器 | [Iframe 嵌入](/guide/iframe) |
+| 想了解参数和事件 | [组件用法](/guide/usage) |
+| 想下载成品或二开 | [发布与成品分发](/guide/distribution) |
 
-您也可以添加我们的客服微信`Yous_Gift`，咨询相关业务详情
-
-<img src="/_images/contact.jpg" alt="客服微信" style="width: 300px">
-
-## 接下来去哪里
-
-1. [快速开始](/guide/quickstart)
-2. [Vue3 集成](/guide/quickstart-vue3)
-3. [Iframe 嵌入](/guide/iframe)
-4. [Demo 说明](/guide/demo)
-5. [本地开发与打包](/guide/development)
-6. [发布与成品分发](/guide/distribution)
+<div class="doc-note">
+  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">viewer.flyfish.dev</a>，再用自己的真实附件补一轮回归。
+</div>

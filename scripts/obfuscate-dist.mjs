@@ -1,9 +1,12 @@
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { isAbsolute, join, resolve } from 'node:path'
 import JavaScriptObfuscator from 'javascript-obfuscator'
 
-const distDir = join(process.cwd(), 'dist')
-const targets = []
+const distDir = process.env.FILE_VIEWER_DIST_DIR
+  ? resolve(process.env.FILE_VIEWER_DIST_DIR)
+  : join(process.cwd(), 'dist')
+const requestedTargets = process.argv.slice(2)
+const targets = requestedTargets.map(target => isAbsolute(target) ? target : join(distDir, target))
 
 async function collectFiles(dir) {
   const entries = await readdir(dir)
@@ -18,10 +21,22 @@ async function collectFiles(dir) {
   }
 }
 
-await collectFiles(distDir)
+if (!requestedTargets.length) {
+  await collectFiles(distDir)
+}
 
 for (const filePath of targets) {
-  const source = await readFile(filePath, 'utf8')
+  let source
+  try {
+    source = await readFile(filePath, 'utf8')
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      console.warn(`skipped missing ${filePath.replace(`${process.cwd()}/`, '')}`)
+      continue
+    }
+    throw error
+  }
+  const isLargeBundle = source.length > 1_000_000
   const result = JavaScriptObfuscator.obfuscate(source, {
     compact: true,
     controlFlowFlattening: false,
@@ -33,9 +48,10 @@ for (const filePath of targets) {
     simplify: true,
     sourceMap: false,
     splitStrings: false,
-    stringArray: true,
+    // Large UMD and worker bundles can exceed local memory when every string is lifted.
+    stringArray: !isLargeBundle,
     stringArrayEncoding: [],
-    stringArrayThreshold: 0.2,
+    stringArrayThreshold: isLargeBundle ? 0 : 0.2,
     target: 'browser',
     unicodeEscapeSequence: false
   })

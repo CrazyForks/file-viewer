@@ -29,7 +29,7 @@ const DOCX_RESPONSIVE_CSS = `
   min-width: 0 !important;
   width: 100% !important;
   padding: 24px 14px 40px !important;
-  background: transparent !important;
+  background: #e7e9ec !important;
 }
 .docx-fit-viewer .docx-page-frame {
   position: relative;
@@ -43,6 +43,11 @@ const DOCX_RESPONSIVE_CSS = `
   top: 0;
   left: 50%;
   margin: 0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 14px rgba(25, 35, 48, 0.18);
+  box-sizing: border-box;
+  color: #111827;
+  overflow: hidden;
   transform-origin: top center;
 }
 `
@@ -52,6 +57,75 @@ function installResponsiveStyle(target: HTMLDivElement) {
   style.textContent = DOCX_RESPONSIVE_CSS
   target.prepend(style)
   return style
+}
+
+function clonePageShell(section: HTMLElement, article: HTMLElement, pageHeight: number) {
+  const nextPage = section.cloneNode(false) as HTMLElement
+  nextPage.innerHTML = ''
+  nextPage.dataset.docxPaginated = 'true'
+  nextPage.style.minHeight = `${pageHeight}px`
+  nextPage.style.height = `${pageHeight}px`
+  nextPage.style.overflow = 'hidden'
+
+  const nextArticle = article.cloneNode(false) as HTMLElement
+  nextPage.appendChild(nextArticle)
+
+  Array.from(section.children).forEach(child => {
+    if (child !== article) {
+      nextPage.appendChild(child.cloneNode(true))
+    }
+  })
+
+  return { page: nextPage, article: nextArticle }
+}
+
+function getDocxPageHeight(section: HTMLElement) {
+  const style = window.getComputedStyle(section)
+  const minHeight = parseFloat(style.minHeight)
+  return Number.isFinite(minHeight) && minHeight > 0 ? minHeight : section.offsetHeight
+}
+
+function paginateOversizedSections(target: HTMLDivElement) {
+  const wrapper = target.querySelector('.docx-wrapper')
+  if (!wrapper) {
+    return
+  }
+
+  Array.from(wrapper.children).forEach(child => {
+    if (!(child instanceof HTMLElement) || !child.matches('section.docx')) {
+      return
+    }
+
+    const article = child.querySelector(':scope > article')
+    if (!(article instanceof HTMLElement)) {
+      return
+    }
+
+    const pageHeight = getDocxPageHeight(child)
+    const originalNodes = Array.from(article.childNodes)
+    if (!pageHeight || originalNodes.length < 2 || child.scrollHeight <= pageHeight * 1.15) {
+      return
+    }
+
+    // docx-preview 只能按已有分页符拆页；没有分页符的长文档需要在预览层补一层视觉分页。
+    let current = clonePageShell(child, article, pageHeight)
+    child.before(current.page)
+
+    originalNodes.forEach(node => {
+      current.article.appendChild(node)
+
+      if (current.page.scrollHeight <= pageHeight + 1 || current.article.childNodes.length === 1) {
+        return
+      }
+
+      current.article.removeChild(node)
+      current = clonePageShell(child, article, pageHeight)
+      child.before(current.page)
+      current.article.appendChild(node)
+    })
+
+    child.remove()
+  })
 }
 
 function wrapDocxPages(target: HTMLDivElement) {
@@ -76,6 +150,7 @@ function wrapDocxPages(target: HTMLDivElement) {
 function makeDocxResponsive(target: HTMLDivElement) {
   target.classList.add('docx-fit-viewer')
   const style = installResponsiveStyle(target)
+  paginateOversizedSections(target)
   const frames = wrapDocxPages(target)
   let resizeFrame = 0
 

@@ -12,67 +12,130 @@ const url = ref('/example/word.docx')
 const preview = ref('')
 const samplePickerOpen = ref(false)
 
-const presetFiles = [
-  { name: 'DOC', url: '/example/test.doc' },
-  { name: 'DOCX', url: '/example/word.docx' },
-  { name: 'XLSX', url: '/example/excel.xlsx' },
-  { name: 'XLSM', url: '/example/excel.xlsm' },
-  { name: 'XLSB', url: '/example/excel.xlsb' },
-  { name: 'XLS', url: '/example/excel.xls' },
-  { name: 'CSV', url: '/example/table.csv' },
-  { name: 'ODS', url: '/example/excel.ods' },
-  { name: 'FODS', url: '/example/excel.fods' },
-  { name: 'Numbers', url: '/example/excel.numbers' },
-  { name: 'PPTX', url: '/example/ppt.pptx' },
-  { name: 'PDF', url: '/example/pdf.pdf' },
-  { name: 'OFD', url: '/example/ofd.ofd' },
-  { name: 'DXF', url: '/example/drawing.dxf' },
-  { name: 'DWG', url: '/example/sample.dwg' },
-  { name: 'MD', url: '/example/markdown.md' },
-  { name: 'MARKDOWN', url: '/example/notes.markdown' },
-  { name: 'TXT', url: '/example/text.txt' },
-  { name: 'JSON', url: '/example/data.json' },
-  { name: 'JS', url: '/example/code.js' },
-  { name: 'MJS', url: '/example/code.mjs' },
-  { name: 'CJS', url: '/example/code.cjs' },
-  { name: 'TS', url: '/example/code.ts' },
-  { name: 'TSX', url: '/example/code.tsx' },
-  { name: 'JSX', url: '/example/code.jsx' },
-  { name: 'CSS', url: '/example/code.css' },
-  { name: 'HTML', url: '/example/page.html' },
-  { name: 'HTM', url: '/example/page.htm' },
-  { name: 'XML', url: '/example/data.xml' },
-  { name: 'VUE', url: '/example/component.vue' },
-  { name: 'YAML', url: '/example/config.yaml' },
-  { name: 'YML', url: '/example/config.yml' },
-  { name: 'INI', url: '/example/settings.ini' },
-  { name: 'SH', url: '/example/script.sh' },
-  { name: 'BASH', url: '/example/script.bash' },
-  { name: 'SQL', url: '/example/query.sql' },
-  { name: 'GO', url: '/example/main.go' },
-  { name: 'RS', url: '/example/main.rs' },
-  { name: 'PHP', url: '/example/index.php' },
-  { name: 'C', url: '/example/main.c' },
-  { name: 'CPP', url: '/example/main.cpp' },
-  { name: 'CC', url: '/example/module.cc' },
-  { name: 'H', url: '/example/main.h' },
-  { name: 'HPP', url: '/example/main.hpp' },
-  { name: 'CS', url: '/example/program.cs' },
-  { name: 'DIFF', url: '/example/change.diff' },
-  { name: 'Java', url: '/example/code.java' },
-  { name: 'Python', url: '/example/code.py' },
-  { name: 'Log', url: '/example/app.log' },
-  { name: 'PNG', url: '/example/pic.png' },
-  { name: 'JPG', url: '/example/pic.jpg' },
-  { name: 'JPEG', url: '/example/pic.jpeg' },
-  { name: 'GIF', url: '/example/pic.gif' },
-  { name: 'BMP', url: '/example/pic.bmp' },
-  { name: 'TIFF', url: '/example/pic.tiff' },
-  { name: 'TIF', url: '/example/pic.tif' },
-  { name: 'SVG', url: '/example/vector.svg' },
-  { name: 'WEBP', url: '/example/pic.webp' },
-  { name: 'MP4', url: '/example/video.mp4' }
+type PresetFile = {
+  name: string
+  url: string
+}
+
+type SampleGroup = {
+  title: string
+  description: string
+  family: string
+  items: PresetFile[]
+}
+
+const sampleGroups: SampleGroup[] = [
+  {
+    title: '文档',
+    description: 'Word / PDF / OFD',
+    family: 'word',
+    items: [
+      { name: 'DOC', url: '/example/test.doc' },
+      { name: 'DOCX', url: '/example/word.docx' },
+      { name: 'PDF', url: '/example/pdf.pdf' },
+      { name: 'OFD', url: '/example/ofd.ofd' }
+    ]
+  },
+  {
+    title: '表格',
+    description: 'Excel / CSV / ODS',
+    family: 'sheet',
+    items: [
+      { name: 'XLSX', url: '/example/excel.xlsx' },
+      { name: 'XLSM', url: '/example/excel.xlsm' },
+      { name: 'XLSB', url: '/example/excel.xlsb' },
+      { name: 'XLS', url: '/example/excel.xls' },
+      { name: 'CSV', url: '/example/table.csv' },
+      { name: 'ODS', url: '/example/excel.ods' },
+      { name: 'FODS', url: '/example/excel.fods' },
+      { name: 'Numbers', url: '/example/excel.numbers' }
+    ]
+  },
+  {
+    title: '演示与图纸',
+    description: 'PPTX / CAD',
+    family: 'cad',
+    items: [
+      { name: 'PPTX', url: '/example/ppt.pptx' },
+      { name: 'DXF', url: '/example/drawing.dxf' },
+      { name: 'DWG', url: '/example/sample.dwg' }
+    ]
+  },
+  {
+    title: '文本',
+    description: 'Markdown / TXT / Log',
+    family: 'text',
+    items: [
+      { name: 'MD', url: '/example/markdown.md' },
+      { name: 'MARKDOWN', url: '/example/notes.markdown' },
+      { name: 'TXT', url: '/example/text.txt' },
+      { name: 'Log', url: '/example/app.log' }
+    ]
+  },
+  {
+    title: '前端与数据',
+    description: 'JS / TS / Vue / Data',
+    family: 'code',
+    items: [
+      { name: 'JSON', url: '/example/data.json' },
+      { name: 'JS', url: '/example/code.js' },
+      { name: 'MJS', url: '/example/code.mjs' },
+      { name: 'CJS', url: '/example/code.cjs' },
+      { name: 'TS', url: '/example/code.ts' },
+      { name: 'TSX', url: '/example/code.tsx' },
+      { name: 'JSX', url: '/example/code.jsx' },
+      { name: 'CSS', url: '/example/code.css' },
+      { name: 'HTML', url: '/example/page.html' },
+      { name: 'HTM', url: '/example/page.htm' },
+      { name: 'XML', url: '/example/data.xml' },
+      { name: 'VUE', url: '/example/component.vue' },
+      { name: 'YAML', url: '/example/config.yaml' },
+      { name: 'YML', url: '/example/config.yml' },
+      { name: 'INI', url: '/example/settings.ini' },
+      { name: 'DIFF', url: '/example/change.diff' }
+    ]
+  },
+  {
+    title: '后端与系统',
+    description: 'Shell / SQL / C / Go',
+    family: 'code',
+    items: [
+      { name: 'SH', url: '/example/script.sh' },
+      { name: 'BASH', url: '/example/script.bash' },
+      { name: 'SQL', url: '/example/query.sql' },
+      { name: 'GO', url: '/example/main.go' },
+      { name: 'RS', url: '/example/main.rs' },
+      { name: 'PHP', url: '/example/index.php' },
+      { name: 'C', url: '/example/main.c' },
+      { name: 'CPP', url: '/example/main.cpp' },
+      { name: 'CC', url: '/example/module.cc' },
+      { name: 'H', url: '/example/main.h' },
+      { name: 'HPP', url: '/example/main.hpp' },
+      { name: 'CS', url: '/example/program.cs' },
+      { name: 'Java', url: '/example/code.java' },
+      { name: 'Python', url: '/example/code.py' }
+    ]
+  },
+  {
+    title: '图片与视频',
+    description: 'Image / MP4',
+    family: 'image',
+    items: [
+      { name: 'PNG', url: '/example/pic.png' },
+      { name: 'JPG', url: '/example/pic.jpg' },
+      { name: 'JPEG', url: '/example/pic.jpeg' },
+      { name: 'GIF', url: '/example/pic.gif' },
+      { name: 'BMP', url: '/example/pic.bmp' },
+      { name: 'TIFF', url: '/example/pic.tiff' },
+      { name: 'TIF', url: '/example/pic.tif' },
+      { name: 'SVG', url: '/example/vector.svg' },
+      { name: 'WEBP', url: '/example/pic.webp' },
+      { name: 'MP4', url: '/example/video.mp4' }
+    ]
+  }
 ]
+
+const presetFiles = sampleGroups.flatMap(group => group.items)
 
 const uploadAccept = presetFiles
   .map(item => {
@@ -316,22 +379,36 @@ function selectPreset(nextUrl: string) {
                 </button>
 
                 <div v-if='samplePickerOpen' class='sample-menu'>
-                  <button
-                    v-for='item in presetFiles'
-                    :key='item.url'
-                    type='button'
-                    class='sample-card'
-                    :class='{ active: !file && url === item.url }'
-                    @click='selectPreset(item.url)'
+                  <section
+                    v-for='group in sampleGroups'
+                    :key='group.title'
+                    class='sample-group'
+                    :data-family='group.family'
                   >
-                    <span class='sample-file-icon' :data-family='getFileIconMeta(item.url).family'>
-                      <span>{{ getFileIconMeta(item.url).icon }}</span>
-                    </span>
-                    <span class='sample-card-copy'>
-                      <strong>{{ item.name }}</strong>
-                      <span>{{ fileNameOf(item.url) }}</span>
-                    </span>
-                  </button>
+                    <div class='sample-group-header'>
+                      <span>{{ group.title }}</span>
+                      <em>{{ group.description }}</em>
+                      <strong>{{ group.items.length }}</strong>
+                    </div>
+                    <div class='sample-group-grid'>
+                      <button
+                        v-for='item in group.items'
+                        :key='item.url'
+                        type='button'
+                        class='sample-card'
+                        :class='{ active: !file && url === item.url }'
+                        @click='selectPreset(item.url)'
+                      >
+                        <span class='sample-file-icon' :data-family='getFileIconMeta(item.url).family'>
+                          <span>{{ getFileIconMeta(item.url).icon }}</span>
+                        </span>
+                        <span class='sample-card-copy'>
+                          <strong>{{ item.name }}</strong>
+                          <span>{{ fileNameOf(item.url) }}</span>
+                        </span>
+                      </button>
+                    </div>
+                  </section>
                 </div>
               </div>
 
@@ -733,16 +810,70 @@ function selectPreset(nextUrl: string) {
 }
 
 .sample-menu {
-  max-height: min(42vh, 348px);
+  max-height: min(52vh, 480px);
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 11px;
+  border-radius: 16px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+}
+
+.sample-group {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 13px;
+  background: rgba(247, 250, 252, 0.76);
+  box-shadow: inset 0 0 0 1px rgba(20, 35, 53, 0.05);
+}
+
+.sample-group-header {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.sample-group-header span {
+  color: #142335;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sample-group-header em {
+  min-width: 0;
+  color: #718193;
+  font-size: 11px;
+  font-style: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sample-group-header strong {
+  min-width: 24px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(20, 35, 53, 0.07);
+  color: #526174;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.sample-group-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 8px;
-  padding: 9px;
-  border-radius: 16px;
-  border: 1px solid rgba(20, 35, 53, 0.08);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
 }
 
 .sample-card {

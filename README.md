@@ -2,10 +2,10 @@
 
 把 Word、Excel、PPT、PDF 和图片稳稳带进浏览器里。
 
-`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付的产品模块。
+`@flyfish-group/file-viewer3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
-- 文档站: [doc.flyfish.dev](https://doc.flyfish.dev)
+- 官方文档/组件主页: [doc.flyfish.dev](https://doc.flyfish.dev)
 - npm: [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3)
 - 公开成品仓库: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 源码自助开通: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
@@ -14,13 +14,13 @@
 
 ## 为什么值得接入
 
-- 纯前端渲染。文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端或额外转码链路。
-- 多格式覆盖。当前内置 59 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、CAD、Markdown、图片、代码/文本和 MP4，能覆盖绝大多数常见附件场景。
-- 接入方式灵活。既支持在 Vue 3 项目里直接作为组件使用，也支持作为独立页面通过 iframe 嵌入到任意系统。
-- `.doc` 体验更像 Word。当前版本使用 `msdoc-viewer` 解析 `.doc`，并提供灰色工作台、白色纸张、页面居中的阅读体验。
-- OFD、DXF 和代码高亮都保持按需异步加载，重型解析依赖不会进入其他格式的首屏路径。
-- PDF 工具栏已经补齐缩放、页码状态和可显隐页面导航窗格，更适合长文档阅读。
-- 适合业务交付。父容器自适应、URL 与二进制双输入、静态站点可部署，便于在真实项目里落地。
+- **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
+- **格式覆盖完整。** 当前内置 59 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、CAD、Markdown、图片、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
+- **按需异步加载。** PDF、OFD、CAD、Office、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
+- **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色纸张、居中阅读和自适应缩放，避免“内容能打开但不好读”的落差。
+- **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
+- **组件和独立站两用。** 既支持在 Vue 3 项目里直接作为组件使用，也支持独立部署后通过 iframe 嵌入到任意系统，方便多业务线复用。
+- **适合成品交付。** 官方文档、在线 Demo、公开成品仓库、混淆压缩产物、npm tarball 和静态部署产物都一起维护，便于下载、验收和二次接入。
 
 ## 支持格式
 

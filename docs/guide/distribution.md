@@ -10,6 +10,7 @@
 
 | 渠道 | 地址 | 内容 |
 | --- | --- | --- |
+| 官方文档/组件主页 | [doc.flyfish.dev](https://doc.flyfish.dev) | 组件主页、接入文档、格式说明和成品分发说明 |
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器 |
 | npm 包 | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue 3 组件库，包含混淆压缩后的 `dist/` |
 | GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、示例和可下载 tarball |
@@ -40,6 +41,8 @@ createApp(App).use(FileViewer).mount('#app')
 - `artifacts/`: npm tarball、Demo tarball、文档 tarball
 - `README.md`: 友好的安装、嵌入、下载和授权说明
 - `LICENSE`: 项目许可证
+
+其中 `README.md` 会承担公开仓库首页职责，写明官方文档、在线 Demo、npm 包、成品目录和源码开通入口。`docs/` 则是官方文档站的静态构建产物，可部署到任何静态资源服务中。
 
 ## 发版命令
 

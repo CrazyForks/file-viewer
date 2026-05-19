@@ -10,9 +10,7 @@
 }
 
 .VPApp {
-  background:
-    radial-gradient(circle at top left, rgba(13, 139, 216, 0.14), transparent 28%),
-    radial-gradient(circle at top right, rgba(25, 120, 196, 0.12), transparent 24%);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fafc 46%, #ffffff 100%);
 }
 
 .VPNavBar .title {
@@ -59,8 +57,7 @@
 }
 
 .VPHomeHero .image-bg {
-  opacity: 0.12;
-  filter: blur(72px);
+  display: none;
 }
 
 .VPHomeHero .image {
@@ -88,7 +85,7 @@
 .doc-brand-panel {
   margin: 24px 0 28px;
   padding: 18px 22px 14px;
-  border-radius: 24px;
+  border-radius: 8px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 251, 0.96));
   border: 1px solid rgba(13, 139, 216, 0.12);
   box-shadow: 0 20px 50px rgba(16, 24, 40, 0.08);
@@ -115,7 +112,7 @@
   align-items: center;
   justify-content: center;
   padding: 10px 16px;
-  border-radius: 999px;
+  border-radius: 8px;
   border: 1px solid rgba(13, 139, 216, 0.18);
   background: rgba(255, 255, 255, 0.92);
   text-decoration: none;
@@ -141,7 +138,7 @@
 }
 
 .vp-doc img {
-  border-radius: 18px;
+  border-radius: 8px;
 }
 
 .doc-kicker {
@@ -163,7 +160,7 @@
 .doc-shot {
   margin: 24px 0;
   padding: 12px;
-  border-radius: 24px;
+  border-radius: 8px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 248, 251, 0.96));
   border: 1px solid rgba(13, 139, 216, 0.12);
   box-shadow: 0 20px 50px rgba(16, 24, 40, 0.08);
@@ -172,7 +169,7 @@
 .doc-shot img {
   display: block;
   width: 100%;
-  border-radius: 16px;
+  border-radius: 6px;
 }
 
 .doc-caption {
@@ -191,7 +188,7 @@
 
 .doc-card {
   padding: 20px;
-  border-radius: 20px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(13, 139, 216, 0.12);
   box-shadow: 0 18px 40px rgba(16, 24, 40, 0.06);
@@ -212,7 +209,7 @@
 .doc-note {
   margin: 24px 0;
   padding: 18px 20px;
-  border-radius: 18px;
+  border-radius: 8px;
   border: 1px solid rgba(13, 139, 216, 0.14);
 }
 
@@ -244,6 +241,6 @@
 
   .doc-shot {
     padding: 10px;
-    border-radius: 20px;
+    border-radius: 8px;
   }
 }

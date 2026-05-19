@@ -16,7 +16,7 @@
 
 ## 主示例页
 
-主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、DXF、Markdown、代码/文本、图片与视频。它适合做三件事:
+主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、DXF、Markdown、代码/文本、图片与视频。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
 
 - 快速演示当前项目支持哪些文件类型
 - 用本地上传验证 `file` 方案
@@ -24,16 +24,16 @@
 
 <div class="doc-shot">
   <img src="/_images/demo-main.png" alt="主示例页截图" />
-  <p class="doc-caption">主示例页提供文件切换、URL 预览和上传预览，是最直接的联调入口。</p>
+  <p class="doc-caption">主示例页提供分组样例文件盒子、URL 预览和上传预览，是最直接的联调入口。</p>
 </div>
 
-## `.doc` 页面效果
+## Word 页面效果
 
-这次文档升级后，`.doc` 示例也被单独拿出来说明，因为它已经不只是“能打开”，而是具备更明确的页面感。
+Word 示例被单独拿出来说明，因为它已经不只是“能打开”，而是具备更明确的页面感。`.doc` 和 `.docx` 都会尽量保留灰色页面底、白色纸张、页面居中和宽度自适应的阅读体验。
 
 <div class="doc-shot">
   <img src="/_images/demo-doc.png" alt="DOC 文件渲染截图" />
-  <p class="doc-caption">`.doc` 文件现在会显示在灰色工作台中的白色纸张上，页面居中，阅读体验更接近 Word。</p>
+  <p class="doc-caption">Word 文件会显示在灰色工作台中的白色纸张上，页面居中，阅读体验更接近真实文档。</p>
 </div>
 
 ## iframe 示例页
