@@ -36,8 +36,8 @@ const atEnd = ref(false)
 
 let book: Book | undefined
 let rendition: Rendition | undefined
-let resizeObserver: ResizeObserver | undefined
 let disposed = false
+let renderCheckTimer: number | undefined
 
 const currentChapter = computed(() => {
   if (!currentHref.value) {
@@ -112,15 +112,27 @@ const updateLocation = (location: EpubLocation) => {
   }
 }
 
-const resizeRendition = () => {
-  const el = stage.value
-  if (!el || !rendition) {
-    return
+const wait = (ms: number) => new Promise(resolve => {
+  renderCheckTimer = window.setTimeout(resolve, ms)
+})
+
+const hasReadableFrame = () => {
+  const iframe = stage.value?.querySelector('iframe') as HTMLIFrameElement | null
+  const body = iframe?.contentDocument?.body
+  if (!body) {
+    return false
   }
-  const rect = el.getBoundingClientRect()
-  if (rect.width > 0 && rect.height > 0) {
-    rendition.resize(Math.floor(rect.width), Math.floor(rect.height))
+  return Boolean(body.innerText.trim() || body.querySelector('img, svg, canvas'))
+}
+
+const waitForReadableFrame = async () => {
+  for (let i = 0; i < 20; i++) {
+    if (disposed || hasReadableFrame()) {
+      return hasReadableFrame()
+    }
+    await wait(100)
   }
+  return hasReadableFrame()
 }
 
 const openBook = async () => {
@@ -145,8 +157,9 @@ const openBook = async () => {
 
     rendition = book.renderTo(el, {
       allowScriptedContent: false,
-      flow: 'paginated',
+      flow: 'scrolled',
       height: '100%',
+      manager: 'continuous',
       resizeOnOrientationChange: true,
       spread: 'none',
       width: '100%'
@@ -161,6 +174,10 @@ const openBook = async () => {
       },
       img: {
         maxWidth: '100%'
+      },
+      html: {
+        height: 'auto',
+        overflow: 'auto'
       }
     })
     rendition.on('relocated', updateLocation)
@@ -175,15 +192,15 @@ const openBook = async () => {
 
     // 许多 EPUB 的第一个 spine 是封面或空白包装页。默认跳到目录里第一个正文节点，
     // 避免用户打开后只看到空白封面容器，误以为正文没有渲染。
-    await rendition.display(pickInitialHref(tocItems.value))
+    const initialHref = pickInitialHref(tocItems.value)
+    await rendition.display(initialHref)
+    if (!await waitForReadableFrame()) {
+      throw new Error('EPUB 正文渲染未完成，请刷新后重试')
+    }
     if (disposed) {
       return
     }
     status.value = 'ready'
-
-    resizeObserver = new ResizeObserver(resizeRendition)
-    resizeObserver.observe(el)
-    resizeRendition()
 
     // 生成位置索引失败不影响阅读，只会退回章节名作为进度提示。
     void book.locations.generate(1200).catch(() => undefined)
@@ -211,8 +228,10 @@ onMounted(openBook)
 
 onBeforeUnmount(() => {
   disposed = true
-  resizeObserver?.disconnect()
-  resizeObserver = undefined
+  if (renderCheckTimer !== undefined) {
+    clearTimeout(renderCheckTimer)
+    renderCheckTimer = undefined
+  }
   if (rendition) {
     rendition.off('relocated', updateLocation)
     rendition.destroy()
@@ -475,12 +494,24 @@ onBeforeUnmount(() => {
 .epub-stage {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-radius: 8px;
   background: #ffffff;
   box-shadow:
     0 18px 45px rgba(15, 23, 42, 0.12),
     inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+.epub-stage :deep(.epub-container) {
+  width: 100% !important;
+  max-width: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.epub-stage :deep(iframe) {
+  max-width: 100%;
 }
 
 .epub-state {

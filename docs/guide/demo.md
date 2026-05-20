@@ -70,7 +70,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 | `sample.dwg` | 使用公开 DWG 样例验证 DWG 兼容提示 | `dwg` |
 | `flow.excalidraw` | 使用公开 Excalidraw 图纸验证官方恢复与 SVG 导出预览 | `excalidraw` |
 | `process.drawio` | 使用官方 draw.io 示例验证 diagrams.net Viewer 预览 | `drawio` |
-| `book.epub` | 使用 Project Gutenberg 公开 EPUB 验证电子书目录和分页阅读 | `epub` |
+| `book.epub` | 使用 Project Gutenberg 公开 EPUB 验证电子书目录和滚动阅读 | `epub` |
 | `markdown.md` | 验证 Markdown 阅读样式 | `md` |
 | `notes.markdown` | 验证 Markdown 长扩展名 | `markdown` |
 | `text.txt` | 验证纯文本展示 | `txt` |

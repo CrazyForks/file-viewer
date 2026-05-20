@@ -170,7 +170,7 @@ async function useLocal(blob: Blob) {
 
 `.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 会使用官方 diagrams.net `GraphViewer` 渲染，不在组件里手写 mxGraphModel 解析逻辑。
 
-`.epub` 会使用 `epubjs` 解析电子书包、目录和章节资源，并在浏览器内提供只读分页阅读。Kindle 专有格式或 DRM 电子书建议先转换为 EPUB / PDF 后再传入预览器。
+`.epub` 会使用 `epubjs` 解析电子书包、目录和章节资源，并在浏览器内提供只读滚动阅读。阅读器会默认打开第一个正文章节，避免停留在封面或空白包装页。Kindle 专有格式或 DRM 电子书建议先转换为 EPUB / PDF 后再传入预览器。
 
 ### 音频怎么接
 

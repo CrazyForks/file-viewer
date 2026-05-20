@@ -41,7 +41,7 @@
 | CAD 兼容入口 | `dwg` | CAD 兼容提示 | DWG 属于专有二进制格式，当前不内置 GPL 解析器，会提示转换为 DXF 后预览 | 需要兼容上传入口但不希望引入 GPL 运行时代码的业务 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | 使用官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | diagrams.net `GraphViewer` | 使用官方 viewer 渲染 mxGraphModel / mxfile，不自行解析 draw.io 方言 | 流程图、架构图、业务泳道图 |
-| 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录、章节资源并提供分页阅读控件 | 电子书、培训手册、长篇阅读材料 |
+| 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 图片渲染器 | 原生图片浏览 | 图片附件、设计稿、截图、Logo |
 | 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`umd`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本 | 配置文件、日志、代码片段、UMD 产物源码、接口响应 |
@@ -92,8 +92,8 @@
 
 ### 电子书
 
-- `epub` 使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录、章节资源和分页阅读。
-- EPUB 预览提供目录窗格、上一页/下一页和阅读进度。为了安全，阅读器不会允许书内脚本执行。
+- `epub` 使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录和章节资源。
+- EPUB 预览提供目录窗格、上一章/下一章式导航和阅读进度。正文区域使用滚动文档模式，避免部分浏览器在超宽分页 iframe 下出现白板。为了安全，阅读器不会允许书内脚本执行。
 - Kindle 专有格式、DRM 电子书或业务加密包不在当前内置范围内，建议在接入侧转换为 EPUB 或 PDF 后预览。
 
 ### Markdown、代码与文本

@@ -66,7 +66,7 @@
 - OFD 使用 `DLTech21/ofd.js` 的浏览器端解析和渲染能力，并保持按需异步加载。
 - CAD 支持 DXF 在线预览，DWG 作为兼容入口给出转换提示，避免引入不合适的运行时授权链路。
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
-- EPUB 使用 `epubjs` 提供目录和分页阅读，音频使用浏览器原生播放器打开。
+- EPUB 使用 `epubjs` 提供目录和滚动阅读，音频使用浏览器原生播放器打开。
 - 代码和文本使用 `highlight.js` 轻量高亮，HTML 和 UMD 都会按源码展示，不在预览器里执行。
 
 ## 常用入口
