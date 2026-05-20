@@ -19,12 +19,12 @@
     },
     {
       "group": "drawing",
-      "extensions": ["dxf", "dwg"],
-      "notes": ["DXF renders in browser", "DWG shows compatibility guidance"]
+      "extensions": ["dxf", "dwg", "excalidraw", "drawio", "dio"],
+      "notes": ["DXF renders in browser", "DWG shows compatibility guidance", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
     },
     {
       "group": "source",
-      "extensions": ["js", "ts", "tsx", "vue", "json", "yaml", "sql"],
+      "extensions": ["js", "ts", "tsx", "vue", "json", "yaml", "sql", "umd"],
       "renderer": "highlight.js",
       "executeHtml": false
     }

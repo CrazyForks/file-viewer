@@ -1,7 +1,3 @@
-const BASE_PATH = `/node_modules/${import.meta.env.VITE_PACKAGE_NAME}/dist/worker/`
-
-const IS_LIB = import.meta.env.MODE === 'lib'
-
 type WorkerProvider = () => Worker
 
 export interface WorkerRef {
@@ -24,11 +20,7 @@ export default class WorkerRefImpl implements WorkerRef {
   }
 }
 
-export function refWorker(name: string, module: boolean = false): WorkerRef {
-  let worker = null
-  const url = `${BASE_PATH}${name}`;
-  if (IS_LIB) {
-    worker = new Worker(new URL(url, import.meta.url), { type: module ? 'module' : 'classic' })
-  }
-  return new WorkerRefImpl(worker)
+export function refWorker(_name: string, _module: boolean = false): WorkerRef {
+  // Let Vite/Rollup transform each caller's `new URL(..., import.meta.url)` worker path.
+  return new WorkerRefImpl(null)
 }

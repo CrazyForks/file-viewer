@@ -25,8 +25,8 @@
 ## 为什么值得接入
 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
-- **格式覆盖完整。** 当前内置 59 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、CAD、Markdown、图片、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
-- **按需异步加载。** PDF、OFD、CAD、Office、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
+- **格式覆盖完整。** 当前内置 63 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、CAD、Excalidraw、draw.io、Markdown、图片、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
+- **按需异步加载。** PDF、OFD、CAD、绘图、Office、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色纸张、居中阅读和自适应缩放，避免“内容能打开但不好读”的落差。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
 - **Vue2 / Vue3 体验一致。** `main` 分支面向 Vue2.7，`v3` 分支面向 Vue3；两边共享完整格式覆盖、示例文件盒子、文档站和 iframe 集成体验。
@@ -35,7 +35,7 @@
 
 ## 支持格式
 
-当前版本内置 59 个扩展名映射，覆盖 11 条预览链路。
+当前版本内置 63 个扩展名映射，覆盖 12 条预览链路。
 
 | 类别 | 扩展名 | 当前表现 | 适合场景 |
 | --- | --- | --- | --- |
@@ -48,9 +48,11 @@
 | OFD | `ofd` | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支 | 电子发票、公文、归档材料 |
 | CAD | `dxf` | 基于 `@cadview/core` 预览图纸，支持缩放、平移、图层控制 | 工程图纸、二维 CAD 附件 |
 | CAD 兼容入口 | `dwg` | 提示转换为 DXF 后预览，不内置 GPL DWG 解析器 | 需要兼容上传入口的业务 |
+| Excalidraw | `excalidraw` | 基于官方 `@excalidraw/excalidraw` 的 `exportToSvg` 输出只读预览 | 白板草图、流程草稿、产品沟通图 |
+| draw.io | `drawio`、`dio` | 基于官方 diagrams.net `GraphViewer` 预览 mxGraphModel / mxfile | 流程图、架构图、业务泳道图 |
 | Markdown | `md`、`markdown` | Markdown 阅读样式 | README、知识文档、说明文档 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 原生图片浏览 | 图片附件、设计稿、Logo |
-| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段 |
+| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`umd`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段、UMD 产物源码 |
 | 视频 | `mp4` | 浏览器原生视频播放 | 演示视频、录屏 |
 
 ## 三条接入路线
@@ -145,7 +147,7 @@ export default {
 - 预览器会填满父容器，请为父容器提供稳定高度
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
-- OFD、CAD、PDF、Office、Markdown 和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块
+- OFD、CAD、绘图、PDF、Office、Markdown 和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块
 
 ```ts
 const blob = await response.blob()

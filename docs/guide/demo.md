@@ -16,7 +16,7 @@
 
 ## 主示例页
 
-主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、DXF、Markdown、代码/文本、图片与视频。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
+主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、DXF、Excalidraw、draw.io、Markdown、代码/文本、图片与视频。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
 
 - 快速演示当前项目支持哪些文件类型
 - 用本地上传验证 `file` 方案
@@ -68,6 +68,8 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 | `ofd.ofd` | 验证 OFD 在线预览 | `ofd` |
 | `drawing.dxf` | 验证 CAD 图纸预览、平移、缩放和图层控制 | `dxf` |
 | `sample.dwg` | 验证 DWG 兼容提示 | `dwg` |
+| `flow.excalidraw` | 验证 Excalidraw 官方 SVG 导出预览 | `excalidraw` |
+| `process.drawio` | 验证 diagrams.net 官方 Viewer 预览 | `drawio` |
 | `markdown.md` | 验证 Markdown 阅读样式 | `md` |
 | `notes.markdown` | 验证 Markdown 长扩展名 | `markdown` |
 | `text.txt` | 验证纯文本展示 | `txt` |
@@ -86,6 +88,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 | `config.yaml` | 验证 YAML 高亮 | `yaml` |
 | `config.yml` | 验证 YML 高亮 | `yml` |
 | `settings.ini` | 验证 INI 高亮 | `ini` |
+| `bundle.umd` | 验证 UMD JavaScript 包源码高亮 | `umd` |
 | `script.sh` | 验证 Shell 脚本高亮 | `sh` |
 | `script.bash` | 验证 Bash 脚本高亮 | `bash` |
 | `query.sql` | 验证 SQL 高亮 | `sql` |
@@ -117,9 +120,11 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
   部分兼容格式示例复用了同一份可解析内容来覆盖扩展名入口，例如表格兼容格式和图片兼容格式。上线前仍建议使用业务真实文件补一轮回归。
 </div>
 
-## 完整覆盖与 DWG 说明
+## 完整覆盖与绘图说明
 
 上面的清单已经覆盖当前注册的全部扩展名。DWG 当前作为 CAD 兼容入口保留，打开 `.dwg` 时会提示转换为 DXF 后预览，不会把 GPL 授权的 DWG 解析运行时打进组件包。
+
+Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件使用官方 `GraphViewer` 渲染 mxGraphModel / mxfile。组件不自行实现绘图格式解析，只做按需加载、容器挂载和错误提示。
 
 ## 建议保留一套自己的回归样本
 
@@ -132,6 +137,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 - 一份业务里最常见的 `pdf`
 - 一份真实 OFD 发票或归档件
 - 一份 DXF 图纸
+- 一份 Excalidraw 或 draw.io 图纸
 - 一份 Markdown 说明文档
 - 一份日志或配置文件，比如 `log` / `json`
 - 一份源码文件，比如 `ts` / `py` / `java`

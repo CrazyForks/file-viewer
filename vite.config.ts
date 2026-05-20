@@ -1,16 +1,28 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import type { UserConfigExport } from 'vite'
+import type { Plugin, UserConfigExport } from 'vite'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import dts from 'vite-plugin-dts'
 
+const viewerQueryFallbackPlugin = (): Plugin => ({
+  name: 'viewer-query-fallback',
+  configureServer(server) {
+    server.middlewares.use((req, _res, next) => {
+      // Vite 会把根路径 `?url=` 当成资源查询；Demo 需要保留这个 iframe/URL 参数入口。
+      if (req.url?.startsWith('/?url=')) {
+        req.url = `/index.html${req.url.slice(1)}`
+      }
+      next()
+    })
+  }
+})
 
 // https://vitejs.dev/config/
 export default defineConfig(ctx => {
   const config: UserConfigExport = {
-    plugins: [vue(), vueJsx()],
+    plugins: [viewerQueryFallbackPlugin(), vue(), vueJsx()],
     base: './',
     resolve: {
       alias: {

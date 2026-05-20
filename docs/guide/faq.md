@@ -67,6 +67,10 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 DXF 当前走 `@cadview/core` 在浏览器端直接预览。DWG 是专有二进制格式，常见前端解析包存在 GPL 授权约束或需要额外转换运行时，所以组件不会默认把 DWG 解析器打进包里。业务侧可以先把 DWG 转成 DXF，再交给预览器展示。
 
+## Excalidraw 和 draw.io 是怎么预览的
+
+`.excalidraw` 走官方 `@excalidraw/excalidraw` 包的 `exportToSvg`，`.drawio` / `.dio` 走官方 diagrams.net `GraphViewer`。组件不会手写绘图格式解析器，只负责按需加载第三方开源能力、挂载预览容器和显示错误提示。
+
 ## 代码文件会执行吗
 
 不会。代码/文本链路使用 `highlight.js` 做源码高亮，只展示内容，不执行 `html`、`js` 或模板里的脚本。

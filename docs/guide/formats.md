@@ -3,18 +3,18 @@
 <div class="doc-kicker">Runtime Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>59 个扩展名映射</strong>，覆盖 <strong>11 条预览链路</strong>。
+  当前版本内置 <strong>63 个扩展名映射</strong>，覆盖 <strong>12 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>59 个扩展名映射</h3>
-    <p>覆盖 Office、PDF、OFD、CAD、Markdown、图片、代码/文本和视频等常见附件类型。</p>
+    <h3>63 个扩展名映射</h3>
+    <p>覆盖 Office、PDF、OFD、CAD、Excalidraw、draw.io、Markdown、图片、代码/文本和视频等常见附件类型。</p>
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
-    <p>OFD、CAD、PDF、Office、Markdown、代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
+    <p>OFD、CAD、绘图、PDF、Office、Markdown、代码高亮等渲染器都会拆成独立异步块，命中格式时才加载。</p>
   </div>
   <div class="doc-card">
     <h3>两条输入路径</h3>
@@ -39,9 +39,11 @@
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | CAD | `dxf` | `@cadview/core` | Canvas 方式浏览 DXF 图纸，支持缩放、平移、图层显示控制 | 工程图纸、二维 CAD 附件 |
 | CAD 兼容入口 | `dwg` | CAD 兼容提示 | DWG 属于专有二进制格式，当前不内置 GPL 解析器，会提示转换为 DXF 后预览 | 需要兼容上传入口但不希望引入 GPL 运行时代码的业务 |
+| Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | 使用官方 `exportToSvg` 输出只读 SVG 预览，保留手绘图元风格 | 白板草图、产品沟通图、流程草稿 |
+| draw.io | `drawio`、`dio` | diagrams.net `GraphViewer` | 使用官方 viewer 渲染 mxGraphModel / mxfile，不自行解析 draw.io 方言 | 流程图、架构图、业务泳道图 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp` | 图片渲染器 | 原生图片浏览 | 图片附件、设计稿、截图、Logo |
-| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本 | 配置文件、日志、代码片段、接口响应 |
+| 代码/文本 | `txt`、`json`、`js`、`mjs`、`cjs`、`umd`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`ini`、`sh`、`bash`、`sql`、`go`、`rs`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本 | 配置文件、日志、代码片段、UMD 产物源码、接口响应 |
 | 视频 | `mp4` | 浏览器原生视频播放器 | 原生播放、带控制条 | 演示视频、录屏材料 |
 
 ## 按类型看体验和边界
@@ -77,10 +79,16 @@
 - `dwg` 当前注册为兼容入口，但不会直接解析。DWG 格式通常需要专用转换或 GPL 授权运行时，组件会给出清晰提示，推荐业务侧转换为 `dxf` 后再预览。
 - 如果你要在生产系统里稳定预览 CAD 文件，建议把 DXF 作为前端预览标准格式，并在上传或归档环节统一转换。
 
+### 绘图文件
+
+- `excalidraw` 使用官方 `@excalidraw/excalidraw` 包的 `exportToSvg` 能力，按需加载后输出只读 SVG 预览，不手写 Excalidraw 图元解析器。
+- `drawio` 和 `dio` 使用官方 diagrams.net `GraphViewer`，由官方 viewer 处理 mxGraphModel / mxfile、主题和图元兼容，组件只负责创建容器和传入 XML。
+- draw.io viewer 脚本来自 diagrams.net 官方静态地址，只有命中 `.drawio` / `.dio` 时才加载；需要内网私有化时，可以把该官方脚本镜像到自己的静态资源域名再替换加载地址。
+
 ### Markdown、代码与文本
 
 - `md` 和 `markdown` 会按 Markdown 阅读样式展示，适合项目说明、知识文档和内部手册。
-- 代码和文本文件会使用 `highlight.js` 做轻量高亮，按扩展名匹配语言，不命中时会自动退回纯文本。
+- 代码和文本文件会使用 `highlight.js` 做轻量高亮，按扩展名匹配语言，不命中时会自动退回纯文本；`umd` 会按 JavaScript 源码高亮。
 - 这里有一个很重要的边界：`html` 文件会被当作源码看，而不是在预览器里当网页执行。这是更安全、也更可控的默认策略。
 
 ### 图片与视频
@@ -96,6 +104,7 @@
 - 你要看日志、配置或代码：直接用代码/文本链路即可，重点是快速打开、检索内容和保持安全。
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先沉淀 `dxf`，把 `dwg` 作为上传兼容和转换前提示。
+- 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方导出 SVG，后者走官方 diagrams.net viewer。
 
 ## 不支持的格式会怎样
 

@@ -11,11 +11,15 @@
     <group id="drawing" label="CAD">
       <format extension="dxf" renderer="@cadview/core" pan="true" zoom="true" />
       <format extension="dwg" renderer="compatibility-message" />
+      <format extension="excalidraw" renderer="@excalidraw/excalidraw" async="true" />
+      <format extension="drawio" renderer="diagrams.net GraphViewer" async="true" />
+      <format extension="dio" renderer="diagrams.net GraphViewer" async="true" />
     </group>
     <group id="source" label="Code and Data">
       <format extension="ts" renderer="highlight.js" />
       <format extension="json" renderer="highlight.js" />
       <format extension="vue" renderer="highlight.js" />
+      <format extension="umd" renderer="highlight.js" />
     </group>
   </groups>
 

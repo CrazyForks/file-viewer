@@ -54,12 +54,14 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '演示与图纸',
-    description: 'PPTX / CAD',
+    description: 'PPTX / CAD / Drawing',
     family: 'cad',
     items: [
       { name: 'PPTX', url: '/example/ppt.pptx' },
       { name: 'DXF', url: '/example/drawing.dxf' },
-      { name: 'DWG', url: '/example/sample.dwg' }
+      { name: 'DWG', url: '/example/sample.dwg' },
+      { name: 'Excalidraw', url: '/example/flow.excalidraw' },
+      { name: 'draw.io', url: '/example/process.drawio' }
     ]
   },
   {
@@ -93,6 +95,7 @@ const sampleGroups: SampleGroup[] = [
       { name: 'YAML', url: '/example/config.yaml' },
       { name: 'YML', url: '/example/config.yml' },
       { name: 'INI', url: '/example/settings.ini' },
+      { name: 'UMD', url: '/example/bundle.umd' },
       { name: 'DIFF', url: '/example/change.diff' }
     ]
   },
@@ -162,6 +165,9 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   ofd: { icon: 'OFD', family: 'layout' },
   dxf: { icon: 'CAD', family: 'cad' },
   dwg: { icon: 'CAD', family: 'cad' },
+  excalidraw: { icon: 'EX', family: 'drawing' },
+  drawio: { icon: 'DIO', family: 'drawing' },
+  dio: { icon: 'DIO', family: 'drawing' },
   md: { icon: 'MD', family: 'text' },
   markdown: { icon: 'MD', family: 'text' },
   txt: { icon: 'TXT', family: 'text' },
@@ -180,6 +186,7 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   yaml: { icon: 'YML', family: 'code' },
   yml: { icon: 'YML', family: 'code' },
   ini: { icon: 'INI', family: 'code' },
+  umd: { icon: 'UMD', family: 'code' },
   sh: { icon: 'SH', family: 'code' },
   bash: { icon: 'SH', family: 'code' },
   sql: { icon: 'SQL', family: 'code' },
@@ -1038,6 +1045,11 @@ function selectPreset(nextUrl: string) {
 .sample-file-icon[data-family='cad'] {
   background: linear-gradient(145deg, #d8f3f5, #ffffff);
   color: #0e7490;
+}
+
+.sample-file-icon[data-family='drawing'] {
+  background: linear-gradient(145deg, #ede9fe, #ffffff);
+  color: #6d28d9;
 }
 
 .sample-file-icon[data-family='code'] {

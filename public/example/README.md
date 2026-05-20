@@ -21,6 +21,8 @@
 - `ofd.ofd`: 验证 `ofd.js` 在线预览
 - `drawing.dxf`: 验证 CAD/DXF 图纸预览
 - `sample.dwg`: 验证 DWG 兼容提示
+- `flow.excalidraw`: 验证 Excalidraw 手绘图预览
+- `process.drawio`: 验证 draw.io / diagrams.net 图纸预览
 - `markdown.md`: 验证 Markdown 阅读样式
 - `notes.markdown`: 验证 Markdown 长扩展名
 - `text.txt`: 验证纯文本预览
@@ -39,6 +41,7 @@
 - `config.yaml`: 验证 YAML 高亮
 - `config.yml`: 验证 YML 高亮
 - `settings.ini`: 验证 INI 高亮
+- `bundle.umd`: 验证 UMD JavaScript 包源码高亮
 - `script.sh`: 验证 Shell 脚本高亮
 - `script.bash`: 验证 Bash 脚本高亮
 - `query.sql`: 验证 SQL 高亮
@@ -73,3 +76,5 @@
 `ofd.ofd` 示例来自 Apache-2.0 授权的 `DLTech21/ofd.js` 项目公开样本，用于确认 OFD 在浏览器端的基础解析和渲染链路。运行时使用同仓库纯 JS 解析/渲染源码，避开 npm dist 的授权 wasm 分支。
 
 DWG 当前作为 CAD 兼容入口保留，`sample.dwg` 用于演示转换提示。组件会提示先转换为 DXF 后预览，避免默认引入 GPL 授权的 DWG 解析运行时。
+
+`flow.excalidraw` 与 `process.drawio` 用于验证绘图类文本格式。Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `exportToSvg`，draw.io 使用官方 diagrams.net `GraphViewer`，组件本身只做按需加载和容器挂载。

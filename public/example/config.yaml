@@ -16,8 +16,8 @@ viewer:
       formats: [doc, docx, pdf, ofd]
       defaultScale: fit-width
     drawings:
-      label: CAD Drawings
-      formats: [dxf, dwg]
+      label: Drawings
+      formats: [dxf, dwg, excalidraw, drawio, dio]
       fallback: convert-dwg-to-dxf
     source:
       label: Code and Data
@@ -31,6 +31,7 @@ viewer:
         - vue
         - yaml
         - sql
+        - umd
   smoke:
     browser: chrome
     assertions:

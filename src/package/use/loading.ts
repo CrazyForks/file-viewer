@@ -73,6 +73,41 @@ const LOADING_THEME_MAP: Record<string, LoadingTheme> = {
     label: 'PDF 文档',
     hint: '正在载入页面位图、文本层和缩放视图。'
   },
+  ofd: {
+    accent: '#c2410c',
+    soft: 'rgba(194, 65, 12, 0.12)',
+    badge: 'OFD',
+    label: 'OFD 版式文件',
+    hint: '正在解析国产版式文档和页面对象。'
+  },
+  dxf: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'CAD',
+    label: 'CAD 图纸',
+    hint: '正在准备图层、几何对象和画布视图。'
+  },
+  drawio: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'DIO',
+    label: 'draw.io 图纸',
+    hint: '正在解析图元、连线和 SVG 预览。'
+  },
+  dio: {
+    accent: '#0f766e',
+    soft: 'rgba(15, 118, 110, 0.12)',
+    badge: 'DIO',
+    label: 'draw.io 图纸',
+    hint: '正在解析图元、连线和 SVG 预览。'
+  },
+  excalidraw: {
+    accent: '#6d28d9',
+    soft: 'rgba(109, 40, 217, 0.12)',
+    badge: 'EX',
+    label: 'Excalidraw 图纸',
+    hint: '正在解析手绘图元并生成安全 SVG。'
+  },
   png: {
     accent: '#7c5cff',
     soft: 'rgba(124, 92, 255, 0.12)',

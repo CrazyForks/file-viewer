@@ -25,11 +25,11 @@
   </div>
   <div class="doc-card">
     <h3>覆盖真实附件场景</h3>
-    <p>内置 59 个扩展名映射，覆盖 Office、PDF、OFD、CAD、Markdown、代码/文本、图片和视频。</p>
+    <p>内置 63 个扩展名映射，覆盖 Office、PDF、OFD、CAD、Excalidraw、draw.io、Markdown、代码/文本、图片和视频。</p>
   </div>
   <div class="doc-card">
     <h3>按需加载更轻</h3>
-    <p>OFD、CAD、PDF、Office、Markdown 和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
+    <p>OFD、CAD、绘图、PDF、Office、Markdown 和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
   </div>
   <div class="doc-card">
     <h3>阅读体验更完整</h3>
@@ -46,7 +46,7 @@
   </div>
   <div class="doc-card">
     <h3>确认格式边界</h3>
-    <p>支持格式页列出当前注册的 59 个扩展名、对应渲染链路和真实业务里的适用边界。</p>
+    <p>支持格式页列出当前注册的 63 个扩展名、对应渲染链路和真实业务里的适用边界。</p>
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
@@ -64,7 +64,8 @@
 - PDF 视图支持宽度自适应、缩放工具栏、页码状态和可显隐导航窗格。
 - OFD 使用 `DLTech21/ofd.js` 的浏览器端解析和渲染能力，并保持按需异步加载。
 - CAD 支持 DXF 在线预览，DWG 作为兼容入口给出转换提示，避免引入不合适的运行时授权链路。
-- 代码和文本使用 `highlight.js` 轻量高亮，HTML 会按源码展示，不在预览器里执行。
+- Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
+- 代码和文本使用 `highlight.js` 轻量高亮，HTML 和 UMD 都会按源码展示，不在预览器里执行。
 
 ## 常用入口
 

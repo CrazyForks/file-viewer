@@ -31,7 +31,7 @@
 - 当 `file` 被清空后，如果 `url` 仍然存在，会自动回退到 `url`
 - 组件默认撑满父容器，因此父容器必须有稳定高度
 - 扩展名匹配会自动转成小写，所以 `PDF`、`DocX` 这类大小写差异不会影响命中
-- OFD、CAD、PDF、Office、Markdown 和代码高亮等渲染器均按需异步加载，只有命中文件类型时才拉取对应代码块
+- OFD、CAD、绘图、PDF、Office、Markdown 和代码高亮等渲染器均按需异步加载，只有命中文件类型时才拉取对应代码块
 
 ## URL 预览
 
@@ -163,9 +163,11 @@ async function useLocal(blob: Blob) {
 
 预览器依赖文件扩展名选择渲染器，所以无论你传入的是 URL 还是二进制结果，文件名都应该尽量带上正确扩展名。
 
-### OFD 和 CAD 怎么接
+### OFD、CAD 和绘图怎么接
 
 `.ofd` 会使用 `DLTech21/ofd.js` 仓库源码在浏览器端解析，避开 npm dist 的授权 wasm 分支。`.dxf` 会使用 CAD 预览器显示图纸。DWG 作为兼容入口会提示先转换为 DXF，这是为了避免把 GPL 授权的 DWG 解析运行时打入组件包。
+
+`.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 会使用官方 diagrams.net `GraphViewer` 渲染，不在组件里手写 mxGraphModel 解析逻辑。
 
 ### `html` 会被当网页渲染吗
 

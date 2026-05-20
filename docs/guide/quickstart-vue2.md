@@ -86,7 +86,7 @@ export default {
 
 ## 与 Vue3 版本保持一致
 
-Vue2 `main` 分支和 Vue3 `v3` 分支共享同一套预览能力，包括 Word、Excel、PPT、PDF、OFD、CAD、Markdown、代码高亮、图片和视频。差异主要在包名和插件注册入口:
+Vue2 `main` 分支和 Vue3 `v3` 分支共享同一套预览能力，包括 Word、Excel、PPT、PDF、OFD、CAD、Excalidraw、draw.io、Markdown、代码高亮、图片和视频。差异主要在包名和插件注册入口:
 
 | 版本 | npm 包 | 最新版本 | 注册方式 |
 | --- | --- | --- | --- |

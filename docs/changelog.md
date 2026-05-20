@@ -4,6 +4,13 @@
 
 ## 当前主线
 
+### 开发中：绘图与 UMD 预览增强
+
+- 新增 `.excalidraw` 预览，使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 能力按需生成只读 SVG
+- 新增 `.drawio` / `.dio` 预览，使用官方 diagrams.net `GraphViewer` 处理 mxGraphModel / mxfile
+- 新增 `.umd` 作为代码/文本格式，使用 `highlight.js` 按 JavaScript 产物源码高亮
+- 补充 Demo 示例文件、格式矩阵、FAQ 和接入说明
+
 ### `v1.0.8` 文档视觉与预览稳定性版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.8` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.8` 同步发布到 npm `latest`

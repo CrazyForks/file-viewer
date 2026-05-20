@@ -1,0 +1,65 @@
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory)
+  } else if (typeof module === 'object' && module.exports) {
+    module.exports = factory()
+  } else {
+    root.FlyfishPreviewBundle = factory()
+  }
+}(typeof self !== 'undefined' ? self : this, function () {
+  'use strict'
+
+  const rendererRegistry = new Map()
+
+  function normalizeExtension(filename) {
+    const clean = String(filename || '').split(/[?#]/)[0]
+    const index = clean.lastIndexOf('.')
+    return index === -1 ? '' : clean.slice(index + 1).toLowerCase()
+  }
+
+  function registerRenderer(extension, loader) {
+    if (!extension || typeof loader !== 'function') {
+      throw new TypeError('registerRenderer(extension, loader) requires a loader function')
+    }
+    rendererRegistry.set(extension.toLowerCase(), loader)
+  }
+
+  function resolveRenderer(filename) {
+    const extension = normalizeExtension(filename)
+    return rendererRegistry.get(extension) || rendererRegistry.get('unknown')
+  }
+
+  function createPreviewJob(file) {
+    const renderer = resolveRenderer(file.name)
+    return {
+      filename: file.name,
+      extension: normalizeExtension(file.name),
+      async run(target) {
+        if (!renderer) {
+          target.textContent = 'No renderer registered for ' + file.name
+          return
+        }
+        const buffer = await file.arrayBuffer()
+        await renderer(buffer, target, file)
+      }
+    }
+  }
+
+  registerRenderer('pdf', async function renderPdf(buffer, target) {
+    target.dataset.bytes = String(buffer.byteLength)
+    target.textContent = 'PDF renderer loaded on demand'
+  })
+
+  registerRenderer('excalidraw', async function renderExcalidraw(buffer, target) {
+    const text = new TextDecoder().decode(buffer)
+    const payload = JSON.parse(text)
+    target.textContent = 'Excalidraw elements: ' + payload.elements.length
+  })
+
+  return {
+    createPreviewJob,
+    registerRenderer,
+    resolveRenderer,
+    version: '1.0.8'
+  }
+}))
