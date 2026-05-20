@@ -89,11 +89,11 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>格式覆盖贴近业务</h3>
-<p>除了 Office、PDF 和图片，也补齐 OFD、DXF、Excalidraw、draw.io、EPUB、Markdown、代码、日志、配置文件、音频和 MP4。</p>
+<p>除了 Office、PDF 和图片，也补齐 OFD、DXF、Excalidraw、draw.io、EPUB、Markdown、代码、日志、配置文件、音频和 MP4；PPTX 对组合图形、主题背景和 EMF 图片做了专门增强。</p>
 </article>
 <article class="doc-card">
 <h3>阅读质感有兜底</h3>
-<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、导航窗格和宽度自适应。</p>
+<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、导航窗格和宽度自适应，PPTX 会尽量保留模板背景、组合元素和矢量插图。</p>
 </article>
 <article class="doc-card">
 <h3>接入边界清晰</h3>

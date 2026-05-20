@@ -22,9 +22,17 @@ let appVersion;
 
 const rtl_langs_array = [ 'he-IL', 'ar-AE', 'ar-SA', 'dv-MV', 'fa-IR', 'ur-PK' ];
 
-const slideFactor = 96 / 914400;
+const CSS_PX_PER_INCH = 96;
+const EMU_PER_INCH = 914400;
+const POINTS_PER_INCH = 72;
+const slideFactor = CSS_PX_PER_INCH / EMU_PER_INCH;
 const computedFactor = (value, fallback = 150) => value >= 9525 ? (value * slideFactor) : fallback;
-const fontSizeFactor = 4 / 3.2;
+const fontSizeFactor = CSS_PX_PER_INCH / POINTS_PER_INCH;
+const asArray = value => value === undefined || value === null ? [] : (Array.isArray(value) ? value : [value]);
+const toFiniteNumber = (value, fallback = 0) => {
+  const parsed = typeof value === 'number' ? value : parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 //////////////////////
 let slideWidth = 0;
 let slideHeight = 0;
@@ -335,7 +343,7 @@ export async function processSingleSlide(zip, sldFileName, index, slideSize) {
       result += await processNodesInSlide(nodeKey, nodes[nodeKey], nodes, warpObj, "slide");
     }
   }
-  return result + "</div></div>";
+  return result + "</div>";
 }
 
 function indexNodes(content) {
@@ -397,29 +405,29 @@ function indexNodes(content) {
   return { "idTable": idTable, "idxTable": idxTable, "typeTable": typeTable };
 }
 
-async function processNodesInSlide(nodeKey, nodeValue, nodes, warpObj, source, sType) {
+async function processNodesInSlide(nodeKey, nodeValue, nodes, warpObj, source, sType, groupContext) {
   var result = "";
 
   switch (nodeKey) {
     case "p:sp":    // Shape, Text
-      result = await processSpNode(nodeValue, nodes, warpObj, source, sType);
+      result = await processSpNode(nodeValue, nodes, warpObj, source, sType, groupContext);
       break;
     case "p:cxnSp":    // Shape, Text (with connection)
-      result = await processCxnSpNode(nodeValue, nodes, warpObj, source, sType);
+      result = await processCxnSpNode(nodeValue, nodes, warpObj, source, sType, groupContext);
       break;
     case "p:pic":    // Picture
-      result = await processPicNode(nodeValue, warpObj, source, sType);
+      result = await processPicNode(nodeValue, warpObj, source, sType, groupContext);
       break;
     case "p:graphicFrame":    // Chart, Diagram, Table
-      result = await processGraphicFrameNode(nodeValue, warpObj, source, sType);
+      result = await processGraphicFrameNode(nodeValue, warpObj, source, sType, groupContext);
       break;
     case "p:grpSp":
-      result = await processGroupSpNode(nodeValue, warpObj, source);
+      result = await processGroupSpNode(nodeValue, warpObj, source, groupContext);
       break;
     case "mc:AlternateContent": //Equations and formulas as Image
       //console.log("mc:AlternateContent nodeValue:" , nodeValue , "nodes:",nodes, "sType:",sType)
       var mcFallbackNode = getTextByPathList(nodeValue, ["mc:Fallback"]);
-      result = await processGroupSpNode(mcFallbackNode, warpObj, source);
+      result = await processGroupSpNode(mcFallbackNode, warpObj, source, groupContext);
       break;
     default:
     //console.log("nodeKey: ", nodeKey)
@@ -429,97 +437,564 @@ async function processNodesInSlide(nodeKey, nodeValue, nodes, warpObj, source, s
 
 }
 
-// 安全取得slide值
-const pick = node => {
-  let v = parseInt(node) * slideFactor;
-  // if (v < 2) {
-  //   v = slideWidth * v;
-  // }
-  return v;
+function emuToPx(value, fallback = 0) {
+  var parsed = parseInt(value);
+  return Number.isFinite(parsed) ? parsed * slideFactor : fallback;
 }
 
-// 需要解决的bug，分组样式丢失
-async function processGroupSpNode(node, warpObj, source) {
-  //console.log("processGroupSpNode: node: ", node)
-  var xfrmNode = getTextByPathList(node, ["p:grpSpPr", "a:xfrm"]);
-  if (xfrmNode !== undefined) {
-    var x = pick(xfrmNode["a:off"]["attrs"]["x"]);
-    var y = pick(xfrmNode["a:off"]["attrs"]["y"]);
-    var chx = pick(xfrmNode["a:chOff"]["attrs"]["x"]);
-    var chy = pick(xfrmNode["a:chOff"]["attrs"]["y"]);
-    var cx = pick(xfrmNode["a:ext"]["attrs"]["cx"]);
-    var cy = pick(xfrmNode["a:ext"]["attrs"]["cy"]);
-    var chcx = pick(xfrmNode["a:chExt"]["attrs"]["cx"]);
-    var chcy = pick(xfrmNode["a:chExt"]["attrs"]["cy"]);
-    var rotate = parseInt(xfrmNode["attrs"]["rot"])
-    var rotStr = ""//;" border: 3px solid black;";
-    // angleToDegrees(getTextByPathList(slideXfrmNode, ["attrs", "rot"]));
-    // var rotX = 0;
-    // var rotY = 0;
-    console.log(node, warpObj, source)
-    console.log(x,y,chx, chy, chcx, chcy)
-    var top = y - chy,
-      left = x - chx,
-      width = cx - chcx,
-      height = cy - chcy;
+function getTransformBool(value) {
+  return value === true || value === "1" || value === "true";
+}
 
-    var sType = "group";
-    if (!isNaN(rotate)) {
-      rotate = angleToDegrees(rotate);
-      rotStr += "transform: rotate(" + rotate + "deg) ; transform-origin: center;";
-      // var cLin = Math.sqrt(Math.pow((chy), 2) + Math.pow((chx), 2));
-      // var rdian = degreesToRadians(rotate);
-      // rotX = cLin * Math.cos(rdian);
-      // rotY = cLin * Math.sin(rdian);
-      if (rotate != 0) {
-        top = y;
-        left = x;
-        width = cx;
-        height = cy;
-        sType = "group-rotate";
+function getGroupTransformContext(xfrmNode) {
+  var off = getTextByPathList(xfrmNode, ["a:off", "attrs"]) || {};
+  var ext = getTextByPathList(xfrmNode, ["a:ext", "attrs"]) || {};
+  var chOff = getTextByPathList(xfrmNode, ["a:chOff", "attrs"]) || {};
+  var chExt = getTextByPathList(xfrmNode, ["a:chExt", "attrs"]) || {};
+
+  var width = emuToPx(ext["cx"]);
+  var height = emuToPx(ext["cy"]);
+  var childWidth = emuToPx(chExt["cx"], width || 1);
+  var childHeight = emuToPx(chExt["cy"], height || 1);
+
+  return {
+    x: emuToPx(off["x"]),
+    y: emuToPx(off["y"]),
+    width: width,
+    height: height,
+    childOffsetX: emuToPx(chOff["x"]),
+    childOffsetY: emuToPx(chOff["y"]),
+    childWidth: childWidth,
+    childHeight: childHeight,
+    scaleX: childWidth ? width / childWidth : 1,
+    scaleY: childHeight ? height / childHeight : 1,
+    rotate: angleToDegrees(getTextByPathList(xfrmNode, ["attrs", "rot"])),
+    flipH: getTransformBool(getTextByPathList(xfrmNode, ["attrs", "flipH"])),
+    flipV: getTransformBool(getTextByPathList(xfrmNode, ["attrs", "flipV"]))
+  };
+}
+
+function getGroupTransformStyle(groupContext) {
+  if (groupContext === undefined) {
+    return "";
+  }
+  var transforms = [];
+  if (groupContext.rotate) {
+    transforms.push("rotate(" + groupContext.rotate + "deg)");
+  }
+  if (groupContext.flipH || groupContext.flipV) {
+    transforms.push("scale(" + (groupContext.flipH ? -1 : 1) + "," + (groupContext.flipV ? -1 : 1) + ")");
+  }
+  return transforms.length ? "transform:" + transforms.join(" ") + ";transform-origin:center;" : "";
+}
+
+function formatSvgNumber(value) {
+  return Math.round(value * 1000) / 1000;
+}
+
+function colorRefToHex(colorRef) {
+  var r = colorRef & 255;
+  var g = (colorRef >> 8) & 255;
+  var b = (colorRef >> 16) & 255;
+  return [r, g, b].map(function (value) {
+    return ("0" + value.toString(16)).slice(-2);
+  }).join("");
+}
+
+function emfStockObject(handle) {
+  switch (handle) {
+    case 0x80000000:
+      return { kind: "brush", style: 0, color: "ffffff" };
+    case 0x80000004:
+      return { kind: "brush", style: 0, color: "000000" };
+    case 0x80000005:
+      return { kind: "brush", style: 1, color: "none" };
+    case 0x80000006:
+      return { kind: "pen", style: 0, width: 1, color: "ffffff" };
+    case 0x80000007:
+      return { kind: "pen", style: 0, width: 1, color: "000000" };
+    case 0x80000008:
+      return { kind: "pen", style: 5, width: 0, color: "none" };
+    default:
+      return undefined;
+  }
+}
+
+function cloneEmfState(state) {
+  return {
+    windowOrgX: state.windowOrgX,
+    windowOrgY: state.windowOrgY,
+    viewportOrgX: state.viewportOrgX,
+    viewportOrgY: state.viewportOrgY,
+    windowExtX: state.windowExtX,
+    windowExtY: state.windowExtY,
+    viewportExtX: state.viewportExtX,
+    viewportExtY: state.viewportExtY,
+    polyFillMode: state.polyFillMode,
+    currentBrush: state.currentBrush,
+    currentPen: state.currentPen,
+    currentX: state.currentX,
+    currentY: state.currentY,
+    inPath: state.inPath,
+    pathD: state.pathD,
+    lastPathD: state.lastPathD,
+    clipId: state.clipId
+  };
+}
+
+function emfPoint(state, x, y) {
+  var scaleX = state.windowExtX ? state.viewportExtX / state.windowExtX : 1;
+  var scaleY = state.windowExtY ? state.viewportExtY / state.windowExtY : 1;
+  return {
+    x: state.viewportOrgX + (x - state.windowOrgX) * scaleX,
+    y: state.viewportOrgY + (y - state.windowOrgY) * scaleY
+  };
+}
+
+function emfPathMove(state, x, y) {
+  var point = emfPoint(state, x, y);
+  state.currentX = x;
+  state.currentY = y;
+  var cmd = "M" + formatSvgNumber(point.x) + " " + formatSvgNumber(point.y);
+  if (state.inPath) {
+    state.pathD += (state.pathD ? " " : "") + cmd;
+  }
+  return cmd;
+}
+
+function emfLineTo(state, x, y) {
+  var startX = state.currentX;
+  var startY = state.currentY;
+  var point = emfPoint(state, x, y);
+  state.currentX = x;
+  state.currentY = y;
+  var cmd = "L" + formatSvgNumber(point.x) + " " + formatSvgNumber(point.y);
+  if (state.inPath) {
+    if (!state.pathD) {
+      emfPathMove(state, startX, startY);
+    }
+    state.pathD += " " + cmd;
+  }
+  return cmd;
+}
+
+function emfBezierTo(state, p1, p2, p3) {
+  var startX = state.currentX;
+  var startY = state.currentY;
+  var c1 = emfPoint(state, p1.x, p1.y);
+  var c2 = emfPoint(state, p2.x, p2.y);
+  var end = emfPoint(state, p3.x, p3.y);
+  state.currentX = p3.x;
+  state.currentY = p3.y;
+  var cmd = "C" + formatSvgNumber(c1.x) + " " + formatSvgNumber(c1.y) + " " +
+    formatSvgNumber(c2.x) + " " + formatSvgNumber(c2.y) + " " +
+    formatSvgNumber(end.x) + " " + formatSvgNumber(end.y);
+  if (state.inPath) {
+    if (!state.pathD) {
+      var start = emfPoint(state, startX, startY);
+      state.pathD = "M" + formatSvgNumber(start.x) + " " + formatSvgNumber(start.y);
+    }
+    state.pathD += " " + cmd;
+  }
+  return cmd;
+}
+
+function emfStrokeWidth(state, pen) {
+  var width = pen && pen.width ? pen.width : 1;
+  var scaleX = state.windowExtX ? Math.abs(state.viewportExtX / state.windowExtX) : 1;
+  var scaleY = state.windowExtY ? Math.abs(state.viewportExtY / state.windowExtY) : 1;
+  return Math.max(0.5, width * ((scaleX + scaleY) / 2));
+}
+
+function emfStyleAttrs(state, mode) {
+  var brush = state.currentBrush || { style: 1, color: "none" };
+  var pen = state.currentPen || { style: 0, width: 1, color: "000000" };
+  var penStyle = pen.style & 15;
+  var fill = "none";
+  var stroke = "none";
+  var attrs = [];
+
+  if (mode != "stroke" && brush.style !== 1) {
+    fill = "#" + brush.color;
+  }
+  if (mode != "fillOnly" && penStyle !== 5) {
+    stroke = "#" + pen.color;
+  }
+
+  attrs.push("fill=\"" + fill + "\"");
+  attrs.push("stroke=\"" + stroke + "\"");
+  if (stroke != "none") {
+    attrs.push("stroke-width=\"" + formatSvgNumber(emfStrokeWidth(state, pen)) + "\"");
+  }
+  attrs.push("fill-rule=\"" + (state.polyFillMode == 1 ? "evenodd" : "nonzero") + "\"");
+  if (state.clipId) {
+    attrs.push("clip-path=\"url(#" + state.clipId + ")\"");
+  }
+  return attrs.join(" ");
+}
+
+function utf8ToBase64(text) {
+  if (typeof TextEncoder !== "undefined") {
+    return base64ArrayBuffer(new TextEncoder().encode(text).buffer);
+  }
+  return btoa(unescape(encodeURIComponent(text)));
+}
+
+function convertEmfToSvgDataUrl(arrayBuffer) {
+  try {
+    var view = new DataView(arrayBuffer);
+    if (view.byteLength < 16 || view.getUint32(0, true) !== 1) {
+      return undefined;
+    }
+
+    var boundsLeft = view.getInt32(8, true);
+    var boundsTop = view.getInt32(12, true);
+    var boundsRight = view.getInt32(16, true);
+    var boundsBottom = view.getInt32(20, true);
+    var state = {
+      windowOrgX: 0,
+      windowOrgY: 0,
+      viewportOrgX: 0,
+      viewportOrgY: 0,
+      windowExtX: 1,
+      windowExtY: 1,
+      viewportExtX: 1,
+      viewportExtY: 1,
+      polyFillMode: 1,
+      currentBrush: { kind: "brush", style: 1, color: "none" },
+      currentPen: { kind: "pen", style: 0, width: 1, color: "000000" },
+      currentX: 0,
+      currentY: 0,
+      inPath: false,
+      pathD: "",
+      lastPathD: "",
+      clipId: undefined
+    };
+    var objects = {};
+    var stack = [];
+    var shapes = [];
+    var defs = [];
+    var clipIndex = 0;
+    var offset = 0;
+
+    function readPoint16(pointOffset) {
+      return {
+        x: view.getInt16(pointOffset, true),
+        y: view.getInt16(pointOffset + 2, true)
+      };
+    }
+
+    function outputPath(d, mode) {
+      if (!d) {
+        return;
+      }
+      shapes.push("<path d=\"" + d + "\" " + emfStyleAttrs(state, mode) + "/>");
+    }
+
+    function outputPoly16(recordOffset, closePath, strokeOnly) {
+      var polygonCount = view.getUint32(recordOffset + 24, true);
+      var pointTotal = view.getUint32(recordOffset + 28, true);
+      var countsOffset = recordOffset + 32;
+      var pointsOffset = countsOffset + polygonCount * 4;
+      var cursor = pointsOffset;
+      var path = "";
+
+      for (var p = 0; p < polygonCount; p++) {
+        var count = view.getUint32(countsOffset + p * 4, true);
+        if (count === 0) {
+          continue;
+        }
+        for (var i = 0; i < count && cursor + 4 <= recordOffset + recordSize; i++) {
+          var point = readPoint16(cursor);
+          cursor += 4;
+          var mapped = emfPoint(state, point.x, point.y);
+          path += (path ? " " : "") + (i === 0 ? "M" : "L") +
+            formatSvgNumber(mapped.x) + " " + formatSvgNumber(mapped.y);
+          state.currentX = point.x;
+          state.currentY = point.y;
+        }
+        if (closePath) {
+          path += " Z";
+        }
+      }
+      if (pointTotal > 0) {
+        outputPath(path, strokeOnly ? "stroke" : "fillStroke");
+      }
+    }
+
+    while (offset + 8 <= view.byteLength) {
+      var recordType = view.getUint32(offset, true);
+      var recordSize = view.getUint32(offset + 4, true);
+      if (recordSize < 8 || offset + recordSize > view.byteLength) {
+        break;
       }
 
+      switch (recordType) {
+        case 1:
+          break;
+        case 9:
+          state.windowExtX = view.getInt32(offset + 8, true) || 1;
+          state.windowExtY = view.getInt32(offset + 12, true) || 1;
+          break;
+        case 10:
+          state.windowOrgX = view.getInt32(offset + 8, true);
+          state.windowOrgY = view.getInt32(offset + 12, true);
+          break;
+        case 11:
+          state.viewportExtX = view.getInt32(offset + 8, true) || 1;
+          state.viewportExtY = view.getInt32(offset + 12, true) || 1;
+          break;
+        case 12:
+          state.viewportOrgX = view.getInt32(offset + 8, true);
+          state.viewportOrgY = view.getInt32(offset + 12, true);
+          break;
+        case 19:
+          state.polyFillMode = view.getUint32(offset + 8, true);
+          break;
+        case 33:
+          stack.push(cloneEmfState(state));
+          break;
+        case 34:
+          if (stack.length) {
+            var saved = stack.pop();
+            Object.assign(state, saved);
+          }
+          break;
+        case 37: {
+          var selectHandle = view.getUint32(offset + 8, true);
+          var selected = objects[selectHandle] || emfStockObject(selectHandle);
+          if (selected !== undefined) {
+            if (selected.kind == "brush") {
+              state.currentBrush = selected;
+            } else if (selected.kind == "pen") {
+              state.currentPen = selected;
+            }
+          }
+          break;
+        }
+        case 38: {
+          var penHandle = view.getUint32(offset + 8, true);
+          objects[penHandle] = {
+            kind: "pen",
+            style: view.getUint32(offset + 12, true),
+            width: view.getInt32(offset + 16, true),
+            color: colorRefToHex(view.getUint32(offset + 20, true))
+          };
+          break;
+        }
+        case 39: {
+          var brushHandle = view.getUint32(offset + 8, true);
+          objects[brushHandle] = {
+            kind: "brush",
+            style: view.getUint32(offset + 12, true),
+            color: colorRefToHex(view.getUint32(offset + 16, true))
+          };
+          break;
+        }
+        case 40:
+          delete objects[view.getUint32(offset + 8, true)];
+          break;
+        case 59:
+          state.inPath = true;
+          state.pathD = "";
+          break;
+        case 60:
+          state.inPath = false;
+          state.lastPathD = state.pathD;
+          break;
+        case 61:
+          if (state.inPath) {
+            state.pathD += " Z";
+          }
+          break;
+        case 62:
+          outputPath(state.lastPathD || state.pathD, "fillOnly");
+          break;
+        case 63:
+          outputPath(state.lastPathD || state.pathD, "fillStroke");
+          break;
+        case 64:
+          outputPath(state.lastPathD || state.pathD, "stroke");
+          break;
+        case 67:
+          if (state.lastPathD || state.pathD) {
+            var clipId = "emfClip" + (++clipIndex);
+            defs.push("<clipPath id=\"" + clipId + "\"><path d=\"" + (state.lastPathD || state.pathD) + "\"/></clipPath>");
+            state.clipId = clipId;
+          }
+          break;
+        case 27:
+          emfPathMove(state, view.getInt32(offset + 8, true), view.getInt32(offset + 12, true));
+          break;
+        case 6: {
+          var linePointCount = view.getUint32(offset + 24, true);
+          var linePath = "";
+          if (!state.inPath) {
+            var start = emfPoint(state, state.currentX, state.currentY);
+            linePath = "M" + formatSvgNumber(start.x) + " " + formatSvgNumber(start.y);
+          }
+          for (var lp = 0; lp < linePointCount; lp++) {
+            var lpOffset = offset + 28 + lp * 8;
+            var lineCmd = emfLineTo(state, view.getInt32(lpOffset, true), view.getInt32(lpOffset + 4, true));
+            if (!state.inPath) {
+              linePath += " " + lineCmd;
+            }
+          }
+          if (!state.inPath) {
+            outputPath(linePath, "stroke");
+          }
+          break;
+        }
+        case 88: {
+          var bezierCount = view.getUint32(offset + 24, true);
+          var bezierPath = "";
+          if (!state.inPath) {
+            var bezierStart = emfPoint(state, state.currentX, state.currentY);
+            bezierPath = "M" + formatSvgNumber(bezierStart.x) + " " + formatSvgNumber(bezierStart.y);
+          }
+          var bezierPoints = [];
+          for (var bp = 0; bp < bezierCount; bp++) {
+            bezierPoints.push(readPoint16(offset + 28 + bp * 4));
+          }
+          for (var bi = 0; bi + 2 < bezierPoints.length; bi += 3) {
+            var bezierCmd = emfBezierTo(state, bezierPoints[bi], bezierPoints[bi + 1], bezierPoints[bi + 2]);
+            if (!state.inPath) {
+              bezierPath += " " + bezierCmd;
+            }
+          }
+          if (!state.inPath) {
+            outputPath(bezierPath, "stroke");
+          }
+          break;
+        }
+        case 90:
+          outputPoly16(offset, false, true);
+          break;
+        case 91:
+          outputPoly16(offset, true, false);
+          break;
+        case 95: {
+          var extPenHandle = view.getUint32(offset + 8, true);
+          objects[extPenHandle] = {
+            kind: "pen",
+            style: view.getUint32(offset + 28, true),
+            width: view.getInt32(offset + 32, true),
+            color: colorRefToHex(view.getUint32(offset + 40, true))
+          };
+          break;
+        }
+        case 14:
+          offset = view.byteLength;
+          continue;
+        default:
+          break;
+      }
+      offset += recordSize;
+    }
+
+    if (!shapes.length) {
+      return undefined;
+    }
+
+    var width = Math.max(1, boundsRight - boundsLeft);
+    var height = Math.max(1, boundsBottom - boundsTop);
+    var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" +
+      boundsLeft + " " + boundsTop + " " + width + " " + height +
+      "\" width=\"" + width + "\" height=\"" + height + "\" preserveAspectRatio=\"none\">" +
+      (defs.length ? "<defs>" + defs.join("") + "</defs>" : "") +
+      shapes.join("") +
+      "</svg>";
+    return "data:image/svg+xml;base64," + utf8ToBase64(svg);
+  } catch (e) {
+    console.warn("Unable to convert EMF image", e);
+    return undefined;
+  }
+}
+
+function getImageDataUrl(imgFileExt, imgArrayBuffer) {
+  var normalizedExt = (imgFileExt || "").toLowerCase();
+  if (normalizedExt == "emf") {
+    var svgDataUrl = convertEmfToSvgDataUrl(imgArrayBuffer);
+    if (svgDataUrl !== undefined) {
+      return svgDataUrl;
     }
   }
-  var grpStyle = "";
+  return "data:" + getMimeType(normalizedExt) + ";base64," + base64ArrayBuffer(imgArrayBuffer);
+}
 
-  if (rotStr !== undefined && rotStr != "") {
-    grpStyle += rotStr;
+function getBlipCropStyles(blipFillNode) {
+  var srcRect = getTextByPathList(blipFillNode, ["a:srcRect", "attrs"]);
+  if (srcRect === undefined) {
+    return {
+      container: "overflow:hidden;",
+      image: "display:block;width:100%;height:100%;object-fit:fill;max-width:none;max-height:none;"
+    };
   }
 
-  if (top !== undefined) {
-    grpStyle += "top: " + top + "px;";
-  }
-  if (left !== undefined) {
-    grpStyle += "left: " + left + "px;";
-  }
-  if (width !== undefined) {
-    grpStyle += "width:" + width + "px;";
-  }
-  if (height !== undefined) {
-    grpStyle += "height: " + height + "px;";
-  }
-  var order = node["attrs"]["order"];
+  var left = parseInt(srcRect["l"] || 0) / 1000;
+  var top = parseInt(srcRect["t"] || 0) / 1000;
+  var right = parseInt(srcRect["r"] || 0) / 1000;
+  var bottom = parseInt(srcRect["b"] || 0) / 1000;
+  var visibleWidth = 100 - left - right;
+  var visibleHeight = 100 - top - bottom;
 
-  var result = "<div class='block group' style='z-index: " + order + ";" + grpStyle + " border:1px solid red;'>";
+  if (visibleWidth <= 0 || visibleHeight <= 0) {
+    return {
+      container: "overflow:hidden;",
+      image: "display:block;width:100%;height:100%;object-fit:fill;max-width:none;max-height:none;"
+    };
+  }
 
-  // Procsee all child nodes
+  return {
+    container: "overflow:hidden;",
+    image: "position:absolute;max-width:none;max-height:none;width:" + (10000 / visibleWidth) +
+      "%;height:" + (10000 / visibleHeight) + "%;left:" + (-left / visibleWidth * 100) +
+      "%;top:" + (-top / visibleHeight * 100) + "%;"
+  };
+}
+
+// Group transforms use a child coordinate space (chOff/chExt) mapped into the
+// group's bounding box (off/ext), per DrawingML CT_GroupTransform2D.
+async function processGroupSpNode(node, warpObj, source, parentGroupContext) {
+  var xfrmNode = getTextByPathList(node, ["p:grpSpPr", "a:xfrm"]);
+  var groupContext = xfrmNode !== undefined ? getGroupTransformContext(xfrmNode) : undefined;
+  var order = getTextByPathList(node, ["attrs", "order"]);
+  var groupStyle = order !== undefined ? "z-index: " + order + ";" : "";
+
+  if (xfrmNode !== undefined) {
+    groupStyle += getPosition(xfrmNode, node, undefined, undefined, "group", parentGroupContext);
+    groupStyle += getSize(xfrmNode, undefined, undefined);
+    groupStyle += getGroupTransformStyle(groupContext);
+  }
+
+  var result = "<div class='block group' style='" + groupStyle + "'>";
+
+  if (groupContext !== undefined) {
+    result += "<div class='group-content' style='position:absolute;top:0;left:0;width:" +
+      groupContext.childWidth + "px;height:" + groupContext.childHeight + "px;transform:scale(" +
+      groupContext.scaleX + "," + groupContext.scaleY + ");transform-origin:0 0;'>";
+  }
+
+  // Process all child nodes in the group's child coordinate space.
   for (var nodeKey in node) {
     if (node[nodeKey].constructor === Array) {
       for (var i = 0; i < node[nodeKey].length; i++) {
-        result += await processNodesInSlide(nodeKey, node[nodeKey][i], node, warpObj, source, sType);
+        result += await processNodesInSlide(nodeKey, node[nodeKey][i], node, warpObj, source, "group", groupContext);
       }
     } else {
-      result += await processNodesInSlide(nodeKey, node[nodeKey], node, warpObj, source, sType);
+      result += await processNodesInSlide(nodeKey, node[nodeKey], node, warpObj, source, "group", groupContext);
     }
   }
 
+  if (groupContext !== undefined) {
+    result += "</div>";
+  }
   result += "</div>";
 
   return result;
 }
 
-async function processSpNode(node, pNode, warpObj, source, sType) {
+async function processSpNode(node, pNode, warpObj, source, sType, groupContext) {
 
   /*
             *  958    <xsd:complexType name="CT_GvmlShape">
@@ -583,10 +1058,10 @@ async function processSpNode(node, pNode, warpObj, source, sType) {
     }
   }
   //console.log("processSpNode type:", type, "idx:", idx);
-  return genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, name, idx, type, order, warpObj, isUserDrawnBg, sType, source);
+  return genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, name, idx, type, order, warpObj, isUserDrawnBg, sType, source, groupContext);
 }
 
-async function processCxnSpNode(node, pNode, warpObj, source, sType) {
+async function processCxnSpNode(node, pNode, warpObj, source, sType, groupContext) {
 
   var id = node["p:nvCxnSpPr"]["p:cNvPr"]["attrs"]["id"];
   var name = node["p:nvCxnSpPr"]["p:cNvPr"]["attrs"]["name"];
@@ -595,10 +1070,10 @@ async function processCxnSpNode(node, pNode, warpObj, source, sType) {
   //<p:cNvCxnSpPr>(<p:cNvCxnSpPr>, <a:endCxn>)
   var order = node["attrs"]["order"];
 
-  return genShape(node, pNode, undefined, undefined, id, name, idx, type, order, warpObj, undefined, sType, source);
+  return genShape(node, pNode, undefined, undefined, id, name, idx, type, order, warpObj, undefined, sType, source, groupContext);
 }
 
-async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, name, idx, type, order, warpObj, isUserDrawnBg, sType, source) {
+async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, name, idx, type, order, warpObj, isUserDrawnBg, sType, source, groupContext) {
   //var dltX = 0;
   //var dltY = 0;
   var xfrmList = [ "p:spPr", "a:xfrm" ];
@@ -660,7 +1135,7 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
     var effectsClassName = svgCssName + "_effects";
     result += "<svg class='drawing " + svgCssName + " " + effectsClassName + " ' _id='" + id + "' _idx='" + idx + "' _type='" + type + "' _name='" + name + "'" +
       "' style='" +
-      getPosition(slideXfrmNode, pNode, undefined, undefined, sType) +
+      getPosition(slideXfrmNode, pNode, undefined, undefined, sType, groupContext) +
       getSize(slideXfrmNode, undefined, undefined) +
       " z-index: " + order + ";" +
       "transform: rotate(" + ((rotate !== undefined) ? rotate : 0) + "deg)" + flip + ";" +
@@ -7572,7 +8047,7 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
       " " + getContentDir(node, type, warpObj) +
       "' _id='" + id + "' _idx='" + idx + "' _type='" + type + "' _name='" + name +
       "' style='" +
-      getPosition(slideXfrmNode, pNode, slideLayoutXfrmNode, slideMasterXfrmNode, sType) +
+      getPosition(slideXfrmNode, pNode, slideLayoutXfrmNode, slideMasterXfrmNode, sType, groupContext) +
       getSize(slideXfrmNode, slideLayoutXfrmNode, slideMasterXfrmNode) +
       " z-index: " + order + ";" +
       "transform: rotate(" + ((txtRotate !== undefined) ? txtRotate : 0) + "deg);" +
@@ -7592,9 +8067,9 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
     var pathLstNode = getTextByPathList(custShapType, [ "a:pathLst" ]);
     var pathNodes = getTextByPathList(pathLstNode, [ "a:path" ]);
     //var pathNode = getTextByPathList(pathLstNode, ["a:path", "attrs"]);
-    const attrs = pathNodes["attrs"] || { w: slideWidth, h: slideHeight }
-    var maxX = parseInt(attrs["w"]);// * slideFactor;
-    var maxY = parseInt(attrs["h"]);// * slideFactor;
+    const attrs = pathNodes["attrs"] || {}
+    var maxX = toFiniteNumber(attrs["w"], 21600);// * slideFactor;
+    var maxY = toFiniteNumber(attrs["h"], 21600);// * slideFactor;
     var cX = (1 / maxX) * w;
     var cY = (1 / maxY) * h;
     //console.log("w = "+w+"\nh = "+h+"\nmaxX = "+maxX +"\nmaxY = " + maxY);
@@ -7619,17 +8094,20 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
     var multiSapeAry = [];
     if (moveToNode.length > 0) {
       //a:moveTo
-      Object.keys(moveToNode).forEach(function (key) {
-        var moveToPtNode = moveToNode[key]["a:pt"];
+      asArray(moveToNode).forEach(function (moveToItem) {
+        var moveToPtNode = moveToItem["a:pt"];
         if (moveToPtNode !== undefined) {
-          Object.keys(moveToPtNode).forEach(function (key2) {
+          asArray(moveToPtNode).forEach(function (moveToNoPt) {
+            var moveToAttrs = moveToNoPt["attrs"] || {};
+            if (moveToAttrs["x"] === undefined || moveToAttrs["y"] === undefined) {
+              return;
+            }
             var ptObj = {};
-            var moveToNoPt = moveToPtNode[key2];
-            var spX = moveToNoPt["attrs", "x"];//parseInt(moveToNoPt["attrs", "x"]) * slideFactor;
-            var spY = moveToNoPt["attrs", "y"];//parseInt(moveToNoPt["attrs", "y"]) * slideFactor;
-            var ptOrdr = moveToNoPt["attrs", "order"];
+            var spX = moveToAttrs["x"];//parseInt(moveToAttrs["x"]) * slideFactor;
+            var spY = moveToAttrs["y"];//parseInt(moveToAttrs["y"]) * slideFactor;
+            var ptOrdr = moveToAttrs["order"];
             ptObj.type = "movto";
-            ptObj.order = ptOrdr;
+            ptObj.order = toFiniteNumber(ptOrdr, multiSapeAry.length);
             ptObj.x = spX;
             ptObj.y = spY;
             multiSapeAry.push(ptObj);
@@ -7640,17 +8118,20 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
       });
       //a:lnTo
       if (lnToNodes !== undefined) {
-        Object.keys(lnToNodes).forEach(function (key) {
-          var lnToPtNode = lnToNodes[key]["a:pt"];
+        asArray(lnToNodes).forEach(function (lnToItem) {
+          var lnToPtNode = lnToItem["a:pt"];
           if (lnToPtNode !== undefined) {
-            Object.keys(lnToPtNode).forEach(function (key2) {
+            asArray(lnToPtNode).forEach(function (lnToNoPt) {
+              var lnToAttrs = lnToNoPt["attrs"] || {};
+              if (lnToAttrs["x"] === undefined || lnToAttrs["y"] === undefined) {
+                return;
+              }
               var ptObj = {};
-              var lnToNoPt = lnToPtNode[key2];
-              var ptX = lnToNoPt["attrs", "x"];
-              var ptY = lnToNoPt["attrs", "y"];
-              var ptOrdr = lnToNoPt["attrs", "order"];
+              var ptX = lnToAttrs["x"];
+              var ptY = lnToAttrs["y"];
+              var ptOrdr = lnToAttrs["order"];
               ptObj.type = "lnto";
-              ptObj.order = ptOrdr;
+              ptObj.order = toFiniteNumber(ptOrdr, multiSapeAry.length);
               ptObj.x = ptX;
               ptObj.y = ptY;
               multiSapeAry.push(ptObj);
@@ -7664,58 +8145,70 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
 
         var cubicBezToPtNodesAry = [];
         //console.log("cubicBezToNodes: ", cubicBezToNodes, ", is arry: ", Array.isArray(cubicBezToNodes))
-        if (!Array.isArray(cubicBezToNodes)) {
-          cubicBezToNodes = [ cubicBezToNodes ];
-        }
-        Object.keys(cubicBezToNodes).forEach(function (key) {
+        asArray(cubicBezToNodes).forEach(function (cubicBezToNode) {
           //console.log("cubicBezTo[" + key + "]:");
-          cubicBezToPtNodesAry.push(cubicBezToNodes[key]["a:pt"]);
+          cubicBezToPtNodesAry.push(cubicBezToNode["a:pt"]);
         });
 
         //console.log("cubicBezToNodes: ", cubicBezToPtNodesAry)
         cubicBezToPtNodesAry.forEach(function (key2) {
           //console.log("cubicBezToPtNodesAry: key2 : ", key2)
+          key2 = asArray(key2);
           var nodeObj = {};
           nodeObj.type = "cubicBezTo";
-          nodeObj.order = key2[0]["attrs"]["order"];
+          nodeObj.order = toFiniteNumber(getTextByPathList(key2[0], ["attrs", "order"]), multiSapeAry.length);
           var pts_ary = [];
           key2.forEach(function (pt) {
-            var pt_obj = {
-              x: pt["attrs"]["x"],
-              y: pt["attrs"]["y"]
+            var attrs = pt["attrs"] || {};
+            if (attrs["x"] !== undefined && attrs["y"] !== undefined) {
+              pts_ary.push({
+                x: attrs["x"],
+                y: attrs["y"]
+              })
             }
-            pts_ary.push(pt_obj)
           })
-          nodeObj.cubBzPt = pts_ary;//key2;
-          multiSapeAry.push(nodeObj);
+          if (pts_ary.length === 3) {
+            nodeObj.cubBzPt = pts_ary;//key2;
+            multiSapeAry.push(nodeObj);
+          }
         });
       }
       //a:arcTo
       if (arcToNodes !== undefined) {
-        var arcToNodesAttrs = arcToNodes["attrs"];
-        var arcOrder = arcToNodesAttrs["order"];
-        var hR = arcToNodesAttrs["hR"];
-        var wR = arcToNodesAttrs["wR"];
-        var stAng = arcToNodesAttrs["stAng"];
-        var swAng = arcToNodesAttrs["swAng"];
-        var shftX = 0;
-        var shftY = 0;
-        var arcToPtNode = getTextByPathList(arcToNodes, [ "a:pt", "attrs" ]);
-        if (arcToPtNode !== undefined) {
-          shftX = arcToPtNode["x"];
-          shftY = arcToPtNode["y"];
-          //console.log("shftX: ",shftX," shftY: ",shftY)
-        }
-        var ptObj = {};
-        ptObj.type = "arcTo";
-        ptObj.order = arcOrder;
-        ptObj.hR = hR;
-        ptObj.wR = wR;
-        ptObj.stAng = stAng;
-        ptObj.swAng = swAng;
-        ptObj.shftX = shftX;
-        ptObj.shftY = shftY;
-        multiSapeAry.push(ptObj);
+        asArray(arcToNodes).forEach(function (arcToNode) {
+          var arcToNodesAttrs = arcToNode["attrs"] || {};
+          if (
+            arcToNodesAttrs["hR"] === undefined ||
+            arcToNodesAttrs["wR"] === undefined ||
+            arcToNodesAttrs["stAng"] === undefined ||
+            arcToNodesAttrs["swAng"] === undefined
+          ) {
+            return;
+          }
+          var arcOrder = arcToNodesAttrs["order"];
+          var hR = arcToNodesAttrs["hR"];
+          var wR = arcToNodesAttrs["wR"];
+          var stAng = arcToNodesAttrs["stAng"];
+          var swAng = arcToNodesAttrs["swAng"];
+          var shftX = 0;
+          var shftY = 0;
+          var arcToPtNode = getTextByPathList(arcToNode, [ "a:pt", "attrs" ]);
+          if (arcToPtNode !== undefined) {
+            shftX = arcToPtNode["x"];
+            shftY = arcToPtNode["y"];
+            //console.log("shftX: ",shftX," shftY: ",shftY)
+          }
+          var ptObj = {};
+          ptObj.type = "arcTo";
+          ptObj.order = toFiniteNumber(arcOrder, multiSapeAry.length);
+          ptObj.hR = hR;
+          ptObj.wR = wR;
+          ptObj.stAng = stAng;
+          ptObj.swAng = swAng;
+          ptObj.shftX = shftX;
+          ptObj.shftY = shftY;
+          multiSapeAry.push(ptObj);
+        });
 
       }
       //a:quadBezTo - TODO
@@ -7723,21 +8216,18 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
       //a:close
       if (closeNode !== undefined) {
 
-        if (!Array.isArray(closeNode)) {
-          closeNode = [ closeNode ];
-        }
         // Object.keys(closeNode).forEach(function (key) {
         //     //console.log("cubicBezTo[" + key + "]:");
         //     cubicBezToPtNodesAry.push(closeNode[key]["a:pt"]);
         // });
-        Object.keys(closeNode).forEach(function (key) {
+        asArray(closeNode).forEach(function (closeItem) {
           //console.log("custShapType >> closeNode: key: ", key);
-          var clsAttrs = closeNode[key]["attrs"];
+          var clsAttrs = closeItem["attrs"] || {};
           //var clsAttrs = closeNode["attrs"];
           var clsOrder = clsAttrs["order"];
           var ptObj = {};
           ptObj.type = "close";
-          ptObj.order = clsOrder;
+          ptObj.order = toFiniteNumber(clsOrder, multiSapeAry.length);
           multiSapeAry.push(ptObj);
 
         });
@@ -7759,8 +8249,12 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
 
         if (multiSapeAry[k].type == "movto") {
           //start point
-          var spX = parseInt(multiSapeAry[k].x) * cX;//slideFactor;
-          var spY = parseInt(multiSapeAry[k].y) * cY;//slideFactor;
+          var spX = toFiniteNumber(multiSapeAry[k].x, NaN) * cX;//slideFactor;
+          var spY = toFiniteNumber(multiSapeAry[k].y, NaN) * cY;//slideFactor;
+          if (!Number.isFinite(spX) || !Number.isFinite(spY)) {
+            k++;
+            continue;
+          }
           // if (d == "") {
           //     d = "M" + spX + "," + spY;
           // } else {
@@ -7784,23 +8278,35 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
           d += " M" + spX + "," + spY;
 
         } else if (multiSapeAry[k].type == "lnto") {
-          var Lx = parseInt(multiSapeAry[k].x) * cX;//slideFactor;
-          var Ly = parseInt(multiSapeAry[k].y) * cY;//slideFactor;
+          var Lx = toFiniteNumber(multiSapeAry[k].x, NaN) * cX;//slideFactor;
+          var Ly = toFiniteNumber(multiSapeAry[k].y, NaN) * cY;//slideFactor;
+          if (!Number.isFinite(Lx) || !Number.isFinite(Ly)) {
+            k++;
+            continue;
+          }
           d += " L" + Lx + "," + Ly;
 
         } else if (multiSapeAry[k].type == "cubicBezTo") {
-          var Cx1 = parseInt(multiSapeAry[k].cubBzPt[0].x) * cX;//slideFactor;
-          var Cy1 = parseInt(multiSapeAry[k].cubBzPt[0].y) * cY;//slideFactor;
-          var Cx2 = parseInt(multiSapeAry[k].cubBzPt[1].x) * cX;//slideFactor;
-          var Cy2 = parseInt(multiSapeAry[k].cubBzPt[1].y) * cY;//slideFactor;
-          var Cx3 = parseInt(multiSapeAry[k].cubBzPt[2].x) * cX;//slideFactor;
-          var Cy3 = parseInt(multiSapeAry[k].cubBzPt[2].y) * cY;//slideFactor;
+          var Cx1 = toFiniteNumber(multiSapeAry[k].cubBzPt[0].x, NaN) * cX;//slideFactor;
+          var Cy1 = toFiniteNumber(multiSapeAry[k].cubBzPt[0].y, NaN) * cY;//slideFactor;
+          var Cx2 = toFiniteNumber(multiSapeAry[k].cubBzPt[1].x, NaN) * cX;//slideFactor;
+          var Cy2 = toFiniteNumber(multiSapeAry[k].cubBzPt[1].y, NaN) * cY;//slideFactor;
+          var Cx3 = toFiniteNumber(multiSapeAry[k].cubBzPt[2].x, NaN) * cX;//slideFactor;
+          var Cy3 = toFiniteNumber(multiSapeAry[k].cubBzPt[2].y, NaN) * cY;//slideFactor;
+          if (![Cx1, Cy1, Cx2, Cy2, Cx3, Cy3].every(Number.isFinite)) {
+            k++;
+            continue;
+          }
           d += " C" + Cx1 + "," + Cy1 + " " + Cx2 + "," + Cy2 + " " + Cx3 + "," + Cy3;
         } else if (multiSapeAry[k].type == "arcTo") {
-          var hR = parseInt(multiSapeAry[k].hR) * cX;//slideFactor;
-          var wR = parseInt(multiSapeAry[k].wR) * cY;//slideFactor;
-          var stAng = parseInt(multiSapeAry[k].stAng) / 60000;
-          var swAng = parseInt(multiSapeAry[k].swAng) / 60000;
+          var hR = toFiniteNumber(multiSapeAry[k].hR, NaN) * cX;//slideFactor;
+          var wR = toFiniteNumber(multiSapeAry[k].wR, NaN) * cY;//slideFactor;
+          var stAng = toFiniteNumber(multiSapeAry[k].stAng, NaN) / 60000;
+          var swAng = toFiniteNumber(multiSapeAry[k].swAng, NaN) / 60000;
+          if (![hR, wR, stAng, swAng].every(Number.isFinite)) {
+            k++;
+            continue;
+          }
           //var shftX = parseInt(multiSapeAry[k].shftX) * slideFactor;
           //var shftY = parseInt(multiSapeAry[k].shftY) * slideFactor;
           var endAng = stAng + swAng;
@@ -7822,9 +8328,11 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
       }
       //if (!isClose) {
       //only one "moveTo" and no "close"
-      result += "<path d='" + d + "' fill='" + (!imgFillFlg ? (grndFillFlg ? "url(#linGrd_" + shpId + ")" : fillColor) : "url(#imgPtrn_" + shpId + ")") +
-        "' stroke='" + ((border === undefined) ? "" : border.color) + "' stroke-width='" + ((border === undefined) ? "" : border.width) + "' stroke-dasharray='" + ((border === undefined) ? "" : border.strokeDasharray) + "' ";
-      result += "/>";
+      if (d && !/NaN/.test(d)) {
+        result += "<path d='" + d + "' fill='" + (!imgFillFlg ? (grndFillFlg ? "url(#linGrd_" + shpId + ")" : fillColor) : "url(#imgPtrn_" + shpId + ")") +
+          "' stroke='" + ((border === undefined) ? "" : border.color) + "' stroke-width='" + ((border === undefined) ? "" : border.width) + "' stroke-dasharray='" + ((border === undefined) ? "" : border.strokeDasharray) + "' ";
+        result += "/>";
+      }
       //console.log(result);
     }
 
@@ -7833,7 +8341,7 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
       " " + getContentDir(node, type, warpObj) +
       "' _id='" + id + "' _idx='" + idx + "' _type='" + type + "' _name='" + name +
       "' style='" +
-      getPosition(slideXfrmNode, pNode, slideLayoutXfrmNode, slideMasterXfrmNode, sType) +
+      getPosition(slideXfrmNode, pNode, slideLayoutXfrmNode, slideMasterXfrmNode, sType, groupContext) +
       getSize(slideXfrmNode, slideLayoutXfrmNode, slideMasterXfrmNode) +
       " z-index: " + order + ";" +
       "transform: rotate(" + ((txtRotate !== undefined) ? txtRotate : 0) + "deg);" +
@@ -7855,7 +8363,7 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
       " " + getContentDir(node, type, warpObj) +
       "' _id='" + id + "' _idx='" + idx + "' _type='" + type + "' _name='" + name +
       "' style='" +
-      getPosition(slideXfrmNode, pNode, slideLayoutXfrmNode, slideMasterXfrmNode, sType) +
+      getPosition(slideXfrmNode, pNode, slideLayoutXfrmNode, slideMasterXfrmNode, sType, groupContext) +
       getSize(slideXfrmNode, slideLayoutXfrmNode, slideMasterXfrmNode) +
       getBorder(node, pNode, false, "shape", warpObj) +
       await getShapeFill(node, pNode, false, warpObj, source) +
@@ -8030,7 +8538,7 @@ function shapeSnipRoundRect(w, h, adj1, adj2, shapeType, adjType) {
             return points;
         }
         */
-async function processPicNode(node, warpObj, source, sType) {
+async function processPicNode(node, warpObj, source, sType, groupContext) {
   //console.log("processPicNode node:", node, "source:", source, "sType:", sType, "warpObj;", warpObj);
   var rtrnData = "";
   var mediaPicFlag = false;
@@ -8135,13 +8643,17 @@ async function processPicNode(node, warpObj, source, sType) {
   //console.log(node)
   //////////////////////////////////////////////////////////////////////////
   mimeType = getMimeType(imgFileExt);
+  var imageDataUrl = getImageDataUrl(imgFileExt, imgArrayBuffer);
+  var cropStyles = getBlipCropStyles(node["p:blipFill"]);
   rtrnData = "<div class='block content' style='" +
-    ((mediaProcess && audioPlayerFlag) ? getPosition(audioObjc, node, undefined, undefined) : getPosition(xfrmNode, node, undefined, undefined)) +
+    ((mediaProcess && audioPlayerFlag) ? getPosition(audioObjc, node, undefined, undefined, sType, groupContext) : getPosition(xfrmNode, node, undefined, undefined, sType, groupContext)) +
     ((mediaProcess && audioPlayerFlag) ? getSize(audioObjc, undefined, undefined) : getSize(xfrmNode, undefined, undefined)) +
     " z-index: " + order + ";" +
-    "transform: rotate(" + rotate + "deg);'>";
+    "transform: rotate(" + rotate + "deg);" +
+    (((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag) ? cropStyles.container : "") +
+    "'>";
   if ((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag) {
-    rtrnData += "<img src='data:" + mimeType + ";base64," + base64ArrayBuffer(imgArrayBuffer) + "' style='width: 100%; height: 100%'/>";
+    rtrnData += "<img src='" + imageDataUrl + "' style='" + cropStyles.image + "'/>";
   } else if ((vdoNode !== undefined || audioNode !== undefined) && mediaProcess && mediaSupportFlag) {
     if (vdoNode !== undefined && !isVdeoLink) {
       rtrnData += "<video  src='" + vdoBlob + "' controls style='width: 100%; height: 100%'>Your browser does not support the video tag.</video>";
@@ -8165,20 +8677,20 @@ async function processPicNode(node, warpObj, source, sType) {
   return rtrnData;
 }
 
-async function processGraphicFrameNode(node, warpObj, source, sType) {
+async function processGraphicFrameNode(node, warpObj, source, sType, groupContext) {
 
   var result = "";
   var graphicTypeUri = getTextByPathList(node, ["a:graphic", "a:graphicData", "attrs", "uri"]);
 
   switch (graphicTypeUri) {
     case "http://schemas.openxmlformats.org/drawingml/2006/table":
-      result = await genTable(node, warpObj);
+      result = await genTable(node, warpObj, groupContext);
       break;
     case "http://schemas.openxmlformats.org/drawingml/2006/chart":
-      result = await genChart(node, warpObj);
+      result = await genChart(node, warpObj, groupContext);
       break;
     case "http://schemas.openxmlformats.org/drawingml/2006/diagram":
-      result = await genDiagram(node, warpObj, source, sType);
+      result = await genDiagram(node, warpObj, source, sType, groupContext);
       break;
     case "http://schemas.openxmlformats.org/presentationml/2006/ole":
       //result = genDiagram(node, warpObj, source, sType);
@@ -8189,7 +8701,7 @@ async function processGraphicFrameNode(node, warpObj, source, sType) {
       }
       //console.log("node:", node, "oleObjNode:", oleObjNode)
       if (oleObjNode !== undefined){
-        result = await processGroupSpNode(oleObjNode, warpObj, source);
+        result = await processGroupSpNode(oleObjNode, warpObj, source, groupContext);
       }
       break;
     default:
@@ -8293,7 +8805,19 @@ async function genTextBody(textBodyNode, spNode, slideLayoutSpNode, slideMasterS
     }
     //console.log("textBodyNode: ", textBodyNode["a:lstStyle"])
     var prg_width_node = getTextByPathList(spNode, [ "p:spPr", "a:xfrm", "a:ext", "attrs", "cx" ]);
-    var prg_height_node;// = getTextByPathList(spNode, ["p:spPr", "a:xfrm", "a:ext", "attrs", "cy"]);
+    if (prg_width_node === undefined) {
+      prg_width_node = getTextByPathList(slideLayoutSpNode, [ "p:spPr", "a:xfrm", "a:ext", "attrs", "cx" ]);
+    }
+    if (prg_width_node === undefined) {
+      prg_width_node = getTextByPathList(slideMasterSpNode, [ "p:spPr", "a:xfrm", "a:ext", "attrs", "cx" ]);
+    }
+    var prg_height_node = getTextByPathList(spNode, [ "p:spPr", "a:xfrm", "a:ext", "attrs", "cy" ]);
+    if (prg_height_node === undefined) {
+      prg_height_node = getTextByPathList(slideLayoutSpNode, [ "p:spPr", "a:xfrm", "a:ext", "attrs", "cy" ]);
+    }
+    if (prg_height_node === undefined) {
+      prg_height_node = getTextByPathList(slideMasterSpNode, [ "p:spPr", "a:xfrm", "a:ext", "attrs", "cy" ]);
+    }
     var sld_prg_width = ((prg_width_node !== undefined) ? ("width:" + (computedFactor(parseInt(prg_width_node))) + "px;") : "width:inherit;");
     var sld_prg_height = ((prg_height_node !== undefined) ? ("height:" + (computedFactor(parseInt(prg_height_node))) + "px;") : "");
     var prg_dir = getPregraphDir(pNode, textBodyNode, idx, type, warpObj);
@@ -8307,7 +8831,7 @@ async function genTextBody(textBodyNode, spNode, slideLayoutSpNode, slideMasterS
     var margin_ary = getPregraphMargn(pNode, idx, type, isBullate, warpObj);
     var margin = margin_ary[0];
     var mrgin_val = margin_ary[1];
-    if (prg_width_node === undefined && tbl_col_width !== undefined && prg_width_node != 0) {
+    if (prg_width_node === undefined && tbl_col_width !== undefined && tbl_col_width != 0) {
       //sorce : table text
       prg_width_node = tbl_col_width;
     }
@@ -8341,16 +8865,19 @@ async function genTextBody(textBodyNode, spNode, slideLayoutSpNode, slideMasterS
       }
     }
 
-    prg_width_node = computedFactor(parseInt(prg_width_node)) - bu_width - mrgin_val;
+    var prg_width_px = undefined;
+    if (prg_width_node !== undefined) {
+      prg_width_px = computedFactor(parseInt(prg_width_node)) - bu_width - mrgin_val;
+    }
     if (isBullate) {
       //get prg_width_node if there is a bulltes
       //console.log("total_text_len: ", total_text_len, "prg_width_node:", prg_width_node)
 
-      if (total_text_len < prg_width_node) {
-        prg_width_node = total_text_len + bu_width;
+      if (prg_width_px !== undefined && total_text_len < prg_width_px) {
+        prg_width_px = total_text_len + bu_width;
       }
     }
-    var prg_width = ((prg_width_node !== undefined) ? ("width:" + (prg_width_node)) + "px;" : "width:inherit;");
+    var prg_width = ((prg_width_px !== undefined && !isNaN(prg_width_px)) ? ("width:" + prg_width_px) + "px;" : "width:inherit;");
     text += "<div style='height: 100%;direction: initial;overflow-wrap:break-word;word-wrap: break-word;" + prg_width + margin + "' >";
     text += prgrph_text;
     text += "</div>";
@@ -8917,8 +9444,8 @@ async function genSpanElement(node, rIndex, pNode, textBodyNode, pFontStyle, sli
   var text = node["a:t"];
   //var text_count = text.length;
 
-  var openElemnt = "<sapn";//"<bdi";
-  var closeElemnt = "</sapn>";// "</bdi>";
+  var openElemnt = "<span";//"<bdi";
+  var closeElemnt = "</span>";// "</bdi>";
   var styleText = "";
   if (text === undefined && node["type"] !== undefined) {
     if (is_first_br) {
@@ -8926,7 +9453,7 @@ async function genSpanElement(node, rIndex, pNode, textBodyNode, pFontStyle, sli
       //closeElemnt = "";
       //return "<br style='font-size: initial'>"
       is_first_br = false;
-      return "<sapn class='line-break-br' ></sapn>";
+      return "<span class='line-break-br' ></span>";
     } else {
       // styleText += "display: block;";
       // openElemnt = "<sapn";
@@ -9073,9 +9600,9 @@ async function genSpanElement(node, rIndex, pNode, textBodyNode, pFontStyle, sli
 
   text_style += "font-size:" + font_size + ";" +
     // marLStr +
-    "font-family:" + getFontType(node, type, warpObj, pFontStyle) + ";" +
-    "font-weight:" + getFontBold(node, type, slideMasterTextStyles) + ";" +
-    "font-style:" + getFontItalic(node, type, slideMasterTextStyles) + ";" +
+    "font-family:" + getFontType(node, type, warpObj, pFontStyle, text, lang, pPrNodeLaout, pPrNodeMaster, lvl) + ";" +
+    "font-weight:" + getFontBold(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) + ";" +
+    "font-style:" + getFontItalic(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) + ";" +
     "text-decoration:" + getFontDecoration(node, type, slideMasterTextStyles) + ";" +
     "text-align:" + getTextHorizontalAlign(node, pNode, type, warpObj) + ";" +
     "vertical-align:" + getTextVerticalAlign(node, type, slideMasterTextStyles) + ";";
@@ -9288,7 +9815,7 @@ export function genGlobalCSS() {
   return cssText;
 }
 
-async function genTable(node, warpObj) {
+async function genTable(node, warpObj, groupContext) {
   var order = node["attrs"]["order"];
   var tableNode = getTextByPathList(node, [ "a:graphic", "a:graphicData", "a:tbl" ]);
   var xfrmNode = getTextByPathList(node, [ "p:xfrm" ]);
@@ -9360,7 +9887,7 @@ async function genTable(node, warpObj) {
   }
   ////////////////////////////////////////////////////////////////////////////////////////////
   var tableHtml = "<table " + tblDir + " style='border-collapse: collapse;" +
-    getPosition(xfrmNode, node, undefined, undefined) +
+    getPosition(xfrmNode, node, undefined, undefined, "group", groupContext) +
     getSize(xfrmNode, undefined, undefined) +
     " z-index: " + order + ";" +
     tbl_borders + ";" +
@@ -9851,12 +10378,12 @@ async function getTableCellParams(tcNodes, getColsGrid, row_idx, col_idx, thisTb
   return [ text, colStyl, cssName, rowSpan, colSpan ];
 }
 
-async function genChart(node, warpObj) {
+async function genChart(node, warpObj, groupContext) {
 
   var order = node["attrs"]["order"];
   var xfrmNode = getTextByPathList(node, ["p:xfrm"]);
   var result = "<div id='chart" + chartID + "' class='block content' style='" +
-    getPosition(xfrmNode, node, undefined, undefined) + getSize(xfrmNode, undefined, undefined) +
+    getPosition(xfrmNode, node, undefined, undefined, "group", groupContext) + getSize(xfrmNode, undefined, undefined) +
     " z-index: " + order + ";'></div>";
 
   var rid = node["a:graphic"]["a:graphicData"]["c:chart"]["attrs"]["r:id"];
@@ -9943,7 +10470,7 @@ async function genChart(node, warpObj) {
   return result;
 }
 
-async function genDiagram(node, warpObj, source, sType) {
+async function genDiagram(node, warpObj, source, sType, groupContext) {
   //console.log(warpObj)
   //readXmlFile(zip, sldFileName)
   /**files define the diagram:
@@ -9997,67 +10524,43 @@ async function genDiagram(node, warpObj, source, sType) {
       // var pSpStrToObj = JSON.parse(pSpStr);
       //console.log("pSpStrToObj[" + i + "]: ", pSpStrToObj);
       //rslt += processSpNode(pSpStrToObj, node, warpObj, "diagramBg", sType)
-      rslt += await processSpNode(dspSp, node, warpObj, "diagramBg", sType)
+      rslt += await processSpNode(dspSp, node, warpObj, "diagramBg", sType, groupContext)
     }
     // dgmDrwFile: "dsp:"-> "p:"
   }
 
   return "<div class='block diagram-content' style='" +
-    getPosition(xfrmNode, node, undefined, undefined, sType) +
+    getPosition(xfrmNode, node, undefined, undefined, sType, groupContext) +
     getSize(xfrmNode, undefined, undefined) +
     "'>" + rslt + "</div>";
 }
 
-function getPosition(slideSpNode, pNode, slideLayoutSpNode, slideMasterSpNode, sType) {
+function getPosition(slideSpNode, pNode, slideLayoutSpNode, slideMasterSpNode, sType, groupContext) {
   var off;
   var x = -1, y = -1;
 
   if (slideSpNode !== undefined) {
-    off = slideSpNode["a:off"]["attrs"];
+    off = getTextByPathList(slideSpNode, ["a:off", "attrs"]);
   }
 
   if (off === undefined && slideLayoutSpNode !== undefined) {
-    off = slideLayoutSpNode["a:off"]["attrs"];
+    off = getTextByPathList(slideLayoutSpNode, ["a:off", "attrs"]);
   } else if (off === undefined && slideMasterSpNode !== undefined) {
-    off = slideMasterSpNode["a:off"]["attrs"];
+    off = getTextByPathList(slideMasterSpNode, ["a:off", "attrs"]);
   }
-  var offX = 0, offY = 0;
-  var grpX = 0, grpY = 0;
-  if (sType == "group") {
 
-    var grpXfrmNode = getTextByPathList(pNode, ["p:grpSpPr", "a:xfrm"]);
-    if (xfrmNode !== undefined) {
-      grpX = parseInt(grpXfrmNode["a:off"]["attrs"]["x"]) * slideFactor;
-      grpY = parseInt(grpXfrmNode["a:off"]["attrs"]["y"]) * slideFactor;
-      // var chx = parseInt(grpXfrmNode["a:chOff"]["attrs"]["x"]) * slideFactor;
-      // var chy = parseInt(grpXfrmNode["a:chOff"]["attrs"]["y"]) * slideFactor;
-      // var cx = parseInt(grpXfrmNode["a:ext"]["attrs"]["cx"]) * slideFactor;
-      // var cy = parseInt(grpXfrmNode["a:ext"]["attrs"]["cy"]) * slideFactor;
-      // var chcx = parseInt(grpXfrmNode["a:chExt"]["attrs"]["cx"]) * slideFactor;
-      // var chcy = parseInt(grpXfrmNode["a:chExt"]["attrs"]["cy"]) * slideFactor;
-      // var rotate = parseInt(grpXfrmNode["attrs"]["rot"])
-    }
-  }
-  if (sType == "group-rotate" && pNode["p:grpSpPr"] !== undefined) {
-    var xfrmNode = pNode["p:grpSpPr"]["a:xfrm"];
-    // var ox = parseInt(xfrmNode["a:off"]["attrs"]["x"]) * slideFactor;
-    // var oy = parseInt(xfrmNode["a:off"]["attrs"]["y"]) * slideFactor;
-    var chx = parseInt(xfrmNode["a:chOff"]["attrs"]["x"]) * slideFactor;
-    var chy = parseInt(xfrmNode["a:chOff"]["attrs"]["y"]) * slideFactor;
-
-    offX = chx;
-    offY = chy;
-  }
   if (off === undefined) {
     return "";
-  } else {
-    x = parseInt(off["x"]) * slideFactor;
-    y = parseInt(off["y"]) * slideFactor;
-    // if (type = "body")
-    //     console.log("getPosition: slideSpNode: ", slideSpNode, ", type: ", type, "x: ", x, "offX:", offX, "y:", y, "offY:", offY)
-    return (isNaN(x) || isNaN(y)) ? "" : "top:" + (y - offY + grpY) + "px; left:" + (x - offX + grpX) + "px;";
   }
 
+  x = emuToPx(off["x"]);
+  y = emuToPx(off["y"]);
+  if (groupContext !== undefined) {
+    x -= groupContext.childOffsetX;
+    y -= groupContext.childOffsetY;
+  }
+
+  return (isNaN(x) || isNaN(y)) ? "" : "top:" + y + "px; left:" + x + "px;";
 }
 
 function getSize(slideSpNode, slideLayoutSpNode, slideMasterSpNode) {
@@ -10065,11 +10568,11 @@ function getSize(slideSpNode, slideLayoutSpNode, slideMasterSpNode) {
   var w = -1, h = -1;
 
   if (slideSpNode !== undefined) {
-    ext = slideSpNode["a:ext"]["attrs"];
+    ext = getTextByPathList(slideSpNode, ["a:ext", "attrs"]);
   } else if (slideLayoutSpNode !== undefined) {
-    ext = slideLayoutSpNode["a:ext"]["attrs"];
+    ext = getTextByPathList(slideLayoutSpNode, ["a:ext", "attrs"]);
   } else if (slideMasterSpNode !== undefined) {
-    ext = slideMasterSpNode["a:ext"]["attrs"];
+    ext = getTextByPathList(slideMasterSpNode, ["a:ext", "attrs"]);
   }
 
   if (ext === undefined) {
@@ -10501,28 +11004,139 @@ function getContentDir(node, type, warpObj) {
   //console.log("getContentDir() type:", type, "slideMasterTextStyles:", slideMasterTextStyles,"dirNode:",dirVal)
 }
 
-function getFontType(node, type, warpObj, pFontStyle) {
-  var typeface = getTextByPathList(node, ["a:rPr", "a:latin", "attrs", "typeface"]);
+function hasEastAsianText(text, lang) {
+  return /^(zh|ja|ko)(-|$)/i.test(lang || "") || /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/.test(text || "");
+}
 
-  if (typeface === undefined) {
-    var fontIdx = "";
-    var fontGrup = "";
-    if (pFontStyle !== undefined) {
-      fontIdx = getTextByPathList(pFontStyle, ["attrs", "idx"]);
-    }
-    var fontSchemeNode = getTextByPathList(warpObj["themeContent"], ["a:theme", "a:themeElements", "a:fontScheme"]);
-    if (fontIdx == "") {
-      if (type == "title" || type == "subTitle" || type == "ctrTitle") {
-        fontIdx = "major";
-      } else {
-        fontIdx = "minor";
-      }
-    }
-    fontGrup = "a:" + fontIdx + "Font";
-    typeface = getTextByPathList(fontSchemeNode, [fontGrup, "a:latin", "attrs", "typeface"]);
+function hasComplexScriptText(text, lang) {
+  return rtl_langs_array.indexOf(lang) !== -1 || /^(ar|fa|he|ur|dv)(-|$)/i.test(lang || "") ||
+    /[\u0590-\u08ff\ufb1d-\ufdff\ufe70-\ufeff]/.test(text || "");
+}
+
+function getThemeScript(lang, text) {
+  if (/^zh-(tw|hk|mo)/i.test(lang || "")) {
+    return "Hant";
   }
+  if (/^zh/i.test(lang || "") || /[\u3400-\u9fff]/.test(text || "")) {
+    return "Hans";
+  }
+  if (/^ja/i.test(lang || "") || /[\u3040-\u30ff]/.test(text || "")) {
+    return "Jpan";
+  }
+  if (/^ko/i.test(lang || "") || /[\uac00-\ud7af]/.test(text || "")) {
+    return "Hang";
+  }
+  if (/^(ar|fa|ur|dv)/i.test(lang || "") || /[\u0600-\u06ff]/.test(text || "")) {
+    return "Arab";
+  }
+  if (/^he/i.test(lang || "") || /[\u0590-\u05ff]/.test(text || "")) {
+    return "Hebr";
+  }
+  return undefined;
+}
 
-  return (typeface === undefined) ? "inherit" : typeface;
+function getThemeScriptTypeface(fontGroupNode, lang, text) {
+  var script = getThemeScript(lang, text);
+  var fontNodes = getTextByPathList(fontGroupNode, ["a:font"]);
+  if (script === undefined || fontNodes === undefined) {
+    return undefined;
+  }
+  fontNodes = fontNodes.constructor === Array ? fontNodes : [fontNodes];
+  for (var i = 0; i < fontNodes.length; i++) {
+    if (getTextByPathList(fontNodes[i], ["attrs", "script"]) === script) {
+      return getTextByPathList(fontNodes[i], ["attrs", "typeface"]);
+    }
+  }
+  return undefined;
+}
+
+function resolveThemeTypeface(typeface, warpObj, lang, text) {
+  if (typeface === undefined || typeface === "") {
+    return undefined;
+  }
+  var match = /^\+(mj|mn)-(lt|ea|cs)$/.exec(typeface);
+  if (match === null) {
+    return typeface;
+  }
+  var fontGroup = match[1] === "mj" ? "a:majorFont" : "a:minorFont";
+  var fontSlot = match[2] === "lt" ? "a:latin" : "a:" + match[2];
+  var fontGroupNode = getTextByPathList(warpObj["themeContent"], ["a:theme", "a:themeElements", "a:fontScheme", fontGroup]);
+  var resolved = getTextByPathList(fontGroupNode, [fontSlot, "attrs", "typeface"]);
+  return resolved || getThemeScriptTypeface(fontGroupNode, lang, text);
+}
+
+function getThemeFontSlot(warpObj, fontIdx, slot, lang, text) {
+  var fontGroup = fontIdx === "major" ? "a:majorFont" : "a:minorFont";
+  var fontGroupNode = getTextByPathList(warpObj["themeContent"], ["a:theme", "a:themeElements", "a:fontScheme", fontGroup]);
+  var typeface = getTextByPathList(fontGroupNode, ["a:" + slot, "attrs", "typeface"]);
+  return typeface || getThemeScriptTypeface(fontGroupNode, lang, text);
+}
+
+function getFontSlotsFromRunProperties(rPrNode, warpObj, lang, text) {
+  if (rPrNode === undefined) {
+    return {};
+  }
+  return {
+    latin: resolveThemeTypeface(getTextByPathList(rPrNode, ["a:latin", "attrs", "typeface"]), warpObj, lang, text),
+    ea: resolveThemeTypeface(getTextByPathList(rPrNode, ["a:ea", "attrs", "typeface"]), warpObj, lang, text),
+    cs: resolveThemeTypeface(getTextByPathList(rPrNode, ["a:cs", "attrs", "typeface"]), warpObj, lang, text),
+    sym: resolveThemeTypeface(getTextByPathList(rPrNode, ["a:sym", "attrs", "typeface"]), warpObj, lang, text)
+  };
+}
+
+function mergeFontSlots(target, source) {
+  Object.keys(source).forEach(function (slot) {
+    if ((target[slot] === undefined || target[slot] === "") && source[slot] !== undefined && source[slot] !== "") {
+      target[slot] = source[slot];
+    }
+  });
+}
+
+function quoteCssFontFamily(fontName) {
+  if (fontName === undefined || fontName === "") {
+    return undefined;
+  }
+  if (/^(inherit|serif|sans-serif|monospace|cursive|fantasy|system-ui)$/i.test(fontName)) {
+    return fontName;
+  }
+  return "\"" + String(fontName).replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\"";
+}
+
+function getDefaultFontIdx(type, pFontStyle) {
+  var fontIdx = getTextByPathList(pFontStyle, ["attrs", "idx"]);
+  if (fontIdx === "major" || fontIdx === "minor") {
+    return fontIdx;
+  }
+  return (type == "title" || type == "subTitle" || type == "ctrTitle") ? "major" : "minor";
+}
+
+function getFontType(node, type, warpObj, pFontStyle, text, lang, pPrNodeLaout, pPrNodeMaster, lvl) {
+  var slots = {};
+  mergeFontSlots(slots, getFontSlotsFromRunProperties(getTextByPathList(node, ["a:rPr"]), warpObj, lang, text));
+  mergeFontSlots(slots, getFontSlotsFromRunProperties(getTextByPathList(pPrNodeLaout, ["a:defRPr"]), warpObj, lang, text));
+  mergeFontSlots(slots, getFontSlotsFromRunProperties(getTextByPathList(pPrNodeMaster, ["a:defRPr"]), warpObj, lang, text));
+
+  var lvlpPr = "a:lvl" + lvl + "pPr";
+  mergeFontSlots(slots, getFontSlotsFromRunProperties(getTextByPathList(warpObj["defaultTextStyle"], [lvlpPr, "a:defRPr"]), warpObj, lang, text));
+
+  var fontIdx = getDefaultFontIdx(type, pFontStyle);
+  mergeFontSlots(slots, {
+    latin: getThemeFontSlot(warpObj, fontIdx, "latin", lang, text),
+    ea: getThemeFontSlot(warpObj, fontIdx, "ea", lang, text),
+    cs: getThemeFontSlot(warpObj, fontIdx, "cs", lang, text)
+  });
+
+  var preferred = hasComplexScriptText(text, lang) ? "cs" : (hasEastAsianText(text, lang) ? "ea" : "latin");
+  var ordered = [slots[preferred], slots.latin, slots.ea, slots.cs, slots.sym];
+  var families = [];
+  ordered.forEach(function (fontName) {
+    var cssFont = quoteCssFontFamily(fontName);
+    if (cssFont !== undefined && families.indexOf(cssFont) === -1) {
+      families.push(cssFont);
+    }
+  });
+
+  return families.length ? families.join(",") : "inherit";
 }
 
 async function getFontColorPr(node, pNode, lstStyle, pFontStyle, lvl, idx, type, warpObj) {
@@ -10886,12 +11500,26 @@ function getFontSize(node, textBodyNode, pFontStyle, lvl, type, warpObj) {
   return isNaN(fontSize) ? ((type == "br") ? "initial" : "inherit") : (fontSize * fontSizeFactor + "px");// + "pt");
 }
 
-function getFontBold(node, type, slideMasterTextStyles) {
-  return (node["a:rPr"] !== undefined && node["a:rPr"]["attrs"]["b"] === "1") ? "bold" : "inherit";
+function getFontBold(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) {
+  var bold = getTextByPathList(node, ["a:rPr", "attrs", "b"]);
+  if (bold === undefined) {
+    bold = getTextByPathList(pPrNodeLaout, ["a:defRPr", "attrs", "b"]);
+  }
+  if (bold === undefined) {
+    bold = getTextByPathList(pPrNodeMaster, ["a:defRPr", "attrs", "b"]);
+  }
+  return (bold === "1" || bold === true) ? "bold" : ((bold === "0" || bold === false) ? "normal" : "inherit");
 }
 
-function getFontItalic(node, type, slideMasterTextStyles) {
-  return (node["a:rPr"] !== undefined && node["a:rPr"]["attrs"]["i"] === "1") ? "italic" : "inherit";
+function getFontItalic(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) {
+  var italic = getTextByPathList(node, ["a:rPr", "attrs", "i"]);
+  if (italic === undefined) {
+    italic = getTextByPathList(pPrNodeLaout, ["a:defRPr", "attrs", "i"]);
+  }
+  if (italic === undefined) {
+    italic = getTextByPathList(pPrNodeMaster, ["a:defRPr", "attrs", "i"]);
+  }
+  return (italic === "1" || italic === true) ? "italic" : ((italic === "0" || italic === false) ? "normal" : "inherit");
 }
 
 function getFontDecoration(node, type, slideMasterTextStyles) {
@@ -11202,35 +11830,15 @@ async function getBackground(warpObj, slideSize, index) {
   // console.log("slideLayoutContent : ", slideLayoutContent)
   // console.log("slideMasterContent : ", slideMasterContent)
   //console.log("warpObj : ", warpObj)
-  var showMasterSp = getTextByPathList(slideLayoutContent, [ "p:sldLayout", "attrs", "showMasterSp" ]);
+  var slideShowMasterSp = getTextByPathList(slideContent, [ "p:sld", "attrs", "showMasterSp" ]);
+  var layoutShowMasterSp = getTextByPathList(slideLayoutContent, [ "p:sldLayout", "attrs", "showMasterSp" ]);
+  var showMasterSp = slideShowMasterSp !== undefined ? slideShowMasterSp : layoutShowMasterSp;
+  var shouldShowMasterSp = !(showMasterSp === "0" || showMasterSp === "false");
   //console.log("slideLayoutContent : ", slideLayoutContent, ", showMasterSp: ", showMasterSp)
-  var bgColor = await getSlideBackgroundFill(warpObj, index);
-  var result = "<div class='slide-background-" + index + "' style='width:" + slideSize.width + "px; height:" + slideSize.height + "px;" + bgColor + "'>"
-  var node_ph_type_ary = [];
-  if (nodesSldLayout !== undefined) {
-    for (var nodeKey in nodesSldLayout) {
-      if (nodesSldLayout[nodeKey].constructor === Array) {
-        for (var i = 0; i < nodesSldLayout[nodeKey].length; i++) {
-          var ph_type = getTextByPathList(nodesSldLayout[nodeKey][i], [ "p:nvSpPr", "p:nvPr", "p:ph", "attrs", "type" ]);
-          // if (ph_type !== undefined && ph_type != "pic") {
-          //     node_ph_type_ary.push(ph_type);
-          // }
-          if (ph_type != "pic") {
-            result += await processNodesInSlide(nodeKey, nodesSldLayout[nodeKey][i], nodesSldLayout, warpObj, "slideLayoutBg"); //slideLayoutBg , slideMasterBg
-          }
-        }
-      } else {
-        var ph_type = getTextByPathList(nodesSldLayout[nodeKey], [ "p:nvSpPr", "p:nvPr", "p:ph", "attrs", "type" ]);
-        // if (ph_type !== undefined && ph_type != "pic") {
-        //     node_ph_type_ary.push(ph_type);
-        // }
-        if (ph_type != "pic") {
-          result += await processNodesInSlide(nodeKey, nodesSldLayout[nodeKey], nodesSldLayout, warpObj, "slideLayoutBg"); //slideLayoutBg, slideMasterBg
-        }
-      }
-    }
-  }
-  if (nodesSldMaster !== undefined && (showMasterSp == "1" || showMasterSp === undefined)) {
+  var bgColor = await getSlideBackgroundFill(warpObj, index) || "";
+  var result = "<div class='slide-background slide-background-" + index + "' style='position:absolute;top:0;left:0;overflow:hidden;z-index:0;width:" + slideSize.width + "px; height:" + slideSize.height + "px;" + bgColor + "'>"
+
+  if (nodesSldMaster !== undefined && shouldShowMasterSp) {
     for (var nodeKey in nodesSldMaster) {
       if (nodesSldMaster[nodeKey].constructor === Array) {
         for (var i = 0; i < nodesSldMaster[nodeKey].length; i++) {
@@ -11247,9 +11855,103 @@ async function getBackground(warpObj, slideSize, index) {
       }
     }
   }
-  return result;
+  if (nodesSldLayout !== undefined) {
+    for (var nodeKey in nodesSldLayout) {
+      if (nodesSldLayout[nodeKey].constructor === Array) {
+        for (var i = 0; i < nodesSldLayout[nodeKey].length; i++) {
+          var ph_type = getTextByPathList(nodesSldLayout[nodeKey][i], [ "p:nvSpPr", "p:nvPr", "p:ph", "attrs", "type" ]);
+          if (ph_type != "pic") {
+            result += await processNodesInSlide(nodeKey, nodesSldLayout[nodeKey][i], nodesSldLayout, warpObj, "slideLayoutBg"); //slideLayoutBg , slideMasterBg
+          }
+        }
+      } else {
+        var ph_type = getTextByPathList(nodesSldLayout[nodeKey], [ "p:nvSpPr", "p:nvPr", "p:ph", "attrs", "type" ]);
+        if (ph_type != "pic") {
+          result += await processNodesInSlide(nodeKey, nodesSldLayout[nodeKey], nodesSldLayout, warpObj, "slideLayoutBg"); //slideLayoutBg, slideMasterBg
+        }
+      }
+    }
+  }
+
+  return result + "</div>";
 
 }
+
+function getOrderedThemeFillStyles(fillList) {
+  var result = [];
+  if (fillList === undefined) {
+    return result;
+  }
+  Object.keys(fillList).forEach(function (key) {
+    var fillNode = fillList[key];
+    if (key == "attrs") {
+      return;
+    }
+    if (fillNode.constructor === Array) {
+      for (var i = 0; i < fillNode.length; i++) {
+        var obj = {};
+        obj[key] = fillNode[i];
+        obj.idex = Number(getTextByPathList(fillNode[i], ["attrs", "order"])) || result.length + 1;
+        obj.attrs = { order: obj.idex };
+        result.push(obj);
+      }
+    } else {
+      var obj = {};
+      obj[key] = fillNode;
+      obj.idex = Number(getTextByPathList(fillNode, ["attrs", "order"])) || result.length + 1;
+      obj.attrs = { order: obj.idex };
+      result.push(obj);
+    }
+  });
+  return result.sort(function (a, b) {
+    return a.idex - b.idex;
+  });
+}
+
+function getThemeFillByIdx(warpObj, idx) {
+  if (idx == 0 || idx == 1000) {
+    return undefined;
+  }
+  var listName = idx > 1000 ? "a:bgFillStyleLst" : "a:fillStyleLst";
+  var trueIdx = idx > 1000 ? idx - 1000 : idx;
+  var fillList = getTextByPathList(warpObj["themeContent"], ["a:theme", "a:themeElements", "a:fmtScheme", listName]);
+  var orderedFillStyles = getOrderedThemeFillStyles(fillList);
+  return orderedFillStyles[trueIdx - 1];
+}
+
+async function renderBackgroundFill(fillNode, clrMap, phClr, slideMasterContent, warpObj, index, imageSource) {
+  if (fillNode === undefined) {
+    return undefined;
+  }
+  var bgFillTyp = getFillType(fillNode);
+  if (bgFillTyp == "SOLID_FILL") {
+    var sldFill = fillNode["a:solidFill"];
+    var sldBgClr = getSolidFill(sldFill, clrMap, phClr, warpObj);
+    return sldBgClr !== undefined ? "background: #" + sldBgClr + ";" : undefined;
+  } else if (bgFillTyp == "GRADIENT_FILL") {
+    return getBgGradientFill(fillNode, phClr, slideMasterContent, warpObj);
+  } else if (bgFillTyp == "PIC_FILL") {
+    return await getBgPicFill(fillNode, imageSource || "themeBg", warpObj, phClr, index);
+  } else if (bgFillTyp == "PATTERN_FILL") {
+    var bgPtrn = getPatternFill(fillNode["a:pattFill"], warpObj);
+    if (bgPtrn !== undefined) {
+      var bgStyle = "background: " + bgPtrn[0] + ";";
+      if (bgPtrn[1] !== null && bgPtrn[1] !== undefined && bgPtrn[1] != "") {
+        bgStyle += "background-size:" + bgPtrn[1] + ";";
+      }
+      if (bgPtrn[2] !== null && bgPtrn[2] !== undefined && bgPtrn[2] != "") {
+        bgStyle += "background-position:" + bgPtrn[2] + ";";
+      }
+      return bgStyle;
+    }
+  }
+  return undefined;
+}
+
+async function getThemeBackgroundFillByIdx(idx, clrMap, phClr, slideMasterContent, warpObj, index) {
+  return await renderBackgroundFill(getThemeFillByIdx(warpObj, idx), clrMap, phClr, slideMasterContent, warpObj, index, "themeBg");
+}
+
 async function getSlideBackgroundFill(warpObj, index) {
   var slideContent = warpObj["slideContent"];
   var slideLayoutContent = warpObj["slideLayoutContent"];
@@ -11327,7 +12029,7 @@ async function getSlideBackgroundFill(warpObj, index) {
     } else if (idx > 0 && idx < 1000) {
       //fillStyleLst in themeContent
       //themeContent["a:fmtScheme"]["a:fillStyleLst"]
-      //bgcolor = "background: red;";
+      bgcolor = await getThemeBackgroundFillByIdx(idx, clrMapOvr, phClr, slideMasterContent, warpObj, index);
     } else if (idx > 1000) {
       //bgFillStyleLst  in themeContent
       //themeContent["a:fmtScheme"]["a:bgFillStyleLst"]
@@ -11374,6 +12076,10 @@ async function getSlideBackgroundFill(warpObj, index) {
         //console.log("slideMasterContent - sldFill",sldFill)
       } else if (bgFillTyp == "GRADIENT_FILL") {
         bgcolor = getBgGradientFill(bgFillLstIdx, phClr, slideMasterContent, warpObj);
+      } else if (bgFillTyp == "PIC_FILL") {
+        bgcolor = await getBgPicFill(bgFillLstIdx, "themeBg", warpObj, phClr, index);
+      } else if (bgFillTyp == "PATTERN_FILL") {
+        bgcolor = await renderBackgroundFill(bgFillLstIdx, clrMapOvr, phClr, slideMasterContent, warpObj, index, "themeBg");
       } else {
         console.log(bgFillTyp)
       }
@@ -11407,7 +12113,6 @@ async function getSlideBackgroundFill(warpObj, index) {
       }
       //console.log("slideLayoutContent",bgcolor)
     } else if (bgRef !== undefined) {
-      console.log("slideLayoutContent: bgRef", bgRef)
       //bgcolor = "background: white;";
       var phClr = getSolidFill(bgRef, clrMapOvr, undefined, warpObj);
       var idx = Number(bgRef["attrs"]["idx"]);
@@ -11418,7 +12123,7 @@ async function getSlideBackgroundFill(warpObj, index) {
       } else if (idx > 0 && idx < 1000) {
         //fillStyleLst in themeContent
         //themeContent["a:fmtScheme"]["a:fillStyleLst"]
-        //bgcolor = "background: red;";
+        bgcolor = await getThemeBackgroundFillByIdx(idx, clrMapOvr, phClr, slideMasterContent, warpObj, index);
       } else if (idx > 1000) {
         //bgFillStyleLst  in themeContent
         //themeContent["a:fmtScheme"]["a:bgFillStyleLst"]
@@ -11471,6 +12176,8 @@ async function getSlideBackgroundFill(warpObj, index) {
           //theme rels
           //console.log("PIC_FILL - ", bgFillTyp, bgFillLstIdx, bgFillLst, warpObj);
           bgcolor = await getBgPicFill(bgFillLstIdx, "themeBg", warpObj, phClr, index);
+        } else if (bgFillTyp == "PATTERN_FILL") {
+          bgcolor = await renderBackgroundFill(bgFillLstIdx, clrMapOvr, phClr, slideMasterContent, warpObj, index, "themeBg");
         } else {
           console.log(bgFillTyp)
         }
@@ -11515,7 +12222,7 @@ async function getSlideBackgroundFill(warpObj, index) {
         } else if (idx > 0 && idx < 1000) {
           //fillStyleLst in themeContent
           //themeContent["a:fmtScheme"]["a:fillStyleLst"]
-          //bgcolor = "background: red;";
+          bgcolor = await getThemeBackgroundFillByIdx(idx, clrMap, phClr, slideMasterContent, warpObj, index);
         } else if (idx > 1000) {
           //bgFillStyleLst  in themeContent
           //themeContent["a:fmtScheme"]["a:bgFillStyleLst"]
@@ -11569,6 +12276,8 @@ async function getSlideBackgroundFill(warpObj, index) {
             //theme rels
             // console.log("PIC_FILL - ", bgFillTyp, bgFillLstIdx, bgFillLst, warpObj);
             bgcolor = await getBgPicFill(bgFillLstIdx, "themeBg", warpObj, phClr, index);
+          } else if (bgFillTyp == "PATTERN_FILL") {
+            bgcolor = await renderBackgroundFill(bgFillLstIdx, clrMap, phClr, slideMasterContent, warpObj, index, "themeBg");
           } else {
             console.log(bgFillTyp)
           }
@@ -11585,6 +12294,10 @@ function getBgGradientFill(bgPr, phClr, slideMasterContent, warpObj) {
   if (bgPr !== undefined) {
     var grdFill = bgPr["a:gradFill"];
     var gsLst = grdFill["a:gsLst"]["a:gs"];
+    if (gsLst.constructor !== Array) {
+      gsLst = [gsLst];
+    }
+    var clrMap = getTextByPathList(slideMasterContent, ["p:sldMaster", "p:clrMap", "attrs"]);
     //var startColorNode, endColorNode;
     var color_ary = [];
     var pos_ary = [];
@@ -11592,7 +12305,7 @@ function getBgGradientFill(bgPr, phClr, slideMasterContent, warpObj) {
     for (var i = 0; i < gsLst.length; i++) {
       var lo_tint;
       var lo_color = "";
-      var lo_color = getSolidFill(gsLst[i], slideMasterContent["p:sldMaster"]["p:clrMap"]["attrs"], phClr, warpObj);
+      var lo_color = getSolidFill(gsLst[i], clrMap, phClr, warpObj);
       var pos = getTextByPathList(gsLst[i], ["attrs", "pos"])
       //console.log("pos: ", pos)
       if (pos !== undefined) {
@@ -11645,8 +12358,11 @@ async function getBgPicFill(bgPr, sorce, warpObj, phClr, index) {
   //console.log("getBgPicFill bgPr", bgPr)
   var bgcolor;
   var picFillBase64 = await getPicFill(sorce, bgPr["a:blipFill"], warpObj);
-  var ordr = bgPr["attrs"]["order"];
-  var aBlipNode = bgPr["a:blipFill"]["a:blip"];
+  if (picFillBase64 === undefined) {
+    return undefined;
+  }
+  var ordr = getTextByPathList(bgPr, ["attrs", "order"]);
+  var aBlipNode = getTextByPathList(bgPr, ["a:blipFill", "a:blip"]);
   //a:duotone
   var duotone = getTextByPathList(aBlipNode, ["a:duotone"]);
   if (duotone !== undefined) {
@@ -11743,17 +12459,14 @@ async function getBgPicFill(bgPr, sorce, warpObj, phClr, index) {
   //a:stretch => a:fillRect =>attrs (l:-17000, r:-17000)
   var stretch = getTextByPathList(bgPr, ["a:blipFill", "a:stretch"]);
   if (stretch !== undefined) {
-    var fillRect = getTextByPathList(stretch, ["a:fillRect", "attrs"]);
     //console.log("getBgPicFill=>bgPr: ", bgPr)
     // var top = fillRect["t"], right = fillRect["r"], bottom = fillRect["b"], left = fillRect["l"];
     prop_style += "background-repeat: no-repeat;";
     prop_style += "background-position: center;";
-    if (fillRect !== undefined) {
-      //prop_style += "background-size: contain, cover;";
-      prop_style += "background-size:  100% 100%;;";
-    }
+    // a:stretch fills the target rectangle; fillRect only adjusts source cropping.
+    prop_style += "background-size: 100% 100%;";
   }
-  bgcolor = "background: url(" + picFillBase64 + ");  z-index: " + ordr + ";" + prop_style + imgOpacity;
+  bgcolor = "background: url(" + picFillBase64 + ");" + (ordr !== undefined ? " z-index: " + ordr + ";" : "") + prop_style + imgOpacity;
 
   return bgcolor;
 }
@@ -11977,8 +12690,7 @@ async function getPicFill(type, node, warpObj) {
       return undefined;
     }
     var imgArrayBuffer = await warpObj["zip"].file(imgPath).async('arraybuffer');
-    var imgMimeType = getMimeType(imgExt);
-    img = "data:" + imgMimeType + ";base64," + base64ArrayBuffer(imgArrayBuffer);
+    img = getImageDataUrl(imgExt, imgArrayBuffer);
     //warpObj["loaded-images"][imgPath] = img; //"defaultTextStyle": defaultTextStyle,
     setTextByPathList(warpObj, [ "loaded-images", imgPath ], img); //, type, rId
   }
@@ -13381,8 +14093,12 @@ async function getSvgImagePattern(node, fill, shpId, warpObj) {
 }
 
 async function getBase64ImageDimensions(imgSrc) {
-  const image = await self.createImageBitmap(dataURLtoBlob(imgSrc));
-  return [image.width, image.height];
+  try {
+    const image = await self.createImageBitmap(dataURLtoBlob(imgSrc));
+    return [image.width, image.height];
+  } catch (e) {
+    return [1, 1];
+  }
 }
 
 function dataURLtoBlob(dataurl) {

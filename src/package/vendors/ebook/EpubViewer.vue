@@ -86,6 +86,23 @@ const flattenToc = (items: unknown, depth = 0): TocItem[] => {
   })
 }
 
+const pickInitialHref = (items: TocItem[]) => {
+  const chapterLike = items.find(item => {
+    const label = item.label.toLowerCase()
+    return /(^|\s)(chapter|part|book|prologue|preface|introduction)\b/.test(label) ||
+      /第[一二三四五六七八九十百千0-9]+[章节回部卷篇]/.test(item.label)
+  })
+  if (chapterLike) {
+    return chapterLike.href
+  }
+
+  const readable = items.find(item => {
+    const text = `${item.label} ${item.href}`.toLowerCase()
+    return !/(cover|titlepage|title-page|copyright|license|toc|contents|nav|table-of-contents|wrap0000)/.test(text)
+  })
+  return readable?.href || items[0]?.href
+}
+
 const updateLocation = (location: EpubLocation) => {
   atStart.value = Boolean(location?.atStart)
   atEnd.value = Boolean(location?.atEnd)
@@ -156,7 +173,9 @@ const openBook = async () => {
     const navigation = await book.loaded.navigation.catch(() => undefined)
     tocItems.value = flattenToc((navigation as { toc?: unknown })?.toc)
 
-    await rendition.display()
+    // 许多 EPUB 的第一个 spine 是封面或空白包装页。默认跳到目录里第一个正文节点，
+    // 避免用户打开后只看到空白封面容器，误以为正文没有渲染。
+    await rendition.display(pickInitialHref(tocItems.value))
     if (disposed) {
       return
     }

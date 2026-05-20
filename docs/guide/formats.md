@@ -34,7 +34,7 @@
 | Word | `doc` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中 | 存量老文档、历史附件回溯 |
 | Excel | `xlsx` | `styled-exceljs` + `e-virt-table` | 支持虚拟滚动、列宽/行高、合并单元格和常见样式 | 大表格预览、报表、需要保留结构和样式的业务 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` | 统一读取数据、尺寸和可用样式，按浏览器能力渐进还原 | 老表格、跨平台导出的表格、轻量数据查看 |
-| PowerPoint | `pptx` | 自定义 PPTX 渲染器 | 以页面展示为主，适合浏览幻灯片内容 | 汇报材料、说明文档、培训课件 |
+| PowerPoint | `pptx` | 自定义 PPTX 渲染器 | 以页面展示为主，增强组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图预览 | 汇报材料、说明文档、培训课件 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，支持缩放工具栏、页码状态和可显隐导航窗格 | 合同、票据、版式稳定文件 |
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | CAD | `dxf` | `@cadview/core` | Canvas 方式浏览 DXF 图纸，支持缩放、平移、图层显示控制 | 工程图纸、二维 CAD 附件 |
@@ -71,6 +71,9 @@
 ### 演示文稿、PDF 与 OFD
 
 - `pptx` 适合浏览幻灯片内容、做方案回看和日常演示，不需要 Office 本体参与。
+- PPTX 渲染器现在会按 DrawingML 的组合图形坐标系处理 `chOff/chExt`，组合内元素在缩放、旋转、翻转时会更接近 PowerPoint 中的位置关系。
+- 主题背景支持从 `fillStyleLst` / `bgFillStyleLst` 解析纯色、渐变、图片和平铺图案；PPTX 内嵌的 EMF 图片会尽量转换为 SVG 数据图，避免只显示空白占位。
+- 图片填充会处理 `srcRect` 裁剪信息，复杂模板里的裁切图、背景图和组合形状更适合作为真实业务样本回归。
 - `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。当前 PDF 视图提供顶部缩放工具栏、页码状态和可显隐页面导航窗格。
 - `ofd` 走 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，OFD 依赖仍保持按需异步加载。
 - 如果你更在意“展示结果必须完全稳定”，优先考虑 `pdf` / `ofd` 这类版式成品；如果你需要保留可编辑文件的阅读入口，优先用 `pptx`。

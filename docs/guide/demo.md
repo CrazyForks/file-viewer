@@ -63,7 +63,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 | `excel.ods` | 验证 OpenDocument 表格扩展名映射 | `ods` |
 | `excel.fods` | 验证 Flat ODS 扩展名映射 | `fods` |
 | `excel.numbers` | 验证 Numbers 扩展名映射 | `numbers` |
-| `ppt.pptx` | 验证演示文稿渲染 | `pptx` |
+| `ppt.pptx` | 验证演示文稿渲染、组合图形、主题背景和图片资源 | `pptx` |
 | `pdf.pdf` | 验证 PDF 阅读体验、缩放工具栏和页面导航窗格 | `pdf` |
 | `ofd.ofd` | 验证 OFD 在线预览 | `ofd` |
 | `drawing.dxf` | 使用公开 DXF 样例验证 CAD 图纸预览、平移、缩放和图层控制 | `dxf` |
