@@ -472,6 +472,18 @@ function mapGroupSizeToPx(value, axis, groupContext) {
   return parsed * scale;
 }
 
+function mapLineSizeToPx(value, axis, groupContext, fallback) {
+  var parsed = coordToNumber(value, NaN);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  if (groupContext === undefined) {
+    return emuToPx(parsed);
+  }
+  var scale = axis === "y" ? groupContext.scaleY : groupContext.scaleX;
+  return parsed * scale;
+}
+
 function getTransformBool(value) {
   return value === true || value === "1" || value === "true";
 }
@@ -5542,11 +5554,13 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
       case "curvedConnector3":
       case "curvedConnector4":
       case "curvedConnector5":
+        var lineX2 = mapLineSizeToPx(getTextByPathList(slideXfrmNode, [ "a:ext", "attrs", "cx" ]), "x", groupContext, w);
+        var lineY2 = mapLineSizeToPx(getTextByPathList(slideXfrmNode, [ "a:ext", "attrs", "cy" ]), "y", groupContext, h);
         // if (isFlipV) {
         //     result += "<line x1='" + w + "' y1='0' x2='0' y2='" + h + "' stroke='" + border.color +
         //         "' stroke-width='" + border.width + "' stroke-dasharray='" + border.strokeDasharray + "' ";
         // } else {
-        result += "<line x1='0' y1='0' x2='" + w + "' y2='" + h + "' stroke='" + border.color +
+        result += "<line x1='0' y1='0' x2='" + lineX2 + "' y2='" + lineY2 + "' stroke='" + border.color +
           "' stroke-width='" + border.width + "' stroke-dasharray='" + border.strokeDasharray + "' ";
         //}
         if (headEndNodeAttrs !== undefined && (headEndNodeAttrs["type"] === "triangle" || headEndNodeAttrs["type"] === "arrow")) {

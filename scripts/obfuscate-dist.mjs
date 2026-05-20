@@ -5,6 +5,7 @@ import JavaScriptObfuscator from 'javascript-obfuscator'
 const distDir = process.env.FILE_VIEWER_DIST_DIR
   ? resolve(process.env.FILE_VIEWER_DIST_DIR)
   : join(process.cwd(), 'dist')
+const largeBundleLimit = Number(process.env.FILE_VIEWER_OBFUSCATE_LARGE_LIMIT || 1_000_000)
 const requestedTargets = process.argv.slice(2)
 const targets = requestedTargets.map(target => isAbsolute(target) ? target : join(distDir, target))
 
@@ -36,7 +37,11 @@ for (const filePath of targets) {
     }
     throw error
   }
-  const isLargeBundle = source.length > 1_000_000
+  const isLargeBundle = source.length > largeBundleLimit
+  if (!requestedTargets.length && isLargeBundle) {
+    console.log(`kept minified large bundle ${filePath.replace(`${process.cwd()}/`, '')}`)
+    continue
+  }
   const result = JavaScriptObfuscator.obfuscate(source, {
     compact: true,
     controlFlowFlattening: false,
@@ -48,7 +53,7 @@ for (const filePath of targets) {
     simplify: true,
     sourceMap: false,
     splitStrings: false,
-    // Large UMD and worker bundles can exceed local memory when every string is lifted.
+    // Explicit large-target obfuscation keeps the safer low-memory settings.
     stringArray: !isLargeBundle,
     stringArrayEncoding: [],
     stringArrayThreshold: isLargeBundle ? 0 : 0.2,
