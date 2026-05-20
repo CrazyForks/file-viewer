@@ -46,8 +46,20 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "main": "dist/index.umd.js",
-  "module": "dist/index.mjs",
+  "main": "./dist/index.mjs",
+  "browser": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/src/package/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./dist/file-viewer3.css": "./dist/file-viewer3.css",
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
   "types": "dist/src/package/index.d.ts",
   "dependencies": {
     "@cadview/core": "^0.5.0",
