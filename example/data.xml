@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<preview-suite name="Flyfish Viewer" version="1.0.9">
-  <environment framework="vue2.7" bundler="vite" />
+<preview-suite name="Flyfish Viewer" version="1.0.10">
+  <environment framework="vue3" bundler="vite" />
 
   <groups>
     <group id="document" label="Documents">
@@ -10,10 +10,17 @@
     </group>
     <group id="drawing" label="CAD">
       <format extension="dxf" renderer="@cadview/core" pan="true" zoom="true" />
-      <format extension="dwg" renderer="compatibility-message" />
+      <format extension="dwg" renderer="embedded-preview-or-guidance" />
       <format extension="excalidraw" renderer="@excalidraw/excalidraw" async="true" />
       <format extension="drawio" renderer="diagrams.net GraphViewer" async="true" />
       <format extension="dio" renderer="diagrams.net GraphViewer" async="true" />
+    </group>
+    <group id="model" label="3D Models">
+      <format extension="gltf" renderer="three.js" async="true" />
+      <format extension="obj" renderer="three.js" async="true" />
+      <format extension="stl" renderer="three.js" async="true" />
+      <format extension="ply" renderer="three.js" async="true" />
+      <format extension="step" renderer="conversion-guidance" async="true" />
     </group>
     <group id="source" label="Code and Data">
       <format extension="ts" renderer="highlight.js" />
@@ -29,6 +36,7 @@
   <smoke-tests>
     <test id="picker-default" expected="first-group-open" />
     <test id="pdf-fit-width" expected="toolbar-and-nav-visible" />
+    <test id="model-viewer" expected="render-or-clear-guidance" />
     <test id="code-highlight" expected="escaped-source" />
   </smoke-tests>
 </preview-suite>

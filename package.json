@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer3",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "private": false,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
@@ -92,6 +92,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "styled-exceljs": "0.21.1",
+    "three": "^0.184.0",
     "tinycolor2": "^1.6.0",
     "v-viewer": "^3.0.23",
     "viewerjs": "^1.11.7",

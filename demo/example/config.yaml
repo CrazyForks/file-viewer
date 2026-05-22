@@ -2,8 +2,8 @@ viewer:
   name: Flyfish Viewer
   mode: component
   packages:
-    vue3: "@flyfish-group/file-viewer3@1.0.9"
-    vue2: "@flyfish-group/file-viewer@1.0.9"
+    vue3: "@flyfish-group/file-viewer3@1.0.10"
+    vue2: "@flyfish-group/file-viewer@1.0.10"
   lazy: true
   defaultInput: url
   toolbar:
@@ -18,7 +18,11 @@ viewer:
     drawings:
       label: Drawings
       formats: [dxf, dwg, excalidraw, drawio, dio]
-      fallback: convert-dwg-to-dxf
+      fallback: dwg-embedded-preview-or-convert-to-dxf
+    models:
+      label: 3D Models
+      formats: [glb, gltf, obj, stl, ply, fbx, dae, 3ds, 3mf, amf, usd, usdz, kmz, pcd, wrl, vrml, xyz, vtk, vtp, step, stp, iges, igs, ifc, 3dm]
+      renderer: three.js
     ebooks:
       label: Ebooks
       formats: [epub, umd]
@@ -40,4 +44,5 @@ viewer:
     assertions:
       - sample-picker-closes-after-select
       - pdf-nav-can-toggle
+      - model-viewer-renders-or-explains
       - code-viewer-renders-highlight

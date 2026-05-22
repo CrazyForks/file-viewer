@@ -1,14 +1,14 @@
 {
   "name": "file-viewer",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "runtime": {
     "framework": "vue3",
     "viewerSite": "https://viewer.flyfish.dev",
     "docs": "https://doc.flyfish.dev"
   },
   "packages": {
-    "vue3": "@flyfish-group/file-viewer3@1.0.9",
-    "vue2": "@flyfish-group/file-viewer@1.0.9"
+    "vue3": "@flyfish-group/file-viewer3@1.0.10",
+    "vue2": "@flyfish-group/file-viewer@1.0.10"
   },
   "features": [
     {
@@ -20,7 +20,13 @@
     {
       "group": "drawing",
       "extensions": ["dxf", "dwg", "excalidraw", "drawio", "dio"],
-      "notes": ["DXF renders in browser", "DWG shows compatibility guidance", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
+      "notes": ["DXF renders in browser", "DWG extracts embedded previews when possible", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
+    },
+    {
+      "group": "model",
+      "extensions": ["glb", "gltf", "obj", "stl", "ply", "fbx", "dae", "3ds", "3mf", "amf", "usd", "usda", "usdc", "usdz", "kmz", "pcd", "wrl", "vrml", "xyz", "vtk", "vtp", "step", "stp", "iges", "igs", "ifc", "3dm"],
+      "renderer": "three.js",
+      "lazyLoaded": true
     },
     {
       "group": "ebook",
@@ -40,5 +46,5 @@
     "build": true,
     "browserSmoke": ["sample-picker", "code-preview", "pdf-toolbar"]
   },
-  "updatedAt": "2026-05-19T10:20:00+08:00"
+  "updatedAt": "2026-05-22T10:20:00+08:00"
 }
