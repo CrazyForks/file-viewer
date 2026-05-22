@@ -68,6 +68,18 @@ const sampleGroups: SampleGroup[] = [
     ]
   },
   {
+    title: '3D 模型',
+    description: 'GLTF / OBJ / STL / PLY',
+    family: 'model',
+    items: [
+      { name: 'GLTF', url: '/example/model.gltf' },
+      { name: 'OBJ', url: '/example/model.obj' },
+      { name: 'STL', url: '/example/model.stl' },
+      { name: 'PLY', url: '/example/model.ply' },
+      { name: 'STEP', url: '/example/model.step' }
+    ]
+  },
+  {
     title: '电子书',
     description: 'EPUB / UMD',
     family: 'ebook',
@@ -153,7 +165,11 @@ const sampleGroups: SampleGroup[] = [
 ]
 
 const presetFiles = sampleGroups.flatMap(group => group.items)
-const extraUploadExtensions = ['mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba']
+const extraUploadExtensions = [
+  'mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba',
+  'glb', 'fbx', 'dae', '3ds', '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz',
+  'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp'
+]
 
 const uploadAccept = Array.from(new Set([
   ...presetFiles.map(item => {
@@ -181,6 +197,33 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   ofd: { icon: 'OFD', family: 'layout' },
   dxf: { icon: 'CAD', family: 'cad' },
   dwg: { icon: 'CAD', family: 'cad' },
+  glb: { icon: '3D', family: 'model' },
+  gltf: { icon: '3D', family: 'model' },
+  obj: { icon: 'OBJ', family: 'model' },
+  stl: { icon: 'STL', family: 'model' },
+  ply: { icon: 'PLY', family: 'model' },
+  fbx: { icon: 'FBX', family: 'model' },
+  dae: { icon: 'DAE', family: 'model' },
+  '3ds': { icon: '3DS', family: 'model' },
+  '3mf': { icon: '3MF', family: 'model' },
+  amf: { icon: 'AMF', family: 'model' },
+  usd: { icon: 'USD', family: 'model' },
+  usda: { icon: 'USD', family: 'model' },
+  usdc: { icon: 'USD', family: 'model' },
+  usdz: { icon: 'USD', family: 'model' },
+  kmz: { icon: 'KMZ', family: 'model' },
+  step: { icon: 'STEP', family: 'model' },
+  stp: { icon: 'STEP', family: 'model' },
+  iges: { icon: 'IGES', family: 'model' },
+  igs: { icon: 'IGES', family: 'model' },
+  ifc: { icon: 'IFC', family: 'model' },
+  '3dm': { icon: '3DM', family: 'model' },
+  pcd: { icon: 'PCD', family: 'model' },
+  wrl: { icon: 'WRL', family: 'model' },
+  vrml: { icon: 'VRML', family: 'model' },
+  xyz: { icon: 'XYZ', family: 'model' },
+  vtk: { icon: 'VTK', family: 'model' },
+  vtp: { icon: 'VTP', family: 'model' },
   excalidraw: { icon: 'EX', family: 'drawing' },
   drawio: { icon: 'DIO', family: 'drawing' },
   dio: { icon: 'DIO', family: 'drawing' },
@@ -1173,6 +1216,11 @@ function updateSampleMenuGeometry() {
 .sample-file-icon[data-family='cad'] {
   background: linear-gradient(145deg, #d8f3f5, #ffffff);
   color: #0e7490;
+}
+
+.sample-file-icon[data-family='model'] {
+  background: linear-gradient(145deg, #e2f4d7, #ffffff);
+  color: #3f7d20;
 }
 
 .sample-file-icon[data-family='drawing'] {

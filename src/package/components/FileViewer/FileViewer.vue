@@ -160,7 +160,7 @@ const clearRenderedContent = () => {
   }
 }
 
-const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: number) => {
+const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: number, sourceUrl?: string) => {
   const out = output.value
   if (!out || !isCurrentRequest(version)) {
     return undefined
@@ -173,7 +173,10 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
   out.appendChild(child)
 
   try {
-    const rendered = await render(buffer, getExtend(file.name), child)
+    const rendered = await render(buffer, getExtend(file.name), child, {
+      filename: file.name,
+      url: sourceUrl
+    })
     if (!isCurrentRequest(version)) {
       rendered?.unmount?.()
       if (child.parentNode === out) {
@@ -191,14 +194,14 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
 }
 
 // 文件读取和渲染拆成一个独立步骤，方便后续给不同来源复用。
-const readAndRenderFile = async (file: File, version: number) => {
+const readAndRenderFile = async (file: File, version: number, sourceUrl?: string) => {
   filename.value = normalizeFilename(file.name || '')
   const arrayBuffer = await readBuffer(file)
   if (!(arrayBuffer instanceof ArrayBuffer) || !isCurrentRequest(version)) {
     return
   }
 
-  const rendered = await mountRenderedContent(arrayBuffer, file, version)
+  const rendered = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
   if (!isCurrentRequest(version)) {
     rendered?.unmount?.()
     return
@@ -249,7 +252,7 @@ const previewRemoteFile = async (url: string, version: number) => {
     }
 
     setLoadingMessage(PREVIEW_MESSAGE.reading)
-    await readAndRenderFile(wrapFileRef(data, nextFilename), version)
+    await readAndRenderFile(wrapFileRef(data, nextFilename), version, url)
   } catch (nextError) {
     if (!isCurrentRequest(version) || isAbortError(nextError)) {
       return

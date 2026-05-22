@@ -4,6 +4,12 @@
 
 ## 当前主线
 
+### 未发布：DWG 兼容和 3D 模型预览增强
+
+- DWG 入口从单纯提示转换改为尽力展示: 误命名 DXF 会直接按 DXF 解析，真实 DWG 会尝试提取内嵌 PNG/JPEG/BMP 预览图，并说明无法完整解析几何的原因
+- 新增 Three.js 3D 模型预览器，支持 `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`；`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` 会给出转换原因和建议
+- Demo 新增 GLTF / OBJ / STL / PLY 最小 3D 样例，支持格式矩阵更新到 101 个扩展名、16 条预览链路
+
 ### `v1.0.10` React / 纯 JS 安装文档修正版
 
 - React 包 `@flyfish-group/file-viewer-react@1.0.10` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.10` 同步发布到 npm `latest`

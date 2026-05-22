@@ -10,14 +10,22 @@ const props = defineProps<{
 const canvas = ref<HTMLCanvasElement | null>(null)
 const layers = ref<DxfLayer[]>([])
 const activeTool = ref<Tool>('pan')
-const status = ref<'loading' | 'ready' | 'error'>('loading')
+const status = ref<'loading' | 'ready' | 'preview' | 'error'>('loading')
 const errorMessage = ref('')
+const previewUrl = ref('')
+const previewMessage = ref('')
 
 let viewer: CadViewerInstance | null = null
 let resizeObserver: ResizeObserver | null = null
+const decoder = new TextDecoder('utf-8')
 
-const unsupportedMessages: Record<string, string> = {
-  dwg: 'DWG 是专有 CAD 格式，当前 Apache 许可包未内置 GPL 转换器。请优先上传 DXF，或在业务侧转换为 DXF 后预览。'
+const dwgVersions: Record<string, string> = {
+  AC1015: 'AutoCAD 2000/2000i/2002',
+  AC1018: 'AutoCAD 2004/2005/2006',
+  AC1021: 'AutoCAD 2007/2008/2009',
+  AC1024: 'AutoCAD 2010/2011/2012',
+  AC1027: 'AutoCAD 2013/2014/2015/2016/2017',
+  AC1032: 'AutoCAD 2018/2019/2020/2021/2022/2023/2024'
 }
 
 const normalizeError = (reason: unknown) => {
@@ -25,6 +33,72 @@ const normalizeError = (reason: unknown) => {
     return reason.message
   }
   return typeof reason === 'string' ? reason : JSON.stringify(reason)
+}
+
+const revokePreview = () => {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+    previewUrl.value = ''
+  }
+}
+
+const findSequence = (bytes: Uint8Array, sequence: number[], from = 0) => {
+  for (let index = from; index <= bytes.length - sequence.length; index += 1) {
+    let matched = true
+    for (let offset = 0; offset < sequence.length; offset += 1) {
+      if (bytes[index + offset] !== sequence[offset]) {
+        matched = false
+        break
+      }
+    }
+    if (matched) {
+      return index
+    }
+  }
+  return -1
+}
+
+const extractDwgPreview = () => {
+  const bytes = new Uint8Array(props.data)
+  const pngStart = findSequence(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+  if (pngStart >= 0) {
+    const pngEnd = findSequence(bytes, [0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82], pngStart)
+    if (pngEnd > pngStart) {
+      return new Blob([bytes.slice(pngStart, pngEnd + 8)], { type: 'image/png' })
+    }
+  }
+
+  const jpgStart = findSequence(bytes, [0xff, 0xd8, 0xff])
+  if (jpgStart >= 0) {
+    const jpgEnd = findSequence(bytes, [0xff, 0xd9], jpgStart + 3)
+    if (jpgEnd > jpgStart) {
+      return new Blob([bytes.slice(jpgStart, jpgEnd + 2)], { type: 'image/jpeg' })
+    }
+  }
+
+  const bmpStart = findSequence(bytes, [0x42, 0x4d])
+  if (bmpStart >= 0 && bmpStart + 6 < bytes.length) {
+    const view = new DataView(props.data, bmpStart)
+    const size = view.getUint32(2, true)
+    if (size > 14 && bmpStart + size <= bytes.length) {
+      return new Blob([bytes.slice(bmpStart, bmpStart + size)], { type: 'image/bmp' })
+    }
+  }
+
+  return null
+}
+
+const getCadHeader = () => {
+  const bytes = new Uint8Array(props.data.slice(0, 64))
+  return Array.from(bytes)
+    .map(byte => byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : ' ')
+    .join('')
+    .trim()
+}
+
+const looksLikeDxf = () => {
+  const header = decoder.decode(props.data.slice(0, Math.min(props.data.byteLength, 512)))
+  return /\bSECTION\b/.test(header) || /\$ACADVER/.test(header)
 }
 
 const setTool = (tool: Tool) => {
@@ -53,6 +127,7 @@ const loadDxf = async () => {
 
   status.value = 'loading'
   errorMessage.value = ''
+  revokePreview()
 
   try {
     const { CadViewer } = await import('@cadview/core')
@@ -76,11 +151,35 @@ const loadDxf = async () => {
   }
 }
 
+const loadDwg = async () => {
+  if (looksLikeDxf()) {
+    await loadDxf()
+    return
+  }
+
+  status.value = 'loading'
+  errorMessage.value = ''
+  revokePreview()
+
+  const header = getCadHeader().slice(0, 6)
+  const version = dwgVersions[header] ? `${header}（${dwgVersions[header]}）` : header || '未知 DWG 版本'
+  const preview = extractDwgPreview()
+
+  if (preview) {
+    previewUrl.value = URL.createObjectURL(preview)
+    previewMessage.value = `已从 DWG 二进制中提取内嵌预览图，版本 ${version}。这是文件保存时写入的快照，不等同于完整 CAD 几何解析。`
+    status.value = 'preview'
+    return
+  }
+
+  status.value = 'error'
+  errorMessage.value = `DWG 是专有二进制 CAD 格式，当前 Apache-2.0 前端包未内置 GPL 或闭源 DWG 解码器；此文件也没有可提取的内嵌预览图。请在业务侧转换为 DXF 后预览，或接入私有服务端转换链路。检测到的版本为 ${version}。`
+}
+
 const load = async () => {
   const type = props.type.toLowerCase()
-  if (unsupportedMessages[type]) {
-    status.value = 'error'
-    errorMessage.value = unsupportedMessages[type]
+  if (type === 'dwg') {
+    await loadDwg()
     return
   }
   await loadDxf()
@@ -104,6 +203,7 @@ onBeforeUnmount(() => {
   resizeObserver = null
   viewer?.destroy()
   viewer = null
+  revokePreview()
 })
 </script>
 
@@ -135,6 +235,10 @@ onBeforeUnmount(() => {
       <div class='cad-canvas-wrap'>
         <canvas ref='canvas' />
         <div v-if='status === "loading"' class='cad-state'>正在解析 CAD...</div>
+        <div v-else-if='status === "preview"' class='dwg-preview'>
+          <img :src='previewUrl' alt='DWG 内嵌预览图' />
+          <p>{{ previewMessage }}</p>
+        </div>
         <div v-else-if='status === "error"' class='cad-state error'>{{ errorMessage }}</div>
       </div>
     </div>
@@ -260,6 +364,34 @@ onBeforeUnmount(() => {
 
 .cad-state.error {
   color: #b42318;
+}
+
+.dwg-preview {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.dwg-preview img {
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.dwg-preview p {
+  margin: 0;
+  color: #5f6f82;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
 }
 
 @media (max-width: 720px) {

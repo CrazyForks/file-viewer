@@ -84,9 +84,15 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 因为当前版本把 `html` 放在代码/文本类型里处理，它会展示并高亮源内容，而不会把文件当作网页直接执行。这是为了保证预览行为更安全、更可控，也更适合代码和模板查看。
 
-## 为什么 DWG 会提示转换为 DXF
+## DWG 能直接预览吗
 
-DXF 当前走 `@cadview/core` 在浏览器端直接预览。DWG 是专有二进制格式，常见前端解析包存在 GPL 授权约束或需要额外转换运行时，所以组件不会默认把 DWG 解析器打进包里。业务侧可以先把 DWG 转成 DXF，再交给预览器展示。
+DXF 当前走 `@cadview/core` 在浏览器端直接预览。DWG 会先做兼容处理: 如果文件内容其实是 DXF 文本，会直接按 DXF 打开；如果是真 DWG 二进制，会尝试提取文件内嵌 PNG/JPEG/BMP 预览图并展示。
+
+真实 DWG 的完整矢量图元和几何解析仍建议在业务侧转换为 DXF。原因是 DWG 是专有二进制格式，常见前端解析器存在 GPL 授权约束或需要闭源 SDK / 转换运行时，当前 Apache-2.0 npm 包不会默认打入这些依赖。
+
+## 3D 模型支持哪些格式
+
+3D 模型走 Three.js 按需渲染，当前支持 `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`。如果模型依赖外部贴图、材质或 `.bin`，远程 URL 预览会按原文件目录继续加载；本地上传建议优先使用单文件 `.glb`。`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` 会进入 3D 预览器并说明为什么需要私有转换链路。
 
 ## Excalidraw 和 draw.io 是怎么预览的
 

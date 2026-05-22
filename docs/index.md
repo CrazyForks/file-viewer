@@ -10,7 +10,7 @@ titleTemplate: false
 <div class="doc-eyebrow">Official Docs And Component Home</div>
 <h1>Flyfish Viewer</h1>
 <p>
-纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音频和视频预览能力放进浏览器端，
+纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音频和视频预览能力放进浏览器端，
 同时提供 Vue3、Vue2.7、React、纯 JS 和 iframe 多种集成路径。
 </p>
 <div class="doc-home-actions">
@@ -23,11 +23,11 @@ titleTemplate: false
 
 <section class="doc-home-metrics" aria-label="Flyfish Viewer 核心指标">
 <div>
-<strong>74</strong>
+<strong>101</strong>
 <span>个扩展名映射</span>
 </div>
 <div>
-<strong>15</strong>
+<strong>16</strong>
 <span>条预览链路</span>
 </div>
 <div>
@@ -64,7 +64,7 @@ titleTemplate: false
 <article>
 <span>02</span>
 <h3>重型能力按需进入</h3>
-<p>OFD、CAD、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮都拆成异步块，命中格式时再加载。</p>
+<p>OFD、CAD、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音频和代码高亮都拆成异步块，命中格式时再加载。</p>
 </article>
 <article>
 <span>03</span>
@@ -89,7 +89,7 @@ titleTemplate: false
 </article>
 <article class="doc-card">
 <h3>格式覆盖贴近业务</h3>
-<p>除了 Office、PDF 和图片，也补齐 OFD、DXF、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音频和 MP4；PPTX 对组合图形、主题背景和 EMF 图片做了专门增强。</p>
+<p>除了 Office、PDF 和图片，也补齐 OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、日志、配置文件、音频和 MP4；PPTX 对组合图形、主题背景和 EMF 图片做了专门增强。</p>
 </article>
 <article class="doc-card">
 <h3>阅读质感有兜底</h3>

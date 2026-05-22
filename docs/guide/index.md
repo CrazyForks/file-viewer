@@ -26,11 +26,11 @@
   </div>
   <div class="doc-card">
     <h3>覆盖真实附件场景</h3>
-    <p>内置 74 个扩展名映射，覆盖 Office、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和视频。</p>
+    <p>内置 101 个扩展名映射，覆盖 Office、PDF、OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和视频。</p>
   </div>
   <div class="doc-card">
     <h3>按需加载更轻</h3>
-    <p>OFD、CAD、绘图、PDF、Office、Markdown 和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
+    <p>OFD、CAD、3D 模型、绘图、PDF、Office、Markdown 和代码高亮链路按格式异步加载，避免所有解析器一次性进入首屏。</p>
   </div>
   <div class="doc-card">
     <h3>阅读体验更完整</h3>
@@ -47,7 +47,7 @@
   </div>
   <div class="doc-card">
     <h3>确认格式边界</h3>
-    <p>支持格式页列出当前注册的 74 个扩展名、对应渲染链路和真实业务里的适用边界。</p>
+    <p>支持格式页列出当前注册的 101 个扩展名、对应渲染链路和真实业务里的适用边界。</p>
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
@@ -65,7 +65,8 @@
 - PPTX 视图增强组合图形坐标映射、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图预览，更适合回看真实汇报模板。
 - PDF 视图支持宽度自适应、缩放工具栏、页码状态和可显隐导航窗格。
 - OFD 使用 `DLTech21/ofd.js` 的浏览器端解析和渲染能力，并保持按需异步加载。
-- CAD 支持 DXF 在线预览，DWG 作为兼容入口给出转换提示，避免引入不合适的运行时授权链路。
+- CAD 支持 DXF 在线预览；DWG 会先尝试按 DXF 兼容解析，再提取内嵌预览图，无法完整解析几何时给出原因。
+- 3D 模型走 Three.js，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开。
 - 代码和文本使用 `highlight.js` 轻量高亮，HTML 会按源码展示。

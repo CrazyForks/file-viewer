@@ -12,7 +12,8 @@ import renderCad from './cad'
 import renderDrawing from './drawing'
 import renderEpub from './ebook'
 import renderUmd from './umd'
-import type { AppWrapper, FileHandler, FileHandlerComposite } from '@/package/common/type'
+import renderModel, { MODEL_EXTENSIONS } from './model'
+import type { AppWrapper, FileHandler, FileHandlerComposite, FileRenderContext } from '@/package/common/type'
 
 // 假装构造一个vue的包装，让上层统一处理销毁和替换节点
 const createWrapper = (el: HTMLDivElement): AppWrapper => ({
@@ -75,11 +76,18 @@ const handlers: Array<FileHandlerComposite> = [
       return renderOfd(buffer, target)
     }
   },
-  // CAD 预览当前内置 DXF。DWG 因专有格式和 GPL 转换器约束，不默认打进库里。
+  // CAD 内置 DXF 几何预览；DWG 会识别误命名 DXF，并尽量提取二进制内嵌预览图。
   {
     accepts: ['dxf', 'dwg'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       return renderCad(buffer, target, type)
+    }
+  },
+  // 3D 模型使用 Three.js 按需解析，覆盖浏览器可交互渲染的主流交换格式。
+  {
+    accepts: MODEL_EXTENSIONS,
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
+      return renderModel(buffer, target, type, context)
     }
   },
   // Excalidraw / draw.io 都是绘图类文本格式，使用官方预览库并保持独立异步加载。
@@ -146,7 +154,7 @@ const handlers: Array<FileHandlerComposite> = [
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、CAD、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
+<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
       return createWrapper(target)
     }
   }

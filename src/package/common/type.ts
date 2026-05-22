@@ -27,16 +27,34 @@ export type Rendered = App | AppWrapper;
 export type FileRef = File | Blob | ArrayBuffer;
 
 /**
+ * 渲染器可选上下文。
+ *
+ * 部分格式需要知道原始 URL 的目录，例如 glTF / DAE / FBX 会继续加载
+ * 同目录的贴图、bin 或材质文件。没有这些上下文时，渲染器仍应尽力预览
+ * 单文件内容，并在资源缺失时给出明确错误。
+ */
+export interface FileRenderContext {
+  filename?: string;
+  url?: string;
+}
+
+/**
  * 文件处理逻辑，用于声明具体格式的异步渲染器。
  *
- * 渲染器只在命中文件扩展名时被按需加载，避免 PDF、OFD、CAD、Office
- * 等重型依赖进入无关格式的首屏路径。
+ * 渲染器只在命中文件扩展名时被按需加载，避免 PDF、OFD、CAD、3D、
+ * Office 等重型依赖进入无关格式的首屏路径。
  *
  * @param buffer 二进制缓存
  * @param target 目标dom
  * @param type 目标扩展名。部分渲染器会用它选择语言、容错策略或格式提示。
+ * @param context 原始文件名、远端 URL 等补充上下文。
  */
-export type FileHandler = (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => Promise<Rendered>;
+export type FileHandler = (
+  buffer: ArrayBuffer,
+  target: HTMLDivElement,
+  type?: string,
+  context?: FileRenderContext
+) => Promise<Rendered>;
 
 /**
  * 文件处理器组合。
