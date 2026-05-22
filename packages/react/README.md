@@ -1,10 +1,12 @@
 # @flyfish-group/file-viewer-react
 
-React 文件预览组件。只提供私有化部署路线: 依赖的 `@flyfish-group/file-viewer-web` 会随包携带 Vue 基线 viewer 产物，并在安装后复制到宿主项目 `public/file-viewer`。React 组件默认加载 `/file-viewer/index.html`，不依赖任何外部服务。
+React 文件预览组件。只提供私有化部署路线: 依赖的 `@flyfish-group/file-viewer-web` 会随包携带 Vue 基线 viewer 产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会复制到宿主项目 `public/file-viewer`。React 组件默认加载 `/file-viewer/index.html`，不依赖任何外部服务。
 
 ```bash
-pnpm add @flyfish-group/file-viewer-react
+npm install @flyfish-group/file-viewer-react@1.0.10
 ```
+
+pnpm 10 默认会拦截依赖包的 `postinstall`。如果安装后提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
 ```tsx
 import FileViewer from '@flyfish-group/file-viewer-react'

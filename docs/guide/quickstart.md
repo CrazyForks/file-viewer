@@ -13,7 +13,7 @@
 | --- | --- | --- | --- |
 | Vue3 组件集成 | 单个 Vue 3 项目内直接使用 | 主推基线，完整渲染能力直接进入 Vue 应用 | [Vue3 集成](/guide/quickstart-vue3) |
 | Vue2 组件集成 | Vue2.7 项目内直接使用 | 保留旧业务栈，体验与 v3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
-| React 组件集成 | React 17 / 18 / 19 项目 | 安装即复制私有化 viewer，组件内用 iframe 加载 | [React 集成](/guide/quickstart-react) |
+| React 组件集成 | React 17 / 18 / 19 项目 | npm 安装即复制私有化 viewer，组件内用 iframe 加载 | [React 集成](/guide/quickstart-react) |
 | 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | 用 helper 创建 iframe，部署和升级边界清楚 | [纯 JS 集成](/guide/quickstart-web) |
 | Iframe 嵌入 | 多系统复用、异构系统、需要隔离依赖 | 升级集中、宿主系统更轻、适合平台化 | [Iframe 嵌入](/guide/iframe) |
 
@@ -24,7 +24,8 @@
 ## 运行环境
 
 - Node.js `>= 18`
-- 推荐使用 `pnpm`
+- Vue2 / Vue3 项目推荐使用 `pnpm`
+- React / 纯 JS 适配包推荐使用 `npm install`，pnpm 10 会默认审批依赖安装脚本
 - 浏览器需要支持现代前端能力，建议优先在最新版 Chrome 或 Edge 中联调
 
 ## Vue3 最短路径
@@ -88,7 +89,7 @@ new Vue({
 React 17 / 18 / 19 项目安装:
 
 ```bash
-pnpm add @flyfish-group/file-viewer-react
+npm install @flyfish-group/file-viewer-react@1.0.10
 ```
 
 ```tsx
@@ -103,14 +104,14 @@ export function Preview() {
 }
 ```
 
-安装后依赖包会把 viewer 静态产物复制到 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。完整步骤见 [React 集成](/guide/quickstart-react)。
+安装后依赖包会把 viewer 静态产物复制到 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。如果使用 pnpm 10，请按 [React 集成](/guide/quickstart-react) 中的说明允许 `@flyfish-group/file-viewer-web` 的安装脚本，或手动运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
 ## 纯 JS 最短路径
 
 不使用框架时安装:
 
 ```bash
-pnpm add @flyfish-group/file-viewer-web
+npm install @flyfish-group/file-viewer-web@1.0.10
 ```
 
 ```html
@@ -125,7 +126,7 @@ pnpm add @flyfish-group/file-viewer-web
 </script>
 ```
 
-完整步骤见 [纯 JS 集成](/guide/quickstart-web)。
+如果使用 pnpm 10，请按 [纯 JS 集成](/guide/quickstart-web) 中的说明允许 `@flyfish-group/file-viewer-web` 的安装脚本，或手动运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。完整步骤见 [纯 JS 集成](/guide/quickstart-web)。
 
 ## Iframe 最短路径
 

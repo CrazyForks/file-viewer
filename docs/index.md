@@ -128,11 +128,11 @@ titleTemplate: false
 </a>
 <a class="doc-path-card" href="/guide/quickstart-react">
 <strong>React 项目</strong>
-<span>安装 @flyfish-group/file-viewer-react@1.0.9，通过 iframe 加载私有化 viewer。</span>
+<span>安装 @flyfish-group/file-viewer-react@1.0.10，通过 iframe 加载私有化 viewer。</span>
 </a>
 <a class="doc-path-card" href="/guide/quickstart-web">
 <strong>纯 JS 页面</strong>
-<span>安装 @flyfish-group/file-viewer-web@1.0.9，用 helper 创建和同步 iframe。</span>
+<span>安装 @flyfish-group/file-viewer-web@1.0.10，用 helper 创建和同步 iframe。</span>
 </a>
 <a class="doc-path-card" href="/guide/iframe">
 <strong>多系统复用</strong>

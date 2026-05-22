@@ -9,17 +9,25 @@
 
 ## 安装
 
-```bash
-pnpm add @flyfish-group/file-viewer-web
-```
-
-也可以使用 `npm`:
+推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web
+npm install --save @flyfish-group/file-viewer-web@1.0.10
 ```
 
-安装后，包内的 Vue3 基线 viewer 产物会自动复制到宿主项目的 `public/file-viewer`。上线时请确保这个目录会被你的构建工具作为静态资源发布。
+如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
+
+```bash
+pnpm approve-builds
+```
+
+并允许 `@flyfish-group/file-viewer-web`。也可以安装后手动运行:
+
+```bash
+pnpm exec file-viewer-copy-assets ./public/file-viewer
+```
+
+使用 `npm install` 或已允许 pnpm 安装脚本后，包内的 Vue3 基线 viewer 产物会自动复制到宿主项目的 `public/file-viewer`。上线时请确保这个目录会被你的构建工具作为静态资源发布。
 
 ## 最短示例
 

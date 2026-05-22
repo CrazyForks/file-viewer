@@ -21,6 +21,8 @@ const skipBuild = args.includes('--skip-build')
 const keepOldArtifacts = args.includes('--keep-old-artifacts')
 const packageJson = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'))
 const version = packageJson.version
+const webPackageJson = JSON.parse(await readFile(join(sourceRoot, 'packages', 'web', 'package.json'), 'utf8'))
+const reactPackageJson = JSON.parse(await readFile(join(sourceRoot, 'packages', 'react', 'package.json'), 'utf8'))
 const releaseDir = join(sourceRoot, '.release', `file-viewer-v3-${version}`)
 const demoStagingDir = join(releaseDir, 'demo')
 const adapterDemoStagingDir = join(releaseDir, 'adapter-demo')
@@ -112,8 +114,8 @@ async function findPackedNpmTarball() {
 async function findAdapterTarballs() {
   const entries = await readdir(adapterPackDir)
   const expected = [
-    `flyfish-group-file-viewer-web-${version}.tgz`,
-    `flyfish-group-file-viewer-react-${version}.tgz`
+    `flyfish-group-file-viewer-web-${webPackageJson.version}.tgz`,
+    `flyfish-group-file-viewer-react-${reactPackageJson.version}.tgz`
   ]
   for (const name of expected) {
     if (!entries.includes(name)) {
@@ -156,6 +158,10 @@ async function writeReleaseManifest(repoDir) {
     generatedAt: new Date().toISOString(),
     sourceBranch: currentBranch(),
     sourceCommit: run('git', ['rev-parse', '--short', 'HEAD'], { capture: true }),
+    adapterPackages: {
+      [webPackageJson.name]: webPackageJson.version,
+      [reactPackageJson.name]: reactPackageJson.version
+    },
     publicRepo: repoDir,
     artifactOnly: true,
     allowedRoots: ['README.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']

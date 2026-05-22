@@ -4,6 +4,12 @@
 
 ## 当前主线
 
+### `v1.0.10` React / 纯 JS 安装文档修正版
+
+- React 包 `@flyfish-group/file-viewer-react@1.0.10` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.10` 同步发布到 npm `latest`
+- 适配包仍复用 Vue3 `@flyfish-group/file-viewer3@1.0.9` 构建出来的私有化 viewer 静态产物
+- 文档和 npm README 改为推荐 `npm install` 零步骤安装，并补充 pnpm 10 拦截 `postinstall` 时的 `pnpm approve-builds` / `pnpm exec file-viewer-copy-assets` 处理方式
+
 ### `v1.0.9` 媒体、绘图与电子书预览增强版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.9` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.9` 同步发布到 npm `latest`

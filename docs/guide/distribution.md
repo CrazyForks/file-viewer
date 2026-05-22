@@ -15,8 +15,8 @@
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
 | npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.9` |
 | npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.9` |
-| npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前版本为 `1.0.9` |
-| npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前版本为 `1.0.9` |
+| npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.10` |
+| npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前 latest 为 `1.0.10` |
 | 私有化 viewer 静态产物 | `file-viewer/index.html` | React、纯 JS 和 iframe 方案默认加载的 Vue3 基线预览器 |
 | GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、示例和可下载 tarball |
 | 源码自助开通 | [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop) | 付费 4.99 后自助开通源码或二开资源 |
@@ -58,7 +58,7 @@ new Vue({
 ### React
 
 ```bash
-pnpm add @flyfish-group/file-viewer-react
+npm install @flyfish-group/file-viewer-react@1.0.10
 ```
 
 ```tsx
@@ -73,12 +73,12 @@ export function Preview() {
 }
 ```
 
-安装后依赖的 web 包会把 Vue3 基线 viewer 产物复制到宿主项目 `public/file-viewer`。如果静态目录不同，请手动执行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并传入 `viewerUrl="/vendor/file-viewer/index.html"`。
+安装后依赖的 web 包会把 Vue3 基线 viewer 产物复制到宿主项目 `public/file-viewer`。如果使用 pnpm 10，请允许 `@flyfish-group/file-viewer-web` 的安装脚本，或执行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。如果静态目录不同，请手动执行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并传入 `viewerUrl="/vendor/file-viewer/index.html"`。
 
 ### 纯 JS
 
 ```bash
-pnpm add @flyfish-group/file-viewer-web
+npm install @flyfish-group/file-viewer-web@1.0.10
 ```
 
 ```ts
@@ -94,8 +94,8 @@ mountViewerFrame(document.getElementById('viewer')!, {
 如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用公开成品仓库 `artifacts/` 里的 tarball:
 
 ```bash
-pnpm add ./artifacts/flyfish-group-file-viewer-web-1.0.9.tgz
-pnpm add ./artifacts/flyfish-group-file-viewer-react-1.0.9.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-1.0.10.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-1.0.10.tgz
 ```
 
 React tarball 会依赖同版本的 `@flyfish-group/file-viewer-web`，所以离线安装时请先安装 web 包，再安装 React 包。
