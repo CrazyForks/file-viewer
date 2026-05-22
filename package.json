@@ -22,7 +22,7 @@
     "type": "git",
     "url": "git+https://github.com/flyfish-dev/file-viewer.git"
   },
-  "homepage": "https://viewer.flyfish.dev",
+  "homepage": "https://github.com/flyfish-dev/file-viewer",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
@@ -37,9 +37,16 @@
     "test:build": "vue-tsc --noEmit && vite build",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
+    "type-check:adapters": "pnpm --filter @flyfish-group/file-viewer-web type-check && pnpm --filter @flyfish-group/file-viewer-react type-check",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
     "build-lib-only": "vite build --mode lib",
+    "build:viewer-assets": "pnpm build-only && node scripts/sync-viewer-assets.mjs",
+    "build:adapters": "pnpm build:viewer-assets && pnpm --filter @flyfish-group/file-viewer-web build && pnpm --filter @flyfish-group/file-viewer-react build",
+    "dev:adapters": "pnpm --filter @flyfish-group/file-viewer-demo dev",
+    "build:adapter-demo": "pnpm --filter @flyfish-group/file-viewer-demo build",
+    "release:adapters:pack": "pnpm build:adapters && mkdir -p .release/adapters && pnpm -C packages/web pack --pack-destination ../../.release/adapters && pnpm -C packages/react pack --pack-destination ../../.release/adapters",
+    "release:adapters:publish": "pnpm build:adapters && pnpm -C packages/web publish --access public && pnpm -C packages/react publish --access public",
     "obfuscate": "node scripts/obfuscate-dist.mjs",
     "release:pack": "pnpm type-check && pnpm build-lib-only && pnpm obfuscate && npm pack",
     "release:public": "node scripts/sync-public-artifacts.mjs",

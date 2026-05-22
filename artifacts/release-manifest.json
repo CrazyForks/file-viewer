@@ -1,7 +1,7 @@
 {
   "version": "1.0.9",
   "package": "@flyfish-group/file-viewer3",
-  "generatedAt": "2026-05-20T08:26:45.869Z",
+  "generatedAt": "2026-05-22T01:48:01.425Z",
   "sourceBranch": "v3",
   "sourceCommit": "56552e7",
   "publicRepo": "/Users/wangyu/IdeaProjects/file-viewer-public",
@@ -12,6 +12,7 @@
     "package.json",
     "dist",
     "demo",
+    "adapter-demo",
     "docs",
     "example",
     "artifacts"
