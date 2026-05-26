@@ -40,7 +40,7 @@ React / 纯 JS 包推荐用 `npm install` 获得安装即复制的体验。pnpm 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
 - **格式覆盖完整。** 当前内置 135 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
 - **按需异步加载。** PDF、OFD、压缩包、邮件、OLB/DRA、CAD、3D 模型、绘图、Office、EPUB、UMD、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
-- **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关和水印 options，适合合同、归档和审批类场景。
+- **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关和水印 options；PDF 会逐页输出完整页面，不依赖当前视口，适合合同、归档和审批类场景。
 - **阅读体验更像产品。** `.doc`、`.docx`、PDF 都保留灰色工作台、白色纸张、居中阅读和自适应缩放，避免“内容能打开但不好读”的落差。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
 - **Vue2 / Vue3 体验一致。** `main` 分支面向 Vue2.7，`v3` 分支面向 Vue3；两边共享完整格式覆盖、示例文件盒子、文档站和 iframe 集成体验。
@@ -58,7 +58,7 @@ React / 纯 JS 包推荐用 `npm install` 获得安装即复制的体验。pnpm 
 | Excel | `xlsx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并和常见样式 | 需要保留表格结构和样式的业务 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | 统一解析，按格式可用信息渐进还原样式 | 老表格、轻量数据查看 |
 | PowerPoint | `pptx` | 浏览幻灯片内容，增强组合图形、主题背景、图片裁剪与 EMF 矢量图预览 | 汇报材料、课件、方案 |
-| PDF | `pdf` | 基于 `pdfjs-dist` 预览，支持缩放工具栏、页码状态和可显隐导航窗格 | 合同、票据、版式成品 |
+| PDF | `pdf` | 基于 `pdfjs-dist` 预览，支持缩放工具栏、页码状态、可显隐导航窗格、宽度自适应、完整打印和导出 HTML | 合同、票据、版式成品 |
 | OFD | `ofd` | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支 | 电子发票、公文、归档材料 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | 基于 `libarchive.js` 的 WASM Worker 读取目录，点击后按需解压内部文件并复用统一预览器，支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg` | EML 使用 `postal-mime`，MSG 使用 `@kenjiuno/msgreader`，支持头信息、HTML/文本正文、附件下载与附件预览 | 邮件归档、工单邮件、客户来信附件 |

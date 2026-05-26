@@ -42,4 +42,4 @@ export function Preview() {
 <FileViewer viewerUrl="/vendor/file-viewer/index.html" url={url} />
 ```
 
-`options` 会透传给 Vue 基线预览器，可配置下载/打印/导出 HTML 操作栏、文字或图片水印，以及压缩包预览的 `libarchive.js` Worker、IndexedDB 缓存和体积上限。
+`options` 会透传给 Vue 基线预览器，可配置下载/打印/导出 HTML 操作栏、文字或图片水印，以及压缩包预览的 `libarchive.js` Worker、IndexedDB 缓存和体积上限。PDF 打印和导出会逐页生成完整页面，不依赖当前 iframe 视口或已渲染 canvas。

@@ -35,7 +35,7 @@
 | Excel | `xlsx` | `styled-exceljs` + `e-virt-table` | 支持虚拟滚动、列宽/行高、合并单元格和常见样式 | 大表格预览、报表、需要保留结构和样式的业务 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` | 统一读取数据、尺寸和可用样式，按浏览器能力渐进还原 | 老表格、跨平台导出的表格、轻量数据查看 |
 | PowerPoint | `pptx` | 自定义 PPTX 渲染器 | 以页面展示为主，增强组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图预览 | 汇报材料、说明文档、培训课件 |
-| PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，支持缩放工具栏、页码状态和可显隐导航窗格 | 合同、票据、版式稳定文件 |
+| PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，支持缩放工具栏、页码状态、可显隐导航窗格、宽度自适应、完整打印和导出 HTML | 合同、票据、版式稳定文件 |
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | `libarchive.js` + WASM Worker | 先读取目录，点击文件后按需解压；内部文件继续复用统一预览器，并支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg` | `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
@@ -79,7 +79,8 @@
 - PPTX 渲染器现在会按 DrawingML 的组合图形坐标系处理 `chOff/chExt`，组合内元素在缩放、旋转、翻转时会更接近 PowerPoint 中的位置关系。
 - 主题背景支持从 `fillStyleLst` / `bgFillStyleLst` 解析纯色、渐变、图片和平铺图案；PPTX 内嵌的 EMF 图片会尽量转换为 SVG 数据图，避免只显示空白占位。
 - 图片填充会处理 `srcRect` 裁剪信息，复杂模板里的裁切图、背景图和组合形状更适合作为真实业务样本回归。
-- `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。当前 PDF 视图提供顶部缩放工具栏、页码状态和可显隐页面导航窗格。
+- `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。当前 PDF 视图提供顶部缩放工具栏、页码状态、可显隐页面导航窗格和宽度自适应。
+- PDF 的打印与导出 HTML 会通过专属导出适配器逐页生成完整页面，不依赖当前滚动位置、当前可见页或已经渲染的 canvas，适合正式归档和审批留痕。
 - `ofd` 走 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，OFD 依赖仍保持按需异步加载。
 - 如果你更在意“展示结果必须完全稳定”，优先考虑 `pdf` / `ofd` 这类版式成品；如果你需要保留可编辑文件的阅读入口，优先用 `pptx`。
 

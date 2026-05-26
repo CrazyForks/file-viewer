@@ -59,7 +59,7 @@ titleTemplate: false
 <article>
 <span>01</span>
 <h3>打开即适配阅读宽度</h3>
-<p>PDF 和 Word 会按当前视口计算默认缩放，导航窗格开启时也尽量保留可读区域。</p>
+<p>PDF 和 Word 会按当前视口计算默认缩放，导航窗格开启时也尽量保留可读区域，PDF 打印和导出也会逐页输出完整内容。</p>
 </article>
 <article>
 <span>02</span>
