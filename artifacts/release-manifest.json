@@ -3,7 +3,7 @@
   "package": "@flyfish-group/file-viewer3",
   "generatedAt": "2026-05-31T14:08:24.526Z",
   "sourceBranch": "v3",
-  "sourceCommit": "0dc2848",
+  "sourceCommit": "6dec60f",
   "adapterPackages": {
     "@flyfish-group/file-viewer-web": "1.0.16",
     "@flyfish-group/file-viewer-react": "1.0.16"
