@@ -21,7 +21,11 @@ type __VLS_Props = {
      */
     options?: FileViewerOptions;
 };
-declare const __VLS_export: import('vue').DefineComponent<__VLS_Props, {}, {}, {}, {}, import('vue').ComponentOptionsMixin, import('vue').ComponentOptionsMixin, {} & {
+declare const __VLS_export: import('vue').DefineComponent<__VLS_Props, {
+    downloadOriginalFile: () => Promise<void>;
+    printRenderedHtml: () => Promise<void>;
+    exportRenderedHtml: () => Promise<void>;
+}, {}, {}, {}, import('vue').ComponentOptionsMixin, import('vue').ComponentOptionsMixin, {} & {
     "load-start": (context: FileViewerLifecycleContext) => any;
     "load-complete": (context: FileViewerLifecycleContext) => any;
     "unload-start": (context: FileViewerLifecycleContext) => any;
