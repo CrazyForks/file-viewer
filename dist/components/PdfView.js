@@ -26806,7 +26806,10 @@ var GO = { class: "pdf-toolbar" }, KO = ["aria-pressed"], qO = { class: "pdf-too
 						F.resource === i && (F.resource = null, yield ae(i));
 						return;
 					}
-					l.value = h.numPages, c.value = 1, F.document = h, (a = t.exportAdapter) == null || a.call(t, { toHtml: fe }), le(h), f.setDocument(h), s.setDocument(h, null);
+					l.value = h.numPages, c.value = 1, F.document = h, (a = t.exportAdapter) == null || a.call(t, {
+						includeDocumentStyles: !1,
+						toHtml: fe
+					}), le(h), f.setDocument(h), s.setDocument(h, null);
 				} catch (e) {
 					if (F.resource === i && (F.resource = null, ae(i)), ne || r !== re) return;
 					o.value = "error", s.value = e instanceof Error ? e.message : "PDF 加载失败";
@@ -26978,6 +26981,6 @@ var GO = { class: "pdf-toolbar" }, KO = ["aria-pressed"], qO = { class: "pdf-too
 			class: "pdf-wrapper"
 		}, [t[9] || (t[9] = h("div", { class: "pdfViewer" }, null, -1)), o.value === "loading" ? (S(), m("div", gk, "正在加载 PDF...")) : o.value === "error" ? (S(), m("div", _k, T(s.value), 1)) : p("", !0)], 512)])])], 2));
 	}
-}), [["__scopeId", "data-v-d5b72fb6"]]);
+}), [["__scopeId", "data-v-acd70827"]]);
 //#endregion
 export { wk as default };

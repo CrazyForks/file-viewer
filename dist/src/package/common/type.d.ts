@@ -100,6 +100,18 @@ export interface FileViewerLifecycleHooks {
     onUnloadComplete?: (context: FileViewerLifecycleContext) => void | Promise<void>;
 }
 export type FileViewerOperationType = 'download' | 'print' | 'export-html';
+/**
+ * 当前文档对内置操作的真实可用性。
+ *
+ * `toolbar` 只表达宿主想不想展示某个按钮；这里表达当前文件类型和渲染器
+ * 是否真的能稳定完成该操作。尤其是打印，虚拟表格、播放器、3D 画布、
+ * EPUB iframe 等链路无法保证完整分页输出时会主动关闭。
+ */
+export interface FileViewerOperationAvailability {
+    download: boolean;
+    print: boolean;
+    exportHtml: boolean;
+}
 export interface FileViewerOperationContext extends Omit<FileViewerLifecycleContext, 'phase'> {
     operation: FileViewerOperationType;
     label: string;
@@ -140,6 +152,21 @@ export interface FileRenderExportOptions {
  * 渲染器专属导出适配器。
  */
 export interface FileRenderExportAdapter {
+    /**
+     * 当前渲染器是否允许打印。未设置时由文件类型能力矩阵兜底判断。
+     */
+    print?: boolean;
+    /**
+     * 当前渲染器是否允许导出渲染后的 HTML。
+     */
+    exportHtml?: boolean;
+    /**
+     * 是否把当前页面的全局 style/link 一并带进导出窗口。
+     *
+     * 专属分页适配器通常会自行输出必要样式，应关闭该项，避免宿主应用的
+     * `height: 100vh`、`overflow: hidden` 等布局样式干扰浏览器分页打印。
+     */
+    includeDocumentStyles?: boolean;
     beforeSnapshot?: () => Promise<void> | void;
     toHtml?: (options: FileRenderExportOptions) => Promise<string> | string;
 }

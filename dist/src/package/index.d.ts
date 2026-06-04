@@ -19,4 +19,4 @@ declare class Installer implements FileViewerInstaller {
 declare const _default: Installer;
 export default _default;
 export { FileViewer };
-export type { FileRef, FileViewerArchiveOptions, FileViewerBeforeOperation, FileViewerLifecycleContext, FileViewerLifecycleHooks, FileViewerLifecyclePhase, FileViewerOperationContext, FileViewerOperationType, FileViewerOptions, FileViewerSourceType, FileViewerToolbarOptions, FileViewerWatermarkOptions } from './common/type';
+export type { FileRef, FileRenderExportAdapter, FileRenderExportMode, FileRenderExportOptions, FileViewerArchiveOptions, FileViewerBeforeOperation, FileViewerLifecycleContext, FileViewerLifecycleHooks, FileViewerLifecyclePhase, FileViewerOperationAvailability, FileViewerOperationContext, FileViewerOperationType, FileViewerOptions, FileViewerSourceType, FileViewerToolbarOptions, FileViewerWatermarkOptions } from './common/type';
