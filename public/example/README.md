@@ -2,7 +2,7 @@
 
 当前目录用于演示文件预览与 iframe 嵌入联调。主示例页会从这里读取内置样本，覆盖当前已注册的主要格式入口。
 
-PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用可追溯的公开样本或项目内最小夹具；UMD、EML、OLB、DRA 和压缩包样例由项目内生成，来源和许可见下方“公开样例来源”。这样既能避免手写占位文件过于理想化，也方便后续升级依赖时复现真实文件的兼容性问题。
+PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提供的真实资料、可追溯的公开样本或项目内最小夹具；UMD、EML、OLB、DRA 和压缩包样例由项目内生成，来源和许可见下方“公开样例来源”。这样既能避免手写占位文件过于理想化，也方便后续升级依赖时复现真实文件的兼容性问题。
 
 代码/配置/日志类样本刻意保留了更接近真实业务的结构，例如异步加载计划、文件类型识别、错误处理、配置嵌套、SQL CTE、Shell 参数处理和多语言类型定义。这样可以更充分地验证 `highlight.js` 对注释、字符串、泛型、对象嵌套、缩进、diff 和长行滚动的展示效果。
 
@@ -19,7 +19,7 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用可追溯的
 - `excel.fods`: 验证 `fods` 扩展名入口
 - `excel.numbers`: 验证 `numbers` 扩展名入口
 - `ppt.pptx`: 验证 `pptx` 幻灯片渲染、组合图形、主题背景和图片资源
-- `pdf.pdf`: 使用 W3C 轻量公开 PDF 验证阅读体验、缩放工具栏和页面导航
+- `pdf.pdf`: 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》验证长文档阅读、缩放工具栏、页面/目录导航、完整打印和 HTML 导出
 - `ofd.ofd`: 验证 `ofd.js` 在线预览
 - `drawing.dxf`: 使用公开 DXF CAD 样例验证图纸预览
 - `sample.dwg`: 使用公开 DWG 样例验证 DWG 兼容预览和原因提示
@@ -94,6 +94,7 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用可追溯的
 | 文件 | 公开来源 | 许可 |
 | --- | --- | --- |
 | `drawing.dxf` | `mozman/ezdxf` 的 `examples_dxf/wipeout_door.dxf` | MIT |
+| `pdf.pdf` | 项目方提供的《PDF沉浸式翻译技术说明》真实示例文档 | 项目 Demo 授权 |
 | `sample.dwg` | `dshn06/cad-webviewer-unity` 的 `baseline-sample.dwg` | MIT |
 | `model.gltf` / `model.obj` / `model.stl` / `model.ply` / `model.step` | 项目内生成的最小 3D fixture | Apache-2.0 |
 | `flow.excalidraw` | `neo4j-labs/agent-memory` 的 `poleo-model.excalidraw` | Apache-2.0 |

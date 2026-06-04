@@ -193,10 +193,10 @@ importers:
   packages/demo:
     dependencies:
       '@flyfish-group/file-viewer-react':
-        specifier: workspace:^1.0.17
+        specifier: workspace:^1.0.18
         version: link:../react
       '@flyfish-group/file-viewer-web':
-        specifier: workspace:^1.0.17
+        specifier: workspace:^1.0.18
         version: link:../web
       react:
         specifier: ^19.2.6
@@ -221,7 +221,7 @@ importers:
   packages/react:
     dependencies:
       '@flyfish-group/file-viewer-web':
-        specifier: workspace:^1.0.17
+        specifier: workspace:^1.0.18
         version: link:../web
     devDependencies:
       '@types/react':

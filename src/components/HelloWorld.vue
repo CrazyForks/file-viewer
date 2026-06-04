@@ -54,7 +54,7 @@ const sampleGroups: SampleGroup[] = [
     items: [
       { name: 'DOC', url: '/example/test.doc' },
       { name: 'DOCX', url: '/example/word.docx' },
-      { name: 'PDF', url: '/example/pdf.pdf' },
+      { name: 'PDF 技术说明', url: '/example/pdf.pdf' },
       { name: 'OFD', url: '/example/ofd.ofd' }
     ]
   },

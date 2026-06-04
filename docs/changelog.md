@@ -4,6 +4,16 @@
 
 ## 当前主线
 
+### `v1.0.18` 公开 issue 修复与真实 PDF 示例版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.18`、Vue2 包 `@flyfish-group/file-viewer@1.0.18`、React 包 `@flyfish-group/file-viewer-react@1.0.18` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.18` 统一推进到连续版本
+- 修复 GitHub issue #13: PDF 旋转页与导航配置兼容性增强，新增 `options.pdf.navigation` 和 `options.pdf.defaultNavigationVisible`，继续保持页侧边栏 / 树形目录侧边栏切换
+- 修复 GitHub issue #9 与 #8: Excel 自动文本色更可靠，支持 workbook drawing 图片渲染，并按渲染链路隐藏不可靠的打印 / 导出入口
+- 修复 GitHub issue #4: `.doc` 表格布局和单元格可读性增强，老 Word 文档在白色纸张容器里更接近实际阅读效果
+- 修复 GitHub issue #1: `.doc` 的 `msdoc-viewer` CFB 局部 sector 容错改为包管理器无关的 `scripts/patch-msdoc-viewer.mjs`，npm / pnpm / yarn 安装后都可在构建前自动应用
+- Demo PDF 替换为项目方提供的 13 页《PDF沉浸式翻译技术说明》，用于验证长文档阅读、缩放、页导航、树形目录、完整打印和 HTML 导出
+- 文档站、README、集成说明、示例来源、公开成品包和 npm 版本说明同步刷新到 `1.0.18`
+
 ### `v1.0.17` 打印能力矩阵与完整页打印版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.17`、Vue2 包 `@flyfish-group/file-viewer@1.0.17`、React 包 `@flyfish-group/file-viewer-react@1.0.17` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.17` 统一推进到连续版本

@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer3",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "private": false,
   "type": "module",
   "packageManager": "pnpm@11.0.9",

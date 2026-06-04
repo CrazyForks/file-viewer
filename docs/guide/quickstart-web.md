@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web@1.0.17
+npm install --save @flyfish-group/file-viewer-web@1.0.18
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
