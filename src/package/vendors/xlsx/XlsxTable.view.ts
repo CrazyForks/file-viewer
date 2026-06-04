@@ -23,14 +23,14 @@ import {
   RowState
 } from './XlsxTable.state'
 
-const INDEX_COLUMN_WIDTH = 68
+export const INDEX_COLUMN_WIDTH = 68
 const TABLE_FONT_FAMILY = 'Aptos, Calibri, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif'
 const TABLE_FONT_SIZE = 11
 const MIN_RENDERABLE_ROW_HEIGHT = 8
 const HIDDEN_ROW_HEIGHT = 0.1
 const CELL_PADDING = 2
 const CELL_LINE_HEIGHT = 1.2
-const HEADER_HEIGHT = 34
+export const HEADER_HEIGHT = 34
 const EXCEL_HEADER_BG = '#f3f3f3'
 const EXCEL_HEADER_TEXT = '#5f6368'
 const EXCEL_GRID = '#d7dbe0'

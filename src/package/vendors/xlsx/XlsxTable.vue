@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import EVirtTable from 'e-virt-table'
-import type { SheetDefinition, SheetModel } from './worker/type'
+import type { SheetDefinition, SheetImage, SheetModel } from './worker/type'
 import { SheetJsWorker } from './worker'
 import { useWorker } from '@/package/use'
 import {
@@ -25,6 +25,8 @@ import {
   detectIndexOffset,
   getDisplayColumns,
   getRowHeight,
+  HEADER_HEIGHT,
+  INDEX_COLUMN_WIDTH,
   normalizeRowHeight,
   normalizeCellStyle
 } from './XlsxTable.view'
@@ -44,6 +46,13 @@ const sheetInitializing = ref(true)
 const hasInitialWindow = ref(false)
 const loadedWindowCount = ref(0)
 const loadingWindowCount = ref(0)
+const sheetImages = ref<SheetImage[]>([])
+const imageViewport = ref({
+  scrollX: 0,
+  scrollY: 0,
+  width: 0,
+  height: 0
+})
 
 const activeSheet = computed(() => sheets.value.find(sheet => sheet.id === sheetIndex.value))
 const sheetTabs = computed(() => {
@@ -86,6 +95,28 @@ const statusSummary = computed(() => {
   }
   return `共 ${rows} 行，${cols} 列，按视口预取平滑加载`
 })
+const imageClipStyle = {
+  left: `${INDEX_COLUMN_WIDTH}px`,
+  top: `${HEADER_HEIGHT}px`
+}
+const imageLayerStyle = computed(() => ({
+  transform: `translate(${-imageViewport.value.scrollX}px, ${-imageViewport.value.scrollY}px)`
+}))
+const visibleImages = computed(() => {
+  const margin = 240
+  const viewport = imageViewport.value
+  const width = Math.max(viewport.width - INDEX_COLUMN_WIDTH, 0)
+  const height = Math.max(viewport.height - HEADER_HEIGHT, 0)
+
+  return sheetImages.value.filter((image) => {
+    const x = image.left - viewport.scrollX
+    const y = image.top - viewport.scrollY
+    return x + image.width >= -margin &&
+      x <= width + margin &&
+      y + image.height >= -margin &&
+      y <= height + margin
+  })
+})
 
 const compositeWorkerFactory = () => {
   return SheetJsWorker.create()
@@ -95,6 +126,7 @@ const { loading, worker, onWorkerEvent } = useWorker(compositeWorkerFactory)
 
 let virtualState = createEmptyVirtualState()
 const sheetStateCache = new Map<number, VirtualSheetState>()
+const sheetImageCache = new Map<number, SheetImage[]>()
 let table: EVirtTable | null = null
 let resizeObserver: ResizeObserver | null = null
 let resizeFrame = 0
@@ -115,6 +147,24 @@ const getHostHeight = () => {
 const syncWindowStats = () => {
   loadedWindowCount.value = virtualState.loadedWindows.size
   loadingWindowCount.value = virtualState.loadingWindows.size
+}
+
+const syncImageViewport = () => {
+  imageViewport.value = {
+    scrollX: table?.ctx.scrollX || 0,
+    scrollY: table?.ctx.scrollY || 0,
+    width: tableHost.value?.clientWidth || 0,
+    height: tableHost.value?.clientHeight || 0
+  }
+}
+
+const getImageStyle = (image: SheetImage) => {
+  return {
+    left: `${Math.round(image.left)}px`,
+    top: `${Math.round(image.top)}px`,
+    width: `${Math.round(image.width)}px`,
+    height: `${Math.round(image.height)}px`
+  }
 }
 
 const buildTableView = () => {
@@ -155,6 +205,7 @@ const scheduleViewportLoad = () => {
     scrollDirection = scrollY >= lastScrollY ? 1 : -1
     lastScrollY = scrollY
     viewportRange = { start: head, end: tail }
+    syncImageViewport()
     ensureViewportWindows(head, tail)
   })
 }
@@ -173,6 +224,7 @@ const ensureTable = () => {
       virtualState
     })
   })
+  table.on('onScrollX', scheduleViewportLoad)
   table.on('onScrollY', scheduleViewportLoad)
   table.on('resize', scheduleViewportLoad)
 
@@ -198,11 +250,13 @@ const renderTable = (
   instance.loadColumns(view.columns)
   instance.loadData(rows)
   instance.draw()
+  syncImageViewport()
 
   if (resetScroll) {
     requestAnimationFrame(() => {
       instance.scrollTo(0, 0)
       instance.draw()
+      syncImageViewport()
       scheduleViewportLoad()
     })
     return
@@ -224,6 +278,7 @@ const syncTableLayout = () => {
   }
   instance.doLayout()
   instance.draw()
+  syncImageViewport()
   scheduleViewportLoad()
 }
 
@@ -442,6 +497,14 @@ const applySheetStructure = (ws: SheetModel) => {
   }
 
   applyStructureRowHeights(structure?.rowHeights)
+
+  if (structure?.images) {
+    sheetImages.value = structure.images
+    const sheetId = getActiveSheetId()
+    if (sheetId !== undefined) {
+      sheetImageCache.set(sheetId, structure.images)
+    }
+  }
 }
 
 const applyVirtualWindow = (ws: SheetModel) => {
@@ -482,10 +545,12 @@ const resetViewState = () => {
   totalRows.value = 0
   totalCols.value = 0
   sheetDefaults.value = { ...DEFAULT_SHEET_DEFAULTS }
+  sheetImages.value = []
   virtualState = createEmptyVirtualState()
   hasInitialWindow.value = false
   resetViewportTracking()
   syncWindowStats()
+  syncImageViewport()
 
   if (!table) {
     return
@@ -518,6 +583,7 @@ const restoreCachedSheetState = (sheetId: number) => {
   totalRows.value = cached.totalRows
   totalCols.value = cached.totalCols
   sheetDefaults.value = cached.defaults
+  sheetImages.value = sheetImageCache.get(sheetId) || []
   hasInitialWindow.value = cached.loadedWindows.size > 0
   sheetInitializing.value = !hasInitialWindow.value
   syncWindowStats()
@@ -528,6 +594,7 @@ const restoreCachedSheetState = (sheetId: number) => {
       return
     }
     renderTable(instance, cached.columns, cached.rows)
+    syncImageViewport()
   })
 
   return true
@@ -610,6 +677,7 @@ watch(() => props.data, () => {
   sheets.value = []
   sheetIndex.value = 0
   sheetStateCache.clear()
+  sheetImageCache.clear()
   sheetInitializing.value = true
   resetViewState()
   emitParseWorkbook()
@@ -672,6 +740,24 @@ onBeforeUnmount(() => {
       </div>
       <div class='table-host'>
         <div ref='tableHost' class='table-target' style='width: 100%; height: 100%;' />
+        <div
+          v-if='visibleImages.length'
+          class='excel-image-viewport'
+          :style='imageClipStyle'
+          aria-hidden='true'
+        >
+          <div class='excel-image-layer' :style='imageLayerStyle'>
+            <img
+              v-for='(image, index) in visibleImages'
+              :key='`${image.id}-${index}`'
+              class='excel-image'
+              :src='image.src'
+              :alt='image.id'
+              :style='getImageStyle(image)'
+              draggable='false'
+            />
+          </div>
+        </div>
       </div>
     </div>
     <div class='toolbar'>
@@ -748,6 +834,32 @@ onBeforeUnmount(() => {
 .table-host {
   position: absolute;
   inset: 0;
+}
+
+.excel-image-viewport {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 35;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.excel-image-layer {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.excel-image {
+  position: absolute;
+  display: block;
+  max-width: none;
+  object-fit: contain;
+  user-select: none;
 }
 
 .table-host :deep(.e-virt-table-container),

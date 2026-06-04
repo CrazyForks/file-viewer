@@ -16,6 +16,7 @@ const readOptions = {
   cellDates: true,
   cellStyles: true,
   browserPixels: true,
+  drawings: true,
   validateMerges: true
 }
 

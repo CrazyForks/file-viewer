@@ -3,18 +3,23 @@ import type {
   CellObject,
   CellStyle,
   ColInfo,
+  DrawingImage,
+  DrawingMarker,
   Range,
   RowInfo,
   StyleColor,
   WorkSheet
 } from 'styled-exceljs'
 import { utils } from 'styled-exceljs'
-import type { CellMerge, SheetColumn, SheetModel, SheetStructure, SheetWindow } from '../type'
+import type { CellMerge, SheetColumn, SheetImage, SheetModel, SheetStructure, SheetWindow } from '../type'
 import { getTintColor, indexedColors } from './color'
 
 const EXCEL_DEFAULT_COLUMN_WIDTH = 8.43
 const EXCEL_DEFAULT_ROW_HEIGHT_PT = 15
 const EXCEL_DEFAULT_TEXT_COLOR = '#202124'
+const EMU_PER_PIXEL = 9525
+const DEFAULT_IMAGE_WIDTH = 480
+const DEFAULT_IMAGE_HEIGHT = 288
 const AUTO_FIT_MIN_WIDTH = 24
 const AUTO_FIT_PADDING = 8
 
@@ -115,6 +120,21 @@ const getColumnPixelWidth = (column?: SheetColumnMeta) => {
   }
 
   return undefined
+}
+
+const getVectorSize = (
+  sizes: number | number[] | undefined,
+  index: number,
+  fallback: number
+) => {
+  if (typeof sizes === 'number') {
+    return sizes
+  }
+  return sizes?.[index] ?? fallback
+}
+
+const emuToPixels = (value: number | undefined) => {
+  return (value || 0) / EMU_PER_PIXEL
 }
 
 const hasColumnWidth = (column?: SheetColumnMeta) => {
@@ -485,6 +505,67 @@ export default class SheetJsModel implements SheetModel {
     return this.ws[utils.encode_cell({ r: row, c: col })] as CellObject | undefined
   }
 
+  private getAxisOffset(
+    index: number,
+    sizes: number | number[] | undefined,
+    fallback: number
+  ) {
+    let offset = 0
+    for (let current = 0; current < index; current += 1) {
+      offset += getVectorSize(sizes, current, fallback)
+    }
+    return offset
+  }
+
+  private getMarkerLeft(marker?: DrawingMarker) {
+    if (!marker) {
+      return 0
+    }
+    return this.getAxisOffset(marker.col || 0, this.getColWidths(), this.defaults.colWidth) + emuToPixels(marker.colOff)
+  }
+
+  private getMarkerTop(marker?: DrawingMarker) {
+    if (!marker) {
+      return 0
+    }
+    return this.getAxisOffset(marker.row || 0, this.getAllRowHeights(), this.defaults.rowHeight) + emuToPixels(marker.rowOff)
+  }
+
+  private getImages(): SheetImage[] | undefined {
+    const drawings = (this.ws as WorkSheet & { '!drawings'?: { images?: DrawingImage[] } })['!drawings']
+    const images = drawings?.images || []
+    if (!images.length) {
+      return undefined
+    }
+
+    const result = images.flatMap((image, index): SheetImage[] => {
+      const anchor = image.anchor
+      if (!image.dataURI || !anchor) {
+        return []
+      }
+
+      const from = anchor.from
+      const left = from ? this.getMarkerLeft(from) : emuToPixels(anchor.pos?.x)
+      const top = from ? this.getMarkerTop(from) : emuToPixels(anchor.pos?.y)
+      const right = anchor.to ? this.getMarkerLeft(anchor.to) : left + emuToPixels(anchor.ext?.cx)
+      const bottom = anchor.to ? this.getMarkerTop(anchor.to) : top + emuToPixels(anchor.ext?.cy)
+
+      return [{
+        id: image.id || image.objectId?.toString() || image.target || `image-${index + 1}`,
+        src: image.dataURI,
+        contentType: image.contentType,
+        left: Math.max(0, left),
+        top: Math.max(0, top),
+        width: Math.max(1, right > left ? right - left : DEFAULT_IMAGE_WIDTH),
+        height: Math.max(1, bottom > top ? bottom - top : DEFAULT_IMAGE_HEIGHT),
+        row: from?.row || 0,
+        col: from?.col || 0
+      }]
+    })
+
+    return result.length ? result : undefined
+  }
+
   private getAllMerge(): Array<CellMerge> {
     const sheet: WorkSheet = this.ws
     const { '!merges': merges = [] } = sheet
@@ -656,7 +737,8 @@ export default class SheetJsModel implements SheetModel {
       merge: this.getAllMerge(),
       colWidths: this.getColWidths(),
       rowHeights: this.getAllRowHeights(),
-      columns: this.getColumns()
+      columns: this.getColumns(),
+      images: this.getImages()
     }
   }
 

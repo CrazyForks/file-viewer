@@ -5,11 +5,24 @@ export declare interface CellMerge {
   colspan: number
 }
 
+export declare interface SheetImage {
+  id: string,
+  src: string,
+  contentType?: string,
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+  row: number,
+  col: number
+}
+
 export declare interface SheetStructure {
   merge?: CellMerge[],
   colWidths?: number | number[],
   rowHeights?: number | number[],
-  columns?: SheetColumn[]
+  columns?: SheetColumn[],
+  images?: SheetImage[]
 }
 
 export declare interface SheetColumn {
