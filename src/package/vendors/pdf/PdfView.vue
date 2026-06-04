@@ -2,13 +2,14 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
-import type { FileRenderExportOptions, FileRenderExportAdapter } from '@/package/common/type'
+import type { FileRenderExportOptions, FileRenderExportAdapter, FileViewerPdfOptions } from '@/package/common/type'
 import './pdf.css'
 import PDFWorkerPort from './worker'
 
 const props = defineProps<{
   data: ArrayBuffer,
   exportAdapter?: (adapter: FileRenderExportAdapter | null) => void,
+  options?: FileViewerPdfOptions,
 }>()
 
 const MIN_SCALE = 0.2
@@ -18,6 +19,7 @@ const FIT_HORIZONTAL_PADDING = 28
 const PAGE_BORDER_WIDTH = 18
 const PDF_EXPORT_MAX_PAGE_PIXELS = 8_000_000
 type PdfNavMode = 'pages' | 'outline'
+type PdfRotation = 0 | 90 | 180 | 270
 interface PdfOutlineItemView {
   id: string;
   title: string;
@@ -32,7 +34,7 @@ interface PdfFlattenedOutlineItem {
 
 // PDF.js 的滚动容器。
 const container = ref<HTMLDivElement | null>(null)
-const navVisible = ref(true)
+const navVisible = ref(props.options?.navigation === false ? false : props.options?.defaultNavigationVisible !== false)
 const navMode = ref<PdfNavMode>('pages')
 const loadStatus = ref<'loading' | 'ready' | 'error'>('loading')
 const errorMessage = ref('')
@@ -40,8 +42,10 @@ const currentPage = ref(1)
 const pageCount = ref(0)
 const currentScale = ref(1)
 const autoFitWidth = ref(true)
+const currentRotation = ref<PdfRotation>(normalizeRotation(props.options?.rotation ?? 0))
 const outlineItems = ref<PdfOutlineItemView[]>([])
 
+const navigationEnabled = computed(() => props.options?.navigation !== false)
 const pages = computed(() => Array.from({ length: pageCount.value }, (_, index) => index + 1))
 const outlineCount = computed(() => {
   const countItems = (items: PdfOutlineItemView[]): number => items.reduce((total, item) => total + 1 + countItems(item.items), 0)
@@ -61,6 +65,7 @@ const flattenedOutlineItems = computed<PdfFlattenedOutlineItem[]>(() => {
   return result
 })
 const scaleText = computed(() => `${Math.round(currentScale.value * 100)}%`)
+const rotationText = computed(() => `${currentRotation.value}°`)
 const canGoPrevious = computed(() => currentPage.value > 1)
 const canGoNext = computed(() => currentPage.value < pageCount.value)
 const canZoomOut = computed(() => currentScale.value > MIN_SCALE)
@@ -96,6 +101,11 @@ function createPdfWorker() {
 
   // 每个 PDF 视图使用独立 worker，避免快速切换文件时复用同一个 workerPort 撞上 PDF.js 的 pendingDestroy 状态。
   return PdfJsWorker.create({ port: PDFWorkerPort.create() })
+}
+
+function normalizeRotation(rotation: number): PdfRotation {
+  const normalized = ((Math.round(rotation / 90) * 90) % 360 + 360) % 360
+  return (normalized === 90 || normalized === 180 || normalized === 270 ? normalized : 0) as PdfRotation
 }
 
 async function destroyPdfResource(resource: PdfResource | null) {
@@ -170,9 +180,15 @@ async function renderPdfPagesForExport(options: FileRenderExportOptions) {
     }
 
     const page = await pdfDocument.getPage(pageNumber)
-    const baseViewport = page.getViewport({ scale: PixelsPerInch.PDF_TO_CSS_UNITS })
+    const baseViewport = page.getViewport({
+      scale: PixelsPerInch.PDF_TO_CSS_UNITS,
+      rotation: currentRotation.value
+    })
     const exportRatio = getPdfExportRatio(baseViewport.width, baseViewport.height, options.mode)
-    const renderViewport = page.getViewport({ scale: PixelsPerInch.PDF_TO_CSS_UNITS * exportRatio })
+    const renderViewport = page.getViewport({
+      scale: PixelsPerInch.PDF_TO_CSS_UNITS * exportRatio,
+      rotation: currentRotation.value
+    })
     const canvas = document.createElement('canvas')
     const canvasContext = canvas.getContext('2d')
     if (!canvasContext) {
@@ -232,6 +248,7 @@ async function loadFile() {
     pdfLinkService.setViewer(pdfViewer)
 
     eventBus.on('pagesinit', () => {
+      applyRotation(currentRotation.value)
       fitToWidth()
       loadStatus.value = 'ready'
 
@@ -300,7 +317,10 @@ function getPageWidthAtScaleOne(pdfViewer: PDFViewer) {
   const pageView = pdfViewer.getPageView(0)
   const pdfPage = pageView?.pdfPage
   if (pdfPage) {
-    return pdfPage.getViewport({ scale: PixelsPerInch.PDF_TO_CSS_UNITS }).width
+    return pdfPage.getViewport({
+      scale: PixelsPerInch.PDF_TO_CSS_UNITS,
+      rotation: currentRotation.value
+    }).width
   }
 
   const viewportWidth = pageView?.viewport?.width
@@ -359,6 +379,30 @@ function zoomOut() {
   setScale(currentScale.value - SCALE_STEP)
 }
 
+function applyRotation(rotation: number) {
+  const normalized = normalizeRotation(rotation)
+  currentRotation.value = normalized
+  if (!context.viewer) {
+    return
+  }
+  context.viewer.pagesRotation = normalized
+  nextTick(() => {
+    if (autoFitWidth.value) {
+      fitToWidth()
+      return
+    }
+    context.viewer?.update()
+  })
+}
+
+function rotateLeft() {
+  applyRotation(currentRotation.value - 90)
+}
+
+function rotateRight() {
+  applyRotation(currentRotation.value + 90)
+}
+
 function goToPage(pageNumber: number) {
   if (!context.viewer || !pageCount.value) return
   const nextPage = Math.min(pageCount.value, Math.max(1, pageNumber))
@@ -371,6 +415,9 @@ function setNavMode(mode: PdfNavMode) {
 }
 
 function toggleNav() {
+  if (!navigationEnabled.value) {
+    return
+  }
   navVisible.value = !navVisible.value
   // 导航窗格改变宽度后，默认保持“适合宽度”，避免页面被侧栏挤出可视区。
   nextTick(() => {
@@ -429,9 +476,10 @@ onBeforeUnmount(() => {
 
 </script>
 <template>
-  <div class='pdf-shell' :class="{ 'pdf-shell--nav-hidden': !navVisible }">
+  <div class='pdf-shell' :class="{ 'pdf-shell--nav-hidden': !navigationEnabled || !navVisible }">
     <div class='pdf-toolbar'>
       <button
+        v-if='navigationEnabled'
         class='pdf-icon-button'
         :class="{ 'pdf-icon-button--active': navVisible }"
         type='button'
@@ -495,10 +543,32 @@ onBeforeUnmount(() => {
           <span aria-hidden='true'>+</span>
         </button>
       </div>
+
+      <div class='pdf-toolbar-group pdf-toolbar-group--rotate'>
+        <button
+          class='pdf-icon-button'
+          type='button'
+          title='向左旋转'
+          aria-label='向左旋转'
+          @click='rotateLeft'
+        >
+          <span aria-hidden='true'>↺</span>
+        </button>
+        <span class='pdf-rotation-meter'>{{ rotationText }}</span>
+        <button
+          class='pdf-icon-button'
+          type='button'
+          title='向右旋转'
+          aria-label='向右旋转'
+          @click='rotateRight'
+        >
+          <span aria-hidden='true'>↻</span>
+        </button>
+      </div>
     </div>
 
     <div class='pdf-content'>
-      <aside v-if='navVisible' class='pdf-nav-pane'>
+      <aside v-if='navigationEnabled && navVisible' class='pdf-nav-pane'>
         <div class='pdf-nav-head'>
           <span>{{ navMode === 'pages' ? '页面导航' : '目录导航' }}</span>
           <strong>{{ navMode === 'pages' ? `${pageCount} 页` : `${outlineCount} 项` }}</strong>
@@ -609,6 +679,10 @@ onBeforeUnmount(() => {
     margin-left: auto;
 }
 
+.pdf-toolbar-group--rotate {
+    flex-shrink: 0;
+}
+
 .pdf-icon-button,
 .pdf-scale-button {
     display: inline-flex;
@@ -687,6 +761,17 @@ onBeforeUnmount(() => {
 .pdf-page-meter strong {
     color: #1e293b;
     font-size: 14px;
+}
+
+.pdf-rotation-meter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .pdf-content {

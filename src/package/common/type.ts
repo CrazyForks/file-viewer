@@ -86,6 +86,24 @@ export interface FileViewerArchiveOptions {
   maxEntryPreviewSize?: number;
 }
 
+/**
+ * PDF 预览配置。
+ */
+export interface FileViewerPdfOptions {
+  /**
+   * 是否启用左侧页面/目录导航窗格。设为 `false` 时会同时隐藏侧栏和切换按钮。
+   */
+  navigation?: boolean;
+  /**
+   * 导航窗格初始是否展开。未设置时默认展开，`navigation: false` 时会被忽略。
+   */
+  defaultNavigationVisible?: boolean;
+  /**
+   * 初始页面旋转角度。会按 90 度归一化到 0 / 90 / 180 / 270。
+   */
+  rotation?: number;
+}
+
 export type FileViewerSourceType = 'file' | 'url' | 'empty';
 
 export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';
@@ -142,6 +160,7 @@ export interface FileViewerOptions {
   watermark?: boolean | FileViewerWatermarkOptions;
   toolbar?: boolean | FileViewerToolbarOptions;
   archive?: FileViewerArchiveOptions;
+  pdf?: FileViewerPdfOptions;
   /**
    * 文档加载/卸载生命周期钩子。直接使用 Vue 组件时可以传函数；
    * iframe 集成时同名事件会通过 `postMessage` 向宿主发送。
