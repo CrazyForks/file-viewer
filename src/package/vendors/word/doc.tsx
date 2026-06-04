@@ -30,6 +30,38 @@ const WORD_PAGE_CSS = `
   box-shadow:0 1px 3px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.12);
   overflow-wrap:anywhere;
 }
+/* 表格不能沿用正文的 anywhere 断词，否则旧 DOC 的列宽和单元格内容会被过度压缩。 */
+.msdoc-page .msdoc-table{
+  display:table;
+  width:auto;
+  max-width:100%;
+  table-layout:auto!important;
+  border-collapse:collapse;
+  border-spacing:0;
+}
+.msdoc-page .msdoc-table tbody,
+.msdoc-page .msdoc-table tr{
+  width:auto;
+}
+.msdoc-page .msdoc-cell{
+  min-width:1.5em;
+  padding:4px 6px;
+  vertical-align:top;
+  word-break:normal;
+  overflow-wrap:normal;
+  white-space:normal;
+}
+.msdoc-page .msdoc-cell .msdoc-paragraph{
+  margin:0 0 4px;
+  word-break:normal;
+  overflow-wrap:break-word;
+}
+.msdoc-page .msdoc-cell .msdoc-paragraph:last-child{
+  margin-bottom:0;
+}
+.msdoc-page .msdoc-cell span{
+  white-space:normal!important;
+}
 .msdoc-page .msdoc-page-break{
   display:none;
 }
