@@ -1,9 +1,9 @@
 {
   "version": "1.0.19",
   "package": "@flyfish-group/file-viewer3",
-  "generatedAt": "2026-06-05T16:06:58.023Z",
+  "generatedAt": "2026-06-05T16:20:36.543Z",
   "sourceBranch": "v3",
-  "sourceCommit": "138e6a2",
+  "sourceCommit": "398faae",
   "adapterPackages": {
     "@flyfish-group/file-viewer-web": "1.0.19",
     "@flyfish-group/file-viewer-react": "1.0.19"

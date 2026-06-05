@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./ArchiveViewer-CcaAEWxO.js","./index-DP0aBxNP.js","./index-B_rKNGx-.css","./nestedRender-BfyUMgZx.js","./ArchiveViewer-BQX-KSoY.css"])))=>i.map(i=>d[i]);
+import{C as e,S as t,d as n,t as r}from"./index-DP0aBxNP.js";var i=e(()=>r(()=>import(`./ArchiveViewer-CcaAEWxO.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(e,r,a){let o=n({render:()=>t(i,{data:e,filename:a?.filename||`archive.bin`,options:a?.options?.archive},null)});return o.mount(r),o}export{a as default};

@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./DrawingViewer-BG-a6aRI.js","./index-DP0aBxNP.js","./index-B_rKNGx-.css","./DrawingViewer-DHdPw80C.css"])))=>i.map(i=>d[i]);
+import{C as e,S as t,d as n,t as r}from"./index-DP0aBxNP.js";var i=e(()=>r(()=>import(`./DrawingViewer-BG-a6aRI.js`),__vite__mapDeps([0,1,2,3]),import.meta.url));async function a(e,r,a){let o=n({render:()=>t(i,{data:e,type:a||`drawio`},null)});return o.mount(r),o}export{a as default};

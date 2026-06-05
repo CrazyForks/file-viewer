@@ -26845,6 +26845,7 @@ var qO = { class: "pdf-toolbar" }, JO = ["aria-pressed"], YO = { class: "pdf-too
 						data: o.data,
 						worker: l || void 0,
 						cMapUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${jf}/cmaps/`,
+						wasmUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${jf}/wasm/`,
 						useWorkerFetch: !0,
 						cMapPacked: !0,
 						enableXfa: !0
@@ -27072,6 +27073,6 @@ var qO = { class: "pdf-toolbar" }, JO = ["aria-pressed"], YO = { class: "pdf-too
 			class: "pdf-wrapper"
 		}, [t[11] || (t[11] = _("div", { class: "pdfViewer" }, null, -1)), f.value === "loading" ? (w(), g("div", bk, "正在加载 PDF...")) : f.value === "error" ? (w(), g("div", xk, D(v.value), 1)) : h("", !0)], 512)])])], 2));
 	}
-}), [["__scopeId", "data-v-672cd26d"]]);
+}), [["__scopeId", "data-v-7770d843"]]);
 //#endregion
 export { Ok as default };

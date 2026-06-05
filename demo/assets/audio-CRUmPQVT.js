@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./AudioViewer-C3IIKG0j.js","./index-KfI519Il.js","./index-B_rKNGx-.css","./AudioViewer-0CSMvCtp.css"])))=>i.map(i=>d[i]);
-import{C as e,S as t,d as n,t as r}from"./index-KfI519Il.js";var i=e(()=>r(()=>import(`./AudioViewer-C3IIKG0j.js`),__vite__mapDeps([0,1,2,3]),import.meta.url));async function a(e,r,a){let o=n({render:()=>t(i,{data:e,type:a||`mp3`},null)});return o.mount(r),o}export{a as default};
