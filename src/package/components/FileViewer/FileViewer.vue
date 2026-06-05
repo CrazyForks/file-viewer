@@ -1,7 +1,8 @@
 <script setup lang='ts'>
 import axios from 'axios'
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { resolvePrintAvailability } from '../../common/printCapability'
+import { shouldStreamPdfUrl } from '../../common/sourceLoading'
 import { readBuffer } from '../../common/util'
 import type {
   FileRef,
@@ -56,6 +57,7 @@ const emit = defineEmits<{
 
 const PREVIEW_MESSAGE = {
   downloading: '正在下载文件资源...',
+  streamingPdf: '正在建立 PDF 流式预览...',
   reading: '正在解析文件内容...'
 }
 
@@ -63,6 +65,7 @@ const filename = ref('')
 const output = ref<HTMLDivElement | null>(null)
 const currentFile = ref<File | null>(null)
 const currentBuffer = ref<ArrayBuffer | null>(null)
+const currentSourceUrl = ref<string | null>(null)
 
 const displayFilename = computed(() => getSourceFilename())
 const currentExtend = computed(() => {
@@ -100,12 +103,12 @@ const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
 const renderedReady = ref(false)
 
 const operationAvailability = computed<FileViewerOperationAvailability>(() => {
-  const hasBuffer = !!currentBuffer.value
-  const hasRenderableOutput = hasBuffer && renderedReady.value && !error.value
+  const hasOriginalSource = !!currentBuffer.value || !!currentSourceUrl.value
+  const hasRenderableOutput = renderedReady.value && !error.value
   const adapter = activeExportAdapter.value
 
   return {
-    download: hasBuffer,
+    download: hasOriginalSource,
     print: hasRenderableOutput && resolvePrintAvailability(currentExtend.value, adapter, renderedReady.value),
     exportHtml: hasRenderableOutput && adapter?.exportHtml !== false
   }
@@ -126,7 +129,7 @@ const showToolbar = computed(() => {
   return toolbar.download || toolbar.print || toolbar.exportHtml
 })
 
-const toolbarDisabled = computed(() => loading.value || !!error.value || !currentBuffer.value)
+const toolbarDisabled = computed(() => loading.value || !!error.value)
 
 const normalizedWatermark = computed<FileViewerWatermarkOptions | null>(() => {
   const watermark = props.options?.watermark
@@ -434,6 +437,7 @@ const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 're
   clearRenderedContent(reason)
   currentFile.value = null
   currentBuffer.value = null
+  currentSourceUrl.value = null
   clearError()
   return renderVersion
 }
@@ -544,7 +548,17 @@ const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
   activeExportAdapter.value = adapter
 }
 
-const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: number, sourceUrl?: string) => {
+const mountRenderedContent = async (
+  buffer: ArrayBuffer,
+  file: File,
+  version: number,
+  sourceUrl?: string,
+  streamUrl?: string
+) => {
+  if (!output.value) {
+    await nextTick()
+  }
+
   const out = output.value
   if (!out || !isCurrentRequest(version)) {
     return undefined
@@ -560,6 +574,7 @@ const mountRenderedContent = async (buffer: ArrayBuffer, file: File, version: nu
     const rendered = await render(buffer, getExtend(file.name), child, {
       filename: file.name,
       url: sourceUrl,
+      streamUrl,
       options: props.options,
       registerExportAdapter
     })
@@ -593,6 +608,7 @@ const readAndRenderFile = async (
   }
   currentFile.value = file
   currentBuffer.value = arrayBuffer
+  currentSourceUrl.value = sourceUrl || null
 
   const rendered = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
   if (!isCurrentRequest(version)) {
@@ -611,6 +627,52 @@ const readAndRenderFile = async (
   activeDocumentContext = context
   notifyLifecycle(context)
   loadStartedAt.delete(version)
+}
+
+const canStreamRemotePdf = (url: string, nextFilename: string) => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+  return shouldStreamPdfUrl({
+    extension: getFilenameExtension(nextFilename),
+    pageHref: window.location.href,
+    streaming: props.options?.pdf?.streaming,
+    url
+  })
+}
+
+const previewRemotePdfStream = async (url: string, version: number, nextFilename: string) => {
+  startLoading(PREVIEW_MESSAGE.streamingPdf)
+
+  try {
+    const placeholderFile = new File([], nextFilename || 'preview.pdf', { type: 'application/pdf' })
+    currentSourceUrl.value = url
+    const rendered = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
+    if (!isCurrentRequest(version)) {
+      disposeRendered(rendered)
+      return
+    }
+    activeRendered = rendered
+    renderedReady.value = true
+    const context = buildLifecycleContext({
+      phase: 'load-complete',
+      version,
+      source: 'url',
+      sourceUrl: url
+    })
+    activeDocumentContext = context
+    notifyLifecycle(context)
+    loadStartedAt.delete(version)
+  } catch (nextError) {
+    if (!isCurrentRequest(version)) {
+      return
+    }
+    console.error(nextError)
+    showError(formatErrorMessage('加载 PDF 流式预览异常', nextError))
+  } finally {
+    loadStartedAt.delete(version)
+    finishLoading(version)
+  }
 }
 
 const previewLocalFile = async (source: FileRef, version: number) => {
@@ -652,7 +714,12 @@ const previewRemoteFile = async (url: string, version: number) => {
   }))
   startLoading(PREVIEW_MESSAGE.downloading)
 
-  const controller = new AbortController()
+  if (canStreamRemotePdf(url, nextFilename)) {
+    await previewRemotePdfStream(url, version, nextFilename)
+    return
+  }
+
+  const controller = typeof AbortController === 'function' ? new AbortController() : null
   pendingDownloadController = controller
 
   try {
@@ -660,7 +727,7 @@ const previewRemoteFile = async (url: string, version: number) => {
       url,
       method: 'get',
       responseType: 'blob',
-      signal: controller.signal
+      signal: controller?.signal
     })
 
     if (!isCurrentRequest(version)) {
@@ -694,6 +761,7 @@ const resetViewer = () => {
   filename.value = ''
   currentFile.value = null
   currentBuffer.value = null
+  currentSourceUrl.value = null
   renderedReady.value = false
   clearRenderedContent()
   resetLoading()
@@ -726,6 +794,7 @@ const {
   activeExportAdapter,
   currentBuffer,
   currentFile,
+  currentSourceUrl,
   displayFilename,
   formatErrorMessage,
   operationAvailability,

@@ -62,7 +62,7 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 | Excel | `xlsx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并、常见样式、自动文本色和 workbook drawing 图片；打印按钮按能力隐藏，避免只打印当前视口 | 需要保留表格结构和样式的业务 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | 统一解析，按格式可用信息渐进还原样式；同样遵循虚拟表格打印边界 | 老表格、轻量数据查看 |
 | PowerPoint | `pptx` | 浏览幻灯片内容，增强组合图形、主题背景、图片裁剪与 EMF 矢量图预览 | 汇报材料、课件、方案 |
-| PDF | `pdf` | 基于 `pdfjs-dist` 预览，支持缩放工具栏、旋转页、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式成品 |
+| PDF | `pdf` | 基于 `pdfjs-dist` 预览，同源 URL 默认渐进读取；服务端支持 Range 时自动分片加载，支持缩放工具栏、旋转页、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式成品 |
 | OFD | `ofd` | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支 | 电子发票、公文、归档材料 |
 | 压缩包 | `zip`、`zipx`、`7z`、`rar`、`tar`、`gz`、`gzip`、`tgz`、`bz2`、`bzip2`、`tbz`、`tbz2`、`xz`、`txz`、`lzma`、`zst`、`tzst`、`cab`、`ar`、`cpio`、`iso`、`xar`、`lha`、`lzh`、`jar`、`war`、`ear`、`apk`、`cbz`、`cbr` | 基于 `libarchive.js` 的 WASM Worker 读取目录，点击后按需解压内部文件并复用统一预览器，支持 IndexedDB 缓存和体积上限 | 归档附件、批量交付包、压缩包内文档快速查看 |
 | 邮件 | `eml`、`msg` | EML 使用 `postal-mime`，MSG 使用 `@kenjiuno/msgreader`，支持头信息、HTML/文本正文、附件下载与附件预览 | 邮件归档、工单邮件、客户来信附件 |

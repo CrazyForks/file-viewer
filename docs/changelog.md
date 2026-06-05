@@ -4,6 +4,13 @@
 
 ## 当前主线
 
+### 下一版本: 性能与边缘部署优化
+
+- PDF 远端 URL 加载链路新增渐进读取策略: 同源 PDF 默认直接交给 PDF.js 通过 URL 读取，服务端支持 Range 时自动分片加载，避免先整包下载 Blob 后才开始建页；跨域 URL 默认保持旧的兼容下载链路
+- 新增 `options.pdf.streaming`、`options.pdf.rangeChunkSize` 和 `options.pdf.withCredentials`，可按业务文件服务能力控制 PDF 渐进读取、Range 分片大小和凭据策略
+- 下载按钮支持 URL 源文件回退，流式 PDF 没有预下载 buffer 时也可以触发原始文件下载
+- 新增 Cloudflare Pages Direct Upload 部署脚本、`wrangler.toml` 和 `_headers` 缓存策略，便于将 Demo 切到 Cloudflare 边缘网络并保持 `viewer.flyfish.dev` 域名不变
+
 ### `v1.0.19` 页面尺寸感知打印与入口组件瘦身版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.19`、Vue2 包 `@flyfish-group/file-viewer@1.0.19`、React 包 `@flyfish-group/file-viewer-react@1.0.19` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.19` 统一推进到连续版本

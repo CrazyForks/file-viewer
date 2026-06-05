@@ -17,13 +17,14 @@ Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入
 - 当 `file` 和 `url` 同时存在时，组件会优先渲染 `file`。
 - 如果你拿到的是 `Blob` 或 `ArrayBuffer`，推荐先包装成带扩展名的 `File` 再传入。
 - 组件会默认撑满父容器，所以父容器必须有明确高度。
+- 同源 PDF URL 默认交给 PDF.js 渐进读取，首屏不再等待外层预览器整包 Blob 下载；文件服务支持 Range 时会自动分片加载，跨域 URL 默认仍走兼容下载链路。
 - React、纯 JS 和 iframe 模式默认使用 `/file-viewer/index.html`，如果静态目录不同，请显式传入 `viewerUrl`。
 
 ## 输入方式怎么选
 
 | 输入方式 | 推荐程度 | 适合场景 | 说明 |
 | --- | --- | --- | --- |
-| `url` | 推荐 | 文件地址可直接访问、链路简单 | 组件会在浏览器内下载文件，再按扩展名选择渲染器 |
+| `url` | 推荐 | 文件地址可直接访问、链路简单 | 同源 PDF 会直接交给 PDF.js 渐进读取；其他格式会在浏览器内下载文件，再按扩展名选择渲染器 |
 | `file: File` | 强烈推荐 | 本地上传、鉴权下载后预览、宿主系统已拿到文件对象 | 最稳妥的二进制接入方式 |
 | `Blob` / `ArrayBuffer` | 先包装再用 | SDK 返回二进制、接口已返回文件流 | 建议先包装成 `new File([...], 'demo.pdf')`，把文件名和扩展名补全 |
 
@@ -157,6 +158,10 @@ const options = {
     cache: true,
     maxArchiveSize: 320 * 1024 * 1024,
     maxEntryPreviewSize: 64 * 1024 * 1024
+  },
+  pdf: {
+    streaming: 'same-origin',
+    rangeChunkSize: 64 * 1024
   }
 }
 </script>
@@ -176,8 +181,15 @@ const options = {
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
 | `archive.maxArchiveSize` | 单个压缩包允许读取目录的最大体积，默认 320MB |
 | `archive.maxEntryPreviewSize` | 压缩包内单文件允许预览的最大体积，默认 64MB |
+| `pdf.streaming` | PDF URL 渐进读取策略，默认 `same-origin`；设为 `true` 时跨域也尝试 URL 直连读取，设为 `false` 时完全回到 Blob 下载后预览 |
+| `pdf.rangeChunkSize` | PDF.js Range 请求分片大小，默认 64KB；仅在文件服务支持 Range 时生效 |
+| `pdf.withCredentials` | PDF.js URL 读取是否携带浏览器凭据，默认 `false` |
 
 图片水印可以传 `https` URL、相对路径或 data URL。开启图片水印时，文字水印不会重复绘制。
+
+<div class="doc-note">
+  性能敏感的 PDF 建议使用同源静态地址，并让文件服务支持 Range 请求。这样 PDF.js 可以先建立页面结构，再按需渲染当前页和附近页面；不支持 Range 时仍会走 PDF.js URL 渐进读取，避免外层预览器重复整包缓冲。鉴权接口、无后缀下载接口或跨域签名 URL 则建议继续由业务侧取回 Blob 后包装为 File，稳定性更高。
+</div>
 
 ## 生命周期钩子和按钮前置校验
 

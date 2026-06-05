@@ -24,6 +24,7 @@ pnpm install
 | `pnpm release:pack` | 类型检查、库构建、混淆并生成 npm tarball |
 | `pnpm build:viewer-assets` | 构建 Vue3 基线 viewer，并同步到 `packages/web/viewer` |
 | `pnpm build:adapters` | 构建 Vue3 基线 viewer、纯 JS 包和 React 包 |
+| `pnpm deploy:cloudflare` | 构建 Demo 并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm dev:adapters` | 启动 React + 纯 JS 私有化适配层 Demo |
 | `pnpm build:adapter-demo` | 构建适配层 Demo，验证上线静态产物 |
 | `pnpm release:adapters:pack` | 构建并打包 React / 纯 JS npm tarball |
@@ -98,9 +99,13 @@ Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构
 
 ## 部署建议
 
-项目可以部署在 Vercel 或任意静态资源服务上。对外提供 Demo 时，建议:
+项目可以部署在 Vercel、Cloudflare Pages 或任意静态资源服务上。对外提供 Demo 时，建议:
 
 - 使用稳定域名承载官网 Demo，方便用户快速验证能力
+- 性能敏感场景优先使用 Cloudflare Pages / CDN 边缘节点承载 Demo 静态产物，并保持 `viewer.flyfish.dev` 作为唯一对外域名
+- Cloudflare Pages Direct Upload 可执行 `CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer pnpm deploy:cloudflare`，项目名可按控制台实际项目覆盖
+- 首次切换到 Cloudflare Pages 时，需先在 Pages 项目中添加 `viewer.flyfish.dev` 自定义域名；如果 `flyfish.dev` 的 DNS 不在当前 Cloudflare 账号，需要在 DNS 托管处把 `viewer.flyfish.dev` 的 CNAME 指向 `flyfish-file-viewer.pages.dev`
+- `public/_headers` 已为哈希资源、WASM/Worker、示例文件和 HTML 配置缓存策略，部署到 Cloudflare 后会自动生效
 - React / 纯 JS 包默认仍只加载用户项目内的私有化 viewer 静态产物
 - 把 iframe 方案作为推荐接入方式写进对外文档
 - 发布前先用本地构建产物做一次完整 smoke test

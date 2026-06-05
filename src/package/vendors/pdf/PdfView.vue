@@ -2,13 +2,15 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
+import { DEFAULT_PDF_RANGE_CHUNK_SIZE } from '@/package/common/sourceLoading'
 import { buildPrintPageStyle, formatCssPixels } from '@/package/common/printLayout'
 import type { FileRenderExportOptions, FileRenderExportAdapter, FileViewerPdfOptions } from '@/package/common/type'
 import './pdf.css'
 import PDFWorkerPort from './worker'
 
 const props = defineProps<{
-  data: ArrayBuffer,
+  data?: ArrayBuffer,
+  url?: string,
   exportAdapter?: (adapter: FileRenderExportAdapter | null) => void,
   options?: FileViewerPdfOptions,
 }>()
@@ -302,10 +304,23 @@ async function loadFile() {
       currentScale.value = clampScale(scale)
     })
 
+    if (!props.url && !props.data) {
+      throw new Error('PDF 缺少可读取的数据源')
+    }
+
     // cMap/wasm 使用远程按需加载，保证中文、色彩空间和表单类 PDF 在部署环境中仍能正常显示。
     const worker = createPdfWorker()
+    const source = props.url
+      ? {
+          url: props.url,
+          rangeChunkSize: props.options?.rangeChunkSize || DEFAULT_PDF_RANGE_CHUNK_SIZE,
+          withCredentials: props.options?.withCredentials === true
+        }
+      : {
+          data: props.data
+        }
     const loadingTask = getDocument({
-      data: props.data,
+      ...source,
       worker: worker || undefined,
       cMapUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${version}/cmaps/`,
       wasmUrl: `https://npm.onmicrosoft.cn/pdfjs-dist@${version}/wasm/`,

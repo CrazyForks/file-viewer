@@ -12,6 +12,7 @@ interface UseViewerExportOptions {
   activeExportAdapter: ShallowRef<FileRenderExportAdapter | null>;
   currentBuffer: Ref<ArrayBuffer | null>;
   currentFile: Ref<File | null>;
+  currentSourceUrl: Ref<string | null>;
   displayFilename: ComputedRef<string>;
   formatErrorMessage: (prefix: string, nextError: unknown) => string;
   operationAvailability: ComputedRef<FileViewerOperationAvailability>;
@@ -31,6 +32,17 @@ const triggerBlobDownload = (blob: Blob, name: string) => {
   link.click()
   link.remove()
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 4000)
+}
+
+const triggerUrlDownload = (url: string, name: string) => {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name
+  link.rel = 'noopener'
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
 }
 
 const replaceCanvasWithImages = (source: HTMLElement, clone: HTMLElement) => {
@@ -139,6 +151,7 @@ export const useViewerExport = ({
   activeExportAdapter,
   currentBuffer,
   currentFile,
+  currentSourceUrl,
   displayFilename,
   formatErrorMessage,
   operationAvailability,
@@ -190,13 +203,18 @@ export const useViewerExport = ({
   const downloadOriginalFile = async () => {
     const buffer = currentBuffer.value
     const file = currentFile.value
-    if (!buffer || !file) {
+    const sourceUrl = currentSourceUrl.value
+    if ((!buffer || !file) && !sourceUrl) {
       return
     }
     if (!await runBeforeOperation('download')) {
       return
     }
-    triggerBlobDownload(new Blob([buffer], { type: file.type || 'application/octet-stream' }), file.name || 'preview.bin')
+    if (buffer && file) {
+      triggerBlobDownload(new Blob([buffer], { type: file.type || 'application/octet-stream' }), file.name || 'preview.bin')
+      return
+    }
+    triggerUrlDownload(sourceUrl as string, displayFilename.value || 'preview.bin')
   }
 
   const exportRenderedHtml = async () => {

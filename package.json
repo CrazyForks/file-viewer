@@ -48,6 +48,7 @@
     "build-lib-only": "vite build --mode lib && node scripts/fix-lib-css.mjs && node scripts/fix-lib-workers.mjs",
     "build:viewer-assets": "pnpm build-only && node scripts/sync-viewer-assets.mjs",
     "build:adapters": "pnpm build:viewer-assets && pnpm --filter @flyfish-group/file-viewer-web build && pnpm --filter @flyfish-group/file-viewer-react build",
+    "deploy:cloudflare": "pnpm build-only && node scripts/deploy-cloudflare-pages.mjs",
     "dev:adapters": "pnpm --filter @flyfish-group/file-viewer-demo dev",
     "build:adapter-demo": "pnpm --filter @flyfish-group/file-viewer-demo build",
     "release:adapters:pack": "pnpm build:adapters && mkdir -p .release/adapters && pnpm -C packages/web pack --pack-destination ../../.release/adapters && pnpm -C packages/react pack --pack-destination ../../.release/adapters",
