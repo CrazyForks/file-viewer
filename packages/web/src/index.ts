@@ -81,6 +81,12 @@ export interface ViewerFrameOptions {
    */
   params?: Record<string, ViewerFrameParamValue>
   /**
+   * iframe 入口页的缓存标识。默认使用当前 web 包版本，避免部署后浏览器继续命中旧 index.html。
+   *
+   * 传入 false 可关闭自动追加。
+   */
+  cacheKey?: string | false
+  /**
    * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
    */
   options?: ViewerRuntimeOptions
@@ -108,7 +114,10 @@ export interface ViewerFrameController {
 
 export const DEFAULT_VIEWER_PUBLIC_DIR = '/file-viewer'
 export const DEFAULT_VIEWER_URL = `${DEFAULT_VIEWER_PUBLIC_DIR}/index.html`
+export const VIEWER_FRAME_CACHE_KEY = '1.0.20'
 const DEFAULT_FRAME_TITLE = 'Flyfish Viewer 文件预览'
+const FILE_POST_RETRY_LIMIT = 8
+const FILE_POST_RETRY_INTERVAL = 120
 
 const canUseDom = () => typeof window !== 'undefined' && typeof document !== 'undefined'
 
@@ -124,11 +133,16 @@ const isArrayBuffer = (value: unknown): value is ArrayBuffer => {
   return typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer
 }
 
+const normalizeViewerUrl = (viewerUrl?: string) => {
+  const value = viewerUrl || DEFAULT_VIEWER_URL
+  return value.endsWith('/') ? `${value}index.html` : value
+}
+
 const createUrl = (viewerUrl?: string) => {
   if (canUseDom()) {
-    return new URL(viewerUrl || DEFAULT_VIEWER_URL, window.location.href)
+    return new URL(normalizeViewerUrl(viewerUrl), window.location.href)
   }
-  return new URL(viewerUrl || DEFAULT_VIEWER_URL, 'http://localhost')
+  return new URL(normalizeViewerUrl(viewerUrl), 'http://localhost')
 }
 
 const isAbsoluteUrl = (value?: string) => {
@@ -170,7 +184,7 @@ export const getCurrentOrigin = () => {
   return canUseDom() ? window.location.origin : ''
 }
 
-export const getViewerUrl = (viewerUrl?: string) => viewerUrl || DEFAULT_VIEWER_URL
+export const getViewerUrl = (viewerUrl?: string) => normalizeViewerUrl(viewerUrl)
 
 export const getViewerOrigin = (viewerUrl?: string) => {
   if (!viewerUrl && !canUseDom()) {
@@ -199,6 +213,11 @@ export const buildViewerSrc = (options: ViewerFrameOptions = {}) => {
   Object.entries(options.params || {}).forEach(([key, value]) => {
     appendSearchParam(src, key, value)
   })
+  appendSearchParam(
+    src,
+    '__flyfish_viewer_version',
+    options.cacheKey === false ? undefined : (options.cacheKey || VIEWER_FRAME_CACHE_KEY)
+  )
   appendJsonSearchParam(src, 'options', options.options)
 
   if (options.file) {
@@ -290,14 +309,56 @@ export const mountViewerFrame = (
 ): ViewerFrameController => {
   let options = initialOptions
   let src = buildViewerSrc(options)
+  let filePostRetryTimer: number | undefined
+  let filePostRetryCount = 0
+  let lifecycleAcknowledged = false
   const frame = createViewerFrame({ ...options, autoPostFile: false })
 
+  const clearFilePostRetry = () => {
+    if (filePostRetryTimer) {
+      window.clearTimeout(filePostRetryTimer)
+      filePostRetryTimer = undefined
+    }
+  }
+
+  const scheduleFilePost = () => {
+    clearFilePostRetry()
+    filePostRetryCount = 0
+    lifecycleAcknowledged = false
+
+    if (!options.file) {
+      return
+    }
+
+    const post = () => {
+      if (lifecycleAcknowledged) {
+        clearFilePostRetry()
+        return
+      }
+
+      postFileToViewer(frame, options)
+      filePostRetryCount += 1
+
+      if (filePostRetryCount < FILE_POST_RETRY_LIMIT) {
+        filePostRetryTimer = window.setTimeout(post, FILE_POST_RETRY_INTERVAL)
+      } else {
+        filePostRetryTimer = undefined
+      }
+    }
+
+    post()
+  }
+
   const handleLoad = () => {
-    postFileToViewer(frame, options)
+    scheduleFilePost()
   }
   const handleMessage = (event: MessageEvent) => {
     if (event.source !== frame.contentWindow || !isViewerFrameEvent(event.data)) {
       return
+    }
+    if (event.data.type === 'flyfish-viewer:lifecycle') {
+      lifecycleAcknowledged = true
+      clearFilePostRetry()
     }
     options.onEvent?.(event.data, event)
   }
@@ -312,6 +373,7 @@ export const mountViewerFrame = (
       return src
     },
     destroy() {
+      clearFilePostRetry()
       frame.removeEventListener('load', handleLoad)
       window.removeEventListener('message', handleMessage)
       frame.remove()
@@ -327,7 +389,7 @@ export const mountViewerFrame = (
       const previousSrc = frame.src
       src = syncViewerFrame(frame, options)
       if (frame.src === previousSrc) {
-        postFileToViewer(frame, options)
+        scheduleFilePost()
       }
       return src
     }

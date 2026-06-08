@@ -58,6 +58,10 @@ export interface FileViewerProps extends Omit<IframeHTMLAttributes<HTMLIFrameEle
    */
   params?: ViewerFrameOptions['params']
   /**
+   * iframe 入口页的缓存标识。默认使用 web 包版本；传 false 可关闭。
+   */
+  cacheKey?: ViewerFrameOptions['cacheKey']
+  /**
    * 透传给 Vue 基线预览器的运行时选项，例如水印、工具栏和压缩包缓存限制。
    */
   options?: ViewerFrameOptions['options']
@@ -83,6 +87,7 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
     from,
     targetOrigin,
     params,
+    cacheKey,
     options,
     onViewerEvent,
     onLoad,
@@ -102,14 +107,53 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
     from,
     targetOrigin,
     params,
+    cacheKey,
     options
-  }), [viewerUrl, url, file, name, from, targetOrigin, params, options])
+  }), [viewerUrl, url, file, name, from, targetOrigin, params, cacheKey, options])
 
   const src = useMemo(() => buildViewerSrc(frameOptions), [frameOptions])
+  const retryTimerRef = useRef<number | undefined>(undefined)
+  const retryCountRef = useRef(0)
+  const lifecycleAcknowledgedRef = useRef(false)
 
   const postFile = useCallback(() => {
     return postFileToViewer(iframeRef.current, frameOptions)
   }, [frameOptions])
+
+  const clearFilePostRetry = useCallback(() => {
+    if (retryTimerRef.current) {
+      window.clearTimeout(retryTimerRef.current)
+      retryTimerRef.current = undefined
+    }
+  }, [])
+
+  const scheduleFilePost = useCallback(() => {
+    clearFilePostRetry()
+    retryCountRef.current = 0
+    lifecycleAcknowledgedRef.current = false
+
+    if (!frameOptions.file) {
+      return
+    }
+
+    const post = () => {
+      if (lifecycleAcknowledgedRef.current) {
+        clearFilePostRetry()
+        return
+      }
+
+      postFile()
+      retryCountRef.current += 1
+
+      if (retryCountRef.current < 8) {
+        retryTimerRef.current = window.setTimeout(post, 120)
+      } else {
+        retryTimerRef.current = undefined
+      }
+    }
+
+    post()
+  }, [clearFilePostRetry, frameOptions.file, postFile])
 
   const reload = useCallback(() => {
     if (iframeRef.current) {
@@ -126,14 +170,16 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
   }), [postFile, reload])
 
   useEffect(() => {
+    clearFilePostRetry()
+    lifecycleAcknowledgedRef.current = false
     setFrameReady(false)
-  }, [src])
+  }, [clearFilePostRetry, src])
 
   useEffect(() => {
     if (frameReady) {
-      postFile()
+      scheduleFilePost()
     }
-  }, [frameReady, postFile])
+  }, [frameReady, scheduleFilePost])
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -146,11 +192,19 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
       ) {
         return
       }
+      if (event.data.type === 'flyfish-viewer:lifecycle') {
+        lifecycleAcknowledgedRef.current = true
+        clearFilePostRetry()
+      }
       onViewerEvent?.(event.data, event)
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [onViewerEvent])
+  }, [clearFilePostRetry, onViewerEvent])
+
+  useEffect(() => {
+    return () => clearFilePostRetry()
+  }, [clearFilePostRetry])
 
   const handleLoad = useCallback((event: SyntheticEvent<HTMLIFrameElement>) => {
     setFrameReady(true)

@@ -192,7 +192,7 @@ export function Preview() {
 }
 ```
 
-`@flyfish-group/file-viewer-react` 支持 React 17 / 18 / 19，内部复用 `@flyfish-group/file-viewer-web` 的 iframe 协议工具。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 推送给预览器。静态目录不是 `public/file-viewer` 时，可以运行 `npx file-viewer-copy-assets ./public/vendor/file-viewer` 并覆盖 `viewerUrl="/vendor/file-viewer/index.html"`。
+`@flyfish-group/file-viewer-react` 支持 React 17 / 18 / 19，内部复用 `@flyfish-group/file-viewer-web` 的 iframe 协议工具。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 推送给预览器。静态目录不是 `public/file-viewer` 时，可以运行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并覆盖 `viewerUrl="/vendor/file-viewer/index.html"`。helper 会默认追加 `__flyfish_viewer_version`，避免旧入口 HTML 缓存继续引用已经不存在的 hash chunk。
 
 本仓库内置了一个私有化适配层演示应用，覆盖 React 组件和纯 Web helper 两种入口。调试时直接运行:
 
@@ -200,14 +200,14 @@ export function Preview() {
 pnpm dev:adapters
 ```
 
-它会先构建并同步 Vue3 基线预览器到演示应用的 `public/file-viewer`，打开本地地址即可看到预览效果。验证静态部署产物时运行:
+它会先构建并同步 Vue3 基线预览器到演示应用的 `public/file-viewer` 和 `public/vendor/file-viewer`，打开本地地址即可同时验证 React 组件和纯 JS `mountViewerFrame` 在自定义子路径下的 DOCX 预览效果。验证静态部署产物时运行:
 
 ```bash
 pnpm build:adapter-demo
 pnpm --filter @flyfish-group/file-viewer-demo preview
 ```
 
-确认无误后，`packages/demo/dist` 可以作为普通静态目录部署；其中已经包含 `file-viewer/index.html` 和演示文件。
+确认无误后，`packages/demo/dist` 可以作为普通静态目录部署；其中已经包含 `file-viewer/index.html`、`vendor/file-viewer/index.html` 和演示文件。
 
 ## 使用说明
 

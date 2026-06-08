@@ -29,6 +29,22 @@ pnpm exec file-viewer-copy-assets ./public/file-viewer
 
 使用 `npm install` 或已允许 pnpm 安装脚本后，包内的 Vue3 基线 viewer 产物会自动复制到宿主项目的 `public/file-viewer`。上线时请确保这个目录会被你的构建工具作为静态资源发布。
 
+复制脚本默认会先清空目标目录再复制完整 viewer 产物，确保 `index.html`、`assets/*`、`vendor/*` 来自同一次构建。不要只复制 `index.html`，否则异步 chunk 会因为 hash 不一致返回 404 或 `text/html`。
+
+## 标准接入边界
+
+纯 JS 包只支持两种标准接入方式:
+
+- **推荐方式:** 安装 `@flyfish-group/file-viewer-web`，允许安装脚本复制产物，然后使用 `mountViewerFrame`，默认加载 `/file-viewer/index.html`。
+- **自定义静态路径:** 使用 `file-viewer-copy-assets` 把完整 viewer 目录复制到业务静态目录，再显式传入 `viewerUrl`，例如 `/vendor/file-viewer/index.html`。
+
+以下做法不属于标准接入，不保证可用:
+
+- 只复制 `index.html`，没有同步 `assets/*` 和 `vendor/*`。
+- 目标目录里混用了不同版本的 `index.html` 和 hash chunk。
+- 静态服务把不存在的 `.js`、`.wasm` 返回成 HTML fallback。
+- 业务系统缓存旧 `index.html`，但服务器已经删除旧 hash 文件。
+
 ## 最短示例
 
 ```html
@@ -78,6 +94,49 @@ mountViewerFrame(document.getElementById('viewer')!, {
 
 当传入 `file` 时，组件会生成 `?name=...&from=...` 的 iframe 地址，并在 iframe 加载完成后通过 `postMessage` 把二进制内容推送给预览器。
 
+## 手写 iframe 接入
+
+如果业务项目不能使用 npm helper，也必须遵守同一套静态目录和 iframe 协议。先复制完整 viewer 产物:
+
+```bash
+npx file-viewer-copy-assets ./public/vendor/file-viewer
+```
+
+URL 文件直接拼接 `url`:
+
+```html
+<iframe
+  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.20"
+  style="width: 100%; height: 100vh; border: 0"
+></iframe>
+```
+
+鉴权文件先由业务系统下载成 `Blob`，再使用 `name` + `from` + `postMessage`:
+
+```html
+<iframe id="viewer" style="width: 100%; height: 100vh; border: 0"></iframe>
+
+<script>
+  var frame = document.getElementById('viewer')
+  var origin = window.location.origin
+
+  fetch('/api/files/contract', { credentials: 'include' })
+    .then(function (response) { return response.blob() })
+    .then(function (blob) {
+      frame.addEventListener('load', function () {
+        frame.contentWindow.postMessage(blob, origin)
+      })
+
+      frame.src = '/vendor/file-viewer/index.html' +
+        '?name=' + encodeURIComponent('contract.docx') +
+        '&from=' + encodeURIComponent(origin) +
+        '&__flyfish_viewer_version=1.0.20'
+    })
+</script>
+```
+
+仓库内置了对应的纯手写页面: `packages/demo/manual-js.html`。运行 `pnpm dev:adapters` 后访问 `/manual-js.html` 即可验证。
+
 ## 手动复制 viewer 产物
 
 如果你的项目没有自动执行安装脚本，或者需要复制到自定义目录，可以运行:
@@ -104,6 +163,8 @@ await copyViewerAssets({
   targetDir: 'public/vendor/file-viewer'
 })
 ```
+
+`mountViewerFrame` 会默认给 iframe 入口追加 `__flyfish_viewer_version` 查询参数，用于避免浏览器或代理继续使用旧 `index.html`，从而引用已经不存在的旧 hash chunk。静态服务已严格配置 HTML 不缓存时，可以传 `cacheKey: false` 关闭。
 
 ## 可用 API
 

@@ -77,7 +77,7 @@ export function Preview() {
 }
 ```
 
-安装后依赖的 web 包会把 Vue3 基线 viewer 产物复制到宿主项目 `public/file-viewer`。如果使用 pnpm 10，请允许 `@flyfish-group/file-viewer-web` 的安装脚本，或执行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。如果静态目录不同，请手动执行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并传入 `viewerUrl="/vendor/file-viewer/index.html"`。
+安装后依赖的 web 包会把 Vue3 基线 viewer 产物复制到宿主项目 `public/file-viewer`。如果使用 pnpm 10，请允许 `@flyfish-group/file-viewer-web` 的安装脚本，或执行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。如果静态目录不同，请手动执行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并传入对应的 `viewerUrl`。复制脚本会清空目标目录并复制完整 `index.html`、`assets/*`、`vendor/*`，避免旧 hash chunk 和新入口页混用。
 
 ### 纯 JS
 
@@ -91,6 +91,7 @@ import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
 mountViewerFrame(document.getElementById('viewer')!, {
   url: '/files/demo.pdf'
 })
+
 ```
 
 ## 成品 tarball 安装

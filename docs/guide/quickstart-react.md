@@ -104,6 +104,8 @@ npx file-viewer-copy-assets ./public/vendor/file-viewer
 />
 ```
 
+复制脚本会清空目标目录并复制完整 viewer 产物。React 组件会默认追加 `__flyfish_viewer_version` 查询参数，避免浏览器或代理缓存旧 `index.html` 后继续引用不存在的 hash chunk；静态服务已经保证 HTML 不缓存时，可以传 `cacheKey={false}`。
+
 ## 可用参数
 
 | 参数 | 类型 | 说明 |
@@ -115,6 +117,7 @@ npx file-viewer-copy-assets ./public/vendor/file-viewer
 | `from` | `string` | 二进制推送时允许的宿主 origin，默认当前页面 origin |
 | `targetOrigin` | `string` | `postMessage` 目标 origin，默认从 `viewerUrl` 推导 |
 | `params` | `Record<string, string \| number \| boolean>` | 透传给 Vue3 基线 viewer 的查询参数 |
+| `cacheKey` | `string \| false` | iframe 入口页缓存标识，默认使用 web 包版本，传 `false` 可关闭 |
 | `options` | `ViewerRuntimeOptions` | 透传给 Vue3 基线 viewer 的运行配置，支持操作栏、水印和压缩包 Worker / 缓存 / 体积限制 |
 | `onViewerEvent` | `(event, rawEvent) => void` | 接收 iframe 内基线预览器通过 `postMessage` 发出的生命周期和操作事件 |
 
@@ -130,7 +133,7 @@ React 包无法把函数序列化到 iframe 查询参数里，因此按钮前置
 pnpm dev:adapters
 ```
 
-它会构建 Vue3 基线 viewer、同步到 `packages/demo/public/file-viewer`，再启动本地调试服务。打开页面后，React 和纯 JS 两个预览面板应当都能显示同一份本地 Markdown 示例。
+它会构建 Vue3 基线 viewer、同步到 `packages/demo/public/file-viewer` 和 `packages/demo/public/vendor/file-viewer`，再启动本地调试服务。打开页面后，React 和纯 JS 两个预览面板应当都能通过 `/vendor/file-viewer/index.html` 显示同一份本地 DOCX 示例。
 
 ## 构建上线
 

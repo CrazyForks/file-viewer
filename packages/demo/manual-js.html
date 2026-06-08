@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flyfish Viewer Manual JS Demo</title>
+    <style>
+      :root {
+        color: #172033;
+        background: #f4f7f8;
+        font-family: Inter, "Segoe UI", "PingFang SC", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      main {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 18px;
+        border-bottom: 1px solid #d8e1e8;
+        background: #ffffff;
+      }
+
+      h1,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 18px;
+        line-height: 1.3;
+      }
+
+      p {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 13px;
+      }
+
+      code {
+        padding: 2px 6px;
+        border-radius: 5px;
+        background: #edf2f7;
+        color: #334155;
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Manual Pure JS iframe</h1>
+          <p>完整 viewer 目录位于 <code>/vendor/file-viewer</code>，文件通过 Blob + postMessage 推送。</p>
+        </div>
+        <p id="status">loading</p>
+      </header>
+      <iframe id="viewer" title="Flyfish Viewer manual iframe"></iframe>
+    </main>
+
+    <script>
+      (function () {
+        var viewerUrl = '/vendor/file-viewer/index.html'
+        var filename = 'word.docx'
+        var status = document.getElementById('status')
+        var frame = document.getElementById('viewer')
+        var sourceUrl = '/example/word.docx'
+        var blob = null
+        var sent = 0
+        var acknowledged = false
+
+        function setStatus(value) {
+          status.textContent = value
+        }
+
+        function postFile() {
+          if (!blob || acknowledged || !frame.contentWindow) {
+            return
+          }
+          frame.contentWindow.postMessage(blob, window.location.origin)
+          sent += 1
+          if (sent < 8 && !acknowledged) {
+            window.setTimeout(postFile, 120)
+          }
+        }
+
+        window.addEventListener('message', function (event) {
+          if (event.source !== frame.contentWindow) {
+            return
+          }
+          if (event.data && event.data.type === 'flyfish-viewer:lifecycle') {
+            acknowledged = true
+            setStatus(event.data.event)
+          }
+        })
+
+        fetch(sourceUrl)
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error('文件加载失败: HTTP ' + response.status)
+            }
+            return response.blob()
+          })
+          .then(function (value) {
+            blob = value
+            frame.addEventListener('load', postFile)
+            frame.src = viewerUrl +
+              '?name=' + encodeURIComponent(filename) +
+              '&from=' + encodeURIComponent(window.location.origin) +
+              '&__flyfish_viewer_version=manual-js-demo'
+            setStatus('iframe ready')
+          })
+          .catch(function (error) {
+            setStatus(error.message)
+            console.error(error)
+          })
+      })()
+    </script>
+  </body>
+</html>

@@ -4,7 +4,9 @@ import FileViewer from '@flyfish-group/file-viewer-react'
 import { mountViewerFrame, type ViewerFrameController } from '@flyfish-group/file-viewer-web'
 import './styles.css'
 
-const previewUrl = '/example/preview.md'
+const docxPreviewUrl = '/example/word.docx'
+const nestedViewerUrl = '/vendor/file-viewer/index.html'
+const directViewerUrl = `${nestedViewerUrl}?url=${encodeURIComponent(docxPreviewUrl)}`
 
 function WebViewerPanel() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -15,7 +17,8 @@ function WebViewerPanel() {
     }
 
     const controller: ViewerFrameController = mountViewerFrame(containerRef.current, {
-      url: previewUrl
+      viewerUrl: nestedViewerUrl,
+      url: docxPreviewUrl
     })
 
     return () => {
@@ -34,16 +37,21 @@ function App() {
           <h1>Flyfish Viewer</h1>
           <p>Private adapter smoke test</p>
         </div>
-        <a href="/file-viewer/index.html?url=%2Fexample%2Fpreview.md" target="_blank" rel="noreferrer">
-          Open viewer
-        </a>
+        <nav className="topbar-actions" aria-label="Demo links">
+          <a href={directViewerUrl} target="_blank" rel="noreferrer">
+            Open viewer
+          </a>
+          <a href="/manual-js.html" target="_blank" rel="noreferrer">
+            Manual JS
+          </a>
+        </nav>
       </header>
 
       <section className="viewer-grid" aria-label="Adapter preview">
         <article className="viewer-panel">
           <h2>React</h2>
           <div className="viewer-frame">
-            <FileViewer url={previewUrl} data-testid="react-viewer" />
+            <FileViewer viewerUrl={nestedViewerUrl} url={docxPreviewUrl} data-testid="react-viewer" />
           </div>
         </article>
 

@@ -48,7 +48,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 
 ## React / 纯 JS 适配层 Demo
 
-仓库中的 `packages/demo` 会把 `packages/web/viewer` 同步到自己的 `public/file-viewer`，页面上同时挂载 React 组件和纯 JS helper。调试时运行:
+仓库中的 `packages/demo` 会把 `packages/web/viewer` 同步到自己的 `public/file-viewer` 和 `public/vendor/file-viewer`，页面上同时挂载 React 组件和纯 JS helper，并使用 `/vendor/file-viewer/index.html` 验证自定义子路径下的 DOCX 预览。调试时运行:
 
 ```bash
 pnpm dev:adapters
@@ -61,7 +61,9 @@ pnpm build:adapter-demo
 pnpm --filter @flyfish-group/file-viewer-demo preview
 ```
 
-如果开发服务和 build preview 中两个面板都能显示同一份 Markdown 示例，就说明 npm 包默认的 `/file-viewer/index.html` 私有化路径可用。
+如果开发服务和 build preview 中两个面板都能显示同一份 DOCX 示例，就说明 React 组件、纯 JS `mountViewerFrame`、自定义 `viewerUrl`、完整静态目录复制和 iframe 资源加载都可用。
+
+确实不能使用 npm helper 的项目，可以访问 `/manual-js.html` 查看纯手写 iframe 示例。这个页面不引入 React，也不调用 `mountViewerFrame`，只演示标准 iframe 协议和完整 viewer 静态目录要求。
 
 ## 示例文件清单
 

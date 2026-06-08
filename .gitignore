@@ -4,6 +4,8 @@ logs
 *.tsbuildinfo
 !public/example/app.log
 packages/demo/public/file-viewer/
+packages/demo/public/vendor/
+packages/demo/public/example/word.docx
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -6,7 +6,12 @@ import { fileURLToPath } from 'node:url'
 const demoDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const repoDir = resolve(demoDir, '../..')
 const sourceDir = resolve(repoDir, 'packages/web/viewer')
-const targetDir = resolve(demoDir, 'public/file-viewer')
+const targetDirs = [
+  resolve(demoDir, 'public/file-viewer'),
+  resolve(demoDir, 'public/vendor/file-viewer')
+]
+const exampleSourceDir = resolve(repoDir, 'public/example')
+const exampleTargetDir = resolve(demoDir, 'public/example')
 
 if (!existsSync(resolve(sourceDir, 'index.html'))) {
   throw new Error('缺少 packages/web/viewer/index.html，请先运行 pnpm build:viewer-assets')
@@ -26,9 +31,14 @@ const removeMacMetadata = async dir => {
   }))
 }
 
-await rm(targetDir, { force: true, recursive: true })
-await mkdir(targetDir, { recursive: true })
-await cp(sourceDir, targetDir, { recursive: true })
-await removeMacMetadata(targetDir)
+for (const targetDir of targetDirs) {
+  await rm(targetDir, { force: true, recursive: true })
+  await mkdir(targetDir, { recursive: true })
+  await cp(sourceDir, targetDir, { recursive: true })
+  await removeMacMetadata(targetDir)
+  console.log(`[file-viewer-demo] viewer assets copied to ${targetDir}`)
+}
 
-console.log(`[file-viewer-demo] viewer assets copied to ${targetDir}`)
+await mkdir(exampleTargetDir, { recursive: true })
+await cp(resolve(exampleSourceDir, 'word.docx'), resolve(exampleTargetDir, 'word.docx'))
+console.log(`[file-viewer-demo] docx example copied to ${exampleTargetDir}`)
