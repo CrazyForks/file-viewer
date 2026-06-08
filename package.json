@@ -52,6 +52,7 @@
     "dev:adapters": "pnpm --filter @flyfish-group/file-viewer-demo dev",
     "build:adapter-demo": "pnpm --filter @flyfish-group/file-viewer-demo build",
     "docker:build": "node scripts/docker-buildx.mjs --load",
+    "docker:repo:create": "node scripts/docker-hub-create-repo.mjs",
     "docker:publish": "node scripts/docker-buildx.mjs --push",
     "release:adapters:pack": "pnpm build:adapters && mkdir -p .release/adapters && pnpm -C packages/web pack --pack-destination ../../.release/adapters && pnpm -C packages/react pack --pack-destination ../../.release/adapters",
     "release:adapters:publish": "pnpm build:adapters && pnpm -C packages/web publish --access public && pnpm -C packages/react publish --access public",

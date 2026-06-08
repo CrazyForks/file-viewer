@@ -78,9 +78,22 @@ DOCKER_IMAGE=your-org/file-viewer pnpm docker:build
 docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.20
 ```
 
+## 通过 Docker Hub API 创建仓库
+
+发布前先准备 Docker Hub Personal Access Token。仓库创建使用 Docker Hub API，镜像上传使用 Docker Registry 推送链路:
+
+```bash
+DOCKER_IMAGE=flyfishdev/file-viewer \
+DOCKERHUB_USERNAME=your-dockerhub-user \
+DOCKERHUB_TOKEN=dckr_pat_xxx \
+pnpm docker:repo:create
+```
+
+脚本会先检查目标仓库是否存在；如果不存在，会调用 Docker Hub API 创建公开仓库。
+
 ## 多架构推送到 Docker Hub
 
-发布前先登录 Docker Hub，并确认目标仓库已经创建或当前账号有权限。如果使用自己的命名空间，请把 `DOCKER_IMAGE` 改成对应仓库名:
+仓库创建完成后登录 Docker Hub，并确认当前账号对目标 namespace 有推送权限。如果使用自己的命名空间，请把 `DOCKER_IMAGE` 改成对应仓库名:
 
 ```bash
 docker login
