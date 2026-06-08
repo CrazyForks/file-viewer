@@ -32,6 +32,16 @@ const hubFetch = async (url, options = {}) => {
   return { response, body }
 }
 
+const formatErrorBody = body => {
+  if (!body) {
+    return ''
+  }
+  if (typeof body === 'string') {
+    return body.slice(0, 500)
+  }
+  return JSON.stringify(body).slice(0, 500)
+}
+
 const getBearerToken = async () => {
   if (bearerToken) {
     return bearerToken
@@ -50,7 +60,7 @@ const getBearerToken = async () => {
   })
 
   if (!response.ok || !body?.access_token) {
-    console.error(`[docker-hub] Failed to create auth token: HTTP ${response.status}`)
+    console.error(`[docker-hub] Failed to create auth token: HTTP ${response.status} ${formatErrorBody(body)}`)
     process.exit(1)
   }
 
@@ -68,7 +78,7 @@ if (existing.response.ok) {
 }
 
 if (existing.response.status !== 404) {
-  console.error(`[docker-hub] Repository check failed: HTTP ${existing.response.status}`)
+  console.error(`[docker-hub] Repository check failed: HTTP ${existing.response.status} ${formatErrorBody(existing.body)}`)
   process.exit(1)
 }
 
@@ -90,7 +100,7 @@ const created = await hubFetch(`https://hub.docker.com/v2/namespaces/${namespace
 })
 
 if (!created.response.ok) {
-  console.error(`[docker-hub] Repository create failed: HTTP ${created.response.status}`)
+  console.error(`[docker-hub] Repository create failed: HTTP ${created.response.status} ${formatErrorBody(created.body)}`)
   process.exit(1)
 }
 
