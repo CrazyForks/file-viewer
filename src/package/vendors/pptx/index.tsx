@@ -7,8 +7,8 @@ const PptxRender = defineAsyncComponent(() => import('./PptxRender.vue'))
  * @param buffer 二进制数据
  * @param target 目标
  */
-export default async function renderPptx(buffer: ArrayBuffer, target: HTMLDivElement) {
+export default async function renderPptx(buffer: ArrayBuffer, target: HTMLDivElement, type?: string) {
   return createApp({
-    render: () => <PptxRender data={buffer} />
+    render: () => <PptxRender data={buffer} type={type} />
   }).mount(target)
 }

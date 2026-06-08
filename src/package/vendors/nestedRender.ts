@@ -1,8 +1,14 @@
 import type { AppWrapper, FileRenderContext, Rendered } from '@/package/common/type'
 import { ARCHIVE_EXTENSIONS } from './archive/shared'
 import { MODEL_EXTENSIONS } from './model/shared'
+import { withWpsCompatibilityFallback } from './officeCompat'
 
-const SPREADSHEET_EXTENSIONS = ['xlsx', 'xlsm', 'xlsb', 'xls', 'csv', 'ods', 'fods', 'numbers']
+const DOCX_COMPAT_EXTENSIONS = ['docx', 'docm', 'dotx', 'dotm']
+const DOC_COMPAT_EXTENSIONS = ['doc', 'dot', 'wps', 'wpt']
+const PRESENTATION_EXTENSIONS = ['pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'dps', 'dpt']
+const SPREADSHEET_EXTENSIONS = [
+  'xlsx', 'xltx', 'xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers', 'et', 'ett'
+]
 const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg', 'webp']
 const DRAWING_EXTENSIONS = ['excalidraw', 'drawio', 'dio']
 const AUDIO_EXTENSIONS = ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba']
@@ -40,28 +46,30 @@ export const renderNestedBuffer = async (
 ): Promise<Rendered> => {
   const normalizedType = type.toLowerCase()
 
-  if (normalizedType === 'docx') {
+  if (DOCX_COMPAT_EXTENSIONS.includes(normalizedType)) {
     const { renderDocx } = await import('./word')
     const rendered = await renderDocx(buffer, target)
     window.dispatchEvent(new Event('resize'))
     return rendered
   }
 
-  if (normalizedType === 'doc') {
+  if (DOC_COMPAT_EXTENSIONS.includes(normalizedType)) {
     const { renderDoc } = await import('./word')
-    return renderDoc(buffer, target)
+    return withWpsCompatibilityFallback(normalizedType, target, () => renderDoc(buffer, target))
   }
 
-  if (normalizedType === 'pptx') {
+  if (PRESENTATION_EXTENSIONS.includes(normalizedType)) {
     const { default: renderPptx } = await import('./pptx')
-    await renderPptx(buffer, target)
-    window.dispatchEvent(new Event('resize'))
-    return createWrapper(target)
+    return withWpsCompatibilityFallback(normalizedType, target, async () => {
+      await renderPptx(buffer, target, normalizedType)
+      window.dispatchEvent(new Event('resize'))
+      return createWrapper(target)
+    })
   }
 
   if (SPREADSHEET_EXTENSIONS.includes(normalizedType)) {
     const { default: renderXlsx } = await import('./xlsx')
-    return renderXlsx(buffer, target)
+    return withWpsCompatibilityFallback(normalizedType, target, () => renderXlsx(buffer, target))
   }
 
   if (normalizedType === 'pdf') {

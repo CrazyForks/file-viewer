@@ -14,6 +14,7 @@
 - 新增 Cloudflare Pages Direct Upload 部署脚本、`wrangler.toml` 和 `_headers` 缓存策略，便于将 Demo 切到 Cloudflare 边缘网络并保持 `viewer.flyfish.dev` 域名不变
 - 新增独立文档比对入口 `/compare.html`，支持左右并排预览、示例选择、URL、本地上传和同步滚动，不污染主预览入口
 - 新增 Dockerfile、nginx 静态运行配置和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`，用于一键部署 Demo 与比对页
+- 新增 WPS 与 Office 模板兼容入口，覆盖 `wps`、`wpt`、`et`、`ett`、`dps`、`dpt`、`dot`、`dotx`、`dotm`、`docm`、`xlt`、`xltx`、`xltm`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`，原生 WPS 二进制失败时给出转换服务路径
 
 ### `v1.0.19` 页面尺寸感知打印与入口组件瘦身版本
 

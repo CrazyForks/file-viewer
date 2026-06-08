@@ -7,7 +7,7 @@ const XlsxTable = defineAsyncComponent(() => import('./XlsxTable.vue'))
 /**
  * 渲染excel
  */
-export default async function render(buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext): Promise<App> {
+export default async function render(buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext): Promise<App> {
   // Excel 使用 canvas 虚拟表格按窗口渲染，直接打印或克隆 DOM 导出 HTML 会丢失未进入视口的内容。
   context?.registerExportAdapter?.({
     print: false,
@@ -15,7 +15,7 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
   })
 
   const app = createApp({
-    render: () => <XlsxTable data={buffer} />
+    render: () => <XlsxTable data={buffer} type={type} />
   })
   app.mount(target)
   return app

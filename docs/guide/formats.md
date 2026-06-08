@@ -3,14 +3,14 @@
 <div class="doc-kicker">Runtime Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>137 个扩展名映射</strong>，覆盖 <strong>20 条预览链路</strong>。
+  当前版本内置 <strong>155 个扩展名映射</strong>，覆盖 <strong>20 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>137 个扩展名映射</h3>
-    <p>覆盖 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
+    <h3>155 个扩展名映射</h3>
+    <p>覆盖 Office、WPS 兼容入口、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和视频等常见附件类型。</p>
   </div>
   <div class="doc-card">
     <h3>按需异步加载</h3>
@@ -30,11 +30,12 @@
 
 | 分类 | 扩展名 | 渲染链路 | 当前表现 | 更适合的场景 |
 | --- | --- | --- | --- | --- |
-| Word | `docx` | `docx-preview` | 白色纸张显示在灰色页面底中，支持宽度自适应和长文档视觉分页 | 新生成的 Word 文档、正式公文、模板文档 |
-| Word | `doc` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、历史附件回溯 |
-| Excel | `xlsx` | `styled-exceljs` + `e-virt-table` | 支持虚拟滚动、列宽/行高、合并单元格、常见样式和 workbook drawing 图片；打印按钮按能力隐藏 | 大表格预览、报表、需要保留结构和样式的业务 |
-| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` | 统一读取数据、尺寸和可用样式，按浏览器能力渐进还原，避免虚拟表格误打印 | 老表格、跨平台导出的表格、轻量数据查看 |
-| PowerPoint | `pptx` | 自定义 PPTX 渲染器 | 以页面展示为主，增强组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图预览 | 汇报材料、说明文档、培训课件 |
+| Word | `docx`、`docm`、`dotx`、`dotm` | `docx-preview` | 白色纸张显示在灰色页面底中，支持宽度自适应和长文档视觉分页；模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
+| Word | `doc`、`dot` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、Word 97-2003 模板、历史附件回溯 |
+| WPS 文字兼容入口 | `wps`、`wpt` | Word 兼容链路 + 失败提示 | 先按 WPS 保存为 Office 兼容容器的情况尝试预览；原生 WPS 二进制无法纯前端解析时给出转换路径 | WPS 文字附件初筛、上传入口兼容 |
+| Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` | 支持虚拟滚动、列宽/行高、合并单元格、常见样式和 workbook drawing 图片；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
+| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers`、`et`、`ett` | `styled-exceljs` + `e-virt-table` | 统一读取数据、尺寸和可用样式，按浏览器能力渐进还原；WPS 表格原生二进制失败时提示先转换 | 老表格、WPS 表格入口、跨平台导出的表格 |
+| PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`dps`、`dpt` | 自定义 PPTX 渲染器 | 以页面展示为主，增强组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图预览；WPS 演示原生二进制失败时提示先转换 | 汇报材料、说明文档、培训课件、演示模板 |
 | PDF | `pdf` | `pdfjs-dist` | 浏览器端 PDF 渲染，同源 URL 默认渐进读取，服务端支持 Range 时自动分片加载，支持缩放工具栏、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式稳定文件 |
 | OFD | `ofd` | `DLTech21/ofd.js` 源码 | 使用浏览器端 OFD 解析和页面渲染，避开 npm dist 授权 wasm 分支 | 电子发票、公文、国产版式归档材料 |
 | Typst | `typ`、`typst` | `@myriaddreamin/typst.ts` 浏览器 WASM 编译 | 直接读取 Typst 源文档并输出按页 SVG，支持完整预览、打印和导出 HTML；compiler WASM 仅命中 Typst 时按需加载 | 技术报告、论文草稿、工程文档模板 |
@@ -58,8 +59,9 @@
 
 ### Word 文档
 
-- `docx` 使用 `docx-preview`，适合正文、表格、图片和常规版式较多的现代 Word 文档。当前预览层会恢复白色纸张和灰色页面底，并根据可用宽度自动缩放。
-- `doc` 使用 `msdoc-viewer`，并额外套用 Word 风格页面容器。构建前会通过包管理器无关的补丁脚本增强 CFB 局部 sector 容错，它不只是“把内容吐出来”，而是尽量保留文档阅读时的页面感。
+- `docx`、`docm`、`dotx`、`dotm` 使用 `docx-preview`，适合正文、表格、图片和常规版式较多的现代 Word 文档与模板。当前预览层会恢复白色纸张和灰色页面底，并根据可用宽度自动缩放；宏内容只作为只读文档结构预览，不执行宏。
+- `doc`、`dot` 使用 `msdoc-viewer`，并额外套用 Word 风格页面容器。构建前会通过包管理器无关的补丁脚本增强 CFB 局部 sector 容错，它不只是“把内容吐出来”，而是尽量保留文档阅读时的页面感。
+- `wps`、`wpt` 会先尝试复用 Word 兼容链路。调研结论是：WPS 官方 WebOffice 和 ONLYOFFICE 都有完整 WPS 预览/转换服务，LibreOffice / libwps 能处理 Microsoft Works `.wps`，但目前没有成熟维护、开箱即用、纯浏览器端的 Kingsoft WPS 原生二进制渲染库。因此原生 WPS 文件失败时会展示明确转换建议，而不是伪装成高保真支持。
 - Word 打印和导出 HTML 使用独立导出适配器，只带文档页面和必要 Word 样式，不带 Demo 布局、滚动容器和缩放状态，长文档会按完整页序输出。
 - 如果源文档缺少显式分页，`.docx` 预览会在浏览器端补一层视觉分页，避免长文档变成一整条没有纸张边界的内容流。
 - 如果你的业务能控制导出格式，优先推荐 `docx`；如果你面对的是存量老文档，当前 `.doc` 已经可以作为正式能力对外说明。
@@ -69,10 +71,18 @@
   <p class="doc-caption">`.doc` 文件现在会显示在灰色工作台中的白色纸张上，页面居中，阅读路径更接近真实 Word 阅读体验。</p>
 </div>
 
+### WPS 与模板格式实现路径
+
+- 当前前端已接入可直接复用的模板格式：`dot`、`dotx`、`dotm`、`docm`、`xlt`、`xltx`、`xltm`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`。
+- WPS 原生扩展名 `wps`、`wpt`、`et`、`ett`、`dps`、`dpt` 已作为兼容入口注册，并保持按需异步加载。只要文件实际保存为 Office-compatible OLE/OOXML 容器，就可以复用现有渲染器。
+- 如果文件是 WPS 专有二进制结构，纯前端当前没有可直接 npm 安装并稳定高保真预览的开箱方案。生产推荐路径是：接入 WPS WebOffice SDK/回调服务，或者用 ONLYOFFICE / LibreOffice 服务端先转换为 `docx`、`xlsx`、`pptx`、`pdf` 后再交给组件预览。
+- 如果未来要做完全内置的原生 WPS 解析，需要按格式分支推进：Writer 方向解析 OLE/CFB 内部流并输出 HTML 或 DOCX；Spreadsheet 方向解析工作簿结构并转换到 SheetJS / ExcelJS 模型；Presentation 方向解析幻灯片对象并转换到 PPTX DrawingML 或 SVG。这个路线工作量大，且需要真实样本和授权边界审查。
+- 调研依据：WPS 官方 WebOffice 格式表明确覆盖 `wps`、`wpt`、`et`、`ett`、`dps`、`dpt`，但其接入模型需要在线文档 URL、AppID、文件下载与权限等回调服务；ONLYOFFICE conversion table 覆盖 WPS 三件套输入并转换为 OOXML/PDF；LibreOffice 文档列出的是 Microsoft Works `.wps` 与 Word/Excel/PPT 模板格式，不等同于 Kingsoft WPS 原生三件套的浏览器端解析。
+
 ### 表格类文件
 
 - 表格类文件统一走 `styled-exceljs` 解析和 `e-virt-table` 虚拟渲染，适合需要保留表格结构、合并单元格、workbook drawing 图片和视觉层级的场景。
-- `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` 会读取格式中能表达的数据、尺寸和样式；部分格式本身不包含完整样式时，会按可用信息渐进还原。
+- `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers`、`et`、`ett` 会读取格式中能表达的数据、尺寸和样式；部分格式本身不包含完整样式时，会按可用信息渐进还原。
 - Excel 预览为了兼顾大表格性能采用虚拟表格，DOM 中不会一次性持有完整工作表，因此当前会主动隐藏打印按钮，避免浏览器只打印当前视口或截断内容。
 - 如果你正在设计业务导出格式，优先选 `xlsx`；如果你只是需要把历史附件打开看内容，兼容链路已经足够实用。
 

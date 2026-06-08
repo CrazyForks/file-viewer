@@ -10,6 +10,7 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提
 
 - `test.doc`: 验证 `.doc` 老文档与 Word 风格页面容器
 - `word.docx`: 验证现代 Word 文档链路
+- `template.dot`: 复用老 Word 二进制样本验证 `.dot` 模板兼容入口
 - `excel.xlsx`: 验证 `xlsx` 样式能力
 - `excel.xlsm`: 验证 `xlsm` 扩展名入口
 - `excel.xlsb`: 验证 `xlsb` 扩展名入口
@@ -95,6 +96,7 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提
 | 文件 | 公开来源 | 许可 |
 | --- | --- | --- |
 | `drawing.dxf` | `mozman/ezdxf` 的 `examples_dxf/wipeout_door.dxf` | MIT |
+| `template.dot` | 复用项目内 `test.doc` fixture 并以 Word 97-2003 模板扩展名保存 | Apache-2.0 |
 | `pdf.pdf` | 项目方提供的《PDF沉浸式翻译技术说明》真实示例文档 | 项目 Demo 授权 |
 | `sample.dwg` | `dshn06/cad-webviewer-unity` 的 `baseline-sample.dwg` | MIT |
 | `model.gltf` / `model.obj` / `model.stl` / `model.ply` / `model.step` | 项目内生成的最小 3D fixture | Apache-2.0 |

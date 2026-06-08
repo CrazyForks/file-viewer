@@ -49,11 +49,12 @@ type SampleGroup = {
 const sampleGroups: SampleGroup[] = [
   {
     title: '文档',
-    description: 'Word / PDF / OFD / Typst',
+    description: 'Word / WPS / PDF / OFD / Typst',
     family: 'word',
     items: [
       { name: 'DOC', url: '/example/test.doc' },
       { name: 'DOCX', url: '/example/word.docx' },
+      { name: 'DOT 模板', url: '/example/template.dot' },
       { name: 'PDF 技术说明', url: '/example/pdf.pdf' },
       { name: 'OFD', url: '/example/ofd.ofd' },
       { name: 'Typst', url: '/example/report.typ' }
@@ -61,7 +62,7 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '表格',
-    description: 'Excel / CSV / ODS',
+    description: 'Excel / WPS / CSV / ODS',
     family: 'sheet',
     items: [
       { name: 'XLSX', url: '/example/excel.xlsx' },
@@ -76,7 +77,7 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '演示与图纸',
-    description: 'PPTX / CAD / Drawing',
+    description: 'PPTX / WPS / CAD / Drawing',
     family: 'cad',
     items: [
       { name: 'PPTX', url: '/example/ppt.pptx' },
@@ -205,6 +206,9 @@ const sampleGroups: SampleGroup[] = [
 
 const presetFiles = sampleGroups.flatMap(group => group.items)
 const extraUploadExtensions = [
+  'docm', 'dot', 'dotx', 'dotm', 'wps', 'wpt',
+  'xlt', 'xltx', 'xltm', 'et', 'ett',
+  'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'dps', 'dpt',
   'mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba',
   'glb', 'fbx', 'dae', '3ds', '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz',
   'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp',
@@ -226,15 +230,33 @@ const uploadAccept = Array.from(new Set([
 const fileIconMeta: Record<string, { icon: string; family: string }> = {
   doc: { icon: 'W', family: 'word' },
   docx: { icon: 'W', family: 'word' },
+  docm: { icon: 'W', family: 'word' },
+  dot: { icon: 'DOT', family: 'word' },
+  dotx: { icon: 'DOT', family: 'word' },
+  dotm: { icon: 'DOT', family: 'word' },
+  wps: { icon: 'WPS', family: 'word' },
+  wpt: { icon: 'WPT', family: 'word' },
   xlsx: { icon: 'XL', family: 'sheet' },
+  xltx: { icon: 'XLT', family: 'sheet' },
   xlsm: { icon: 'XL', family: 'sheet' },
   xlsb: { icon: 'XL', family: 'sheet' },
   xls: { icon: 'XL', family: 'sheet' },
+  xlt: { icon: 'XLT', family: 'sheet' },
+  xltm: { icon: 'XLT', family: 'sheet' },
+  et: { icon: 'ET', family: 'sheet' },
+  ett: { icon: 'ETT', family: 'sheet' },
   csv: { icon: 'CSV', family: 'sheet' },
   ods: { icon: 'ODS', family: 'sheet' },
   fods: { icon: 'ODS', family: 'sheet' },
   numbers: { icon: 'NO', family: 'sheet' },
   pptx: { icon: 'P', family: 'slide' },
+  pptm: { icon: 'P', family: 'slide' },
+  potx: { icon: 'POT', family: 'slide' },
+  potm: { icon: 'POT', family: 'slide' },
+  ppsx: { icon: 'PPS', family: 'slide' },
+  ppsm: { icon: 'PPS', family: 'slide' },
+  dps: { icon: 'DPS', family: 'slide' },
+  dpt: { icon: 'DPT', family: 'slide' },
   pdf: { icon: 'PDF', family: 'pdf' },
   ofd: { icon: 'OFD', family: 'layout' },
   typ: { icon: 'TYP', family: 'layout' },

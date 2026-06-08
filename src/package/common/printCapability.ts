@@ -13,14 +13,17 @@ const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'sv
  * 它们的在线预览常依赖分页引擎、虚拟渲染或 Worker 生命周期，直接克隆
  * DOM 很容易只得到当前页或当前视口。
  */
-export const ADAPTER_PRINT_REQUIRED_EXTENSIONS = ['docx', 'doc', 'pdf', 'typ', 'typst']
+export const ADAPTER_PRINT_REQUIRED_EXTENSIONS = [
+  'docx', 'docm', 'dotx', 'dotm', 'doc', 'dot', 'wps', 'wpt', 'pdf', 'typ', 'typst'
+]
 
 /**
  * 这些格式的预览结果是完整 DOM / SVG / Canvas 截图，解除滚动容器裁切后
  * 可以稳定进入浏览器打印流程。
  */
 export const DOM_PRINTABLE_EXTENSIONS = [
-  'pptx', 'ofd', 'dxf', 'dwg', 'excalidraw', 'drawio', 'dio', 'umd', 'md', 'markdown', 'olb', 'dra',
+  'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'ofd', 'dxf', 'dwg', 'excalidraw', 'drawio', 'dio',
+  'umd', 'md', 'markdown', 'olb', 'dra',
   ...TEXT_EXTENSIONS,
   ...IMAGE_EXTENSIONS
 ]
@@ -34,7 +37,7 @@ export const DOM_PRINTABLE_EXTENSIONS = [
  * - 3D、音视频是交互媒体。
  */
 export const NON_PRINTABLE_EXTENSIONS = [
-  'xlsx', 'xlsm', 'xlsb', 'xls', 'csv', 'ods', 'fods', 'numbers',
+  'xlsx', 'xltx', 'xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers', 'et', 'ett',
   'zip', 'zipx', '7z', 'rar', 'tar', 'gz', 'gzip', 'tgz', 'bz2', 'bzip2', 'tbz', 'tbz2',
   'xz', 'txz', 'lzma', 'zst', 'tzst', 'cab', 'ar', 'cpio', 'iso', 'xar', 'lha', 'lzh',
   'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'epub', 'mp4',

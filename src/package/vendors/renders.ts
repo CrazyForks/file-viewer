@@ -1,6 +1,7 @@
 import { ARCHIVE_EXTENSIONS } from './archive/shared'
 import { MODEL_EXTENSIONS } from './model/shared'
 import type { AppWrapper, FileHandler, FileHandlerComposite, FileRenderContext } from '@/package/common/type'
+import { withWpsCompatibilityFallback } from './officeCompat'
 
 // 假装构造一个vue的包装，让上层统一处理销毁和替换节点
 const createWrapper = (el: HTMLDivElement): AppWrapper => ({
@@ -13,7 +14,7 @@ const createWrapper = (el: HTMLDivElement): AppWrapper => ({
 const handlers: Array<FileHandlerComposite> = [
   // 使用docxjs支持，目前效果最好的渲染器
   {
-    accepts: ['docx'],
+    accepts: ['docx', 'docm', 'dotx', 'dotm'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { renderDocx } = await import('./word')
       const rendered = await renderDocx(buffer, target, context)
@@ -22,36 +23,38 @@ const handlers: Array<FileHandlerComposite> = [
     }
   },
   {
-    accepts: ['doc'],
+    accepts: ['doc', 'dot', 'wps', 'wpt'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { renderDoc } = await import('./word')
-      return renderDoc(buffer, target, context)
+      return withWpsCompatibilityFallback(_type, target, () => renderDoc(buffer, target, context))
     }
   },
   // 使用pptx2html，已通过默认值更替
   {
-    accepts: ['pptx'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    accepts: ['pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'dps', 'dpt'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderPptx } = await import('./pptx')
-      await renderPptx(buffer, target)
-      window.dispatchEvent(new Event('resize'))
-      return createWrapper(target)
+      return withWpsCompatibilityFallback(type, target, async () => {
+        await renderPptx(buffer, target, type)
+        window.dispatchEvent(new Event('resize'))
+        return createWrapper(target)
+      })
     }
   },
   // 使用 styled-exceljs + e-virt-table，统一处理 XLSX / XLS 的数据和样式读取。
   {
-    accepts: ['xlsx'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    accepts: ['xlsx', 'xltx'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderXlsx } = await import('./xlsx')
-      return renderXlsx(buffer, target)
+      return withWpsCompatibilityFallback(type, target, () => renderXlsx(buffer, target, type))
     }
   },
   // 二进制工作簿也走同一解析链路，避免 XLS / XLSX 出现样式能力差异。
   {
-    accepts: ['xlsm', 'xlsb', 'xls', 'csv', 'ods', 'fods', 'numbers'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
+    accepts: ['xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers', 'et', 'ett'],
+    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderXlsx } = await import('./xlsx')
-      return renderXlsx(buffer, target)
+      return withWpsCompatibilityFallback(type, target, () => renderXlsx(buffer, target, type))
     }
   },
   // 使用pdfjs，渲染pdf，效果最好
@@ -190,7 +193,7 @@ const handlers: Array<FileHandlerComposite> = [
     accepts: ['error'],
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
+<div style='text-align: center'>支持 Word、Excel、PPT、WPS 兼容入口、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音频和 MP4 的在线预览</div>`
       return createWrapper(target)
     }
   }

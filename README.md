@@ -42,7 +42,7 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 ## 为什么值得接入
 
 - **纯前端 Serverless。** 文档解析和展示全部在浏览器内完成，部署简单，不依赖 Office 服务端、LibreOffice 守护进程或额外转码链路。
-- **格式覆盖完整。** 当前内置 137 个扩展名映射，覆盖 Word、Excel、PowerPoint、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
+- **格式覆盖完整。** 当前内置 155 个扩展名映射，覆盖 Word、Excel、PowerPoint、WPS 兼容入口、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音频、代码/文本和 MP4，能覆盖绝大多数业务附件场景。
 - **按需异步加载。** PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、3D 模型、绘图、Office、EPUB、UMD、Markdown 和代码高亮渲染器都按需加载，重型解析依赖不会进入其他格式的首屏路径。
 - **预览器操作完整。** 内置下载原文件、打印完整渲染结果、导出渲染后 HTML、水印开关和水印 options；打印按钮会按当前格式和渲染链路动态显隐，Word / PDF 使用专属完整页导出适配器，不依赖当前视口，适合合同、归档和审批类场景。
 - **集成控制更完整。** 提供加载/卸载生命周期钩子、iframe 事件回传和按钮前置校验机制，下载、打印、导出前可以接入权限验证、审计确认或业务二次弹窗。
@@ -57,15 +57,16 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 
 ## 支持格式
 
-当前版本内置 137 个扩展名映射，覆盖 20 条预览链路。
+当前版本内置 155 个扩展名映射，覆盖 20 条预览链路。
 
 | 类别 | 扩展名 | 当前表现 | 适合场景 |
 | --- | --- | --- | --- |
-| Word | `docx` | `docx-preview`，更适合保留文档结构和版式 | 新生成的 Word 文档、正式文档 |
-| Word | `doc` | `msdoc-viewer` + Word 风格页面容器，增强 CFB 容错和表格布局 | 历史 `.doc` 老文档 |
-| Excel | `xlsx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并、常见样式、自动文本色和 workbook drawing 图片；打印按钮按能力隐藏，避免只打印当前视口 | 需要保留表格结构和样式的业务 |
-| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`csv`、`ods`、`fods`、`numbers` | 统一解析，按格式可用信息渐进还原样式；同样遵循虚拟表格打印边界 | 老表格、轻量数据查看 |
-| PowerPoint | `pptx` | 浏览幻灯片内容，增强组合图形、主题背景、图片裁剪与 EMF 矢量图预览 | 汇报材料、课件、方案 |
+| Word | `docx`、`docm`、`dotx`、`dotm` | `docx-preview`，更适合保留文档结构和版式，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式文档、Word 模板 |
+| Word | `doc`、`dot` | `msdoc-viewer` + Word 风格页面容器，增强 CFB 容错和表格布局 | 历史 `.doc` 老文档、Word 97-2003 模板 |
+| WPS 文字兼容入口 | `wps`、`wpt` | 先按老 Word 兼容容器尝试预览；原生 WPS 二进制失败时给出转换路径 | WPS 文字附件初筛、上传入口兼容 |
+| Excel | `xlsx`、`xltx` | `styled-exceljs` + 虚拟滚动，支持尺寸、合并、常见样式、自动文本色和 workbook drawing 图片；打印按钮按能力隐藏，避免只打印当前视口 | 需要保留表格结构和样式的业务、Excel 模板 |
+| Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers`、`et`、`ett` | 统一解析，按格式可用信息渐进还原样式；WPS 表格原生二进制失败时提示先转换 | 老表格、WPS 表格入口、轻量数据查看 |
+| PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`dps`、`dpt` | 浏览幻灯片内容，增强组合图形、主题背景、图片裁剪与 EMF 矢量图预览；WPS 演示原生二进制失败时提示先转换 | 汇报材料、课件、方案、演示模板 |
 | PDF | `pdf` | 基于 `pdfjs-dist` 预览，同源 URL 默认渐进读取；服务端支持 Range 时自动分片加载，支持缩放工具栏、旋转页、页侧边栏/目录树侧边栏切换、宽度自适应、完整打印和导出 HTML | 合同、票据、版式成品 |
 | OFD | `ofd` | 基于 `DLTech21/ofd.js` 仓库源码在线预览国产版式文档，避开 npm dist 授权 wasm 分支 | 电子发票、公文、归档材料 |
 | Typst | `typ`、`typst` | 直接读取 Typst 源文件，按需加载 `@myriaddreamin/typst.ts` 浏览器 WASM 编译器并按页 SVG 渲染；支持完整预览、打印和导出 HTML | 技术报告、论文草稿、工程文档模板 |

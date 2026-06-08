@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import $ from 'jquery'
 import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
@@ -9,6 +9,7 @@ import PptxWorker from './worker'
 const props = withDefaults(defineProps<{
   // 二进制数据
   data: ArrayBuffer,
+  type?: string,
   // 默认配置，支持扩展
   options?: Function,
 }>(), {
@@ -16,6 +17,16 @@ const props = withDefaults(defineProps<{
 })
 
 const wrapper = ref<null | HTMLDivElement>(null);
+const errorMessage = ref('')
+const compatibilityErrorText = computed(() => {
+  if (!errorMessage.value) {
+    return ''
+  }
+  if (props.type === 'dps' || props.type === 'dpt') {
+    return '该 WPS 演示文件未能按 PPTX 兼容结构解析。若它是 WPS 专有二进制结构，建议在上传或归档环节先转换为 .pptx 或 .pdf 后预览。'
+  }
+  return ''
+});
 
 // 使用闭包避免暴露
 (() => {
@@ -115,6 +126,7 @@ const wrapper = ref<null | HTMLDivElement>(null);
           break
         case 'ERROR':
           data.isDone = true
+          errorMessage.value = String(msg.data || 'PPTX 解析失败')
           console.error('PPTX processing error: ', msg.data)
           break
         case 'DEBUG':
@@ -150,7 +162,11 @@ const wrapper = ref<null | HTMLDivElement>(null);
 </script>
 
 <template>
-  <div class='pptx-wrapper' ref='wrapper' />
+  <div v-if='errorMessage' class='pptx-error'>
+    <strong>{{ errorMessage }}</strong>
+    <p v-if='compatibilityErrorText'>{{ compatibilityErrorText }}</p>
+  </div>
+  <div v-else class='pptx-wrapper' ref='wrapper' />
 </template>
 
 <style scoped>
@@ -158,5 +174,30 @@ const wrapper = ref<null | HTMLDivElement>(null);
     max-width: 100%;
     margin: 0 auto;
     min-width: 0;
+}
+
+.pptx-error {
+  box-sizing: border-box;
+  width: min(680px, calc(100% - 32px));
+  margin: 48px auto;
+  padding: 24px;
+  border: 1px solid rgba(28, 43, 58, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  color: #1f2d3b;
+  box-shadow: 0 16px 42px rgba(25, 42, 54, 0.08);
+  font-family: Aptos, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.pptx-error strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.pptx-error p {
+  margin: 0;
+  color: #607282;
+  line-height: 1.7;
 }
 </style>
