@@ -15,7 +15,7 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
   })
 
   const app = createApp({
-    render: () => <XlsxTable data={buffer} type={type} />
+    render: () => <XlsxTable data={buffer} />
   })
   app.mount(target)
   return app

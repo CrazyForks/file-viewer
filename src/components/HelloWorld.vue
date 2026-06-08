@@ -49,7 +49,7 @@ type SampleGroup = {
 const sampleGroups: SampleGroup[] = [
   {
     title: '文档',
-    description: 'Word / WPS / PDF / OFD / Typst',
+    description: 'Word / PDF / OFD / Typst',
     family: 'word',
     items: [
       { name: 'DOC', url: '/example/test.doc' },
@@ -62,7 +62,7 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '表格',
-    description: 'Excel / WPS / CSV / ODS',
+    description: 'Excel / CSV / ODS',
     family: 'sheet',
     items: [
       { name: 'XLSX', url: '/example/excel.xlsx' },
@@ -77,7 +77,7 @@ const sampleGroups: SampleGroup[] = [
   },
   {
     title: '演示与图纸',
-    description: 'PPTX / WPS / CAD / Drawing',
+    description: 'PPTX / CAD / Drawing',
     family: 'cad',
     items: [
       { name: 'PPTX', url: '/example/ppt.pptx' },
@@ -206,9 +206,9 @@ const sampleGroups: SampleGroup[] = [
 
 const presetFiles = sampleGroups.flatMap(group => group.items)
 const extraUploadExtensions = [
-  'docm', 'dot', 'dotx', 'dotm', 'wps', 'wpt',
-  'xlt', 'xltx', 'xltm', 'et', 'ett',
-  'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'dps', 'dpt',
+  'docm', 'dot', 'dotx', 'dotm',
+  'xlt', 'xltx', 'xltm',
+  'pptm', 'potx', 'potm', 'ppsx', 'ppsm',
   'mpeg', 'wav', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba',
   'glb', 'fbx', 'dae', '3ds', '3mf', 'amf', 'usd', 'usda', 'usdc', 'usdz', 'kmz',
   'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl', 'vrml', 'xyz', 'vtk', 'vtp',
@@ -234,8 +234,6 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   dot: { icon: 'DOT', family: 'word' },
   dotx: { icon: 'DOT', family: 'word' },
   dotm: { icon: 'DOT', family: 'word' },
-  wps: { icon: 'WPS', family: 'word' },
-  wpt: { icon: 'WPT', family: 'word' },
   xlsx: { icon: 'XL', family: 'sheet' },
   xltx: { icon: 'XLT', family: 'sheet' },
   xlsm: { icon: 'XL', family: 'sheet' },
@@ -243,8 +241,6 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   xls: { icon: 'XL', family: 'sheet' },
   xlt: { icon: 'XLT', family: 'sheet' },
   xltm: { icon: 'XLT', family: 'sheet' },
-  et: { icon: 'ET', family: 'sheet' },
-  ett: { icon: 'ETT', family: 'sheet' },
   csv: { icon: 'CSV', family: 'sheet' },
   ods: { icon: 'ODS', family: 'sheet' },
   fods: { icon: 'ODS', family: 'sheet' },
@@ -255,8 +251,6 @@ const fileIconMeta: Record<string, { icon: string; family: string }> = {
   potm: { icon: 'POT', family: 'slide' },
   ppsx: { icon: 'PPS', family: 'slide' },
   ppsm: { icon: 'PPS', family: 'slide' },
-  dps: { icon: 'DPS', family: 'slide' },
-  dpt: { icon: 'DPT', family: 'slide' },
   pdf: { icon: 'PDF', family: 'pdf' },
   ofd: { icon: 'OFD', family: 'layout' },
   typ: { icon: 'TYP', family: 'layout' },

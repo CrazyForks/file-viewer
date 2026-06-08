@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import $ from 'jquery'
 import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
@@ -9,7 +9,6 @@ import PptxWorker from './worker'
 const props = withDefaults(defineProps<{
   // 二进制数据
   data: ArrayBuffer,
-  type?: string,
   // 默认配置，支持扩展
   options?: Function,
 }>(), {
@@ -17,16 +16,7 @@ const props = withDefaults(defineProps<{
 })
 
 const wrapper = ref<null | HTMLDivElement>(null);
-const errorMessage = ref('')
-const compatibilityErrorText = computed(() => {
-  if (!errorMessage.value) {
-    return ''
-  }
-  if (props.type === 'dps' || props.type === 'dpt') {
-    return '该 WPS 演示文件未能按 PPTX 兼容结构解析。若它是 WPS 专有二进制结构，建议在上传或归档环节先转换为 .pptx 或 .pdf 后预览。'
-  }
-  return ''
-});
+const errorMessage = ref('');
 
 // 使用闭包避免暴露
 (() => {
@@ -164,7 +154,6 @@ const compatibilityErrorText = computed(() => {
 <template>
   <div v-if='errorMessage' class='pptx-error'>
     <strong>{{ errorMessage }}</strong>
-    <p v-if='compatibilityErrorText'>{{ compatibilityErrorText }}</p>
   </div>
   <div v-else class='pptx-wrapper' ref='wrapper' />
 </template>

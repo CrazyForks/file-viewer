@@ -33,7 +33,6 @@ import {
 
 const props = defineProps<{
   data: ArrayBuffer
-  type?: string
 }>()
 
 const tableHost = ref<HTMLDivElement | null>(null)
@@ -95,15 +94,6 @@ const statusSummary = computed(() => {
     return `共 ${rows} 行，按视口预取平滑加载`
   }
   return `共 ${rows} 行，${cols} 列，按视口预取平滑加载`
-})
-const compatibilityErrorText = computed(() => {
-  if (!errorMessage.value) {
-    return ''
-  }
-  if (props.type === 'et' || props.type === 'ett') {
-    return '该 WPS 表格文件未能按 Excel 兼容容器解析。若它是 WPS 专有二进制结构，建议在上传或归档环节先转换为 .xlsx、.xls 或 .pdf 后预览。'
-  }
-  return ''
 })
 const imageClipStyle = {
   left: `${INDEX_COLUMN_WIDTH}px`,
@@ -740,8 +730,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class='error' v-else-if='errorMessage'>
-      <strong>{{ errorMessage }}</strong>
-      <p v-if='compatibilityErrorText'>{{ compatibilityErrorText }}</p>
+      {{ errorMessage }}
     </div>
     <div class='table-wrapper'>
       <div v-if='showStreamingLoading' class='sheet-loading'>

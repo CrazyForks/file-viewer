@@ -59,9 +59,9 @@ const viewerOptions: FileViewerOptions = {
 }
 
 const uploadAccept = [
-  '.doc', '.docx', '.docm', '.dot', '.dotx', '.dotm', '.wps', '.wpt',
-  '.pdf', '.ofd', '.typ', '.typst', '.ppt', '.pptx', '.pptm', '.potx', '.potm', '.ppsx', '.ppsm', '.dps', '.dpt',
-  '.xls', '.xlsx', '.xlsm', '.xlsb', '.xlt', '.xltx', '.xltm', '.et', '.ett', '.csv', '.ods', '.md', '.markdown', '.txt', '.html',
+  '.doc', '.docx', '.docm', '.dot', '.dotx', '.dotm',
+  '.pdf', '.ofd', '.typ', '.typst', '.ppt', '.pptx', '.pptm', '.potx', '.potm', '.ppsx', '.ppsm',
+  '.xls', '.xlsx', '.xlsm', '.xlsb', '.xlt', '.xltx', '.xltm', '.csv', '.ods', '.md', '.markdown', '.txt', '.html',
   '.htm', '.eml', '.msg', '.epub', '.umd', '.png', '.jpg', '.jpeg'
 ].join(',')
 

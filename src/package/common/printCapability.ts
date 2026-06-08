@@ -14,7 +14,7 @@ const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'sv
  * DOM 很容易只得到当前页或当前视口。
  */
 export const ADAPTER_PRINT_REQUIRED_EXTENSIONS = [
-  'docx', 'docm', 'dotx', 'dotm', 'doc', 'dot', 'wps', 'wpt', 'pdf', 'typ', 'typst'
+  'docx', 'docm', 'dotx', 'dotm', 'doc', 'dot', 'pdf', 'typ', 'typst'
 ]
 
 /**
@@ -37,7 +37,7 @@ export const DOM_PRINTABLE_EXTENSIONS = [
  * - 3D、音视频是交互媒体。
  */
 export const NON_PRINTABLE_EXTENSIONS = [
-  'xlsx', 'xltx', 'xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers', 'et', 'ett',
+  'xlsx', 'xltx', 'xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers',
   'zip', 'zipx', '7z', 'rar', 'tar', 'gz', 'gzip', 'tgz', 'bz2', 'bzip2', 'tbz', 'tbz2',
   'xz', 'txz', 'lzma', 'zst', 'tzst', 'cab', 'ar', 'cpio', 'iso', 'xar', 'lha', 'lzh',
   'jar', 'war', 'ear', 'apk', 'cbz', 'cbr', 'eml', 'msg', 'epub', 'mp4',

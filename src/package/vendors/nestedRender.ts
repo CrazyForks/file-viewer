@@ -1,13 +1,12 @@
 import type { AppWrapper, FileRenderContext, Rendered } from '@/package/common/type'
 import { ARCHIVE_EXTENSIONS } from './archive/shared'
 import { MODEL_EXTENSIONS } from './model/shared'
-import { withWpsCompatibilityFallback } from './officeCompat'
 
 const DOCX_COMPAT_EXTENSIONS = ['docx', 'docm', 'dotx', 'dotm']
-const DOC_COMPAT_EXTENSIONS = ['doc', 'dot', 'wps', 'wpt']
-const PRESENTATION_EXTENSIONS = ['pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm', 'dps', 'dpt']
+const DOC_COMPAT_EXTENSIONS = ['doc', 'dot']
+const PRESENTATION_EXTENSIONS = ['pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm']
 const SPREADSHEET_EXTENSIONS = [
-  'xlsx', 'xltx', 'xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers', 'et', 'ett'
+  'xlsx', 'xltx', 'xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers'
 ]
 const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg', 'webp']
 const DRAWING_EXTENSIONS = ['excalidraw', 'drawio', 'dio']
@@ -55,21 +54,19 @@ export const renderNestedBuffer = async (
 
   if (DOC_COMPAT_EXTENSIONS.includes(normalizedType)) {
     const { renderDoc } = await import('./word')
-    return withWpsCompatibilityFallback(normalizedType, target, () => renderDoc(buffer, target))
+    return renderDoc(buffer, target)
   }
 
   if (PRESENTATION_EXTENSIONS.includes(normalizedType)) {
     const { default: renderPptx } = await import('./pptx')
-    return withWpsCompatibilityFallback(normalizedType, target, async () => {
-      await renderPptx(buffer, target, normalizedType)
-      window.dispatchEvent(new Event('resize'))
-      return createWrapper(target)
-    })
+    await renderPptx(buffer, target, normalizedType)
+    window.dispatchEvent(new Event('resize'))
+    return createWrapper(target)
   }
 
   if (SPREADSHEET_EXTENSIONS.includes(normalizedType)) {
     const { default: renderXlsx } = await import('./xlsx')
-    return withWpsCompatibilityFallback(normalizedType, target, () => renderXlsx(buffer, target))
+    return renderXlsx(buffer, target, normalizedType)
   }
 
   if (normalizedType === 'pdf') {

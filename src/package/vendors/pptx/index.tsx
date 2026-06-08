@@ -9,6 +9,6 @@ const PptxRender = defineAsyncComponent(() => import('./PptxRender.vue'))
  */
 export default async function renderPptx(buffer: ArrayBuffer, target: HTMLDivElement, type?: string) {
   return createApp({
-    render: () => <PptxRender data={buffer} type={type} />
+    render: () => <PptxRender data={buffer} />
   }).mount(target)
 }
