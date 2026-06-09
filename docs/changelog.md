@@ -4,6 +4,14 @@
 
 ## 当前主线
 
+### `v1.0.21` Docker Hub 仓库与格式边界校准版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.21`、Vue2 包 `@flyfish-group/file-viewer@1.0.21`、React 包 `@flyfish-group/file-viewer-react@1.0.21` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.21` 继续保持连续版本
+- 清理 `.wps`、`.wpt`、`.et`、`.ett`、`.dps`、`.dpt` 等当前没有开箱即用浏览器渲染方案的 WPS 原生格式说明，避免用户误以为这些格式已经完整支持
+- Office 模板和宏格式继续按实际可渲染链路保留，包括 `dot`、`dotx`、`dotm`、`docm`、`xlt`、`xltx`、`xltm`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`
+- 新增 Docker Hub 仓库创建脚本，支持用 Docker Hub API 创建 `flyfishdev/file-viewer` 公开仓库，并在异常时输出更明确的安全诊断信息
+- README、文档站、React / 纯 JS README、iframe cache key 和 workspace 依赖同步刷新到 `1.0.21`
+
 ### `v1.0.20` Typst 直读源文件与边缘部署优化版本
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.20`、Vue2 包 `@flyfish-group/file-viewer@1.0.20`、React 包 `@flyfish-group/file-viewer-react@1.0.20` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.20` 统一推进到连续版本

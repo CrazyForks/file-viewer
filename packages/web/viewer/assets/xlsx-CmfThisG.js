@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./XlsxTable-Dw0Jcxvw.js","./index-Wv8YWT7J.js","./index-Da-_mMtb.css","./worker-ref-BcbHdN1M.js","./XlsxTable-W2yeB8kd.css"])))=>i.map(i=>d[i]);
-import{C as e,f as t,t as n,w as r}from"./index-Wv8YWT7J.js";var i=r(()=>n(()=>import(`./XlsxTable-Dw0Jcxvw.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(n,r,a,o){o?.registerExportAdapter?.({print:!1,exportHtml:!1});let s=t({render:()=>e(i,{data:n},null)});return s.mount(r),s}export{a as default};

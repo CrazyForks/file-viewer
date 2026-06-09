@@ -3,7 +3,7 @@
 纯 Web 文件预览组件。只提供私有化部署路线: npm 包随包携带 Vue 基线 viewer 产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会自动复制到宿主项目的 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.20
+npm install @flyfish-group/file-viewer-web@1.0.21
 ```
 
 pnpm 10 默认会拦截依赖包的 `postinstall`。如果安装后提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。复制脚本会先清空目标目录再复制，避免 `index.html` 和 `assets/*` hash 不同版本导致动态 import 404。
@@ -58,7 +58,7 @@ mountViewerFrame(el, {
 
 ```html
 <iframe
-  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.20"
+  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.21"
   style="width: 100%; height: 100vh; border: 0"
 ></iframe>
 ```

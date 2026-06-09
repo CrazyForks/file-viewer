@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-react@1.0.20
+npm install --save @flyfish-group/file-viewer-react@1.0.21
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -27,7 +27,7 @@ pnpm approve-builds
 pnpm exec file-viewer-copy-assets ./public/file-viewer
 ```
 
-`@flyfish-group/file-viewer-react` 依赖 `@flyfish-group/file-viewer-web@^1.0.20`。使用 `npm install` 或已允许 pnpm 安装脚本后，web 包会把随包携带的 Vue3 基线 viewer 产物复制到宿主项目的 `public/file-viewer`，所以默认地址就是:
+`@flyfish-group/file-viewer-react` 依赖 `@flyfish-group/file-viewer-web@^1.0.21`。使用 `npm install` 或已允许 pnpm 安装脚本后，web 包会把随包携带的 Vue3 基线 viewer 产物复制到宿主项目的 `public/file-viewer`，所以默认地址就是:
 
 ```txt
 /file-viewer/index.html

@@ -66,14 +66,14 @@ pnpm release:pack
 
 ## Vue2 / Vue3 / React / 纯 JS 发版
 
-当前四条 npm 包线都使用 `1.0.20`:
+当前四条 npm 包线都使用 `1.0.21`:
 
 | 技术栈 | 分支 | npm 包 | 注册方式 |
 | --- | --- | --- | --- |
 | Vue3 | `v3` | `@flyfish-group/file-viewer3` | `createApp(App).use(FileViewer)` |
 | Vue2.7 | `main` | `@flyfish-group/file-viewer` | `Vue.use(FileViewer)` |
-| React 17 / 18 / 19 | 当前仓库子工程 | `@flyfish-group/file-viewer-react@1.0.20` | `<FileViewer url="/files/demo.pdf" />` |
-| 纯 JS | 当前仓库子工程 | `@flyfish-group/file-viewer-web@1.0.20` | `mountViewerFrame(container, options)` |
+| React 17 / 18 / 19 | 当前仓库子工程 | `@flyfish-group/file-viewer-react@1.0.21` | `<FileViewer url="/files/demo.pdf" />` |
+| 纯 JS | 当前仓库子工程 | `@flyfish-group/file-viewer-web@1.0.21` | `mountViewerFrame(container, options)` |
 
 Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构建、混淆和 `npm publish --access public`。React 和纯 JS 包在当前仓库内作为子工程发布，发版前必须先执行 `pnpm build:viewer-assets`，确保随包携带的是最新 Vue3 基线 viewer 静态产物。
 

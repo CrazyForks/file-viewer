@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./ModelViewer-gMxpjdoy.js","./index-Wv8YWT7J.js","./index-Da-_mMtb.css","./three.module-DGhmpURB.js","./ModelViewer-C4ir9AyI.css"])))=>i.map(i=>d[i]);
-import{C as e,f as t,t as n,w as r}from"./index-Wv8YWT7J.js";var i=r(()=>n(()=>import(`./ModelViewer-gMxpjdoy.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(n,r,a,o){let s=t({render:()=>e(i,{data:n,type:a||`glb`,sourceUrl:o?.url},null)});return s.mount(r),s}export{a as default};
