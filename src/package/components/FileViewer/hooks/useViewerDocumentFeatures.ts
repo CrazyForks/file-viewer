@@ -69,24 +69,6 @@ export const useViewerDocumentFeatures = ({
   emitSearchChange,
   emitLocationChange
 }: UseViewerDocumentFeaturesOptions) => {
-  const documentSearch = useDocumentSearch(output, () => getOptions()?.search)
-
-  const getSearchState = () => cloneSearchState(documentSearch.state)
-
-  const notifySearchChange = () => {
-    const state = getSearchState()
-    emitSearchChange(state)
-    postViewerPayload('flyfish-viewer:search', 'search-change', state)
-    return state
-  }
-
-  const notifyLocationChange = () => {
-    const anchor = getCurrentDocumentAnchor(output.value, documentSearch.anchors.value)
-    emitLocationChange(anchor)
-    postViewerPayload('flyfish-viewer:location', 'location-change', anchor)
-    return anchor
-  }
-
   const getScrollContainer = () => {
     const out = output.value
     if (!out) {
@@ -105,6 +87,28 @@ export const useViewerDocumentFeatures = ({
       .filter(isScrollableElement)
       .sort((a, b) => getScrollableRange(b) - getScrollableRange(a))
     return scrollableChildren[0] || preferred || out
+  }
+
+  const documentSearch = useDocumentSearch(
+    output,
+    () => getOptions()?.search,
+    getScrollContainer
+  )
+
+  const getSearchState = () => cloneSearchState(documentSearch.state)
+
+  const notifySearchChange = () => {
+    const state = getSearchState()
+    emitSearchChange(state)
+    postViewerPayload('flyfish-viewer:search', 'search-change', state)
+    return state
+  }
+
+  const notifyLocationChange = () => {
+    const anchor = getCurrentDocumentAnchor(output.value, documentSearch.anchors.value)
+    emitLocationChange(anchor)
+    postViewerPayload('flyfish-viewer:location', 'location-change', anchor)
+    return anchor
   }
 
   const refreshDocumentIndex = async () => {

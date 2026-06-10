@@ -96,7 +96,8 @@ const walkTextNodes = (root: HTMLElement) => {
 
 export const useDocumentSearch = (
   root: Ref<HTMLElement | null>,
-  optionsSource?: () => boolean | FileViewerSearchOptions | undefined
+  optionsSource?: () => boolean | FileViewerSearchOptions | undefined,
+  scrollContainerSource?: () => HTMLElement | null | undefined
 ) => {
   const options = computed(() => normalizeOptions(optionsSource?.()))
   const anchors = shallowRef<FileViewerDocumentAnchor[]>([])
@@ -111,6 +112,7 @@ export const useDocumentSearch = (
   })
 
   let observer: MutationObserver | null = null
+  let shouldObserve = false
   let debounceTimer: number | null = null
   let applying = false
 
@@ -123,18 +125,94 @@ export const useDocumentSearch = (
   }
 
   const clearMarks = () => {
-    applying = true
-    try {
-      Array.from(marks).forEach(unwrapMark)
-      marks.clear()
-      internalMatches.value = []
-      state.total = 0
-      state.currentIndex = -1
-      state.current = null
-      state.matches = []
-    } finally {
-      applying = false
+    Array.from(marks).forEach(unwrapMark)
+    marks.clear()
+    internalMatches.value = []
+    state.total = 0
+    state.currentIndex = -1
+    state.current = null
+    state.matches = []
+  }
+
+  const disconnectObserver = () => {
+    observer?.disconnect()
+    observer = null
+  }
+
+  const startObserver = () => {
+    disconnectObserver()
+    if (!shouldObserve || !root.value || typeof MutationObserver === 'undefined') {
+      return
     }
+    observer = new MutationObserver(rerunAfterDomChange)
+    observer.observe(root.value, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    })
+  }
+
+  const resumeObserver = () => {
+    if (!shouldObserve || typeof window === 'undefined') {
+      return
+    }
+    window.setTimeout(startObserver, 0)
+  }
+
+  const isScrollableElement = (element: HTMLElement) => {
+    const range = Math.max(0, element.scrollHeight - element.clientHeight)
+    if (range <= 2) {
+      return false
+    }
+    if (typeof window === 'undefined') {
+      return true
+    }
+    const style = window.getComputedStyle(element)
+    const overflowY = style.overflowY || style.overflow
+    return ['auto', 'scroll', 'overlay', 'visible'].includes(overflowY)
+  }
+
+  const getMatchScrollContainer = (element: HTMLElement) => {
+    const currentRoot = root.value
+    const preferred = scrollContainerSource?.()
+    if (preferred && (preferred === element || preferred.contains(element))) {
+      return preferred
+    }
+
+    let current: HTMLElement | null = element.parentElement
+    while (current) {
+      if (isScrollableElement(current)) {
+        return current
+      }
+      if (current === currentRoot) {
+        break
+      }
+      current = current.parentElement
+    }
+    return currentRoot
+  }
+
+  const scrollMatchIntoView = (element: HTMLElement) => {
+    const container = getMatchScrollContainer(element)
+    if (!container) {
+      element.scrollIntoView({ block: 'center', inline: 'nearest' })
+      return
+    }
+
+    const lockedLeft = container.scrollLeft
+    const containerRect = container.getBoundingClientRect()
+    const elementRect = element.getBoundingClientRect()
+    const targetTop = elementRect.top - containerRect.top + container.scrollTop
+      - (container.clientHeight / 2)
+      + (elementRect.height / 2)
+    const maxTop = Math.max(0, container.scrollHeight - container.clientHeight)
+
+    container.scrollTo({
+      top: Math.max(0, Math.min(targetTop, maxTop)),
+      left: lockedLeft,
+      behavior: 'auto'
+    })
+    container.scrollLeft = lockedLeft
   }
 
   const setActiveMatch = (index: number, scroll = true) => {
@@ -152,7 +230,7 @@ export const useDocumentSearch = (
     state.currentIndex = normalized
     syncState()
     if (scroll) {
-      active.element.scrollIntoView({ block: 'center', inline: 'nearest' })
+      scrollMatchIntoView(active.element)
     }
     return state
   }
@@ -214,21 +292,23 @@ export const useDocumentSearch = (
   const runSearch = async (query: string, preferredIndex = 0) => {
     const normalizedQuery = normalizeQuery(query)
     state.query = normalizedQuery
-    clearMarks()
-
-    if (!normalizedQuery || options.value.enabled === false || !root.value) {
-      return state
-    }
-
-    await nextTick()
-    anchors.value = collectDocumentAnchors(root.value)
-    const expression = createSearchRegExp(normalizedQuery, options.value)
-    const maxMatches = Math.max(1, options.value.maxMatches || DEFAULT_MAX_MATCHES)
-    const nextMatches: InternalSearchMatch[] = []
-    const textNodes = walkTextNodes(root.value)
-
+    disconnectObserver()
     applying = true
+
     try {
+      clearMarks()
+
+      if (!normalizedQuery || options.value.enabled === false || !root.value) {
+        return state
+      }
+
+      await nextTick()
+      anchors.value = collectDocumentAnchors(root.value)
+      const expression = createSearchRegExp(normalizedQuery, options.value)
+      const maxMatches = Math.max(1, options.value.maxMatches || DEFAULT_MAX_MATCHES)
+      const nextMatches: InternalSearchMatch[] = []
+      const textNodes = walkTextNodes(root.value)
+
       for (const node of textNodes) {
         if (nextMatches.length >= maxMatches) {
           break
@@ -242,6 +322,7 @@ export const useDocumentSearch = (
       }
     } finally {
       applying = false
+      resumeObserver()
     }
 
     return state
@@ -261,17 +342,8 @@ export const useDocumentSearch = (
   }
 
   const observe = () => {
-    observer?.disconnect()
-    observer = null
-    if (!root.value || typeof MutationObserver === 'undefined') {
-      return
-    }
-    observer = new MutationObserver(rerunAfterDomChange)
-    observer.observe(root.value, {
-      childList: true,
-      subtree: true,
-      characterData: true
-    })
+    shouldObserve = true
+    startObserver()
   }
 
   const refreshAnchors = async () => {
@@ -286,12 +358,19 @@ export const useDocumentSearch = (
 
   const clear = () => {
     state.query = ''
-    clearMarks()
+    disconnectObserver()
+    applying = true
+    try {
+      clearMarks()
+    } finally {
+      applying = false
+      resumeObserver()
+    }
   }
 
   onBeforeUnmount(() => {
-    observer?.disconnect()
-    observer = null
+    shouldObserve = false
+    disconnectObserver()
     if (debounceTimer !== null) {
       window.clearTimeout(debounceTimer)
       debounceTimer = null

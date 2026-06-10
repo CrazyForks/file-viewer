@@ -22,7 +22,9 @@ const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
 const sampleMenuMaxHeight = ref('min(52vh, 520px)')
 const watermarkEnabled = ref(false)
 const runtimeOptions = ref<FileViewerOptions>({})
+const viewerSearchOpen = ref(false)
 const viewerSearchQuery = ref('')
+const viewerSearchInputRef = ref<HTMLInputElement | null>(null)
 const viewerSearchState = ref<FileViewerSearchState>({
   query: '',
   total: 0,
@@ -561,6 +563,23 @@ async function runViewerSearch() {
   viewerSearchState.value = await fileViewerRef.value?.searchDocument(query) || viewerSearchState.value
 }
 
+async function openViewerSearch() {
+  viewerSearchOpen.value = true
+  await nextTick()
+  viewerSearchInputRef.value?.focus()
+  viewerSearchInputRef.value?.select()
+}
+
+function closeViewerSearch() {
+  viewerSearchOpen.value = false
+  viewerSearchState.value = fileViewerRef.value?.clearDocumentSearch() || viewerSearchState.value
+}
+
+function resetViewerSearch() {
+  viewerSearchQuery.value = ''
+  closeViewerSearch()
+}
+
 async function nextViewerSearch() {
   if (!viewerSearchQuery.value.trim()) {
     return
@@ -620,6 +639,7 @@ onBeforeUnmount(() => {
 function openUrlPreview(nextUrl = url.value) {
   input.value = true
   file.value = undefined
+  resetViewerSearch()
   preview.value = nextUrl
   samplePickerOpen.value = false
 }
@@ -637,6 +657,7 @@ async function handleChange(e: Event) {
   }
   input.value = false
   samplePickerOpen.value = false
+  resetViewerSearch()
   filename.value = value.name && decodeURIComponent(value.name) || ''
   file.value = value
 }
@@ -680,8 +701,23 @@ function handleDocumentPointerDown(event: PointerEvent) {
 }
 
 function handleDocumentKeydown(event: KeyboardEvent) {
+  const key = event.key.toLowerCase()
+  if ((event.metaKey || event.ctrlKey) && !event.altKey && key === 'f') {
+    event.preventDefault()
+    event.stopPropagation()
+    if (viewerSearchOpen.value) {
+      closeViewerSearch()
+      return
+    }
+    void openViewerSearch()
+    return
+  }
+
   if (event.key === 'Escape') {
     samplePickerOpen.value = false
+    if (viewerSearchOpen.value) {
+      closeViewerSearch()
+    }
   }
 }
 
@@ -860,17 +896,6 @@ function updateSampleMenuGeometry() {
             </div>
             <div class='viewer-path'>{{ displayPath }}</div>
             <div class='viewer-tools'>
-              <div class='viewer-search' role='search' aria-label='文档搜索'>
-                <input
-                  v-model.trim='viewerSearchQuery'
-                  type='search'
-                  placeholder='搜索'
-                  @keyup.enter='runViewerSearch'
-                />
-                <span>{{ viewerSearchSummary }}</span>
-                <button type='button' title='上一个搜索结果' @click='previousViewerSearch'>上</button>
-                <button type='button' title='下一个搜索结果' @click='nextViewerSearch'>下</button>
-              </div>
               <div v-if='showExternalToolbar' class='viewer-action-group' aria-label='预览操作'>
                 <button
                   v-if='visibleExternalToolbar.download'
@@ -915,6 +940,22 @@ function updateSampleMenuGeometry() {
             </div>
           </div>
 
+          <div v-if='viewerSearchOpen' class='viewer-search-popover' role='search' aria-label='文档搜索'>
+            <input
+              ref='viewerSearchInputRef'
+              v-model.trim='viewerSearchQuery'
+              type='search'
+              placeholder='搜索当前文档'
+              @keyup.enter='runViewerSearch'
+            />
+            <span>{{ viewerSearchSummary }}</span>
+            <button type='button' title='上一个搜索结果' @click='previousViewerSearch'>上</button>
+            <button type='button' title='下一个搜索结果' @click='nextViewerSearch'>下</button>
+            <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
+              ×
+            </button>
+          </div>
+
           <div class='viewport'>
             <file-viewer
               ref='fileViewerRef'
@@ -929,6 +970,21 @@ function updateSampleMenuGeometry() {
       </div>
 
       <section v-else class='viewer-panel standalone'>
+        <div v-if='viewerSearchOpen' class='viewer-search-popover viewer-search-popover--standalone' role='search' aria-label='文档搜索'>
+          <input
+            ref='viewerSearchInputRef'
+            v-model.trim='viewerSearchQuery'
+            type='search'
+            placeholder='搜索当前文档'
+            @keyup.enter='runViewerSearch'
+          />
+          <span>{{ viewerSearchSummary }}</span>
+          <button type='button' title='上一个搜索结果' @click='previousViewerSearch'>上</button>
+          <button type='button' title='下一个搜索结果' @click='nextViewerSearch'>下</button>
+          <button type='button' class='viewer-search-close' title='关闭搜索' @click='closeViewerSearch'>
+            ×
+          </button>
+        </div>
         <div class='viewport'>
           <file-viewer
             ref='fileViewerRef'
@@ -1709,23 +1765,34 @@ function updateSampleMenuGeometry() {
   gap: 8px;
 }
 
-.viewer-search {
+.viewer-search-popover {
+  position: absolute;
+  z-index: 40;
+  top: 76px;
+  right: 24px;
   display: inline-grid;
-  grid-template-columns: minmax(92px, 150px) auto auto auto;
+  grid-template-columns: minmax(180px, 260px) auto auto auto auto;
   align-items: center;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid rgba(20, 35, 53, 0.07);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.66);
+  gap: 6px;
+  max-width: calc(100% - 48px);
+  padding: 6px;
+  border: 1px solid rgba(20, 35, 53, 0.09);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(18, 35, 50, 0.18);
+  backdrop-filter: blur(18px);
 }
 
-.viewer-search input,
-.viewer-search button,
-.viewer-search span {
-  height: 32px;
+.viewer-search-popover--standalone {
+  top: 18px;
+}
+
+.viewer-search-popover input,
+.viewer-search-popover button,
+.viewer-search-popover span {
+  height: 34px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 12px;
   background: transparent;
   color: #526174;
   font: inherit;
@@ -1733,18 +1800,19 @@ function updateSampleMenuGeometry() {
   font-weight: 900;
 }
 
-.viewer-search input {
+.viewer-search-popover input {
   min-width: 0;
-  padding: 0 11px;
+  padding: 0 12px;
   outline: none;
+  background: rgba(20, 35, 53, 0.04);
 }
 
-.viewer-search input:focus {
+.viewer-search-popover input:focus {
   background: rgba(33, 163, 102, 0.1);
   color: #16804f;
 }
 
-.viewer-search span {
+.viewer-search-popover span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1752,15 +1820,19 @@ function updateSampleMenuGeometry() {
   color: #718193;
 }
 
-.viewer-search button {
-  min-width: 32px;
+.viewer-search-popover button {
+  min-width: 34px;
   padding: 0 8px;
   cursor: pointer;
 }
 
-.viewer-search button:hover {
+.viewer-search-popover button:hover {
   background: rgba(33, 163, 102, 0.1);
   color: #16804f;
+}
+
+.viewer-search-close {
+  font-size: 18px;
 }
 
 .viewer-action-group {
@@ -2088,19 +2160,24 @@ function updateSampleMenuGeometry() {
     background: rgba(9, 15, 20, 0.54);
   }
 
-  .viewer-search {
+  .viewer-search-popover {
     border-color: rgba(167, 185, 198, 0.13);
-    background: rgba(9, 15, 20, 0.54);
+    background: rgba(12, 20, 27, 0.94);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
   }
 
-  .viewer-search input,
-  .viewer-search button,
-  .viewer-search span {
+  .viewer-search-popover input,
+  .viewer-search-popover button,
+  .viewer-search-popover span {
     color: #b8c7d5;
   }
 
-  .viewer-search input:focus,
-  .viewer-search button:hover {
+  .viewer-search-popover input {
+    background: rgba(167, 185, 198, 0.09);
+  }
+
+  .viewer-search-popover input:focus,
+  .viewer-search-popover button:hover {
     background: rgba(45, 212, 154, 0.14);
     color: #61e5b4;
   }
@@ -2173,9 +2250,11 @@ function updateSampleMenuGeometry() {
     flex-wrap: wrap;
   }
 
-  .viewer-search {
-    grid-template-columns: minmax(120px, 1fr) auto auto auto;
-    width: 100%;
+  .viewer-search-popover {
+    top: 122px;
+    right: 14px;
+    grid-template-columns: minmax(120px, 1fr) auto auto auto auto;
+    width: calc(100% - 28px);
   }
 
   .control-panel {
