@@ -12,7 +12,7 @@
 | 入口 | 地址 | 适合做什么 |
 | --- | --- | --- |
 | 主示例页 | `/` | 切换预置文件、上传本地文件、快速确认各类格式表现 |
-| 文档比对页 | `/compare.html` | 左右并排预览两份文档，支持示例、URL、本地上传和同步滚动 |
+| 文档比对页 | `/compare.html` | 左右并排预览两份文档，支持示例、URL、本地上传、交换、重置和同步滚动 |
 | iframe 示例页 | `/example/embedded.html` | 验证独立部署与二进制推送协议 |
 | 适配层 Demo | `packages/demo` | 同时验证 React 组件和纯 JS helper 的私有化 iframe 集成 |
 
@@ -31,12 +31,18 @@
 
 ## 文档比对页
 
-文档比对页是独立入口，不会出现在主预览流程里。它适合让用户快速核对两份附件的版式差异，例如旧版合同与新版 Word、PDF 与源文档、PPTX 不同版本或 Markdown 与导出物。
+文档比对页是独立入口，不会出现在主预览流程里，也不会改变 `FileViewer` 组件本身的默认工具栏。它适合让用户快速核对两份附件的版式差异，例如旧版合同与新版 Word、PDF 与源文档、PPTX 不同版本或 Markdown 与导出物。
 
 直接访问:
 
 ```text
 /compare.html
+```
+
+生产环境体验地址:
+
+```text
+https://viewer.flyfish.dev/compare.html
 ```
 
 也可以用查询参数预置左右文件:
@@ -45,7 +51,40 @@
 /compare.html?left=/example/test.doc&right=/example/word.docx
 ```
 
-页面默认关闭预览器内部操作栏，左右内容各自独立渲染；开启“同步滚动”后会按滚动比例联动，便于视觉比对。
+当前支持的查询参数只有两个，文档中不建议额外扩展临时参数，避免和后续组件 API 冲突:
+
+| 参数 | 说明 | 示例 |
+| --- | --- | --- |
+| `left` | 左侧面板初始文件 URL，支持同源相对路径或浏览器可访问的绝对 URL | `/example/test.doc` |
+| `right` | 右侧面板初始文件 URL，支持同源相对路径或浏览器可访问的绝对 URL | `/example/word.docx` |
+
+页面提供三种输入方式，左右两侧互不影响:
+
+- 内置示例: DOC、DOCX、PDF、PPTX、Typst、Markdown，可快速演示常见文档差异
+- URL 输入: 粘贴业务文件地址后点击预览，适合联调带签名的临时文件链接
+- 本地上传: 直接选择本机文件，适合客户现场复现和售前演示
+
+比对页顶部提供“同步滚动”“交换”“重置”。同步滚动按两侧滚动比例联动，不要求两份文档页数完全一致；两侧内容依然各自独立渲染，所以 PDF、Word、PPTX、Markdown、Typst 等格式会继续复用主预览器的按需异步加载、打印能力判断和渲染边界。
+
+为了保持左右对照清晰，比对页默认关闭每个预览器内部操作栏。如果需要下载、打印、导出 HTML、水印或业务权限钩子，请使用主预览入口或在业务侧基于 `FileViewer` 组件自定义比对容器。
+
+私有化部署时，`pnpm build-only` 产物、Docker 镜像和公开成品仓库的 `demo/` 目录都会包含同一个入口:
+
+```text
+demo/compare.html
+```
+
+上线前建议至少验证下面两条:
+
+```bash
+pnpm verify:demo-output
+```
+
+```text
+/compare.html?left=/example/test.doc&right=/example/word.docx
+```
+
+这项功能做的是视觉并排预览，不是语义 diff。它不会自动标红文本改动，也不会解析 Office 修订痕迹；如果需要合同逐字差异、表格单元格差异或 PDF OCR 差异，请在业务侧接入专门的 diff 服务，再把结果作为文件或 HTML 交给预览器展示。
 
 ## Word 页面效果
 

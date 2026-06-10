@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 135 个扩展名和 Vue3、Vue2、React、纯 JS、iframe 多种接入方式',
+  description: '纯前端多格式文件预览组件，覆盖 149 个扩展名和 Vue3、Vue2、React、纯 JS、iframe 多种接入方式',
   cleanUrls: true,
   lastUpdated: true,
   head: [
@@ -27,6 +27,7 @@ export default defineConfig({
           { text: 'npm(React)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-react' },
           { text: 'npm(纯 JS)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-web' },
           { text: 'GitHub 成品仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
+          { text: 'Gitee 成品仓库', link: 'https://gitee.com/flyfish-dev/file-viewer' },
           { text: '源码开通', link: 'https://dev.flyfish.group/shop' }
         ]
       }

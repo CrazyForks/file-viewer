@@ -16,6 +16,7 @@ titleTemplate: false
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
 <a class="doc-action" href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
+<a class="doc-action" href="https://viewer.flyfish.dev/compare.html" target="_blank" rel="noreferrer">文档比对</a>
 <a class="doc-action" href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 成品</a>
 </div>
 </div>
@@ -70,6 +71,11 @@ titleTemplate: false
 <span>03</span>
 <h3>示例覆盖完整验收路径</h3>
 <p>示例文件按文档、表格、图纸、电子书、压缩包、邮件、EDA、代码、媒体等类型分组，方便快速定位和回归。</p>
+</article>
+<article>
+<span>04</span>
+<h3>独立比对不污染主入口</h3>
+<p><code>/compare.html</code> 提供左右并排预览、示例选择、URL、本地上传、交换和同步滚动，适合合同、报告、PPT 和导出物的视觉核对。</p>
 </article>
 </div>
 </div>
@@ -152,7 +158,8 @@ titleTemplate: false
 <p>
 官方文档是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，
 在线预览是 <a href="https://viewer.flyfish.dev">viewer.flyfish.dev</a>，
-公开成品仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>。
+公开成品仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>，
+Gitee 镜像是 <a href="https://gitee.com/flyfish-dev/file-viewer">gitee.com/flyfish-dev/file-viewer</a>。
 React 和纯 JS 组件默认加载你私有部署的 <code>/file-viewer/index.html</code>，不会把官网 Demo 地址作为内置依赖。
 </p>
 </div>

@@ -86,7 +86,7 @@ Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构
 - npm 包 tarball: 仓库根目录下的 `*.tgz`，适配包 tarball 位于 `.release/adapters/`
 - React / 纯 JS 随包 viewer 产物: `packages/web/viewer/`
 - 适配层 Demo 构建产物: `packages/demo/dist/`
-- 公开 GitHub 成品仓库: 只放混淆压缩后的库产物、Demo 静态站点、文档静态站点、示例文件和 tarball，不包含源码目录
+- 公开 GitHub / Gitee 成品仓库: 只放混淆压缩后的库产物、Demo 静态站点、文档静态站点、示例文件和 tarball，不包含源码目录
 
 ## 发版前检查清单
 
@@ -100,7 +100,7 @@ Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - React / 纯 JS tarball 是否包含 `viewer/`、`dist/`、README，且不包含 `.DS_Store`
 - 混淆后的 `dist/index.mjs`、`dist/index.umd.js` 是否仍可被业务项目正常导入
-- README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub 成品仓库、源码自助开通和 Apache-2.0 许可证说明
+- README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 成品仓库、源码自助开通和 Apache-2.0 许可证说明
 
 ## 部署建议
 

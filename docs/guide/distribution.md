@@ -4,7 +4,8 @@
 
 <p class="doc-lead">
   这一页说明 Flyfish Viewer 对外分发时包含什么、如何安装、如何发布私有化 viewer 静态产物，以及源码如何自助开通。
-  公开 GitHub 仓库只交付混淆压缩后的构建产物、示例文件、静态文档产物、适配包和下载包。
+  公开 GitHub / Gitee 成品仓库只交付混淆压缩后的构建产物、示例文件、静态文档产物、适配包和下载包。
+  Gitee 镜像同步同一份成品，方便国内网络环境下载和部署。
 </p>
 
 ## 分发渠道
@@ -13,7 +14,7 @@
 | --- | --- | --- |
 | 官方文档/组件主页 | [doc.flyfish.dev](https://doc.flyfish.dev) | 组件主页、接入文档、格式说明和成品分发说明 |
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
-| 文档比对 Demo | [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html) | 独立入口，支持左右并排预览、上传、URL 和同步滚动 |
+| 文档比对 Demo | [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html) | 独立入口，支持左右并排预览、上传、URL、交换、重置和同步滚动 |
 | Docker 镜像发布目标 | `flyfishdev/file-viewer:1.0.20` | 可一键部署的 nginx 静态镜像，发布时支持 `linux/amd64` 和 `linux/arm64` |
 | npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.21`，样式会随安装器自动带入 |
 | npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.21`，安装器会自动带上样式 |
@@ -21,6 +22,7 @@
 | npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前 latest 为 `1.0.21` |
 | 私有化 viewer 静态产物 | `file-viewer/index.html` | React、纯 JS 和 iframe 方案默认加载的 Vue3 基线预览器 |
 | GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、示例和可下载 tarball |
+| Gitee 成品仓库 | [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer) | 与 GitHub 成品仓库同步的国内镜像，便于快速克隆和下载 |
 | 源码自助开通 | [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop) | 付费 4.99 后自助开通源码或二开资源 |
 
 ## npm 安装
@@ -111,7 +113,7 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 
 ## 成品仓库内容
 
-公开 GitHub 仓库只用于成品交付，不包含当前源码目录。仓库内容通常包括:
+公开 GitHub / Gitee 成品仓库只用于成品交付，不包含当前源码目录。仓库内容通常包括:
 
 - `dist/`: 混淆压缩后的组件库产物
 - `demo/`: 可独立部署的私有化预览器静态站点
@@ -125,7 +127,7 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 
 其中 `README.md` 会承担公开仓库首页职责，写明官方文档、在线 Demo、npm 包、私有化部署、成品目录和源码开通入口。`docs/` 是文档站静态构建产物，可部署到任何静态资源服务中。
 
-公开 GitHub 成品仓库和源码仓库保持分离，源码只在内部仓库维护；公开仓库只保留可直接部署或下载的成品。
+公开 GitHub / Gitee 成品仓库和源码仓库保持分离，源码只在内部仓库维护；公开仓库只保留可直接部署或下载的成品。
 
 ## 发版命令
 

@@ -11,6 +11,7 @@
   <a href="https://doc.flyfish.dev" target="_blank" rel="noreferrer">官方文档</a>
   <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
   <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 成品仓库</a>
+  <a href="https://gitee.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">Gitee 成品仓库</a>
   <a href="/guide/quickstart">快速开始</a>
   <a href="/guide/formats">支持格式</a>
   <a href="/guide/usage">组件用法</a>
@@ -73,6 +74,7 @@
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 使用官方 diagrams.net viewer。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开。
 - 代码和文本使用 `highlight.js` 轻量高亮，HTML 会按源码展示。
+- 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置和同步滚动，适合上线前核对两份附件的视觉差异。
 
 ## 常用入口
 
@@ -81,6 +83,7 @@
 | 想最快跑起来 | [快速开始](/guide/quickstart) |
 | 想确认所有格式 | [支持格式](/guide/formats) |
 | 想看示例文件和回归建议 | [Demo 说明](/guide/demo) |
+| 想并排比对两份文件 | [Demo 说明: 文档比对页](/guide/demo#文档比对页) |
 | 想在 Vue 3 中接入 | [Vue3 集成](/guide/quickstart-vue3) |
 | 想在 Vue2.7 中接入 | [Vue2 集成](/guide/quickstart-vue2) |
 | 想在 React 中接入 | [React 集成](/guide/quickstart-react) |

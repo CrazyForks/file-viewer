@@ -10,6 +10,9 @@
 - 清理 `.wps`、`.wpt`、`.et`、`.ett`、`.dps`、`.dpt` 等当前没有开箱即用浏览器渲染方案的 WPS 原生格式说明，避免用户误以为这些格式已经完整支持
 - Office 模板和宏格式继续按实际可渲染链路保留，包括 `dot`、`dotx`、`dotm`、`docm`、`xlt`、`xltx`、`xltm`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`
 - 新增 Docker Hub 仓库创建脚本，支持用 Docker Hub API 创建 `flyfishdev/file-viewer` 公开仓库，并在异常时输出更明确的安全诊断信息
+- 文档站补全文档比对页使用说明，明确 `/compare.html`、`left` / `right` 预置参数、内置示例、URL、本地上传、同步滚动、私有化部署路径和视觉比对边界
+- 公开成品仓库新增 Gitee 镜像 `gitee.com/flyfish-dev/file-viewer`，GitHub / Gitee 同步交付混淆构建产物、Demo、文档静态产物、示例文件和 tarball
+- Demo 输出校验继续覆盖 `compare.html`、主入口资源、适配层 viewer 静态目录和示例资源，避免上线缺少独立比对入口
 - README、文档站、React / 纯 JS README、iframe cache key 和 workspace 依赖同步刷新到 `1.0.21`
 
 ### `v1.0.20` Typst 直读源文件与边缘部署优化版本
