@@ -1,7 +1,6 @@
 <script setup lang='ts'>
 import { computed, ref, watch } from 'vue'
 import type { HLJSApi, LanguageFn } from 'highlight.js'
-import 'highlight.js/styles/github-dark.css'
 
 const props = defineProps<{
   // 源文件文本内容。组件只负责展示，不会执行其中的 HTML 或脚本。
@@ -159,8 +158,20 @@ const lineCount = computed(() => {
 <style scoped>
 .code-viewer {
   min-height: 100%;
-  background: #0d1117;
-  color: #e6edf3;
+  --code-bg: #f6f8fa;
+  --code-toolbar-bg: rgba(255, 255, 255, 0.92);
+  --code-border: rgba(31, 35, 40, 0.12);
+  --code-text: #24292f;
+  --code-muted: #57606a;
+  --code-keyword: #cf222e;
+  --code-title: #8250df;
+  --code-string: #0a3069;
+  --code-number: #0550ae;
+  --code-comment: #6e7781;
+  --code-attr: #953800;
+  --code-built-in: #116329;
+  background: var(--code-bg);
+  color: var(--code-text);
 }
 
 .code-toolbar {
@@ -173,14 +184,14 @@ const lineCount = computed(() => {
   justify-content: space-between;
   gap: 16px;
   padding: 0 16px;
-  border-bottom: 1px solid rgba(139, 148, 158, 0.24);
-  background: rgba(13, 17, 23, 0.92);
+  border-bottom: 1px solid var(--code-border);
+  background: var(--code-toolbar-bg);
   backdrop-filter: blur(12px);
 }
 
 .code-toolbar span,
 .code-toolbar strong {
-  color: #8b949e;
+  color: var(--code-muted);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0;
@@ -206,5 +217,81 @@ const lineCount = computed(() => {
   line-height: 1.7;
   tab-size: 2;
   white-space: pre;
+}
+
+.code-area :deep(.hljs-comment),
+.code-area :deep(.hljs-quote) {
+  color: var(--code-comment);
+}
+
+.code-area :deep(.hljs-keyword),
+.code-area :deep(.hljs-selector-tag),
+.code-area :deep(.hljs-subst) {
+  color: var(--code-keyword);
+}
+
+.code-area :deep(.hljs-string),
+.code-area :deep(.hljs-doctag),
+.code-area :deep(.hljs-regexp) {
+  color: var(--code-string);
+}
+
+.code-area :deep(.hljs-title),
+.code-area :deep(.hljs-section),
+.code-area :deep(.hljs-selector-id) {
+  color: var(--code-title);
+  font-weight: 700;
+}
+
+.code-area :deep(.hljs-number),
+.code-area :deep(.hljs-literal),
+.code-area :deep(.hljs-variable),
+.code-area :deep(.hljs-template-variable) {
+  color: var(--code-number);
+}
+
+.code-area :deep(.hljs-attr),
+.code-area :deep(.hljs-attribute),
+.code-area :deep(.hljs-name),
+.code-area :deep(.hljs-selector-class) {
+  color: var(--code-attr);
+}
+
+.code-area :deep(.hljs-built_in),
+.code-area :deep(.hljs-type),
+.code-area :deep(.hljs-class .hljs-title) {
+  color: var(--code-built-in);
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .code-viewer) {
+  --code-bg: #0d1117;
+  --code-toolbar-bg: rgba(13, 17, 23, 0.92);
+  --code-border: rgba(139, 148, 158, 0.24);
+  --code-text: #e6edf3;
+  --code-muted: #8b949e;
+  --code-keyword: #ff7b72;
+  --code-title: #d2a8ff;
+  --code-string: #a5d6ff;
+  --code-number: #79c0ff;
+  --code-comment: #8b949e;
+  --code-attr: #ffa657;
+  --code-built-in: #7ee787;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(.file-viewer[data-viewer-theme='system'] .code-viewer) {
+    --code-bg: #0d1117;
+    --code-toolbar-bg: rgba(13, 17, 23, 0.92);
+    --code-border: rgba(139, 148, 158, 0.24);
+    --code-text: #e6edf3;
+    --code-muted: #8b949e;
+    --code-keyword: #ff7b72;
+    --code-title: #d2a8ff;
+    --code-string: #a5d6ff;
+    --code-number: #79c0ff;
+    --code-comment: #8b949e;
+    --code-attr: #ffa657;
+    --code-built-in: #7ee787;
+  }
 }
 </style>

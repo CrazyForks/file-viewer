@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-demo",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,15 +10,15 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@flyfish-group/file-viewer-react": "workspace:^1.0.21",
-    "@flyfish-group/file-viewer-web": "workspace:^1.0.21",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "@flyfish-group/file-viewer-react": "workspace:^1.0.22",
+    "@flyfish-group/file-viewer-web": "workspace:^1.0.22",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "typescript": "^6.0.3",
-    "vite": "^8.0.13"
+    "vite": "^8.0.16"
   }
 }

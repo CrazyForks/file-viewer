@@ -96,6 +96,7 @@ let resizeObserver: ResizeObserver | null = null
 let fitFrame = 0
 let destroyed = false
 let loadVersion = 0
+type PdfNavigationResult = void | PromiseLike<void>
 
 function createPdfWorker() {
   if (typeof window === 'undefined' || !('Worker' in window)) {
@@ -397,6 +398,60 @@ function clampScale(scale: number) {
   return Number(Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale)).toFixed(2))
 }
 
+function clampHorizontalScroll(scrollLeft: number) {
+  const scrollContainer = container.value
+  if (!scrollContainer) {
+    return 0
+  }
+
+  const maxScrollLeft = Math.max(0, scrollContainer.scrollWidth - scrollContainer.clientWidth)
+  return Math.min(Math.max(0, scrollLeft), maxScrollLeft)
+}
+
+function restoreHorizontalScroll(scrollLeft: number) {
+  const scrollContainer = container.value
+  if (!scrollContainer) {
+    return
+  }
+
+  scrollContainer.scrollLeft = clampHorizontalScroll(scrollLeft)
+}
+
+function stabilizeHorizontalScroll(scrollLeft: number) {
+  restoreHorizontalScroll(scrollLeft)
+  void nextTick(() => {
+    restoreHorizontalScroll(scrollLeft)
+  })
+
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.requestAnimationFrame(() => {
+    restoreHorizontalScroll(scrollLeft)
+    window.requestAnimationFrame(() => {
+      restoreHorizontalScroll(scrollLeft)
+    })
+  })
+  window.setTimeout(() => {
+    restoreHorizontalScroll(scrollLeft)
+  }, 120)
+}
+
+function runWithStableHorizontalScroll(action: () => PdfNavigationResult) {
+  const previousScrollLeft = clampHorizontalScroll(container.value?.scrollLeft || 0)
+  const result = action()
+  // PDF.js 的目录目标可能携带 x 坐标，默认会横向滚动到目标文字位置。
+  // 这里保留用户当前横向位置，只让目录/翻页改变垂直阅读位置，避免左侧导航展开时遮住页面内容。
+  stabilizeHorizontalScroll(previousScrollLeft)
+
+  if (result && typeof result.then === 'function') {
+    void Promise.resolve(result).finally(() => {
+      stabilizeHorizontalScroll(previousScrollLeft)
+    })
+  }
+}
+
 function setScale(scale: number) {
   if (!context.viewer) return
   const normalizedScale = clampScale(scale)
@@ -460,8 +515,10 @@ function rotateRight() {
 function goToPage(pageNumber: number) {
   if (!context.viewer || !pageCount.value) return
   const nextPage = Math.min(pageCount.value, Math.max(1, pageNumber))
-  context.viewer.currentPageNumber = nextPage
-  currentPage.value = nextPage
+  runWithStableHorizontalScroll(() => {
+    context.viewer!.currentPageNumber = nextPage
+    currentPage.value = nextPage
+  })
 }
 
 function setNavMode(mode: PdfNavMode) {
@@ -498,7 +555,7 @@ function goToOutlineItem(item: PdfOutlineItemView) {
   if (!item.dest || !context.linkService) {
     return
   }
-  void context.linkService.goToDestination(item.dest)
+  runWithStableHorizontalScroll(() => context.linkService!.goToDestination(item.dest!))
 }
 
 onMounted(() => {

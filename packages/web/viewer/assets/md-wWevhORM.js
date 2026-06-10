@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./MarkdownViewer-DUe9OWgX.js","./package-D9RNadqh.js","./package-Dwgf8BpP.css","./MarkdownViewer-DfpNPUlw.css"])))=>i.map(i=>d[i]);
+import{D as e,O as t,m as n,r,u as i}from"./package-D9RNadqh.js";var a=t(()=>r(()=>import(`./MarkdownViewer-DUe9OWgX.js`),__vite__mapDeps([0,1,2,3]),import.meta.url));async function o(t,r){let o=await i(t),s=n({render:()=>e(a,{data:o},null)});return s.mount(r),s}export{o as default};

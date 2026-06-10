@@ -16,7 +16,7 @@ docker run -d \
   --name flyfish-viewer \
   --restart unless-stopped \
   -p 8080:80 \
-  flyfishdev/file-viewer:1.0.20
+  flyfishdev/file-viewer:1.0.22
 ```
 
 打开:
@@ -40,7 +40,7 @@ docker run -d \
 ```yaml
 services:
   flyfish-viewer:
-    image: flyfishdev/file-viewer:1.0.20
+    image: flyfishdev/file-viewer:1.0.22
     container_name: flyfish-viewer
     restart: unless-stopped
     ports:
@@ -75,7 +75,7 @@ DOCKER_IMAGE=your-org/file-viewer pnpm docker:build
 本地运行:
 
 ```bash
-docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.20
+docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.22
 ```
 
 ## 通过 Docker Hub API 创建仓库
@@ -107,7 +107,7 @@ DOCKER_IMAGE=flyfishdev/file-viewer pnpm docker:publish
 
 脚本默认推送两个标签:
 
-- `flyfishdev/file-viewer:1.0.20`
+- `flyfishdev/file-viewer:1.0.22`
 - `flyfishdev/file-viewer:latest`
 
 如需覆盖平台或标签:
@@ -115,7 +115,7 @@ DOCKER_IMAGE=flyfishdev/file-viewer pnpm docker:publish
 ```bash
 DOCKER_IMAGE=flyfishdev/file-viewer \
 DOCKER_PLATFORMS=linux/amd64,linux/arm64 \
-DOCKER_TAGS=1.0.20,latest \
+DOCKER_TAGS=1.0.22,latest \
 pnpm docker:publish
 ```
 

@@ -49,6 +49,27 @@ const html = computed(() => {
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.1);
 }
 
+:global(.file-viewer[data-viewer-theme='dark'] .markdown-viewer) {
+    background: #101820;
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .markdown-body) {
+    color-scheme: dark;
+    --bgColor-default: #0d1117;
+    --bgColor-muted: #151b23;
+    --bgColor-neutral-muted: #656c7633;
+    --borderColor-default: #3d444d;
+    --borderColor-muted: #3d444db3;
+    --borderColor-neutral-muted: #3d444db3;
+    --fgColor-default: #f0f6fc;
+    --fgColor-muted: #9198a1;
+    --fgColor-accent: #4493f8;
+    background: var(--bgColor-default);
+    border-color: rgba(139, 148, 158, 0.26);
+    color: var(--fgColor-default);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.38);
+}
+
 @media (max-width: 767px) {
     .markdown-viewer {
         padding: 14px 10px 28px;
@@ -61,11 +82,11 @@ const html = computed(() => {
 }
 
 @media (prefers-color-scheme: dark) {
-    .markdown-viewer {
+    :global(.file-viewer[data-viewer-theme='system'] .markdown-viewer) {
         background: #101820;
     }
 
-    .markdown-body {
+    :global(.file-viewer[data-viewer-theme='system'] .markdown-body) {
         color-scheme: dark;
         --bgColor-default: #0d1117;
         --bgColor-muted: #151b23;

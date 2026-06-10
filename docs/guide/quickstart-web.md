@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web@1.0.21
+npm install --save @flyfish-group/file-viewer-web@1.0.22
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -59,7 +59,8 @@ pnpm exec file-viewer-copy-assets ./public/file-viewer
       console.log(event.type, event.event, event.payload)
     },
     options: {
-      toolbar: true,
+      theme: 'light',
+      toolbar: { position: 'bottom-right' },
       watermark: { text: '内部资料', opacity: 0.14 },
       archive: { workerUrl: '/vendor/libarchive/worker-bundle.js', cache: true }
     }
@@ -106,7 +107,7 @@ URL 文件直接拼接 `url`:
 
 ```html
 <iframe
-  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.21"
+  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.22"
   style="width: 100%; height: 100vh; border: 0"
 ></iframe>
 ```
@@ -130,7 +131,7 @@ URL 文件直接拼接 `url`:
       frame.src = '/vendor/file-viewer/index.html' +
         '?name=' + encodeURIComponent('contract.docx') +
         '&from=' + encodeURIComponent(origin) +
-        '&__flyfish_viewer_version=1.0.21'
+        '&__flyfish_viewer_version=1.0.22'
     })
 </script>
 ```
@@ -179,7 +180,8 @@ await copyViewerAssets({
 
 `options` 会被序列化到 iframe 查询参数中，当前支持:
 
-- `toolbar`: 声明是否允许下载原文件、完整打印和导出 HTML；打印按钮仍会按当前格式和渲染链路动态显隐。
+- `theme`: 支持 `light`、`dark`、`system`。默认 `system` 跟随系统；浅色业务系统建议传 `light`。
+- `toolbar`: 声明是否允许下载原文件、完整打印和导出 HTML；`position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角；打印按钮仍会按当前格式和渲染链路动态显隐。
 - `watermark`: 配置文字或图片水印。
 - `archive`: 配置 libarchive worker、IndexedDB 缓存、压缩包体积上限和内部文件预览上限。
 

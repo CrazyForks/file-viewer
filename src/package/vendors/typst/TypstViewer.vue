@@ -473,6 +473,42 @@ onBeforeUnmount(() => {
   white-space: pre-wrap;
 }
 
+:global(.file-viewer[data-viewer-theme='dark'] .typst-viewer) {
+  background: #101820;
+  color: #e6edf3;
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .typst-toolbar) {
+  border-bottom-color: rgba(139, 148, 158, 0.22);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .typst-toolbar strong) {
+  color: #f8fafc;
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .typst-toolbar span),
+:global(.file-viewer[data-viewer-theme='dark'] .typst-toolbar em) {
+  color: #9aa7b8;
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .typst-page-shell) {
+  border-color: rgba(139, 148, 158, 0.26);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.38);
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .typst-loading),
+:global(.file-viewer[data-viewer-theme='dark'] .typst-error) {
+  border-color: rgba(139, 148, 158, 0.22);
+  background: #151b23;
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.32);
+}
+
+:global(.file-viewer[data-viewer-theme='dark'] .typst-loading strong),
+:global(.file-viewer[data-viewer-theme='dark'] .typst-error strong) {
+  color: #f8fafc;
+}
+
 @keyframes typst-spin {
   to {
     transform: rotate(360deg);
@@ -493,39 +529,39 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-color-scheme: dark) {
-  .typst-viewer {
+  :global(.file-viewer[data-viewer-theme='system'] .typst-viewer) {
     background: #101820;
     color: #e6edf3;
   }
 
-  .typst-toolbar {
+  :global(.file-viewer[data-viewer-theme='system'] .typst-toolbar) {
     border-bottom-color: rgba(139, 148, 158, 0.22);
     background: rgba(15, 23, 42, 0.9);
   }
 
-  .typst-toolbar strong {
+  :global(.file-viewer[data-viewer-theme='system'] .typst-toolbar strong) {
     color: #f8fafc;
   }
 
-  .typst-toolbar span,
-  .typst-toolbar em {
+  :global(.file-viewer[data-viewer-theme='system'] .typst-toolbar span),
+  :global(.file-viewer[data-viewer-theme='system'] .typst-toolbar em) {
     color: #9aa7b8;
   }
 
-  .typst-page-shell {
+  :global(.file-viewer[data-viewer-theme='system'] .typst-page-shell) {
     border-color: rgba(139, 148, 158, 0.26);
     box-shadow: 0 24px 56px rgba(0, 0, 0, 0.38);
   }
 
-  .typst-loading,
-  .typst-error {
+  :global(.file-viewer[data-viewer-theme='system'] .typst-loading),
+  :global(.file-viewer[data-viewer-theme='system'] .typst-error) {
     border-color: rgba(139, 148, 158, 0.22);
     background: #151b23;
     box-shadow: 0 24px 56px rgba(0, 0, 0, 0.32);
   }
 
-  .typst-loading strong,
-  .typst-error strong {
+  :global(.file-viewer[data-viewer-theme='system'] .typst-loading strong),
+  :global(.file-viewer[data-viewer-theme='system'] .typst-error strong) {
     color: #f8fafc;
   }
 }

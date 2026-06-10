@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./DrawingViewer-BLx5reKf.js","./package-BzUY3Le1.js","./package-avoqJ--x.css","./DrawingViewer-DHdPw80C.css"])))=>i.map(i=>d[i]);
-import{D as e,O as t,m as n,r}from"./package-BzUY3Le1.js";var i=t(()=>r(()=>import(`./DrawingViewer-BLx5reKf.js`),__vite__mapDeps([0,1,2,3]),import.meta.url));async function a(t,r,a){let o=n({render:()=>e(i,{data:t,type:a||`drawio`},null)});return o.mount(r),o}export{a as default};

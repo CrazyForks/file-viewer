@@ -17,10 +17,16 @@ export interface ViewerWatermarkOptions {
   fontFamily?: string
 }
 
+export type ViewerToolbarPosition = 'auto' | 'top' | 'bottom-right'
+
 export interface ViewerToolbarOptions {
   download?: boolean
   print?: boolean
   exportHtml?: boolean
+  /**
+   * 操作栏位置。默认 `auto`: PDF 自动悬浮到右下角，其他格式保持顶部。
+   */
+  position?: ViewerToolbarPosition
 }
 
 export interface ViewerArchiveOptions {
@@ -30,7 +36,14 @@ export interface ViewerArchiveOptions {
   maxEntryPreviewSize?: number
 }
 
+export type ViewerThemeMode = 'light' | 'dark' | 'system'
+
 export interface ViewerRuntimeOptions {
+  /**
+   * 预览器主题。默认 `system`，即跟随浏览器 `prefers-color-scheme`。
+   * 浅色业务系统建议传 `light`，避免 iframe 内预览区被系统深色模式自动切暗。
+   */
+  theme?: ViewerThemeMode
   watermark?: boolean | ViewerWatermarkOptions
   toolbar?: boolean | ViewerToolbarOptions
   archive?: ViewerArchiveOptions
@@ -114,7 +127,7 @@ export interface ViewerFrameController {
 
 export const DEFAULT_VIEWER_PUBLIC_DIR = '/file-viewer'
 export const DEFAULT_VIEWER_URL = `${DEFAULT_VIEWER_PUBLIC_DIR}/index.html`
-export const VIEWER_FRAME_CACHE_KEY = '1.0.21'
+export const VIEWER_FRAME_CACHE_KEY = '1.0.22'
 const DEFAULT_FRAME_TITLE = 'Flyfish Viewer 文件预览'
 const FILE_POST_RETRY_LIMIT = 8
 const FILE_POST_RETRY_INTERVAL = 120

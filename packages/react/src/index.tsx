@@ -18,7 +18,15 @@ import {
   type ViewerFrameOptions
 } from '@flyfish-group/file-viewer-web'
 
-export type { FileRef, ViewerFrameEventHandler, ViewerFrameOptions } from '@flyfish-group/file-viewer-web'
+export type {
+  FileRef,
+  ViewerFrameEventHandler,
+  ViewerFrameOptions,
+  ViewerRuntimeOptions,
+  ViewerToolbarOptions,
+  ViewerToolbarPosition,
+  ViewerThemeMode
+} from '@flyfish-group/file-viewer-web'
 
 export interface FileViewerHandle {
   iframe: HTMLIFrameElement | null

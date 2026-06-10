@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./UmdViewer-BV_C7-QC.js","./package-BzUY3Le1.js","./package-avoqJ--x.css","./UmdViewer-DpObj56a.css"])))=>i.map(i=>d[i]);
-import{D as e,O as t,m as n,r}from"./package-BzUY3Le1.js";var i=t(()=>r(()=>import(`./UmdViewer-BV_C7-QC.js`),__vite__mapDeps([0,1,2,3]),import.meta.url));async function a(t,r){let a=n({render:()=>e(i,{data:t},null)});return a.mount(r),a}export{a as default};

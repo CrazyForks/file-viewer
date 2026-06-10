@@ -269,10 +269,12 @@ function prepareDocxCloneForExport(target: HTMLDivElement) {
  */
 export default async function(buffer: ArrayBuffer, target: HTMLDivElement, context?: FileRenderContext): Promise<AppWrapper> {
   const { defaultOptions, renderAsync } = await loadLibrary()
-  const docxOptions = Object.assign(defaultOptions, {
-    debug: true,
+  const docxOptions: Options = {
+    ...defaultOptions,
+    // Word 会写入 autoSpaceDN/autoSpaceDE 等兼容标签；生产预览保持静默，避免 docx-preview 调试告警刷屏。
+    debug: false,
     experimental: true
-  })
+  }
   await renderAsync(buffer, target, undefined, docxOptions)
   const disposeResponsive = makeDocxResponsive(target)
   context?.registerExportAdapter?.({

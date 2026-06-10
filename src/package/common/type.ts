@@ -48,12 +48,25 @@ export interface FileViewerWatermarkOptions {
 }
 
 /**
+ * 预览器内置操作栏位置。
+ *
+ * `auto` 是默认策略: PDF 这类有独立阅读工具栏的格式会自动悬浮到右下角，
+ * 其他格式继续使用顶部操作栏；也可以显式传 `top` 或 `bottom-right`。
+ */
+export type FileViewerToolbarPosition = 'auto' | 'top' | 'bottom-right';
+
+/**
  * 预览器内置操作栏配置。
  */
 export interface FileViewerToolbarOptions {
   download?: boolean;
   print?: boolean;
   exportHtml?: boolean;
+  /**
+   * 操作栏位置。`bottom-right` 会以胶囊按钮组悬浮在预览区右下角，
+   * 适合 PDF 等自身已经有顶部导航栏的格式。
+   */
+  position?: FileViewerToolbarPosition;
   /**
    * 内置操作按钮执行前的统一前置钩子。返回 `false` 时会取消本次操作。
    */
@@ -131,6 +144,15 @@ export interface FileViewerTypstOptions {
   compilerWasmUrl?: string;
 }
 
+/**
+ * 预览器主题模式。
+ *
+ * `system` 是默认值，会继续跟随浏览器 `prefers-color-scheme`；
+ * 浅色业务系统即使运行在深色操作系统中，也可以显式传 `light`
+ * 锁定预览区、工具栏和支持主题切换的渲染器为浅色。
+ */
+export type FileViewerThemeMode = 'light' | 'dark' | 'system';
+
 export type FileViewerSourceType = 'file' | 'url' | 'empty';
 
 export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';
@@ -184,6 +206,12 @@ export type FileViewerBeforeOperation = (
  * 预览器通用配置。
  */
 export interface FileViewerOptions {
+  /**
+   * 预览器主题。默认 `system`，即跟随浏览器 `prefers-color-scheme`。
+   * 业务系统已有固定浅色/深色 UI 时，建议显式传 `light` 或 `dark`，
+   * 避免部分渲染器在系统深色模式下自动切换后和宿主视觉不一致。
+   */
+  theme?: FileViewerThemeMode;
   watermark?: boolean | FileViewerWatermarkOptions;
   toolbar?: boolean | FileViewerToolbarOptions;
   archive?: FileViewerArchiveOptions;

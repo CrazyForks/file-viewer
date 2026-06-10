@@ -56,7 +56,7 @@ import { ref } from 'vue'
 
 const url = ref('https://example.com/demo.docx')
 const options = {
-  toolbar: true,
+  toolbar: { position: 'bottom-right' },
   watermark: { text: '内部预览', opacity: 0.14 }
 }
 </script>
@@ -95,7 +95,7 @@ new Vue({
 React 17 / 18 / 19 项目安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.21
+npm install @flyfish-group/file-viewer-react@1.0.22
 ```
 
 ```tsx
@@ -117,7 +117,7 @@ export function Preview() {
 不使用框架时安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.21
+npm install @flyfish-group/file-viewer-web@1.0.22
 ```
 
 ```html
@@ -129,7 +129,7 @@ npm install @flyfish-group/file-viewer-web@1.0.21
   mountViewerFrame(document.getElementById('viewer'), {
     url: '/files/demo.pdf',
     options: {
-      toolbar: true,
+      toolbar: { position: 'bottom-right' },
       archive: { workerUrl: '/file-viewer/vendor/libarchive/worker-bundle.js' }
     }
   })

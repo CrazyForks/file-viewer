@@ -15,6 +15,7 @@ import type {
   FileViewerOperationContext,
   FileViewerOperationType,
   FileViewerToolbarOptions,
+  FileViewerToolbarPosition,
   FileViewerWatermarkOptions,
   Rendered
 } from '@/package/common/type'
@@ -99,6 +100,11 @@ const normalizedToolbar = computed<FileViewerToolbarOptions>(() => {
   }
 })
 
+const viewerTheme = computed(() => {
+  const theme = props.options?.theme
+  return theme === 'light' || theme === 'dark' ? theme : 'system'
+})
+
 const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
 const renderedReady = ref(false)
 
@@ -127,6 +133,15 @@ const visibleToolbar = computed<FileViewerToolbarOptions>(() => {
 const showToolbar = computed(() => {
   const toolbar = visibleToolbar.value
   return toolbar.download || toolbar.print || toolbar.exportHtml
+})
+
+const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
+  const toolbar = props.options?.toolbar
+  const position = toolbar && typeof toolbar === 'object' ? toolbar.position : 'auto'
+  if (position === 'top' || position === 'bottom-right') {
+    return position
+  }
+  return currentExtend.value === 'pdf' ? 'bottom-right' : 'top'
 })
 
 const toolbarDisabled = computed(() => loading.value || !!error.value)
@@ -828,9 +843,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class='file-viewer' :style='loadingVars'>
+  <div class='file-viewer' :data-viewer-theme='viewerTheme' :style='loadingVars'>
     <div class='viewer-stage'>
-      <div v-if='showToolbar' class='viewer-actions'>
+      <div
+        v-if='showToolbar'
+        class='viewer-actions'
+        :class='{ "viewer-actions--floating": toolbarPosition === "bottom-right" }'
+        :data-toolbar-position='toolbarPosition'
+      >
         <button
           v-if='visibleToolbar.download'
           type='button'
@@ -895,7 +915,12 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+.file-viewer[data-viewer-theme='dark'] {
+  background: #0f171d;
+  color-scheme: dark;
 }
 
 .viewer-stage {
@@ -919,6 +944,20 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.92);
 }
 
+.viewer-actions--floating {
+  position: absolute;
+  z-index: 30;
+  right: calc(16px + env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  min-height: 42px;
+  padding: 6px;
+  border: 1px solid rgba(20, 35, 53, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(16px);
+}
+
 .viewer-actions button {
   min-width: 42px;
   height: 30px;
@@ -931,6 +970,12 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
+}
+
+.viewer-actions--floating button {
+  min-width: 48px;
+  height: 32px;
+  border-radius: 999px;
 }
 
 .viewer-actions button:hover:not(:disabled) {
@@ -1061,6 +1106,60 @@ onBeforeUnmount(() => {
   color: #b42318;
 }
 
+.file-viewer[data-viewer-theme='dark'] .viewer-actions--floating {
+  border-color: rgba(167, 185, 198, 0.16);
+  background: rgba(14, 22, 28, 0.94);
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.34);
+}
+
+.file-viewer[data-viewer-theme='dark'] .viewer-actions {
+  border-bottom-color: rgba(167, 185, 198, 0.12);
+  background: rgba(14, 22, 28, 0.94);
+}
+
+.file-viewer[data-viewer-theme='dark'] .viewer-actions button {
+  color: #b8c7d5;
+}
+
+.file-viewer[data-viewer-theme='dark'] .viewer-actions button:hover:not(:disabled) {
+  background: rgba(45, 212, 154, 0.14);
+  color: #5ee0ae;
+}
+
+.file-viewer[data-viewer-theme='dark'] .viewer-actions button:disabled {
+  color: #667888;
+}
+
+.file-viewer[data-viewer-theme='dark'] .content {
+  background: #141c23;
+}
+
+.file-viewer[data-viewer-theme='dark'] .state-panel {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 30, 0.92), rgba(11, 17, 22, 0.98));
+}
+
+.file-viewer[data-viewer-theme='dark'] .loading-card,
+.file-viewer[data-viewer-theme='dark'] .error-card {
+  background: rgba(19, 29, 37, 0.94);
+  border-color: rgba(139, 161, 177, 0.16);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.34);
+}
+
+.file-viewer[data-viewer-theme='dark'] .loading-copy strong,
+.file-viewer[data-viewer-theme='dark'] .error-card strong {
+  color: #eff7fb;
+}
+
+.file-viewer[data-viewer-theme='dark'] .loading-copy p,
+.file-viewer[data-viewer-theme='dark'] .error-card p {
+  color: #9eb0bf;
+}
+
+.file-viewer[data-viewer-theme='dark'] .error-card strong {
+  color: #ff9c91;
+}
+
 @keyframes viewer-spin {
   from {
     transform: rotate(0deg);
@@ -1071,56 +1170,80 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-color-scheme: dark) {
-  .file-viewer {
+  .file-viewer[data-viewer-theme='system'] {
     background: #0f171d;
+    color-scheme: dark;
   }
 
-  .viewer-actions {
+  .file-viewer[data-viewer-theme='system'] .viewer-actions--floating {
+    border-color: rgba(167, 185, 198, 0.16);
+    background: rgba(14, 22, 28, 0.94);
+    box-shadow: 0 20px 52px rgba(0, 0, 0, 0.34);
+  }
+
+  .file-viewer[data-viewer-theme='system'] .viewer-actions {
     border-bottom-color: rgba(167, 185, 198, 0.12);
     background: rgba(14, 22, 28, 0.94);
   }
 
-  .viewer-actions button {
+  .file-viewer[data-viewer-theme='system'] .viewer-actions button {
     color: #b8c7d5;
   }
 
-  .viewer-actions button:hover:not(:disabled) {
+  .file-viewer[data-viewer-theme='system'] .viewer-actions button:hover:not(:disabled) {
     background: rgba(45, 212, 154, 0.14);
     color: #5ee0ae;
   }
 
-  .viewer-actions button:disabled {
+  .file-viewer[data-viewer-theme='system'] .viewer-actions button:disabled {
     color: #667888;
   }
 
-  .content {
+  .file-viewer[data-viewer-theme='system'] .content {
     background: #141c23;
   }
 
-  .state-panel {
+  .file-viewer[data-viewer-theme='system'] .state-panel {
     background:
       linear-gradient(180deg, rgba(15, 23, 30, 0.92), rgba(11, 17, 22, 0.98));
   }
 
-  .loading-card,
-  .error-card {
+  .file-viewer[data-viewer-theme='system'] .loading-card,
+  .file-viewer[data-viewer-theme='system'] .error-card {
     background: rgba(19, 29, 37, 0.94);
     border-color: rgba(139, 161, 177, 0.16);
     box-shadow: 0 22px 52px rgba(0, 0, 0, 0.34);
   }
 
-  .loading-copy strong,
-  .error-card strong {
+  .file-viewer[data-viewer-theme='system'] .loading-copy strong,
+  .file-viewer[data-viewer-theme='system'] .error-card strong {
     color: #eff7fb;
   }
 
-  .loading-copy p,
-  .error-card p {
+  .file-viewer[data-viewer-theme='system'] .loading-copy p,
+  .file-viewer[data-viewer-theme='system'] .error-card p {
     color: #9eb0bf;
   }
 
-  .error-card strong {
+  .file-viewer[data-viewer-theme='system'] .error-card strong {
     color: #ff9c91;
+  }
+}
+
+@media (max-width: 767px) {
+  .viewer-actions--floating {
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 20px);
+    gap: 4px;
+    padding: 5px;
+    overflow-x: auto;
+  }
+
+  .viewer-actions--floating button {
+    min-width: 40px;
+    height: 30px;
+    padding: 0 9px;
   }
 }
 </style>

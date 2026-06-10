@@ -189,7 +189,7 @@ async function writeReleaseManifest(repoDir) {
         },
     publicRepo: repoDir,
     artifactOnly: true,
-    allowedRoots: ['README.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
+    allowedRoots: ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
   }
   await writeFile(
     join(repoDir, 'artifacts', 'release-manifest.json'),
@@ -241,6 +241,7 @@ await copyCleanDir(join(sourceRoot, 'dist'), join(publicRepoDir, 'dist'))
 await copyCleanDir(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(publicRepoDir, 'docs'))
 await copyCleanDir(join(sourceRoot, 'public', 'example'), join(publicRepoDir, 'example'))
 await cp(join(sourceRoot, 'README.md'), join(publicRepoDir, 'README.md'), { force: true })
+await cp(join(sourceRoot, 'README.en.md'), join(publicRepoDir, 'README.en.md'), { force: true })
 await cp(join(sourceRoot, 'LICENSE'), join(publicRepoDir, 'LICENSE'), { force: true })
 await cp(join(sourceRoot, 'package.json'), join(publicRepoDir, 'package.json'), { force: true })
 

@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./EmailViewer-BdKEJv7y.js","./package-D9RNadqh.js","./package-Dwgf8BpP.css","./nestedRender-BecIPX74.js","./EmailViewer-BwvGE4ns.css"])))=>i.map(i=>d[i]);
+import{D as e,O as t,m as n,r}from"./package-D9RNadqh.js";var i=t(()=>r(()=>import(`./EmailViewer-BdKEJv7y.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(t,r,a=`eml`,o){let s=a===`msg`?`msg`:`eml`,c=n({render:()=>e(i,{data:t,type:s,filename:o?.filename||`message.${s}`,options:o?.options},null)});return c.mount(r),c}export{a as default};

@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./ModelViewer-aTW19aj5.js","./package-BzUY3Le1.js","./package-avoqJ--x.css","./three.module-B3kUtiXa.js","./ModelViewer-C4ir9AyI.css"])))=>i.map(i=>d[i]);
-import{D as e,O as t,m as n,r}from"./package-BzUY3Le1.js";var i=t(()=>r(()=>import(`./ModelViewer-aTW19aj5.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(t,r,a,o){let s=n({render:()=>e(i,{data:t,type:a||`glb`,sourceUrl:o?.url},null)});return s.mount(r),s}export{a as default};

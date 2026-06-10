@@ -2,6 +2,12 @@ packages:
   - .
   - packages/*
 
+peerDependencyRules:
+  allowedVersions:
+    '@types/react': '>=17 <20'
+    react: '>=17 <20'
+    react-dom: '>=17 <20'
+
 allowBuilds:
   '@parcel/watcher': true
   canvas: true

@@ -15,11 +15,11 @@
 | 官方文档/组件主页 | [doc.flyfish.dev](https://doc.flyfish.dev) | 组件主页、接入文档、格式说明和成品分发说明 |
 | 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
 | 文档比对 Demo | [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html) | 独立入口，支持左右并排预览、上传、URL、交换、重置和同步滚动 |
-| Docker 镜像发布目标 | `flyfishdev/file-viewer:1.0.20` | 可一键部署的 nginx 静态镜像，发布时支持 `linux/amd64` 和 `linux/arm64` |
-| npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.21`，样式会随安装器自动带入 |
-| npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.21`，安装器会自动带上样式 |
-| npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.21` |
-| npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前 latest 为 `1.0.21` |
+| Docker 镜像发布目标 | `flyfishdev/file-viewer:1.0.22` | 可一键部署的 nginx 静态镜像，发布时支持 `linux/amd64` 和 `linux/arm64` |
+| npm 包(Vue3) | [@flyfish-group/file-viewer3](https://www.npmjs.com/package/@flyfish-group/file-viewer3) | Vue3 组件库，当前 latest 为 `1.0.22`，样式会随安装器自动带入 |
+| npm 包(Vue2) | [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer) | Vue2.7 组件库，当前 latest 为 `1.0.22`，安装器会自动带上样式 |
+| npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.22` |
+| npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前 latest 为 `1.0.22` |
 | 私有化 viewer 静态产物 | `file-viewer/index.html` | React、纯 JS 和 iframe 方案默认加载的 Vue3 基线预览器 |
 | GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、示例和可下载 tarball |
 | Gitee 成品仓库 | [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer) | 与 GitHub 成品仓库同步的国内镜像，便于快速克隆和下载 |
@@ -66,7 +66,7 @@ Vue2 入口会自动带上样式，不需要再额外 import CSS。
 ### React
 
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.21
+npm install @flyfish-group/file-viewer-react@1.0.22
 ```
 
 ```tsx
@@ -86,7 +86,7 @@ export function Preview() {
 ### 纯 JS
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.21
+npm install @flyfish-group/file-viewer-web@1.0.22
 ```
 
 ```ts
@@ -103,10 +103,10 @@ mountViewerFrame(document.getElementById('viewer')!, {
 如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用公开成品仓库 `artifacts/` 里的 tarball:
 
 ```bash
-npm install ./artifacts/flyfish-group-file-viewer3-1.0.21.tgz
-npm install ./artifacts/flyfish-group-file-viewer-1.0.21.tgz
-npm install ./artifacts/flyfish-group-file-viewer-web-1.0.21.tgz
-npm install ./artifacts/flyfish-group-file-viewer-react-1.0.21.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-1.0.22.tgz
+npm install ./artifacts/flyfish-group-file-viewer-1.0.22.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-1.0.22.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-1.0.22.tgz
 ```
 
 Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。React tarball 会依赖同版本的 `@flyfish-group/file-viewer-web`，所以离线安装时请先安装 web 包，再安装 React 包。
@@ -122,7 +122,8 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 - `example/`: 完整样例文件列表
 - `artifacts/`: npm tarball、适配包 tarball、Demo tarball、文档 tarball
 - `packages/web/viewer/`: React、纯 JS 和 iframe 适配层共用的 Vue3 基线 viewer 产物
-- `README.md`: 友好的安装、嵌入、下载和授权说明
+- `README.md`: 默认中文入口，提供友好的安装、嵌入、下载和授权说明
+- `README.en.md`: 完整英文入口，与中文 README 互相提供语言切换链接，便于海外客户快速评估和接入
 - `LICENSE`: 项目许可证
 
 其中 `README.md` 会承担公开仓库首页职责，写明官方文档、在线 Demo、npm 包、私有化部署、成品目录和源码开通入口。`docs/` 是文档站静态构建产物，可部署到任何静态资源服务中。
@@ -181,10 +182,10 @@ docker login
 DOCKER_IMAGE=flyfishdev/file-viewer pnpm docker:publish
 ```
 
-默认会推送 `1.0.20` 和 `latest` 两个标签，并生成 `linux/amd64` / `linux/arm64` 多架构 manifest。发布后至少验证:
+默认会推送 `1.0.22` 和 `latest` 两个标签，并生成 `linux/amd64` / `linux/arm64` 多架构 manifest。发布后至少验证:
 
 ```bash
-docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.20
+docker run --rm -p 8080:80 flyfishdev/file-viewer:1.0.22
 ```
 
 然后打开 `/`、`/compare.html` 和 `/healthz`。

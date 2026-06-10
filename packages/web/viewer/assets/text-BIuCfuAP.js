@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./CodeViewer-Da2e-Pih.js","./package-BzUY3Le1.js","./package-avoqJ--x.css","./CodeViewer-KlbtXDJA.css"])))=>i.map(i=>d[i]);
-import{D as e,O as t,m as n,r,u as i}from"./package-BzUY3Le1.js";var a=t(()=>r(()=>import(`./CodeViewer-Da2e-Pih.js`),__vite__mapDeps([0,1,2,3]),import.meta.url));async function o(t,r,o){let s=await i(t),c=n({render:()=>e(a,{value:s,type:o||`txt`},null)});return c.mount(r),c}export{o as default};

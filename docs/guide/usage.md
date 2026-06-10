@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.21`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.21`，React 使用 `@flyfish-group/file-viewer-react@1.0.21`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.21`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.22`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.22`，React 使用 `@flyfish-group/file-viewer-react@1.0.22`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.22`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -142,7 +142,9 @@ import { ref } from 'vue'
 
 const url = ref('/example/archive.zip')
 const options = {
+  theme: 'light',
   toolbar: {
+    position: 'bottom-right',
     download: true,
     print: true,
     exportHtml: true
@@ -175,7 +177,8 @@ const options = {
 
 | 选项 | 说明 |
 | --- | --- |
-| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
+| `theme` | 预览器主题，支持 `light`、`dark`、`system`。默认 `system`，继续跟随浏览器 `prefers-color-scheme`；浅色业务系统建议显式传 `light`，避免操作系统深色模式把预览区、工具栏或支持主题切换的渲染器自动切成深色 |
+| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `archive.workerUrl` | libarchive.js Worker 地址；私有化部署时建议把 `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
@@ -230,6 +233,7 @@ const options = {
     return true
   },
   toolbar: {
+    position: 'bottom-right',
     download: true,
     print: true,
     exportHtml: true,

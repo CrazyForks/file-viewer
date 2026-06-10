@@ -68,14 +68,14 @@ pnpm release:pack
 
 ## Vue2 / Vue3 / React / 纯 JS 发版
 
-当前四条 npm 包线都使用 `1.0.21`:
+当前四条 npm 包线都使用 `1.0.22`:
 
 | 技术栈 | 分支 | npm 包 | 注册方式 |
 | --- | --- | --- | --- |
 | Vue3 | `v3` | `@flyfish-group/file-viewer3` | `createApp(App).use(FileViewer)` |
 | Vue2.7 | `main` | `@flyfish-group/file-viewer` | `Vue.use(FileViewer)` |
-| React 17 / 18 / 19 | 当前仓库子工程 | `@flyfish-group/file-viewer-react@1.0.21` | `<FileViewer url="/files/demo.pdf" />` |
-| 纯 JS | 当前仓库子工程 | `@flyfish-group/file-viewer-web@1.0.21` | `mountViewerFrame(container, options)` |
+| React 17 / 18 / 19 | 当前仓库子工程 | `@flyfish-group/file-viewer-react@1.0.22` | `<FileViewer url="/files/demo.pdf" />` |
+| 纯 JS | 当前仓库子工程 | `@flyfish-group/file-viewer-web@1.0.22` | `mountViewerFrame(container, options)` |
 
 Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构建、混淆和 `npm publish --access public`。React 和纯 JS 包在当前仓库内作为子工程发布，发版前必须先执行 `pnpm build:viewer-assets`，确保随包携带的是最新 Vue3 基线 viewer 静态产物。
 
@@ -116,7 +116,7 @@ Vue3 和 Vue2 发版时请先切到对应分支，再运行类型检查、库构
 - `public/_headers` 已为哈希资源、WASM/Worker、示例文件和 HTML 配置缓存策略，部署到 Cloudflare 后会自动生效
 - `docs/public/_headers` 已为 VitePress 文档站的哈希资源、图片和 HTML 配置缓存策略，部署到 Cloudflare 后会自动生效
 - React / 纯 JS 包默认仍只加载用户项目内的私有化 viewer 静态产物
-- Docker 镜像发布后可直接运行 `flyfishdev/file-viewer:1.0.20`，主预览入口是 `/`，文档比对入口是 `/compare.html`
+- Docker 镜像发布后可直接运行 `flyfishdev/file-viewer:1.0.22`，主预览入口是 `/`，文档比对入口是 `/compare.html`
 - 把 iframe 方案作为推荐接入方式写进对外文档
 - 发布前先用本地构建产物做一次完整 smoke test
 

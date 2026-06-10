@@ -33,6 +33,117 @@ const toFiniteNumber = (value, fallback = 0) => {
   const parsed = typeof value === 'number' ? value : parseFloat(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
+const DEFAULT_APP_VERSION = 16;
+const DEFAULT_SLIDE_EMU_SIZE = { cx: 9144000, cy: 6858000 };
+const OPENXML_REL_PREFIX = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/";
+const MS_REL_PREFIX = "http://schemas.microsoft.com/office/2007/relationships/";
+
+function normalizePartPath(path) {
+  const parts = [];
+  String(path || "").split("/").forEach(function (part) {
+    if (part === "" || part === ".") {
+      return;
+    }
+    if (part === "..") {
+      parts.pop();
+      return;
+    }
+    parts.push(part);
+  });
+  return parts.join("/");
+}
+
+function getPartDir(partPath) {
+  const normalized = normalizePartPath(partPath);
+  const index = normalized.lastIndexOf("/");
+  return index === -1 ? "" : normalized.slice(0, index);
+}
+
+function resolvePartTarget(sourcePartPath, target) {
+  if (!target) {
+    return "";
+  }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.charAt(0) === "#") {
+    return target;
+  }
+  if (target.charAt(0) === "/") {
+    return normalizePartPath(target.slice(1));
+  }
+  return normalizePartPath((getPartDir(sourcePartPath) ? getPartDir(sourcePartPath) + "/" : "") + target);
+}
+
+function getRelsPath(partPath) {
+  const dir = getPartDir(partPath);
+  const name = normalizePartPath(partPath).split("/").pop();
+  return (dir ? dir + "/_rels/" : "_rels/") + name + ".rels";
+}
+
+function getRelationshipList(relsContent) {
+  return asArray(getTextByPathList(relsContent, [ "Relationships", "Relationship" ]));
+}
+
+function getRelationshipTypeName(type) {
+  return String(type || "").replace(OPENXML_REL_PREFIX, "").replace(MS_REL_PREFIX, "");
+}
+
+function addRelationshipResource(targetObj, relationship, sourcePartPath) {
+  const attrs = relationship && relationship["attrs"] ? relationship["attrs"] : {};
+  if (!attrs["Id"]) {
+    return;
+  }
+  targetObj[attrs["Id"]] = {
+    "type": getRelationshipTypeName(attrs["Type"]),
+    "target": resolvePartTarget(sourcePartPath, attrs["Target"])
+  };
+}
+
+function getEmptyIndexedNodes() {
+  return { "idTable": {}, "idxTable": {}, "typeTable": {} };
+}
+
+function indexNodesSafely(content) {
+  if (!content) {
+    return getEmptyIndexedNodes();
+  }
+  try {
+    return indexNodes(content);
+  } catch (error) {
+    console.warn("Unable to index PPTX layout/master nodes", error);
+    return getEmptyIndexedNodes();
+  }
+}
+
+async function getPresentationSlideOrder(zip, fallbackSlides) {
+  try {
+    const presentation = await readXmlFile(zip, "ppt/presentation.xml");
+    const rels = await readXmlFile(zip, getRelsPath("ppt/presentation.xml"));
+    const relMap = {};
+    getRelationshipList(rels).forEach(function (relationship) {
+      const attrs = relationship && relationship["attrs"] ? relationship["attrs"] : {};
+      if (attrs["Id"] && getRelationshipTypeName(attrs["Type"]) === "slide") {
+        relMap[attrs["Id"]] = resolvePartTarget("ppt/presentation.xml", attrs["Target"]);
+      }
+    });
+    const slideIds = asArray(getTextByPathList(presentation, [ "p:presentation", "p:sldIdLst", "p:sldId" ]));
+    const orderedSlides = slideIds
+      .map(function (slideId) {
+        return relMap[getTextByPathList(slideId, [ "attrs", "r:id" ])];
+      })
+      .filter(function (slidePath) {
+        return slidePath && fallbackSlides.indexOf(slidePath) !== -1;
+      });
+    if (!orderedSlides.length) {
+      return fallbackSlides;
+    }
+    const seen = new Set(orderedSlides);
+    return orderedSlides.concat(fallbackSlides.filter(function (slidePath) {
+      return !seen.has(slidePath);
+    }));
+  } catch (error) {
+    console.warn("Unable to resolve PPTX slide order", error);
+    return fallbackSlides;
+  }
+}
 //////////////////////
 let slideWidth = 0;
 let slideHeight = 0;
@@ -87,22 +198,24 @@ export async function readXmlFile(zip, filename, isSlideContent = false) {
 export async function getContentTypes(zip) {
   const ContentTypesJson = await readXmlFile(zip, '[Content_Types].xml');
 
-  const subObj = ContentTypesJson['Types']['Override'];
+  const subObj = asArray(getTextByPathList(ContentTypesJson, [ 'Types', 'Override' ]));
   const slidesLocArray = [];
   const slideLayoutsLocArray = [];
   for (const element of subObj) {
-    switch (element['attrs']['ContentType']) {
+    const attrs = element['attrs'] || {};
+    const partName = String(attrs['PartName'] || '').replace(/^\/+/, '');
+    switch (attrs['ContentType']) {
       case 'application/vnd.openxmlformats-officedocument.presentationml.slide+xml':
-        slidesLocArray.push(element['attrs']['PartName'].substr(1));
+        slidesLocArray.push(partName);
         break;
       case 'application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml':
-        slideLayoutsLocArray.push(element['attrs']['PartName'].substr(1));
+        slideLayoutsLocArray.push(partName);
         break;
       default:
     }
   }
   return {
-    slides: slidesLocArray,
+    slides: await getPresentationSlideOrder(zip, slidesLocArray),
     slideLayouts: slideLayoutsLocArray
   };
 }
@@ -110,20 +223,24 @@ export async function getContentTypes(zip) {
 export async function getSlideSizeAndSetDefaultTextStyle(zip) {
   //get app version
   const app = await readXmlFile(zip, "docProps/app.xml");
-  appVersion = parseInt(app["Properties"]["AppVersion"]);
+  appVersion = parseInt(getTextByPathList(app, [ "Properties", "AppVersion" ]));
+  if (!Number.isFinite(appVersion)) {
+    appVersion = DEFAULT_APP_VERSION;
+  }
   console.log("create by Office PowerPoint app verssion: ", appVersion)
 
   const content = await readXmlFile(zip, "ppt/presentation.xml");
-  const sldSzAttrs = content["p:presentation"]["p:sldSz"]["attrs"];
-  const sldSzWidth = parseInt(sldSzAttrs["cx"]);
-  const sldSzHeight = parseInt(sldSzAttrs["cy"]);
+  const sldSzAttrs = getTextByPathList(content, [ "p:presentation", "p:sldSz", "attrs" ]) || DEFAULT_SLIDE_EMU_SIZE;
+  const sldSzWidth = toFiniteNumber(sldSzAttrs["cx"], DEFAULT_SLIDE_EMU_SIZE.cx);
+  const sldSzHeight = toFiniteNumber(sldSzAttrs["cy"], DEFAULT_SLIDE_EMU_SIZE.cy);
   const sldSzType = sldSzAttrs["type"];
   console.log("Presentation size type: ", sldSzType)
 
-  defaultTextStyle = content["p:presentation"]["p:defaultTextStyle"];
+  defaultTextStyle = getTextByPathList(content, [ "p:presentation", "p:defaultTextStyle" ]) || {};
 
-  slideWidth = sldSzWidth * slideFactor + settings.incSlide.width|0;// * scaleX;//parseInt(sldSzAttrs["cx"]) * 96 / 914400;
-  slideHeight = sldSzHeight * slideFactor + settings.incSlide.height|0;// * scaleY;//parseInt(sldSzAttrs["cy"]) * 96 / 914400;
+  const incSlide = settings.incSlide || {};
+  slideWidth = sldSzWidth * slideFactor + toFiniteNumber(incSlide.width, 0)|0;// * scaleX;//parseInt(sldSzAttrs["cx"]) * 96 / 914400;
+  slideHeight = sldSzHeight * slideFactor + toFiniteNumber(incSlide.height, 0)|0;// * scaleY;//parseInt(sldSzAttrs["cy"]) * 96 / 914400;
   //get slide dimensions
   return {
     width: slideWidth,
@@ -140,44 +257,25 @@ export async function processSingleSlide(zip, sldFileName, index, slideSize) {
   // Read relationship filename of the slide (Get slideLayoutXX.xml)
   // @sldFileName: ppt/slides/slide1.xml
   // @resName: ppt/slides/_rels/slide1.xml.rels
-  const resName = sldFileName.replace("slides/slide", "slides/_rels/slide") + ".rels";
+  const resName = getRelsPath(sldFileName);
   const resContent = await readXmlFile(zip, resName);
-  let RelationshipArray = resContent["Relationships"]["Relationship"];
-  //console.log("RelationshipArray: " , RelationshipArray)
   let layoutFilename = '';
   let diagramFilename = '';
   const slideResObj = {};
-  if (RelationshipArray.constructor === Array) {
-    for (const element of RelationshipArray) {
-      switch (element["attrs"]["Type"]) {
-        case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout":
-          layoutFilename = element["attrs"]["Target"].replace("../", "ppt/");
-          break;
-        case "http://schemas.microsoft.com/office/2007/relationships/diagramDrawing":
-          diagramFilename = element["attrs"]["Target"].replace("../", "ppt/");
-          slideResObj[element["attrs"]["Id"]] = {
-            "type": element["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-            "target": element["attrs"]["Target"].replace("../", "ppt/")
-          };
-          break;
-        case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide":
-        case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image":
-        case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart":
-        case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink":
-        default:
-          slideResObj[element["attrs"]["Id"]] = {
-            "type": element["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-            "target": element["attrs"]["Target"].replace("../", "ppt/")
-          };
-      }
+  for (const element of getRelationshipList(resContent)) {
+    const attrs = element["attrs"] || {};
+    const relationshipType = getRelationshipTypeName(attrs["Type"]);
+    if (relationshipType === "slideLayout") {
+      layoutFilename = resolvePartTarget(sldFileName, attrs["Target"]);
+    } else if (relationshipType === "diagramDrawing") {
+      diagramFilename = resolvePartTarget(sldFileName, attrs["Target"]);
     }
-  } else {
-    layoutFilename = RelationshipArray["attrs"]["Target"].replace("../", "ppt/");
+    addRelationshipResource(slideResObj, element, sldFileName);
   }
   //console.log(slideResObj);
   // Open slideLayoutXX.xml
-  const slideLayoutContent = await readXmlFile(zip, layoutFilename);
-  const slideLayoutTables = indexNodes(slideLayoutContent);
+  const slideLayoutContent = layoutFilename ? await readXmlFile(zip, layoutFilename) : null;
+  const slideLayoutTables = indexNodesSafely(slideLayoutContent);
   const sldLayoutClrOvr = getTextByPathList(slideLayoutContent, [ 'p:sldLayout', 'p:clrMapOvr', 'a:overrideClrMapping' ]);
 
   //console.log(slideLayoutClrOvride);
@@ -188,91 +286,55 @@ export async function processSingleSlide(zip, sldFileName, index, slideSize) {
   // Read slide master filename of the slidelayout (Get slideMasterXX.xml)
   // @resName: ppt/slideLayouts/slideLayout1.xml
   // @masterName: ppt/slideLayouts/_rels/slideLayout1.xml.rels
-  const slideLayoutResFilename = layoutFilename.replace('slideLayouts/slideLayout', 'slideLayouts/_rels/slideLayout') + '.rels';
-  const slideLayoutResContent = await readXmlFile(zip, slideLayoutResFilename);
-  RelationshipArray = slideLayoutResContent["Relationships"]["Relationship"];
+  const slideLayoutResFilename = layoutFilename ? getRelsPath(layoutFilename) : '';
+  const slideLayoutResContent = slideLayoutResFilename ? await readXmlFile(zip, slideLayoutResFilename) : null;
   let masterFilename = '';
   const layoutResObj = {};
-  if (RelationshipArray.constructor === Array) {
-    for (const element of RelationshipArray) {
-      switch (element["attrs"]["Type"]) {
-        case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster":
-          masterFilename = element["attrs"]["Target"].replace("../", "ppt/");
-          break;
-        default:
-          layoutResObj[element["attrs"]["Id"]] = {
-            "type": element["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-            "target": element["attrs"]["Target"].replace("../", "ppt/")
-          };
-      }
+  for (const element of getRelationshipList(slideLayoutResContent)) {
+    const attrs = element["attrs"] || {};
+    if (getRelationshipTypeName(attrs["Type"]) === "slideMaster") {
+      masterFilename = resolvePartTarget(layoutFilename, attrs["Target"]);
+    } else {
+      addRelationshipResource(layoutResObj, element, layoutFilename);
     }
-  } else {
-    masterFilename = RelationshipArray["attrs"]["Target"].replace("../", "ppt/");
   }
   // Open slideMasterXX.xml
-  const slideMasterContent = await readXmlFile(zip, masterFilename);
+  const slideMasterContent = masterFilename ? await readXmlFile(zip, masterFilename) : null;
   const slideMasterTextStyles = getTextByPathList(slideMasterContent, [ 'p:sldMaster', 'p:txStyles' ]);
-  const slideMasterTables = indexNodes(slideMasterContent);
+  const slideMasterTables = indexNodesSafely(slideMasterContent);
 
   /////////////////Amir/////////////
   //Open slideMasterXX.xml.rels
-  const slideMasterResFilename = masterFilename.replace('slideMasters/slideMaster', 'slideMasters/_rels/slideMaster') + '.rels';
-  const slideMasterResContent = await readXmlFile(zip, slideMasterResFilename);
-  RelationshipArray = slideMasterResContent["Relationships"]["Relationship"];
+  const slideMasterResFilename = masterFilename ? getRelsPath(masterFilename) : '';
+  const slideMasterResContent = slideMasterResFilename ? await readXmlFile(zip, slideMasterResFilename) : null;
   let themeFilename = '';
   const masterResObj = {};
-  if (RelationshipArray.constructor === Array) {
-    for (var i = 0; i < RelationshipArray.length; i++) {
-      switch (RelationshipArray[i]["attrs"]["Type"]) {
-        case "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme":
-          themeFilename = RelationshipArray[i]["attrs"]["Target"].replace("../", "ppt/");
-          break;
-        default:
-          masterResObj[RelationshipArray[i]["attrs"]["Id"]] = {
-            "type": RelationshipArray[i]["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-            "target": RelationshipArray[i]["attrs"]["Target"].replace("../", "ppt/")
-          };
-      }
+  for (const element of getRelationshipList(slideMasterResContent)) {
+    const attrs = element["attrs"] || {};
+    if (getRelationshipTypeName(attrs["Type"]) === "theme") {
+      themeFilename = resolvePartTarget(masterFilename, attrs["Target"]);
+    } else {
+      addRelationshipResource(masterResObj, element, masterFilename);
     }
-  } else {
-    themeFilename = RelationshipArray["attrs"]["Target"].replace("../", "ppt/");
   }
   //console.log(themeFilename)
   //Load Theme file
   var themeResObj = {};
-  if (themeFilename !== undefined) {
-    var themeName = themeFilename.split("/").pop();
-    var themeResFileName = themeFilename.replace(themeName, "_rels/" + themeName) + ".rels";
+  var themeContent = null;
+  if (themeFilename) {
+    var themeResFileName = getRelsPath(themeFilename);
     //console.log("themeFilename: ", themeFilename, ", themeName: ", themeName, ", themeResFileName: ", themeResFileName)
-    var themeContent = await readXmlFile(zip, themeFilename);
+    themeContent = await readXmlFile(zip, themeFilename);
     var themeResContent = await readXmlFile(zip, themeResFileName);
-    if (themeResContent !== null) {
-      var relationshipArray = themeResContent["Relationships"]["Relationship"];
-      if (relationshipArray !== undefined){
-        themeFilename = '';
-        if (relationshipArray.constructor === Array) {
-          for (var i = 0; i < relationshipArray.length; i++) {
-            themeResObj[relationshipArray[i]["attrs"]["Id"]] = {
-              "type": relationshipArray[i]["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-              "target": relationshipArray[i]["attrs"]["Target"].replace("../", "ppt/")
-            };
-          }
-        } else {
-          //console.log("theme relationshipArray : ", relationshipArray)
-          themeResObj[relationshipArray["attrs"]["Id"]] = {
-            "type": relationshipArray["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-            "target": relationshipArray["attrs"]["Target"].replace("../", "ppt/")
-          };
-        }
-      }
+    for (const relationship of getRelationshipList(themeResContent)) {
+      addRelationshipResource(themeResObj, relationship, themeFilename);
     }
   }
   //Load diagram file
   var diagramResObj = {};
   var digramFileContent = {};
-  if (diagramFilename !== undefined) {
-    var diagName = diagramFilename.split("/").pop();
-    var diagramResFileName = diagramFilename.replace(diagName, "_rels/" + diagName) + ".rels";
+  if (diagramFilename) {
+    var diagramResFileName = getRelsPath(diagramFilename);
     //console.log("diagramFilename: ", diagramFilename, ", themeName: ", themeName, ", diagramResFileName: ", diagramResFileName)
     digramFileContent = await readXmlFile(zip, diagramFilename);
     if (digramFileContent !== null && digramFileContent !== undefined && digramFileContent != "") {
@@ -283,28 +345,15 @@ export async function processSingleSlide(zip, sldFileName, index, slideSize) {
 
     var digramResContent = await readXmlFile(zip, diagramResFileName);
     if (digramResContent !== null) {
-      var relationshipArray = digramResContent["Relationships"]["Relationship"];
-      themeFilename = "";
-      if (relationshipArray.constructor === Array) {
-        for (var i = 0; i < relationshipArray.length; i++) {
-          diagramResObj[relationshipArray[i]["attrs"]["Id"]] = {
-            "type": relationshipArray[i]["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-            "target": relationshipArray[i]["attrs"]["Target"].replace("../", "ppt/")
-          };
-        }
-      } else {
-        //console.log("theme relationshipArray : ", relationshipArray)
-        diagramResObj[relationshipArray["attrs"]["Id"]] = {
-          "type": relationshipArray["attrs"]["Type"].replace("http://schemas.openxmlformats.org/officeDocument/2006/relationships/", ""),
-          "target": relationshipArray["attrs"]["Target"].replace("../", "ppt/")
-        };
+      for (const relationship of getRelationshipList(digramResContent)) {
+        addRelationshipResource(diagramResObj, relationship, diagramFilename);
       }
     }
   }
   //console.log("diagramResObj: " , diagramResObj)
   // =====< Step 3 >=====
   var slideContent = await readXmlFile(zip, sldFileName , true);
-  var nodes = slideContent["p:sld"]["p:cSld"]["p:spTree"];
+  var nodes = getTextByPathList(slideContent, [ "p:sld", "p:cSld", "p:spTree" ]) || {};
   var warpObj = {
     "zip": zip,
     "slideLayoutContent": slideLayoutContent,
@@ -13662,14 +13711,14 @@ function getTextByPathList(node, path) {
     throw Error("Error of path type! path is not array.");
   }
 
-  if (node === undefined) {
+  if (node === undefined || node === null) {
     return undefined;
   }
 
   const l = path.length;
   for (let i = 0; i < l; i++) {
     node = node[path[i]];
-    if (node === undefined) {
+    if (node === undefined || node === null) {
       return undefined;
     }
   }
