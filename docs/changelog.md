@@ -13,6 +13,7 @@
 - 文档站补全文档比对页使用说明，明确 `/compare.html`、`left` / `right` 预置参数、内置示例、URL、本地上传、同步滚动、私有化部署路径和视觉比对边界
 - 公开成品仓库新增 Gitee 镜像 `gitee.com/flyfish-dev/file-viewer`，GitHub / Gitee 同步交付混淆构建产物、Demo、文档静态产物、示例文件和 tarball
 - Demo 输出校验继续覆盖 `compare.html`、主入口资源、适配层 viewer 静态目录和示例资源，避免上线缺少独立比对入口
+- 文档站新增 Cloudflare Pages Direct Upload 脚本和 `docs/public/_headers` 缓存策略，`doc.flyfish.dev` 可切换到 `flyfish-file-viewer-docs.pages.dev` 以改善国内访问速度
 - README、文档站、React / 纯 JS README、iframe cache key 和 workspace 依赖同步刷新到 `1.0.21`
 
 ### `v1.0.20` Typst 直读源文件与边缘部署优化版本

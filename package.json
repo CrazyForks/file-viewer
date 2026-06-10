@@ -50,6 +50,7 @@
     "build:adapters": "pnpm build:viewer-assets && pnpm --filter @flyfish-group/file-viewer-web build && pnpm --filter @flyfish-group/file-viewer-react build",
     "verify:demo-output": "node scripts/verify-demo-output.mjs",
     "deploy:cloudflare": "pnpm build-only && pnpm verify:demo-output && node scripts/deploy-cloudflare-pages.mjs",
+    "docs:deploy:cloudflare": "pnpm docs:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-docs CLOUDFLARE_PAGES_OUTPUT_DIR=docs/.vitepress/dist CLOUDFLARE_PAGES_BRANCH=v3 node scripts/deploy-cloudflare-pages.mjs",
     "dev:adapters": "pnpm --filter @flyfish-group/file-viewer-demo dev",
     "build:adapter-demo": "pnpm --filter @flyfish-group/file-viewer-demo build",
     "docker:build": "node scripts/docker-buildx.mjs --load",
