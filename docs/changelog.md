@@ -7,6 +7,7 @@
 ### 当前主线 Demo 富样式公开样例升级
 
 - DOCX 渲染链路移除临时轻量预览分支，默认通过 Web Worker 运行 `docx-preview` 解析和 HTML 构建，并把同一份 docx-preview 页面按批次渐进挂载，主线程只负责挂载、缩放和打印适配；CSP 或低版本浏览器不兼容时可通过 `options.docx.worker: false` 回退原生主线程渲染
+- DOCX Worker 新增 `options.docx.workerTimeout` 超时兜底，默认 15000ms。少量复杂 Word 文件如果在 Worker DOM 环境中无法及时返回，会自动回到同一套 `docx-preview` 原生主线程渲染，避免线上预览永久停留在 loading
 - 入口组件在挂载重型渲染器前先释放浏览器绘制帧，确保 Loading 先显示，减少用户误以为页面无响应
 - `word.docx` 保持 Basel Convention 公开中文正式文档，覆盖长正文、标题层级、表格、图示、白色纸张和完整打印回归，避免默认 Demo 使用临时生成或过度病态的样例文件
 - `ppt.pptx` 替换为 `hcp4715/R4Psy` 的 CC-BY-4.0 中文课程课件，覆盖多页幻灯片、主题背景、图片资源、组合元素和富文本排版

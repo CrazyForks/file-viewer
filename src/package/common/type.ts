@@ -384,6 +384,14 @@ export interface FileViewerDocxOptions {
    * 它不改变渲染器，只是避免一次性插入长文档 DOM 时阻塞首屏。
    */
   progressive?: boolean;
+  /**
+   * DOCX Worker 最大等待时间，单位毫秒，默认 15000。
+   *
+   * 少量复杂 Word 文件会触发浏览器 Worker DOM 兼容边界，设置超时可以避免
+   * 永久停留在 loading；超时后仍会回到 docx-preview 原生主线程渲染。
+   * 传入 0 或负数可关闭超时保护。
+   */
+  workerTimeout?: number;
 }
 
 /**

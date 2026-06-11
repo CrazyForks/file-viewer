@@ -10,6 +10,7 @@ const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
 }
 
 const DOCX_PROGRESSIVE_BATCH_SIZE = 2
+const DOCX_WORKER_TIMEOUT = 15000
 
 type DocxWorkerResponse = {
   id: number;
@@ -125,9 +126,16 @@ async function renderDocxWithWorker(
 
   const worker = new DocxWorker()
   const id = ++docxWorkerRequestId
+  const timeout = context?.options?.docx?.workerTimeout ?? DOCX_WORKER_TIMEOUT
 
   return await new Promise<boolean>(resolve => {
+    let settled = false
+    let timeoutId: number | undefined
+
     const cleanup = () => {
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId)
+      }
       worker.removeEventListener('message', handleMessage)
       worker.removeEventListener('error', handleError)
       worker.removeEventListener('messageerror', handleMessageError)
@@ -135,6 +143,10 @@ async function renderDocxWithWorker(
     }
 
     const fallback = (reason: unknown) => {
+      if (settled) {
+        return
+      }
+      settled = true
       cleanup()
       console.warn('[file-viewer] DOCX Worker 渲染失败，回退到 docx-preview 主线程渲染。', reason)
       resolve(false)
@@ -145,6 +157,10 @@ async function renderDocxWithWorker(
         return
       }
 
+      if (settled) {
+        return
+      }
+      settled = true
       cleanup()
       if (event.data.ok) {
         void mountDocxPreviewHtml(event.data.html, target, context)
@@ -171,6 +187,12 @@ async function renderDocxWithWorker(
     worker.addEventListener('message', handleMessage)
     worker.addEventListener('error', handleError)
     worker.addEventListener('messageerror', handleMessageError)
+
+    if (Number.isFinite(timeout) && timeout > 0) {
+      timeoutId = window.setTimeout(() => {
+        fallback(`DOCX Worker 超过 ${timeout}ms 未返回结果`)
+      }, timeout)
+    }
 
     const workerBuffer = buffer.slice(0)
     // Worker 内输出 HTML，图片和字体使用 data URL，避免 Worker 生命周期结束后 Blob URL 失效。
