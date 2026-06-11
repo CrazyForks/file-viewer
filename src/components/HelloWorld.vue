@@ -73,7 +73,7 @@ const sampleGroups: SampleGroup[] = [
     family: 'word',
     items: [
       { name: 'DOC', url: '/example/test.doc' },
-      { name: 'DOCX', url: '/example/word.docx' },
+      { name: 'DOCX 中文长文档', url: '/example/word.docx' },
       { name: 'DOT 模板', url: '/example/template.dot' },
       { name: 'PDF 技术说明', url: '/example/pdf.pdf' },
       { name: 'OFD', url: '/example/ofd.ofd' },
@@ -100,7 +100,7 @@ const sampleGroups: SampleGroup[] = [
     description: 'PPTX / CAD / Drawing',
     family: 'cad',
     items: [
-      { name: 'PPTX', url: '/example/ppt.pptx' },
+      { name: 'PPTX 中文课件', url: '/example/ppt.pptx' },
       { name: 'DXF', url: '/example/drawing.dxf' },
       { name: 'DWG', url: '/example/sample.dwg' },
       { name: 'Excalidraw', url: '/example/flow.excalidraw' },

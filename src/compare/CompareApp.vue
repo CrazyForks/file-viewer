@@ -47,9 +47,9 @@ const params = new URLSearchParams(window.location.search)
 
 const samples: CompareSample[] = [
   { label: 'DOC 旧版合同', description: 'Word 97-2003 示例', url: '/example/test.doc' },
-  { label: 'DOCX 新版文档', description: '多页 Word 示例', url: '/example/word.docx' },
+  { label: 'DOCX 中文长文档', description: '表格图示与正式页', url: '/example/word.docx' },
   { label: 'PDF 技术说明', description: '真实 PDF 页面', url: '/example/pdf.pdf' },
-  { label: 'PPTX 演示稿', description: '幻灯片并排核对', url: '/example/ppt.pptx' },
+  { label: 'PPTX 中文课件', description: '55 页富样式课件', url: '/example/ppt.pptx' },
   { label: 'Typst 源文件', description: 'Typst 直读渲染', url: '/example/report.typ' },
   { label: 'Markdown 文档', description: '轻量文本排版', url: '/example/markdown.md' }
 ]

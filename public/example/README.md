@@ -2,14 +2,14 @@
 
 当前目录用于演示文件预览与 iframe 嵌入联调。主示例页会从这里读取内置样本，覆盖当前已注册的主要格式入口。
 
-PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提供的真实资料、可追溯的公开样本或项目内最小夹具；UMD、EML、OLB、DRA 和压缩包样例由项目内生成，来源和许可见下方“公开样例来源”。这样既能避免手写占位文件过于理想化，也方便后续升级依赖时复现真实文件的兼容性问题。
+PDF、DOCX、PPTX、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提供的真实资料、可追溯的公开样本或项目内最小夹具；UMD、EML、OLB、DRA 和压缩包样例由项目内生成，来源和许可见下方“公开样例来源”。这样既能避免手写占位文件过于理想化，也方便后续升级依赖时复现真实文件的兼容性问题。
 
 代码/配置/日志类样本刻意保留了更接近真实业务的结构，例如异步加载计划、文件类型识别、错误处理、配置嵌套、SQL CTE、Shell 参数处理和多语言类型定义。这样可以更充分地验证 `highlight.js` 对注释、字符串、泛型、对象嵌套、缩进、diff 和长行滚动的展示效果。
 
 ## 当前内置样本
 
 - `test.doc`: 验证 `.doc` 老文档与 Word 风格页面容器
-- `word.docx`: 验证现代 Word 文档链路
+- `word.docx`: 使用 CBD 公开中文正式文档验证现代 Word 长文档、标题层级、表格、链接、图示、白色纸张和完整打印
 - `template.dot`: 复用老 Word 二进制样本验证 `.dot` 模板兼容入口
 - `excel.xlsx`: 验证 `xlsx` 样式能力
 - `excel.xlsm`: 验证 `xlsm` 扩展名入口
@@ -19,7 +19,7 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提
 - `excel.ods`: 验证 `ods` 扩展名入口
 - `excel.fods`: 验证 `fods` 扩展名入口
 - `excel.numbers`: 验证 `numbers` 扩展名入口
-- `ppt.pptx`: 验证 `pptx` 幻灯片渲染、组合图形、主题背景和图片资源
+- `ppt.pptx`: 使用 R4Psy 公开中文课程课件验证 `pptx` 多页幻灯片、图片资源、主题背景、组合元素和富文本排版
 - `pdf.pdf`: 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》验证长文档阅读、缩放工具栏、页面/目录导航、完整打印和 HTML 导出
 - `ofd.ofd`: 验证 `ofd.js` 在线预览
 - `report.typ`: 验证 Typst 源文件直接读取、浏览器 WASM 编译、按页预览、打印和 HTML 导出链路
@@ -96,14 +96,16 @@ PDF、CAD、3D 模型、绘图、音频、EPUB、MSG 等样例使用项目方提
 | 文件 | 公开来源 | 许可 |
 | --- | --- | --- |
 | `drawing.dxf` | `mozman/ezdxf` 的 `examples_dxf/wipeout_door.dxf` | MIT |
+| `word.docx` | Convention on Biological Diversity 的公开中文正式文档 `sbi-03-21-zh.docx` | 公开下载，需保留来源归属 |
 | `template.dot` | 复用项目内 `test.doc` fixture 并以 Word 97-2003 模板扩展名保存 | Apache-2.0 |
+| `ppt.pptx` | `hcp4715/R4Psy` 的 `slides/chapter_1.pptx` 中文课程课件 | CC-BY-4.0 |
 | `pdf.pdf` | 项目方提供的《PDF沉浸式翻译技术说明》真实示例文档 | 项目 Demo 授权 |
 | `sample.dwg` | `dshn06/cad-webviewer-unity` 的 `baseline-sample.dwg` | MIT |
 | `model.gltf` / `model.obj` / `model.stl` / `model.ply` / `model.step` | 项目内生成的最小 3D fixture | Apache-2.0 |
 | `flow.excalidraw` | `neo4j-labs/agent-memory` 的 `poleo-model.excalidraw` | Apache-2.0 |
 | `process.drawio` | `jgraph/drawio-diagrams` 的 `blog/data-flow.drawio` | Apache-2.0 |
 | `book.umd` | 项目内生成的最小 UMD 文本电子书 fixture | Apache-2.0 |
-| `archive.zip` / `archive.tar.gz` | 项目内打包的 PDF、DOCX、Markdown、TypeScript 和 JSON 示例集合 | Apache-2.0 |
+| `archive.zip` / `archive.tar.gz` | 项目内打包的 PDF、公开 DOCX、Markdown、TypeScript 和 JSON 示例集合 | 随内部文件来源 |
 | `sample.eml` | 项目内生成的标准 MIME 邮件 fixture | Apache-2.0 |
 | `sample.msg` | `HiraokaHyperTools/msgreader` 的 `test/A memo.msg` | MIT |
 | `sample.olb` / `sample.dra` | 项目内生成的 CFB EDA fixture | Apache-2.0 |

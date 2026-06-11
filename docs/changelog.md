@@ -4,6 +4,13 @@
 
 ## 当前主线
 
+### 当前主线 Demo 富样式公开样例升级
+
+- `word.docx` 替换为 Convention on Biological Diversity 公开中文正式文档，覆盖长正文、标题层级、表格、链接、图示、白色纸张和完整打印回归
+- `ppt.pptx` 替换为 `hcp4715/R4Psy` 的 CC-BY-4.0 中文课程课件，覆盖多页幻灯片、主题背景、图片资源、组合元素和富文本排版
+- `archive.zip` 与 `archive.tar.gz` 内部 DOCX 同步更新为当前公开中文 Word 样例，压缩包内继续预览时也能验证真实文档效果
+- 示例来源表、Demo 文档和公开样例 README 同步刷新，避免继续把 Word / PPT 误写成临时生成的 Demo 文件
+
 ### 当前主线 文档比对、搜索定位和 AI 友好结构增强
 
 - 文档比对页同步滚动改为绑定真实预览滚动容器，并按 scroll ratio 同步左右滚动位置，PDF 内部滚动层、Word 外层滚动层和文本预览都走同一套逻辑

@@ -1,12 +1,13 @@
 # Public Sample Sources
 
-本目录中的 PDF、CAD、3D 模型、绘图、音频、EPUB 和 MSG 示例文件使用项目方提供的真实资料、可追溯的公开样本或项目内最小夹具；DOCX、UMD、EML、OLB、DRA 和压缩包示例文件由项目内生成，用于固定回归对应结构。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库或项目方明确授权的资料，并同步更新本文件与 `README.md`。
+本目录中的 PDF、DOCX、PPTX、CAD、3D 模型、绘图、音频、EPUB 和 MSG 示例文件使用项目方提供的真实资料、可追溯的公开样本或项目内最小夹具；UMD、EML、OLB、DRA 和压缩包示例文件由项目内生成，用于固定回归对应结构。后续替换这些文件时，请优先选择许可清楚、可直接访问 raw 文件的公开仓库、国际组织公开文档或项目方明确授权的资料，并同步更新本文件与 `README.md`。
 
 | Local file | Source | License | Purpose |
 | --- | --- | --- | --- |
 | `drawing.dxf` | `https://github.com/mozman/ezdxf/blob/master/examples_dxf/wipeout_door.dxf` | MIT | Real DXF CAD drawing for pan, zoom and layer smoke tests |
-| `word.docx` | Project-generated rich DOCX fixture | Apache-2.0 | Multi-page Word preview, responsive white paper and print/export smoke tests |
+| `word.docx` | `https://www.cbd.int/doc/c/6b91/eca9/ca1f283acd2ebc5edb98596d/sbi-03-21-zh.docx` | Public CBD document, source attribution required | Rich Chinese DOCX preview with headings, long-form text, tables, links, drawings, responsive white paper and print/export smoke tests |
 | `template.dot` | Copied from project `test.doc` fixture and saved with the Word 97-2003 template extension | Apache-2.0 | DOT extension routing smoke test for legacy Word template preview |
+| `ppt.pptx` | `https://github.com/hcp4715/R4Psy/blob/main/slides/chapter_1.pptx` | CC-BY-4.0 | Rich Chinese presentation smoke test for slide layout, images, theme styling and media-heavy PPTX rendering |
 | `pdf.pdf` | Project-owner provided `PDF沉浸式翻译技术说明.pdf` | Demo distribution authorized by project owner | 13-page PDF toolbar, scale, page/tree sidebar, print, export and dark-shell isolation smoke tests |
 | `sample.dwg` | `https://github.com/dshn06/cad-webviewer-unity/blob/main/cad-webview/public/cad-data/data/baseline-sample.dwg` | MIT | Real DWG sample for compatibility preview and geometry-limit messaging |
 | `model.gltf` / `model.obj` / `model.stl` / `model.ply` / `model.step` | Project-generated minimal fixtures | Apache-2.0 | Three.js model rendering and engineering-format fallback smoke tests |
@@ -14,7 +15,7 @@
 | `process.drawio` | `https://github.com/jgraph/drawio-diagrams/blob/dev/blog/data-flow.drawio` | Apache-2.0 | Official draw.io sample for diagrams.net viewer smoke tests |
 | `book.umd` | 项目内生成的最小 UMD 文本电子书 fixture | Apache-2.0 | UMD ebook metadata, table-of-contents and zlib text smoke tests |
 | `report.typ` | Project-generated Typst multi-page fixture | Apache-2.0 | Direct Typst source preview and browser WASM smoke tests |
-| `archive.zip` / `archive.tar.gz` | Project-packaged rich PDF, DOCX, Markdown, TypeScript and JSON sample set | Apache-2.0 | Archive directory, lazy extraction, cache and nested preview smoke tests |
+| `archive.zip` / `archive.tar.gz` | Project-packaged PDF, public DOCX, Markdown, TypeScript and JSON sample set | See bundled file sources | Archive directory, lazy extraction, cache and nested preview smoke tests |
 | `sample.eml` | Project-generated MIME email fixture | Apache-2.0 | EML headers, text/html body, attachment download and attachment preview smoke tests |
 | `sample.msg` | `https://github.com/HiraokaHyperTools/msgreader/blob/master/test/A%20memo.msg` | MIT | Outlook MSG parsing smoke test through @kenjiuno/msgreader |
 | `sample.olb` / `sample.dra` | Project-generated CFB EDA fixtures | Apache-2.0 | OLB/DRA structure tree, entity, property and readable-string smoke tests |
@@ -25,8 +26,9 @@
 运行时说明:
 
 - `sample.dwg` 是真实 DWG 文件；运行时会尽量识别误命名 DXF 或提取内嵌预览图，完整几何仍建议业务侧转换为 DXF。
-- `word.docx` 是项目内生成的多页 DOCX，覆盖标题、段落、表格、列表、分页、白色纸张和完整打印回归。
+- `word.docx` 来自 Convention on Biological Diversity 公开中文正式文档，覆盖标题层级、长正文、表格、链接、图示、白色纸张和完整打印回归。
 - `template.dot` 复用 `test.doc` 的二进制内容，仅用于验证 Word 97-2003 模板扩展名能正确进入老 Word 渲染链路。
+- `ppt.pptx` 来自 `hcp4715/R4Psy` 的 CC-BY-4.0 中文课程课件，覆盖多页幻灯片、图片资源、主题样式、组合元素和富文本排版。
 - `pdf.pdf` 是项目方提供的 13 页真实技术说明 PDF，覆盖缩放、页侧边栏、树形导航、打印、导出和暗色外壳隔离回归。
 - `model.gltf`、`model.obj`、`model.stl`、`model.ply` 和 `model.step` 是最小 3D fixture，用于验证 Three.js 预览和工程格式转换提示。
 - `flow.excalidraw` 先经过 `@excalidraw/excalidraw` 的官方 `restore`，再用 `exportToSvg` 输出只读预览，以兼容公开样例中常见的精简字段。
@@ -35,7 +37,7 @@
 - `book.epub` 来自 Project Gutenberg，运行时由 `epubjs` 解析 EPUB 包、目录和章节资源。
 - `book.umd` 由项目内生成，覆盖 UMD 文件头、元数据、章节偏移、章节标题和 zlib 压缩正文段。
 - `report.typ` 由项目内编写，覆盖 Typst 标题、表格、公式、代码块、多页输出、页面尺寸和打印/HTML 导出，线上 Demo 会直接读取源文件并通过浏览器端 WASM 编译预览。
-- `archive.zip` 与 `archive.tar.gz` 由本目录中的 PDF、DOCX、Markdown、TypeScript 和 JSON 示例打包，用于验证 `libarchive.js` Worker、按需解压、IndexedDB 缓存和内部文件继续预览。
+- `archive.zip` 与 `archive.tar.gz` 由本目录中的 PDF、DOCX、Markdown、TypeScript 和 JSON 示例打包，用于验证 `libarchive.js` Worker、按需解压、IndexedDB 缓存和内部文件继续预览；其中 DOCX 同步使用当前公开中文 Word 样例。
 - `sample.eml` 是标准 MIME fixture，用于验证 EML 头信息、HTML/文本正文和附件链路。
 - `sample.msg` 来自 `HiraokaHyperTools/msgreader` 测试样例，用于验证 Outlook MSG 解析。
 - `sample.olb` 与 `sample.dra` 是项目内生成的 CFB 夹具，用于验证 OLB / DRA 结构树、对象候选、属性和可读字符串索引。
