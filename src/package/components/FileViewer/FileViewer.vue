@@ -131,6 +131,7 @@ const viewerTheme = computed(() => {
 
 const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
 const renderedReady = ref(false)
+const progressiveReady = ref(false)
 
 const operationAvailability = computed<FileViewerOperationAvailability>(() => {
   const hasOriginalSource = !!currentBuffer.value || !!currentSourceUrl.value
@@ -401,6 +402,7 @@ const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 're
   currentFile.value = null
   currentBuffer.value = null
   currentSourceUrl.value = null
+  progressiveReady.value = false
   clearError()
   return renderVersion
 }
@@ -501,6 +503,7 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
     activeDocumentContext = null
     activeExportAdapter.value = null
     renderedReady.value = false
+    progressiveReady.value = false
     clearDocumentState()
 
     const out = output.value
@@ -562,7 +565,12 @@ const mountRenderedContent = async (
       url: sourceUrl,
       streamUrl,
       options: props.options,
-      registerExportAdapter
+      registerExportAdapter,
+      onProgressiveRender: () => {
+        if (isCurrentRequest(version)) {
+          progressiveReady.value = true
+        }
+      }
     })
     if (!isCurrentRequest(version)) {
       disposeRendered(rendered)
@@ -750,6 +758,7 @@ const resetViewer = () => {
   currentBuffer.value = null
   currentSourceUrl.value = null
   renderedReady.value = false
+  progressiveReady.value = false
   clearRenderedContent()
   resetLoading()
 }
@@ -862,10 +871,10 @@ onBeforeUnmount(() => {
         </button>
       </div>
       <div class='viewer-content-shell'>
-        <div ref='output' class='content' data-viewer-scroll-root='true' :class='{ hidden: loading || !!error }' />
+        <div ref='output' class='content' data-viewer-scroll-root='true' :class='{ hidden: (loading && !progressiveReady) || !!error }' />
         <div v-if='watermarkStyle' class='viewer-watermark' :style='watermarkStyle' />
 
-        <div v-if='loading' class='state-panel loading-panel'>
+        <div v-if='loading && !progressiveReady' class='state-panel loading-panel'>
           <div class='loading-card'>
             <div class='loading-icon'>{{ loadingTheme.badge }}</div>
             <div class='loading-copy'>

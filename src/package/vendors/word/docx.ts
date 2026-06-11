@@ -9,6 +9,8 @@ const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
   height: 1123
 }
 
+const DOCX_PROGRESSIVE_BATCH_SIZE = 2
+
 type DocxWorkerResponse = {
   id: number;
   ok: true;
@@ -47,6 +49,70 @@ const shouldUseDocxWorker = (context?: FileRenderContext) => {
   return context?.options?.docx?.worker !== false && typeof Worker !== 'undefined'
 }
 
+const shouldMountDocxProgressively = (context?: FileRenderContext) => {
+  return context?.options?.docx?.progressive !== false && typeof document !== 'undefined'
+}
+
+const waitDocxMountFrame = () => {
+  return new Promise<void>(resolve => {
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+      setTimeout(resolve, 0)
+      return
+    }
+    window.requestAnimationFrame(() => resolve())
+  })
+}
+
+async function mountDocxPreviewHtml(
+  html: string,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+) {
+  if (!shouldMountDocxProgressively(context)) {
+    target.innerHTML = html
+    context?.onProgressiveRender?.()
+    return
+  }
+
+  const template = document.createElement('template')
+  template.innerHTML = html
+  const sourceWrapper = template.content.querySelector<HTMLElement>('.docx-wrapper')
+
+  if (!sourceWrapper) {
+    target.innerHTML = html
+    context?.onProgressiveRender?.()
+    return
+  }
+
+  const pages = Array.from(sourceWrapper.children)
+  const liveWrapper = sourceWrapper.cloneNode(false) as HTMLElement
+  let hasNotifiedFirstPaint = false
+
+  target.innerHTML = ''
+  Array.from(template.content.childNodes).forEach(node => {
+    if (node === sourceWrapper) {
+      target.appendChild(liveWrapper)
+      return
+    }
+    target.appendChild(node)
+  })
+
+  for (let index = 0; index < pages.length; index += DOCX_PROGRESSIVE_BATCH_SIZE) {
+    pages.slice(index, index + DOCX_PROGRESSIVE_BATCH_SIZE).forEach(page => {
+      liveWrapper.appendChild(page)
+    })
+
+    if (!hasNotifiedFirstPaint) {
+      hasNotifiedFirstPaint = true
+      context?.onProgressiveRender?.()
+    }
+
+    if (index + DOCX_PROGRESSIVE_BATCH_SIZE < pages.length) {
+      await waitDocxMountFrame()
+    }
+  }
+}
+
 async function renderDocxWithWorker(
   buffer: ArrayBuffer,
   target: HTMLDivElement,
@@ -81,8 +147,12 @@ async function renderDocxWithWorker(
 
       cleanup()
       if (event.data.ok) {
-        target.innerHTML = event.data.html
-        resolve(true)
+        void mountDocxPreviewHtml(event.data.html, target, context)
+          .then(() => resolve(true))
+          .catch(reason => {
+            console.warn('[file-viewer] DOCX 渐进挂载失败，回退到 docx-preview 主线程渲染。', reason)
+            resolve(false)
+          })
         return
       }
 

@@ -30,7 +30,7 @@
 
 | 分类 | 扩展名 | 渲染链路 | 当前表现 | 更适合的场景 |
 | --- | --- | --- | --- | --- |
-| Word | `docx`、`docm`、`dotx`、`dotm` | `docx-preview` + Web Worker | 白色纸张显示在灰色页面底中，支持宽度自适应和长文档视觉分页；默认在 Worker 内完成解析和 HTML 构建，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
+| Word | `docx`、`docm`、`dotx`、`dotm` | `docx-preview` + Web Worker | 白色纸张显示在灰色页面底中，支持宽度自适应和长文档视觉分页；默认在 Worker 内完成解析和 HTML 构建，并按页渐进挂载同一份 docx-preview 结果，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
 | Word | `doc`、`dot` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、Word 97-2003 模板、历史附件回溯 |
 | Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` | 支持虚拟滚动、列宽/行高、合并单元格、常见样式和 workbook drawing 图片；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` | 统一读取数据、尺寸和可用样式，按浏览器能力渐进还原 | 老表格、跨平台导出的表格 |
@@ -59,7 +59,7 @@
 ### Word 文档
 
 - `docx`、`docm`、`dotx`、`dotm` 使用 `docx-preview`，适合正文、表格、图片和常规版式较多的现代 Word 文档与模板。当前预览层会恢复白色纸张和灰色页面底，并根据可用宽度自动缩放；宏内容只作为只读文档结构预览，不执行宏。
-- DOCX 默认通过 Web Worker 运行 `docx-preview` 的 ZIP/XML 解析和 HTML 构建，主线程只挂载最终结果并处理缩放、打印和导出；遇到严格 CSP 或旧浏览器兼容问题时，可通过 `options.docx.worker: false` 回退到 docx-preview 原生主线程渲染。
+- DOCX 默认通过 Web Worker 运行 `docx-preview` 的 ZIP/XML 解析和 HTML 构建，主线程按页面分批挂载同一份 docx-preview 结果并处理缩放、打印和导出；遇到严格 CSP 或旧浏览器兼容问题时，可通过 `options.docx.worker: false` 回退到 docx-preview 原生主线程渲染。
 - `doc`、`dot` 使用 `msdoc-viewer`，并额外套用 Word 风格页面容器。构建前会通过包管理器无关的补丁脚本增强 CFB 局部 sector 容错，它不只是“把内容吐出来”，而是尽量保留文档阅读时的页面感。
 - Word 打印和导出 HTML 使用独立导出适配器，只带文档页面和必要 Word 样式，不带 Demo 布局、滚动容器和缩放状态，长文档会按完整页序输出。
 - 如果源文档缺少显式分页，`.docx` 预览会在浏览器端补一层视觉分页，避免长文档变成一整条没有纸张边界的内容流。

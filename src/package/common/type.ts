@@ -379,6 +379,11 @@ export interface FileViewerDocxOptions {
    * 回退到 docx-preview 原生主线程渲染。
    */
   worker?: boolean;
+  /**
+   * 是否把 Worker 返回的 docx-preview HTML 按页面分批挂载。默认开启。
+   * 它不改变渲染器，只是避免一次性插入长文档 DOM 时阻塞首屏。
+   */
+  progressive?: boolean;
 }
 
 /**
@@ -442,6 +447,11 @@ export interface FileRenderContext {
   streamUrl?: string;
   options?: FileViewerOptions;
   registerExportAdapter?: (adapter: FileRenderExportAdapter | null) => void;
+  /**
+   * 渲染器已经写入可读的渐进式内容，但完整高保真渲染仍在继续。
+   * 主入口收到后可以先露出内容，避免用户长时间只看到 Loading。
+   */
+  onProgressiveRender?: () => void;
 }
 
 /**
