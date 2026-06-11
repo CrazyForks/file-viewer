@@ -910,6 +910,13 @@
     }
 }
 
+.pdfViewer,
+.pdfViewer *,
+.pdfViewer *::before,
+.pdfViewer *::after {
+    box-sizing: content-box;
+}
+
 [data-main-rotation="90"] {
     transform: rotate(90deg) translateY(-100%);
 }
