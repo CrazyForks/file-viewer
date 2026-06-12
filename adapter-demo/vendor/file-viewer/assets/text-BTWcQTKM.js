@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./CodeViewer-57pZ6W1s.js","./package-Bop5TfAT.js","./runtime-core.esm-bundler-DO-WTVbd.js","./package-OvxnQO7z.css","./CodeViewer-CWJinXd-.css"])))=>i.map(i=>d[i]);
+import{p as e,r as t,x as n}from"./package-Bop5TfAT.js";import{d as r,u as i}from"./runtime-core.esm-bundler-DO-WTVbd.js";var a=r(()=>t(()=>import(`./CodeViewer-57pZ6W1s.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function o(t,r,o){let s=await e(t),c=n({render:()=>i(a,{value:s,type:o||`txt`},null)});return c.mount(r),c}export{o as default};

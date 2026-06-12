@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./MarkdownViewer-CmNTA_kD.js","./package-Bop5TfAT.js","./runtime-core.esm-bundler-DO-WTVbd.js","./package-OvxnQO7z.css","./MarkdownViewer-DfpNPUlw.css"])))=>i.map(i=>d[i]);
+import{p as e,r as t,x as n}from"./package-Bop5TfAT.js";import{d as r,u as i}from"./runtime-core.esm-bundler-DO-WTVbd.js";var a=r(()=>t(()=>import(`./MarkdownViewer-CmNTA_kD.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function o(t,r){let o=await e(t),s=n({render:()=>i(a,{data:o},null)});return s.mount(r),s}export{o as default};
