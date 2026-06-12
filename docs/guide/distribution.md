@@ -4,7 +4,8 @@
 
 <p class="doc-lead">
   这一页说明 Flyfish Viewer 对外分发时包含什么、如何安装、如何发布私有化 viewer 静态产物，以及源码如何自助开通。
-  公开 GitHub / Gitee 成品仓库只交付混淆压缩后的构建产物、示例文件、静态文档产物、适配包和下载包。
+  公开 GitHub / Gitee 成品仓库交付混淆压缩后的构建产物、Demo、文档站、适配层 Demo、示例文件和下载包。
+  为控制国内镜像仓库体积，Gitee 同步使用最新完整成品快照的干净历史，避免多轮二进制构建历史叠加。
   Gitee 镜像同步同一份成品，方便国内网络环境下载和部署。
 </p>
 
@@ -21,8 +22,8 @@
 | npm 包(React) | [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react) | React 17 / 18 / 19 iframe 组件，当前 latest 为 `1.0.23` |
 | npm 包(纯 JS) | [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | 纯 Web iframe helper，当前 latest 为 `1.0.23` |
 | 私有化 viewer 静态产物 | `file-viewer/index.html` | React、纯 JS 和 iframe 方案默认加载的 Vue3 基线预览器 |
-| GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、示例和可下载 tarball |
-| Gitee 成品仓库 | [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer) | 与 GitHub 成品仓库同步的国内镜像，便于快速克隆和下载 |
+| GitHub 成品仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | README、LICENSE、构建产物、Demo、文档站、示例和可下载 tarball |
+| Gitee 成品仓库 | [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer) | 与 GitHub 成品仓库内容一致的国内镜像，使用干净历史控制仓库体积 |
 | 源码自助开通 | [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop) | 付费 4.99 后自助开通源码或二开资源 |
 
 ## npm 安装
@@ -113,20 +114,22 @@ Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。
 
 ## 成品仓库内容
 
-公开 GitHub / Gitee 成品仓库只用于成品交付，不包含当前源码目录。仓库内容通常包括:
+公开 GitHub / Gitee 成品仓库只用于成品交付，不包含当前源码目录。仓库内容包括:
 
 - `dist/`: 混淆压缩后的组件库产物
 - `demo/`: 可独立部署的私有化预览器静态站点
+- `adapter-demo/`: React 和纯 JS 接入的最小化示例
 - `docs/`: VitePress 文档静态站点
-- `Dockerfile` / Docker Hub 标签: 可直接部署的静态镜像构建与发布信息
 - `example/`: 完整样例文件列表
 - `artifacts/`: npm tarball、适配包 tarball、Demo tarball、文档 tarball
-- `packages/web/viewer/`: React、纯 JS 和 iframe 适配层共用的 Vue3 基线 viewer 产物
+- `Dockerfile` / Docker Hub 标签: 可直接部署的静态镜像构建与发布信息
 - `README.md`: 默认中文入口，提供友好的安装、嵌入、下载和授权说明
 - `README.en.md`: 完整英文入口，与中文 README 互相提供语言切换链接，便于海外客户快速评估和接入
 - `LICENSE`: 项目许可证
 
-其中 `README.md` 会承担公开仓库首页职责，写明官方文档、在线 Demo、npm 包、私有化部署、成品目录和源码开通入口。`docs/` 是文档站静态构建产物，可部署到任何静态资源服务中。
+其中 `README.md` 会承担公开仓库首页职责，写明官方文档、在线 Demo、npm 包、私有化部署、成品目录和源码开通入口。`demo/`、`adapter-demo/`、`docs/` 和 `example/` 默认展开提交，保证用户克隆后可以直观看到完整成品结构；`artifacts/*.tar.gz` 继续保留，方便直接下载离线包。
+
+如果某个镜像平台临时无法承载完整展开目录，可以显式使用 `FILE_VIEWER_PUBLIC_SLIM=1` 或 `--slim` 生成应急轻量布局。该模式只用于临时镜像排障，不作为公开 GitHub / Gitee 的默认发布形态。
 
 公开 GitHub / Gitee 成品仓库和源码仓库保持分离，源码只在内部仓库维护；公开仓库只保留可直接部署或下载的成品。
 

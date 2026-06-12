@@ -20,6 +20,10 @@ const publicRepoDir = resolve(
 const skipBuild = args.includes('--skip-build')
 const keepOldArtifacts = args.includes('--keep-old-artifacts')
 const skipVue2Tarball = args.includes('--skip-vue2-tarball')
+const slimArtifacts =
+  (args.includes('--slim') || process.env.FILE_VIEWER_PUBLIC_SLIM === '1') &&
+  !args.includes('--expanded-assets')
+const keepExpandedAssets = !slimArtifacts
 const packageJson = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'))
 const version = packageJson.version
 const webPackageJson = JSON.parse(await readFile(join(sourceRoot, 'packages', 'web', 'package.json'), 'utf8'))
@@ -170,6 +174,9 @@ async function assertArtifactOnlyRepo(repoDir) {
 }
 
 async function writeReleaseManifest(repoDir) {
+  const allowedRoots = keepExpandedAssets
+    ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
+    : ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'artifacts']
   const manifest = {
     version,
     package: packageJson.name,
@@ -189,7 +196,10 @@ async function writeReleaseManifest(repoDir) {
         },
     publicRepo: repoDir,
     artifactOnly: true,
-    allowedRoots: ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
+    layout: keepExpandedAssets ? 'expanded' : 'slim',
+    allowedRoots,
+    archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'adapter-demo', 'docs', 'example'],
+    slimMode: slimArtifacts
   }
   await writeFile(
     join(repoDir, 'artifacts', 'release-manifest.json'),
@@ -235,11 +245,19 @@ if (!skipBuild) {
 const artifactsDir = join(publicRepoDir, 'artifacts')
 await removeOldArtifacts(artifactsDir)
 
-await copyCleanDir(demoStagingDir, join(publicRepoDir, 'demo'))
-await copyCleanDir(adapterDemoStagingDir, join(publicRepoDir, 'adapter-demo'))
+await removePath(join(publicRepoDir, 'demo'))
+await removePath(join(publicRepoDir, 'adapter-demo'))
+await removePath(join(publicRepoDir, 'docs'))
+await removePath(join(publicRepoDir, 'example'))
+
+if (keepExpandedAssets) {
+  await copyCleanDir(demoStagingDir, join(publicRepoDir, 'demo'))
+  await copyCleanDir(adapterDemoStagingDir, join(publicRepoDir, 'adapter-demo'))
+  await copyCleanDir(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(publicRepoDir, 'docs'))
+  await copyCleanDir(join(sourceRoot, 'public', 'example'), join(publicRepoDir, 'example'))
+}
+
 await copyCleanDir(join(sourceRoot, 'dist'), join(publicRepoDir, 'dist'))
-await copyCleanDir(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(publicRepoDir, 'docs'))
-await copyCleanDir(join(sourceRoot, 'public', 'example'), join(publicRepoDir, 'example'))
 await cp(join(sourceRoot, 'README.md'), join(publicRepoDir, 'README.md'), { force: true })
 await cp(join(sourceRoot, 'README.en.md'), join(publicRepoDir, 'README.en.md'), { force: true })
 await cp(join(sourceRoot, 'LICENSE'), join(publicRepoDir, 'LICENSE'), { force: true })
@@ -255,10 +273,10 @@ for (const adapterTarball of await findAdapterTarballs()) {
   await cp(adapterTarball, join(artifactsDir, basename(adapterTarball)), { force: true })
 }
 
-await createTarball(join(publicRepoDir, 'demo'), join(artifactsDir, `file-viewer-v3-${version}-demo.tar.gz`))
-await createTarball(join(publicRepoDir, 'adapter-demo'), join(artifactsDir, `file-viewer-v3-${version}-adapter-demo.tar.gz`))
+await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v3-${version}-demo.tar.gz`))
+await createTarball(adapterDemoStagingDir, join(artifactsDir, `file-viewer-v3-${version}-adapter-demo.tar.gz`))
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v3-${version}-lib-dist.tar.gz`))
-await createTarball(join(publicRepoDir, 'docs'), join(artifactsDir, `file-viewer-v3-${version}-docs.tar.gz`))
+await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v3-${version}-docs.tar.gz`))
 await writeReleaseManifest(publicRepoDir)
 await assertArtifactOnlyRepo(publicRepoDir)
 
