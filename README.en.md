@@ -15,6 +15,7 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - Official documentation: [doc.flyfish.dev](https://doc.flyfish.dev)
 - Online demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - Document comparison demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
+- Release downloads: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
 - GitHub artifact repository: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - Gitee artifact mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - Source access and commercial customization: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
@@ -50,6 +51,19 @@ Then allow `@flyfish-group/file-viewer-web`, or manually copy the bundled viewer
 ```bash
 pnpm exec file-viewer-copy-assets ./public/file-viewer
 ```
+
+GitHub Releases provide all distribution downloads:
+
+| File | Purpose |
+| --- | --- |
+| `file-viewer-v3-*-demo.tar.gz` | Main demo / iframe private deployment static site; extract it and use `/index.html?url=...` |
+| `file-viewer-v3-*-adapter-demo.tar.gz` | React / vanilla JavaScript adapter demo site |
+| `file-viewer-v3-*-lib-dist.tar.gz` | Vue 3 library dist for offline inspection or self-hosted packaging |
+| `file-viewer-v3-*-docs.tar.gz` | Documentation site static output |
+| `flyfish-group-file-viewer3-*.tgz` | Vue 3 local npm package |
+| `flyfish-group-file-viewer-*.tgz` | Vue 2.7 local npm package |
+| `flyfish-group-file-viewer-web-*.tgz` | Vanilla JavaScript iframe helper with viewer asset copy tooling |
+| `flyfish-group-file-viewer-react-*.tgz` | React iframe component; install the same-version web package together with it |
 
 ![Flyfish Viewer demo](docs/_images/demo-main.png)
 

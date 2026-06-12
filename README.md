@@ -15,6 +15,7 @@
 - 官方文档: [doc.flyfish.dev](https://doc.flyfish.dev)
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - 文档比对 Demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
+- Release 下载: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
 - Docker 镜像发布目标: `flyfishdev/file-viewer:1.0.23`
 - 公开成品仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 公开成品仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
@@ -39,6 +40,19 @@ npm install ./artifacts/flyfish-group-file-viewer-react-1.0.23.tgz
 ```
 
 Vue3、Vue2、React 和纯 JS tarball 都会随公开成品仓库一起生成。离线安装 React 包时请先安装同版本 web 包；React / 纯 JS 包推荐用 `npm install` 获得安装即复制的体验。pnpm 10 默认会拦截依赖包的 `postinstall`，如果看到 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或安装后运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+
+GitHub Release 会同步提供完整下载项:
+
+| 文件 | 用途 |
+| --- | --- |
+| `file-viewer-v3-*-demo.tar.gz` | 主 Demo / iframe 私有化部署静态站，解压后即可用 `/index.html?url=...` 接入 |
+| `file-viewer-v3-*-adapter-demo.tar.gz` | React / 纯 JS 适配层演示站 |
+| `file-viewer-v3-*-lib-dist.tar.gz` | Vue3 组件库构建产物，适合离线检查 dist 内容 |
+| `file-viewer-v3-*-docs.tar.gz` | 文档站静态产物 |
+| `flyfish-group-file-viewer3-*.tgz` | Vue3 本地 npm 安装包 |
+| `flyfish-group-file-viewer-*.tgz` | Vue2.7 本地 npm 安装包 |
+| `flyfish-group-file-viewer-web-*.tgz` | 纯 JS iframe helper，本地安装后复制 viewer 静态产物 |
+| `flyfish-group-file-viewer-react-*.tgz` | React iframe 组件，本地安装时请同时安装同版本 web 包 |
 
 ![Flyfish Viewer demo](docs/_images/demo-main.png)
 

@@ -84,7 +84,7 @@
   "types": "dist/src/package/index.d.ts",
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
-    "@flyfish-dev/cad-viewer": "^0.6.1",
+    "@flyfish-dev/cad-viewer": "^0.6.2",
     "@kenjiuno/msgreader": "^1.28.0",
     "@lucide/vue": "^1.17.0",
     "@myriaddreamin/typst-ts-renderer": "0.7.0",
