@@ -103,6 +103,7 @@ const sampleGroups: SampleGroup[] = [
       { name: 'PPTX 中文课件', url: '/example/ppt.pptx' },
       { name: 'DXF', url: '/example/drawing.dxf' },
       { name: 'DWG', url: '/example/sample.dwg' },
+      { name: 'DWF Blocks/Tables', url: '/example/samples/apache/blocks_and_tables.dwf' },
       { name: 'DWFx House', url: '/example/samples/autodesk/house.dwfx' },
       { name: 'DWFx RobotArm', url: '/example/samples/autodesk/robot-arm.dwfx' },
       { name: 'Excalidraw', url: '/example/flow.excalidraw' },

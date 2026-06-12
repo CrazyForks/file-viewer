@@ -10,7 +10,7 @@
 - DOCX Worker 新增 `options.docx.workerTimeout` 超时兜底，默认 15000ms。少量复杂 Word 文件如果在 Worker DOM 环境中无法及时返回，会自动回到同一套 `docx-preview` 原生主线程渲染，避免线上预览永久停留在 loading
 - CAD 渲染器升级到 `@flyfish-dev/cad-viewer` 0.6.1，支持 DWG / DXF / DWF / DWFx / XPS 统一预览；DWG 默认通过独立 Worker 加载 LibreDWG WASM，DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形
 - 构建脚本会复制 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 到 viewer 静态目录下的 `wasm/cad/`
-- Demo 补充 Autodesk 官方 Viewer 教程的 `House.dwfx` 和 `RobotArm1.dwfx` 样例，放入 `public/example/samples/autodesk/`，用于验证 DWFx/XPS、W2D/W3D native renderer 和大图纸按需加载体验
+- Demo 补充 Apache Tika `blocks_and_tables.dwf` 与 Autodesk 官方 Viewer 教程的 `House.dwfx`、`RobotArm1.dwfx` 样例，用于分别验证 DWF、DWFx/XPS、W2D/W3D native renderer 和大图纸按需加载体验
 - 入口组件在挂载重型渲染器前先释放浏览器绘制帧，确保 Loading 先显示，减少用户误以为页面无响应
 - `word.docx` 保持 Basel Convention 公开中文正式文档，覆盖长正文、标题层级、表格、图示、白色纸张和完整打印回归，避免默认 Demo 使用临时生成或过度病态的样例文件
 - `ppt.pptx` 替换为 `hcp4715/R4Psy` 的 CC-BY-4.0 中文课程课件，覆盖多页幻灯片、主题背景、图片资源、组合元素和富文本排版
@@ -33,7 +33,7 @@
 - CAD 渲染器升级到 `@flyfish-dev/cad-viewer@0.6.1`，DWG / DXF / DWF / DWFx / XPS 统一走成熟 CAD viewer；DWF/DWFx/XPS 使用 native `dwf-viewer` 解析 W2D/W3D/XPS 图形
 - 构建脚本新增复制 `dwfv-render.wasm`，与 `libredwg-web.js`、`libredwg-web.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 一起进入 `wasm/cad/`，私有化部署可通过 `options.cad.dwfWasmUrl` 覆盖路径
 - 压缩包和邮件附件的嵌套预览同步识别 `dwf`、`dwfx`、`xps`，避免主入口支持 CAD 五类格式而附件链路覆盖不足
-- Demo 图纸分组补充 Autodesk 官方 Viewer 教程的 `House.dwfx` 和 `RobotArm1.dwfx` 样例，便于验证多页结构、W2D/W3D 图形、视图适配和按需加载体验
+- Demo 图纸分组补充 Apache Tika `blocks_and_tables.dwf` 以及 Autodesk 官方 Viewer 教程的 `House.dwfx`、`RobotArm1.dwfx` 样例，便于验证 DWF、DWFx/XPS、多页结构、W2D/W3D 图形、视图适配和按需加载体验
 - README、文档站、React / 纯 JS README、iframe cache key、公开成品包和 workspace 依赖同步刷新到 `1.0.23`
 
 ### `v1.0.22` PPTX 兼容性修复与连续发布版本

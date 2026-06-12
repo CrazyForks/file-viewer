@@ -10,6 +10,7 @@
 | `ppt.pptx` | `https://github.com/hcp4715/R4Psy/blob/main/slides/chapter_1.pptx` | CC-BY-4.0 | Rich Chinese presentation smoke test for slide layout, images, theme styling and media-heavy PPTX rendering |
 | `pdf.pdf` | Project-owner provided `PDF沉浸式翻译技术说明.pdf` | Demo distribution authorized by project owner | 13-page PDF toolbar, scale, page/tree sidebar, print, export and dark-shell isolation smoke tests |
 | `sample.dwg` | `https://github.com/dshn06/cad-webviewer-unity/blob/main/cad-webview/public/cad-data/data/baseline-sample.dwg` | MIT | Real DWG sample for Worker + LibreDWG WASM geometry smoke tests |
+| `samples/apache/blocks_and_tables.dwf` | `https://issues.apache.org/jira/browse/TIKA-1823` attachment `blocks_and_tables.dwf` | Apache Software Foundation Jira attachment | Native DWF 6 container smoke test for blocks, tables, W2D graphics and MIME/header handling |
 | `samples/autodesk/house.dwfx` | `https://github.com/Developer-Autodesk/viewer-javascript-tutorial/blob/master/Sample%20files/House.dwfx` | MIT | Official Autodesk Viewer tutorial DWFx sample for native DWFx/XPS rendering, multi-page structure and CAD viewport smoke tests |
 | `samples/autodesk/robot-arm.dwfx` | `https://github.com/Developer-Autodesk/viewer-javascript-tutorial/blob/master/Sample%20files/RobotArm1.dwfx` | MIT | Official Autodesk Viewer tutorial DWFx sample for W2D/W3D native rendering and assembly drawing smoke tests |
 | `model.gltf` / `model.obj` / `model.stl` / `model.ply` / `model.step` | Project-generated minimal fixtures | Apache-2.0 | Three.js model rendering and engineering-format fallback smoke tests |
@@ -28,6 +29,7 @@
 运行时说明:
 
 - `sample.dwg` 是真实 DWG 文件；运行时通过 `@flyfish-dev/cad-viewer` 按需加载 DWG Worker 和 LibreDWG WASM，验证浏览器本地 DWG 几何预览链路。
+- `samples/apache/blocks_and_tables.dwf` 来自 Apache Tika `TIKA-1823` 的公开 Jira 附件，保留 `(DWF V06.00)PK` 文件头，用于验证原生 DWF 6 ZIP 容器、块、表格、W2D 图形和 MIME/header 识别。
 - `samples/autodesk/house.dwfx` 来自 Autodesk 官方 Viewer 教程仓库，用于验证 DWFx / XPS native renderer、图形、多页结构和视图适配；该文件约 17MB，但只在用户选择样例时按需加载。
 - `samples/autodesk/robot-arm.dwfx` 同样来自 Autodesk 官方 Viewer 教程仓库，用于验证 W2D/W3D native renderer 和复杂装配图形。
 - `word.docx` 来自 Basel Convention 公开中文正式文档，覆盖标题层级、长正文、表格、图示、白色纸张和完整打印回归；该样本保留真实文档复杂度，但避免默认 Demo 首屏触发超大 DOCX 保护。
