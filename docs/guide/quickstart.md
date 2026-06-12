@@ -138,6 +138,8 @@ npm install @flyfish-group/file-viewer-web@1.0.23
 
 如果使用 pnpm 10，请按 [纯 JS 集成](/guide/quickstart-web) 中的说明允许 `@flyfish-group/file-viewer-web` 的安装脚本，或手动运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。完整步骤见 [纯 JS 集成](/guide/quickstart-web)。
 
+传统后台页面或无构建工具项目也可以直接通过 `<script type="module">` 引入 helper，或用 import map / 全局桥接方式接入；详细示例见 [纯 JS 集成 - 通过 script 标签引入](/guide/quickstart-web#通过-script-标签引入)。
+
 ## Iframe 最短路径
 
 如果你希望把预览器独立部署出来，最简单的 URL 方案可以直接这样挂载:

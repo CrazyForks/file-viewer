@@ -55,6 +55,56 @@ mountViewerFrame(el, {
 })
 ```
 
+## Script 标签接入
+
+无构建工具项目可以自托管 helper，并通过浏览器原生 ES Module script 引入:
+
+```bash
+npm install @flyfish-group/file-viewer-web@1.0.23
+npx file-viewer-copy-assets ./public/file-viewer
+mkdir -p ./public/vendor/file-viewer-web
+cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/file-viewer-web/index.js
+```
+
+```html
+<div id="viewer" style="height: 720px"></div>
+
+<script type="module">
+  import { mountViewerFrame } from '/vendor/file-viewer-web/index.js'
+
+  mountViewerFrame(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    url: '/files/demo.pdf',
+    options: {
+      theme: 'light',
+      toolbar: { position: 'bottom-right' }
+    }
+  })
+</script>
+```
+
+如果必须让普通 `<script>` 使用全局变量，可以用一个 module bridge 暴露 `window.FlyfishFileViewerWeb`:
+
+```html
+<script type="module">
+  import * as FlyfishFileViewerWeb from '/vendor/file-viewer-web/index.js'
+  window.FlyfishFileViewerWeb = FlyfishFileViewerWeb
+  window.dispatchEvent(new Event('flyfish-file-viewer-web-ready'))
+</script>
+
+<script>
+  window.addEventListener('flyfish-file-viewer-web-ready', function () {
+    window.FlyfishFileViewerWeb.mountViewerFrame(document.getElementById('viewer'), {
+      viewerUrl: '/file-viewer/index.html',
+      url: '/files/demo.docx',
+      options: { theme: 'light' }
+    })
+  })
+</script>
+```
+
+浏览器不能直接解析 `@flyfish-group/file-viewer-web` 这种裸包名；没有构建工具时请使用静态 URL，或配置 import map。生产环境也建议自托管 helper 和完整 viewer 目录，避免 CDN、缓存、CSP 或内网访问带来的不确定性。
+
 `mountViewerFrame` 会默认给 iframe 地址追加 `__flyfish_viewer_version`，用于绕开浏览器或代理缓存里的旧 `index.html`。如果你的静态服务已经严格设置 HTML 不缓存，可以传 `cacheKey: false` 关闭。
 
 无法使用 helper 的纯手写页面，也应沿用同一套 iframe 协议:

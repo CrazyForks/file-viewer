@@ -78,6 +78,169 @@ controller.update({ url: '/files/report.docx' })
 controller.destroy()
 ```
 
+## 通过 script 标签引入
+
+没有构建工具、不能把 `import` 写进业务源码、或只是在传统后台页面里接入时，可以直接使用浏览器原生 `<script type="module">`。需要注意: `@flyfish-group/file-viewer-web` 当前发布的是 ES Module helper，不是老式 UMD 全局脚本；script 标签加载的是 helper，真正的预览器仍然是完整的私有化 viewer 静态目录。
+
+### 目录准备
+
+先把两类静态资源放到业务站点可访问的位置:
+
+```txt
+public/
+  file-viewer/
+    index.html
+    assets/
+    vendor/
+  vendor/
+    file-viewer-web/
+      index.js
+```
+
+推荐通过 npm 安装后复制:
+
+```bash
+npm install @flyfish-group/file-viewer-web@1.0.23
+npx file-viewer-copy-assets ./public/file-viewer
+mkdir -p ./public/vendor/file-viewer-web
+cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/file-viewer-web/index.js
+```
+
+`/file-viewer/` 必须是完整目录，不能只复制 `index.html`。`/vendor/file-viewer-web/index.js` 只是很小的 iframe helper，用来创建 iframe、拼 URL、推送 Blob 和监听事件。
+
+### URL 文件
+
+```html
+<div id="viewer" style="height: 720px"></div>
+
+<script type="module">
+  import { mountViewerFrame } from '/vendor/file-viewer-web/index.js'
+
+  const controller = mountViewerFrame(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    url: '/files/demo.pdf',
+    options: {
+      theme: 'light',
+      toolbar: { position: 'bottom-right' },
+      search: { maxMatches: 1000 }
+    },
+    onEvent(event) {
+      console.log('[viewer]', event.type, event.event, event.payload)
+    }
+  })
+
+  window.viewerController = controller
+</script>
+```
+
+### 鉴权文件或接口下载文件
+
+```html
+<div id="viewer" style="height: 720px"></div>
+
+<script type="module">
+  import { mountViewerFrame } from '/vendor/file-viewer-web/index.js'
+
+  const response = await fetch('/api/files/contract', {
+    credentials: 'include'
+  })
+  const blob = await response.blob()
+
+  mountViewerFrame(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    file: blob,
+    name: 'contract.docx',
+    options: {
+      theme: 'light',
+      toolbar: { position: 'bottom-right' },
+      watermark: { text: '内部资料', opacity: 0.14 }
+    }
+  })
+</script>
+```
+
+传 `file` 时一定要同时传 `name`，预览器需要通过扩展名选择渲染链路。`file` 可以是 `File`、`Blob` 或 `ArrayBuffer`。
+
+### 使用 import map 保留包名写法
+
+如果希望 HTML 里仍然写 `@flyfish-group/file-viewer-web`，可以加 import map:
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "@flyfish-group/file-viewer-web": "/vendor/file-viewer-web/index.js"
+  }
+}
+</script>
+
+<script type="module">
+  import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
+
+  mountViewerFrame(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    url: '/files/demo.xlsx',
+    options: { theme: 'light' }
+  })
+</script>
+```
+
+浏览器不会像 Vite、Webpack 一样自动解析裸包名；没有 import map 或构建工具时，`import '@flyfish-group/file-viewer-web'` 会失败。
+
+### 传统 script 的全局桥接
+
+如果页面里已有很多普通 `<script>`，可以用一个很薄的 module bridge 暴露全局变量:
+
+```html
+<div id="viewer" style="height: 720px"></div>
+
+<script type="module">
+  import * as FlyfishFileViewerWeb from '/vendor/file-viewer-web/index.js'
+
+  window.FlyfishFileViewerWeb = FlyfishFileViewerWeb
+  window.dispatchEvent(new Event('flyfish-file-viewer-web-ready'))
+</script>
+
+<script>
+  window.addEventListener('flyfish-file-viewer-web-ready', function () {
+    window.FlyfishFileViewerWeb.mountViewerFrame(document.getElementById('viewer'), {
+      viewerUrl: '/file-viewer/index.html',
+      url: '/files/demo.pptx',
+      options: { theme: 'light', toolbar: { position: 'bottom-right' } }
+    })
+  })
+</script>
+```
+
+这仍然要求浏览器支持 ES Module。现代 Chrome、Edge、Firefox、Safari 都支持；如果业务系统必须兼容非常旧的浏览器，建议用构建工具把 helper 打包成自己的兼容脚本，而不是直接引用 npm 包内部文件。
+
+### CDN 只适合快速验证
+
+也可以临时用 CDN 验证 helper:
+
+```html
+<script type="module">
+  import { mountViewerFrame } from 'https://unpkg.com/@flyfish-group/file-viewer-web@1.0.23/dist/index.js'
+
+  mountViewerFrame(document.getElementById('viewer'), {
+    viewerUrl: '/file-viewer/index.html',
+    url: '/files/demo.pdf'
+  })
+</script>
+```
+
+生产环境仍建议自托管 `/vendor/file-viewer-web/index.js` 和 `/file-viewer/`。这样版本、缓存、CSP、跨域和内网访问都可控。
+
+### 常见问题
+
+| 现象 | 原因与处理 |
+| --- | --- |
+| `Failed to resolve module specifier '@flyfish-group/file-viewer-web'` | 浏览器不能解析裸包名。改成 `/vendor/file-viewer-web/index.js`，或配置 import map |
+| `Expected a JavaScript-or-Wasm module script but the server responded with text/html` | 静态服务把缺失的 `.js` / `.wasm` 回退成了 HTML。检查路径是否存在，并关闭资源目录的 SPA fallback |
+| iframe 空白或控制台出现 chunk 404 | `/file-viewer/` 没有完整复制，或 `index.html` 与 `assets/*` 不是同一次构建。重新运行 `file-viewer-copy-assets` |
+| DOCX、PDF 等文件接口 401 | `url` 模式由 iframe 直接请求文件，登录态或跨域可能不同。改用宿主页面 `fetch` 后传 `file` + `name` |
+| 切到暗色或工具栏位置不符合宿主 UI | 在 `options` 里显式传 `theme: 'light'`、`toolbar: { position: 'bottom-right' }` |
+
 ## 预览鉴权文件
 
 ```ts
