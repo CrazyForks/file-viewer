@@ -56,6 +56,11 @@ export interface FileViewerToolbarOptions {
     print?: boolean;
     exportHtml?: boolean;
     /**
+     * 是否显示统一缩放控制。渲染器会按文件类型注册自己的缩放实现；
+     * 虚拟表格等不适合外层缩放的格式不会强行显示该按钮组。
+     */
+    zoom?: boolean;
+    /**
      * 操作栏位置。`bottom-right` 会以胶囊按钮组悬浮在预览区右下角，
      * 适合 PDF 等自身已经有顶部导航栏的格式。
      */
@@ -75,8 +80,21 @@ export interface FileViewerArchiveOptions {
     /**
      * libarchive.js Worker 地址。私有化部署时建议把
      * `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录后传入。
+     *
+     * 没有传入时，预览器会先尝试当前部署 base 下的
+     * `vendor/libarchive/worker-bundle.js`，失败后自动回退到内置 Worker。
      */
     workerUrl?: string;
+    /**
+     * 内置 Worker 回退时使用的 libarchive WASM 地址。只有在不希望使用打包产物中
+     * 的 wasm 资源、或需要指向私有 CDN 时才需要配置。
+     */
+    wasmUrl?: string;
+    /**
+     * Worker 初始化、加密检测和目录读取的超时时间，单位毫秒。默认 30000。
+     * 手机 WebView 或本地临时服务器不稳定时，超时后会自动尝试兼容模式。
+     */
+    workerTimeoutMs?: number;
     /**
      * 是否启用 IndexedDB 缓存压缩包内已解压的文件。
      */
@@ -153,6 +171,11 @@ export interface FileViewerCadOptions {
     wasmPath?: string;
     workerUrl?: string | URL;
     dwfWasmUrl?: string;
+    /**
+     * DXF 文本编码覆盖。一般会自动读取 `$DWGCODEPAGE`，仅在历史文件声明缺失
+     * 或错误时指定，例如 `gb18030`、`big5`、`shift_jis`、`windows-1252`。
+     */
+    dxfEncoding?: string;
     useWorker?: boolean;
     workerTimeoutMs?: number;
     renderer?: FileViewerCadRenderer;
@@ -276,6 +299,36 @@ export interface FileViewerSearchProvider {
     getState?: () => FileViewerSearchState;
 }
 /**
+ * 当前预览内容的缩放状态。
+ *
+ * `scale` 使用 1 = 100% 的语义。部分格式会先按容器宽度自动适配，再在此
+ * 基础上放大缩小；对外仍返回最终有效比例，便于业务工具栏同步显示。
+ */
+export interface FileViewerZoomState {
+    scale: number;
+    label: string;
+    canZoomIn: boolean;
+    canZoomOut: boolean;
+    canReset: boolean;
+    minScale?: number;
+    maxScale?: number;
+}
+/**
+ * 渲染器自定义缩放提供器。
+ *
+ * PDF、CAD、图片、Office 文档等格式拥有不同的内部缩放/重排逻辑；
+ * 统一工具栏只调用该协议，不对外层 DOM 做粗暴 CSS transform，避免表格、
+ * canvas、CAD 交互出现坐标偏移。
+ */
+export interface FileViewerZoomProvider {
+    zoomIn: () => FileViewerZoomState | Promise<FileViewerZoomState>;
+    zoomOut: () => FileViewerZoomState | Promise<FileViewerZoomState>;
+    resetZoom: () => FileViewerZoomState | Promise<FileViewerZoomState>;
+    setZoom?: (scale: number) => FileViewerZoomState | Promise<FileViewerZoomState>;
+    getState: () => FileViewerZoomState;
+    subscribe?: (listener: () => void) => () => void;
+}
+/**
  * AI 友好能力配置。
  *
  * 预览器本身不内置云端模型调用；这里提供可选文本切片结构，业务侧可以
@@ -317,7 +370,7 @@ export interface FileViewerLifecycleHooks {
     onUnloadStart?: (context: FileViewerLifecycleContext) => void | Promise<void>;
     onUnloadComplete?: (context: FileViewerLifecycleContext) => void | Promise<void>;
 }
-export type FileViewerOperationType = 'download' | 'print' | 'export-html';
+export type FileViewerOperationType = 'download' | 'print' | 'export-html' | 'zoom-in' | 'zoom-out' | 'zoom-reset';
 /**
  * 当前文档对内置操作的真实可用性。
  *
@@ -329,6 +382,13 @@ export interface FileViewerOperationAvailability {
     download: boolean;
     print: boolean;
     exportHtml: boolean;
+    /**
+     * 当前渲染链路是否提供内部缩放能力。
+     */
+    zoom: boolean;
+    zoomIn: boolean;
+    zoomOut: boolean;
+    zoomReset: boolean;
 }
 export interface FileViewerOperationContext extends Omit<FileViewerLifecycleContext, 'phase'> {
     operation: FileViewerOperationType;

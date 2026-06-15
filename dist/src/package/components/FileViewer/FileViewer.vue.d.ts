@@ -1,4 +1,4 @@
-import { FileRef, FileViewerDocumentAnchor, FileViewerLifecycleContext, FileViewerOperationAvailability, FileViewerOptions, FileViewerOperationContext, FileViewerSearchState } from '../../../../package/common/type';
+import { FileRef, FileViewerDocumentAnchor, FileViewerLifecycleContext, FileViewerOperationAvailability, FileViewerOptions, FileViewerOperationContext, FileViewerSearchState, FileViewerZoomState } from '../../../../package/common/type';
 type __VLS_Props = {
     /**
      * 本地二进制输入。优先级高于 `url`。
@@ -25,10 +25,18 @@ declare const __VLS_export: import('vue').DefineComponent<__VLS_Props, {
     downloadOriginalFile: () => Promise<void>;
     printRenderedHtml: () => Promise<void>;
     exportRenderedHtml: () => Promise<void>;
+    zoomIn: () => Promise<FileViewerZoomState>;
+    zoomOut: () => Promise<FileViewerZoomState>;
+    resetZoom: () => Promise<FileViewerZoomState>;
+    getZoomState: () => FileViewerZoomState;
     getOperationAvailability: () => {
         download: boolean;
         print: boolean;
         exportHtml: boolean;
+        zoom: boolean;
+        zoomIn: boolean;
+        zoomOut: boolean;
+        zoomReset: boolean;
     };
     getScrollContainer: () => HTMLElement | null;
     searchDocument: (query: string) => Promise<FileViewerSearchState>;
@@ -50,6 +58,7 @@ declare const __VLS_export: import('vue').DefineComponent<__VLS_Props, {
     "operation-before": (context: FileViewerOperationContext) => any;
     "operation-cancel": (context: FileViewerOperationContext) => any;
     "operation-availability-change": (availability: FileViewerOperationAvailability) => any;
+    "zoom-change": (state: FileViewerZoomState) => any;
 }, string, import('vue').PublicProps, Readonly<__VLS_Props> & Readonly<{
     "onLoad-start"?: ((context: FileViewerLifecycleContext) => any) | undefined;
     "onLoad-complete"?: ((context: FileViewerLifecycleContext) => any) | undefined;
@@ -60,6 +69,7 @@ declare const __VLS_export: import('vue').DefineComponent<__VLS_Props, {
     "onOperation-before"?: ((context: FileViewerOperationContext) => any) | undefined;
     "onOperation-cancel"?: ((context: FileViewerOperationContext) => any) | undefined;
     "onOperation-availability-change"?: ((availability: FileViewerOperationAvailability) => any) | undefined;
+    "onZoom-change"?: ((state: FileViewerZoomState) => any) | undefined;
 }>, {}, {}, {}, {}, string, import('vue').ComponentProvideOptions, false, {}, any>;
 declare const _default: typeof __VLS_export;
 export default _default;

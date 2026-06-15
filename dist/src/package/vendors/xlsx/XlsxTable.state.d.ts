@@ -20,6 +20,7 @@ export type RowStateValue = (typeof RowState)[keyof typeof RowState];
 export interface VirtualRow extends Record<string, any> {
     __k: string;
     __s: RowStateValue;
+    __baseHeight?: number;
     _height?: number;
 }
 export interface CellBorderCache {
