@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./EpubViewer-BCSRMeWe.js","./package-Bop5TfAT.js","./runtime-core.esm-bundler-DO-WTVbd.js","./package-OvxnQO7z.css","./EpubViewer-Cci0l1Vm.css"])))=>i.map(i=>d[i]);
-import{r as e,x as t}from"./package-Bop5TfAT.js";import{d as n,u as r}from"./runtime-core.esm-bundler-DO-WTVbd.js";var i=n(()=>e(()=>import(`./EpubViewer-BCSRMeWe.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(e,n){let a=t({render:()=>r(i,{data:e},null)});return a.mount(n),a}export{a as default};

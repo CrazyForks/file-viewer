@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./DrawingViewer-NO4nzeA1.js","./package-Bop5TfAT.js","./runtime-core.esm-bundler-DO-WTVbd.js","./package-OvxnQO7z.css","./DrawingViewer-DHdPw80C.css"])))=>i.map(i=>d[i]);
-import{r as e,x as t}from"./package-Bop5TfAT.js";import{d as n,u as r}from"./runtime-core.esm-bundler-DO-WTVbd.js";var i=n(()=>e(()=>import(`./DrawingViewer-NO4nzeA1.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(e,n,a){let o=t({render:()=>r(i,{data:e,type:a||`drawio`},null)});return o.mount(n),o}export{a as default};
