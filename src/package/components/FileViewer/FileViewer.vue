@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import axios from 'axios'
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import { resolvePrintAvailability } from '../../common/printCapability'
 import { shouldStreamPdfUrl } from '../../common/sourceLoading'
 import { readBuffer } from '../../common/util'
@@ -18,6 +19,7 @@ import type {
   FileViewerSearchState,
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
+  FileViewerZoomState,
   Rendered
 } from '@/package/common/type'
 import { useLoading } from '@/package/use'
@@ -25,6 +27,7 @@ import { getExtend, render } from './util'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
+import { useViewerZoom } from './hooks/useViewerZoom'
 
 const props = defineProps<{
   /**
@@ -59,6 +62,7 @@ const emit = defineEmits<{
   (event: 'operation-availability-change', availability: FileViewerOperationAvailability): void;
   (event: 'search-change', state: FileViewerSearchState): void;
   (event: 'location-change', anchor: FileViewerDocumentAnchor | null): void;
+  (event: 'zoom-change', state: FileViewerZoomState): void;
 }>()
 
 const PREVIEW_MESSAGE = {
@@ -107,20 +111,23 @@ const normalizedToolbar = computed<FileViewerToolbarOptions>(() => {
     return {
       download: false,
       print: false,
-      exportHtml: false
+      exportHtml: false,
+      zoom: false
     }
   }
   if (toolbar && typeof toolbar === 'object') {
     return {
       download: toolbar.download !== false,
       print: toolbar.print !== false,
-      exportHtml: toolbar.exportHtml !== false
+      exportHtml: toolbar.exportHtml !== false,
+      zoom: toolbar.zoom !== false
     }
   }
   return {
     download: true,
     print: true,
-    exportHtml: true
+    exportHtml: true,
+    zoom: true
   }
 })
 
@@ -132,44 +139,6 @@ const viewerTheme = computed(() => {
 const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
 const renderedReady = ref(false)
 const progressiveReady = ref(false)
-
-const operationAvailability = computed<FileViewerOperationAvailability>(() => {
-  const hasOriginalSource = !!currentBuffer.value || !!currentSourceUrl.value
-  const hasRenderableOutput = renderedReady.value && !error.value
-  const adapter = activeExportAdapter.value
-
-  return {
-    download: hasOriginalSource,
-    print: hasRenderableOutput && resolvePrintAvailability(currentExtend.value, adapter, renderedReady.value),
-    exportHtml: hasRenderableOutput && adapter?.exportHtml !== false
-  }
-})
-
-const visibleToolbar = computed<FileViewerToolbarOptions>(() => {
-  const toolbar = normalizedToolbar.value
-  const availability = operationAvailability.value
-  return {
-    download: toolbar.download && availability.download,
-    print: toolbar.print && availability.print,
-    exportHtml: toolbar.exportHtml && availability.exportHtml
-  }
-})
-
-const showToolbar = computed(() => {
-  const toolbar = visibleToolbar.value
-  return toolbar.download || toolbar.print || toolbar.exportHtml
-})
-
-const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
-  const toolbar = props.options?.toolbar
-  const position = toolbar && typeof toolbar === 'object' ? toolbar.position : 'auto'
-  if (position === 'top' || position === 'bottom-right') {
-    return position
-  }
-  return currentExtend.value === 'pdf' ? 'bottom-right' : 'top'
-})
-
-const toolbarDisabled = computed(() => loading.value || !!error.value)
 
 const {
   watermarkStyle,
@@ -206,7 +175,10 @@ const lifecycleHookName: Record<FileViewerLifecyclePhase, keyof NonNullable<File
 const operationLabels: Record<FileViewerOperationType, string> = {
   download: '下载原始文件',
   print: '打印完整渲染内容',
-  'export-html': '导出渲染 HTML'
+  'export-html': '导出渲染 HTML',
+  'zoom-in': '放大预览',
+  'zoom-out': '缩小预览',
+  'zoom-reset': '还原预览比例'
 }
 
 const normalizeFilename = (name: string) => {
@@ -274,6 +246,17 @@ const postViewerAvailability = (availability: FileViewerOperationAvailability) =
     type: 'flyfish-viewer:operation',
     event: 'operation-availability-change',
     payload: availability
+  }, '*')
+}
+
+const postViewerZoomState = (state: FileViewerZoomState) => {
+  if (typeof window === 'undefined' || window.parent === window) {
+    return
+  }
+  window.parent.postMessage({
+    type: 'flyfish-viewer:operation',
+    event: 'zoom-change',
+    payload: state
   }, '*')
 }
 
@@ -355,7 +338,9 @@ const getToolbarBeforeOperation = (operation: FileViewerOperationType): Array<Fi
     ? toolbar.beforeDownload
     : operation === 'print'
       ? toolbar.beforePrint
-      : toolbar.beforeExportHtml
+      : operation === 'export-html'
+        ? toolbar.beforeExportHtml
+        : undefined
   return [toolbar.beforeOperation, specificHook]
 }
 
@@ -450,6 +435,70 @@ const formatErrorMessage = (prefix: string, nextError: unknown) => {
   return `${prefix}：${String(nextError)}`
 }
 
+const {
+  zoomState,
+  refreshZoomProvider,
+  startZoomObserver,
+  stopZoomObserver,
+  clearZoomProvider,
+  zoomIn,
+  zoomOut,
+  resetZoom,
+  getZoomState
+} = useViewerZoom({
+  output,
+  enabled: () => true,
+  runBeforeOperation
+})
+
+const operationAvailability = computed<FileViewerOperationAvailability>(() => {
+  const hasOriginalSource = !!currentBuffer.value || !!currentSourceUrl.value
+  const hasRenderableOutput = renderedReady.value && !error.value
+  const adapter = activeExportAdapter.value
+  const zoomEnabled = hasRenderableOutput && (zoomState.canZoomIn || zoomState.canZoomOut || zoomState.canReset)
+
+  return {
+    download: hasOriginalSource,
+    print: hasRenderableOutput && resolvePrintAvailability(currentExtend.value, adapter, renderedReady.value),
+    exportHtml: hasRenderableOutput && adapter?.exportHtml !== false,
+    zoom: zoomEnabled,
+    zoomIn: zoomEnabled && zoomState.canZoomIn,
+    zoomOut: zoomEnabled && zoomState.canZoomOut,
+    zoomReset: zoomEnabled && zoomState.canReset
+  }
+})
+
+const visibleToolbar = computed<FileViewerToolbarOptions>(() => {
+  const toolbar = normalizedToolbar.value
+  const availability = operationAvailability.value
+  return {
+    download: toolbar.download && availability.download,
+    print: toolbar.print && availability.print,
+    exportHtml: toolbar.exportHtml && availability.exportHtml,
+    zoom: toolbar.zoom && availability.zoom
+  }
+})
+
+const showToolbar = computed(() => {
+  const toolbar = visibleToolbar.value
+  return toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom
+})
+
+const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
+  const toolbar = props.options?.toolbar
+  const position = toolbar && typeof toolbar === 'object' ? toolbar.position : 'auto'
+  if (position === 'top' || position === 'bottom-right') {
+    return position
+  }
+  return currentExtend.value === 'pdf' ? 'bottom-right' : 'top'
+})
+
+const toolbarDisabled = computed(() => loading.value || !!error.value)
+
+const zoomButtonDisabled = (action: keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>) => {
+  return toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]
+}
+
 // 统一把 File、Blob、ArrayBuffer 收敛为 File，
 // 后续读取和扩展名识别都只面对一种输入类型。
 const wrapFileRef = (data: FileRef, nextFilename?: string) => {
@@ -505,6 +554,8 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
     renderedReady.value = false
     progressiveReady.value = false
     clearDocumentState()
+    stopZoomObserver()
+    clearZoomProvider()
 
     const out = output.value
     if (out) {
@@ -549,6 +600,7 @@ const mountRenderedContent = async (
   const child = document.createElement('div')
   child.className = 'file-render'
   out.appendChild(child)
+  startZoomObserver()
   await nextTick()
   await waitForBrowserPaint()
 
@@ -580,6 +632,7 @@ const mountRenderedContent = async (
       return undefined
     }
     void refreshDocumentIndex()
+    refreshZoomProvider()
     return rendered
   } catch (nextError) {
     if (child.parentNode === out) {
@@ -804,6 +857,10 @@ defineExpose({
   downloadOriginalFile,
   printRenderedHtml,
   exportRenderedHtml,
+  zoomIn,
+  zoomOut,
+  resetZoom,
+  getZoomState,
   getOperationAvailability: () => ({ ...operationAvailability.value }),
   getScrollContainer,
   searchDocument,
@@ -823,6 +880,22 @@ watch(operationAvailability, availability => {
   postViewerAvailability(payload)
 }, { immediate: true })
 
+watch(
+  () => [
+    zoomState.scale,
+    zoomState.label,
+    zoomState.canZoomIn,
+    zoomState.canZoomOut,
+    zoomState.canReset
+  ] as const,
+  () => {
+    const state = getZoomState()
+    emit('zoom-change', state)
+    postViewerZoomState(state)
+  },
+  { immediate: true }
+)
+
 watch([() => props.file, () => props.url], () => {
   void refreshPreview()
 }, { immediate: true })
@@ -830,6 +903,7 @@ watch([() => props.file, () => props.url], () => {
 onBeforeUnmount(() => {
   createRequestVersion('component-unmount')
   resetLoading()
+  stopZoomObserver()
 })
 </script>
 
@@ -842,6 +916,47 @@ onBeforeUnmount(() => {
         :class='{ "viewer-actions--floating": toolbarPosition === "bottom-right" }'
         :data-toolbar-position='toolbarPosition'
       >
+        <div v-if='visibleToolbar.zoom' class='viewer-actions-group viewer-zoom-actions' aria-label='缩放控制'>
+          <button
+            type='button'
+            class='viewer-icon-button'
+            :disabled='zoomButtonDisabled("canZoomOut")'
+            title='缩小预览'
+            aria-label='缩小预览'
+            @click='zoomOut'
+          >
+            <ZoomOut :size='15' :stroke-width='2.4' />
+          </button>
+          <button
+            type='button'
+            class='viewer-zoom-meter'
+            :disabled='zoomButtonDisabled("canReset")'
+            title='还原比例'
+            @click='resetZoom'
+          >
+            {{ zoomState.label }}
+          </button>
+          <button
+            type='button'
+            class='viewer-icon-button'
+            :disabled='zoomButtonDisabled("canZoomIn")'
+            title='放大预览'
+            aria-label='放大预览'
+            @click='zoomIn'
+          >
+            <ZoomIn :size='15' :stroke-width='2.4' />
+          </button>
+          <button
+            type='button'
+            class='viewer-icon-button'
+            :disabled='zoomButtonDisabled("canReset")'
+            title='还原比例'
+            aria-label='还原比例'
+            @click='resetZoom'
+          >
+            <RotateCcw :size='14' :stroke-width='2.4' />
+          </button>
+        </div>
         <button
           v-if='visibleToolbar.download'
           type='button'
@@ -949,6 +1064,16 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(16px);
 }
 
+.viewer-actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  border-radius: 999px;
+  background: rgba(20, 35, 53, 0.035);
+}
+
 .viewer-actions button {
   min-width: 42px;
   height: 30px;
@@ -963,10 +1088,34 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+.viewer-actions .viewer-icon-button {
+  width: 30px;
+  min-width: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewer-actions .viewer-zoom-meter {
+  min-width: 48px;
+  padding: 0 8px;
+  color: #23465e;
+}
+
 .viewer-actions--floating button {
   min-width: 48px;
   height: 32px;
   border-radius: 999px;
+}
+
+.viewer-actions--floating .viewer-icon-button {
+  width: 32px;
+  min-width: 32px;
+}
+
+.viewer-actions--floating .viewer-zoom-meter {
+  min-width: 54px;
 }
 
 .viewer-actions button:hover:not(:disabled) {
@@ -1125,6 +1274,11 @@ onBeforeUnmount(() => {
   color: #b8c7d5;
 }
 
+.file-viewer[data-viewer-theme='dark'] .viewer-actions-group {
+  border-color: rgba(167, 185, 198, 0.13);
+  background: rgba(167, 185, 198, 0.08);
+}
+
 .file-viewer[data-viewer-theme='dark'] .viewer-actions button:hover:not(:disabled) {
   background: rgba(45, 212, 154, 0.14);
   color: #5ee0ae;
@@ -1192,6 +1346,11 @@ onBeforeUnmount(() => {
 
   .file-viewer[data-viewer-theme='system'] .viewer-actions button {
     color: #b8c7d5;
+  }
+
+  .file-viewer[data-viewer-theme='system'] .viewer-actions-group {
+    border-color: rgba(167, 185, 198, 0.13);
+    background: rgba(167, 185, 198, 0.08);
   }
 
   .file-viewer[data-viewer-theme='system'] .viewer-actions button:hover:not(:disabled) {

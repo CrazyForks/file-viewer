@@ -12,8 +12,8 @@ importers:
         specifier: ^0.18.1
         version: 0.18.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@flyfish-dev/cad-viewer':
-        specifier: ^0.6.2
-        version: 0.6.2(three@0.184.0)
+        specifier: ^0.6.4
+        version: 0.6.4(three@0.184.0)
       '@kenjiuno/msgreader':
         specifier: ^1.28.0
         version: 1.28.0
@@ -211,10 +211,10 @@ importers:
   packages/demo:
     dependencies:
       '@flyfish-group/file-viewer-react':
-        specifier: workspace:^1.0.24
+        specifier: workspace:^1.0.25
         version: link:../react
       '@flyfish-group/file-viewer-web':
-        specifier: workspace:^1.0.24
+        specifier: workspace:^1.0.25
         version: link:../web
       react:
         specifier: ^19.2.7
@@ -239,7 +239,7 @@ importers:
   packages/react:
     dependencies:
       '@flyfish-group/file-viewer-web':
-        specifier: workspace:^1.0.24
+        specifier: workspace:^1.0.25
         version: link:../web
     devDependencies:
       '@types/react':
@@ -742,8 +742,8 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@flyfish-dev/cad-viewer@0.6.2':
-    resolution: {integrity: sha512-bIdWX4vItwrdj+QAFJvvanuTUv5w362/QKVpitM2kAqIhO6XM1k54HKqMo8nsvSEMbE3ZCU7ApWyF0YPbRkM2A==}
+  '@flyfish-dev/cad-viewer@0.6.4':
+    resolution: {integrity: sha512-9GiILTzBfkyACcd65rSYiN9CMhoXzn1Bh9pvwaSMcWAHCkJoAx/xN1wP3M+z2KFtFVGqfipA1SmnPRVZIXaAow==}
     engines: {node: '>=20.19.0'}
 
   '@humanfs/core@0.19.2':
@@ -5334,7 +5334,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@flyfish-dev/cad-viewer@0.6.2(three@0.184.0)':
+  '@flyfish-dev/cad-viewer@0.6.4(three@0.184.0)':
     dependencies:
       '@mlightcad/libredwg-web': 0.7.2
       dwf-viewer: 0.6.4(three@0.184.0)

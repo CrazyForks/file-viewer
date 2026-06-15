@@ -1,9 +1,10 @@
 import { cp, mkdir, readdir, rm, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import rootPackage from '../package.json' with { type: 'json' }
 
-const root = resolve(new URL('..', import.meta.url).pathname)
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const source = resolve(root, 'dist')
 const target = resolve(root, 'packages/web/viewer')
 

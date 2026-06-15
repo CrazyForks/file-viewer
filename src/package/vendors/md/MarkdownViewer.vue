@@ -1,19 +1,87 @@
 <script setup lang='ts'>
 import { marked } from 'marked'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import 'github-markdown-css/github-markdown.css'
+import type { FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const props = defineProps<{
   data: string
 }>()
 
+const root = ref<HTMLDivElement | null>(null)
+const zoom = ref(1)
+const markdownZoomEmitter = createZoomChangeEmitter()
+
 const html = computed(() => {
   return marked(props.data)
+})
+
+const rootStyle = computed(() => ({
+  '--markdown-max-width': `${980 * zoom.value}px`,
+  '--markdown-padding': `${45 * zoom.value}px`,
+  '--markdown-font-size': `${16 * zoom.value}px`
+}))
+
+const clampZoom = (value: number) => {
+  return Math.min(2.4, Math.max(0.6, Number(value.toFixed(2))))
+}
+
+const getZoomState = (): FileViewerZoomState => ({
+  scale: zoom.value,
+  label: `${Math.round(zoom.value * 100)}%`,
+  canZoomIn: zoom.value < 2.4,
+  canZoomOut: zoom.value > 0.6,
+  canReset: zoom.value !== 1,
+  minScale: 0.6,
+  maxScale: 2.4
+})
+
+const attachZoomProvider = () => {
+  const host = root.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => {
+      zoom.value = clampZoom(zoom.value + 0.1)
+      return getZoomState()
+    },
+    zoomOut: () => {
+      zoom.value = clampZoom(zoom.value - 0.1)
+      return getZoomState()
+    },
+    resetZoom: () => {
+      zoom.value = 1
+      return getZoomState()
+    },
+    setZoom: scale => {
+      zoom.value = clampZoom(scale)
+      return getZoomState()
+    },
+    getState: getZoomState,
+    subscribe: markdownZoomEmitter.subscribe
+  })
+}
+
+watch(zoom, () => {
+  markdownZoomEmitter.emit()
+})
+
+onMounted(attachZoomProvider)
+
+onBeforeUnmount(() => {
+  unregisterFileViewerZoomProvider(root.value)
 })
 </script>
 
 <template>
-  <div class='markdown-viewer'>
+  <div ref='root' class='markdown-viewer' data-viewer-zoom-provider='markdown' :style='rootStyle'>
     <article class='markdown-body' v-html='html' />
   </div>
 </template>
@@ -43,9 +111,10 @@ const html = computed(() => {
     margin: 0 auto;
     box-sizing: border-box;
     min-width: 200px;
-    max-width: 980px;
-    padding: 45px;
+    max-width: var(--markdown-max-width, 980px);
+    padding: var(--markdown-padding, 45px);
     color: var(--fgColor-default);
+    font-size: var(--markdown-font-size, 16px);
     box-shadow: 0 18px 42px rgba(15, 23, 42, 0.1);
 }
 

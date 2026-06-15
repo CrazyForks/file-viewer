@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-demo",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,8 +10,8 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@flyfish-group/file-viewer-react": "workspace:^1.0.24",
-    "@flyfish-group/file-viewer-web": "workspace:^1.0.24",
+    "@flyfish-group/file-viewer-react": "workspace:^1.0.25",
+    "@flyfish-group/file-viewer-web": "workspace:^1.0.25",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },

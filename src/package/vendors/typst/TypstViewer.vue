@@ -1,9 +1,14 @@
 <script setup lang='ts'>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { $typst } from '@myriaddreamin/typst.ts'
 import typstRendererWasmUrl from '@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url'
 import { formatCssPixels, type PrintPageSize } from '@/package/common/printLayout'
-import type { FileRenderExportAdapter } from '@/package/common/type'
+import type { FileRenderExportAdapter, FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 declare global {
   interface Window {
@@ -26,8 +31,11 @@ interface TypstRenderedPage extends PrintPageSize {
 }
 
 const renderState = ref<RenderState>('idle')
+const root = ref<HTMLDivElement | null>(null)
 const pages = ref<TypstRenderedPage[]>([])
 const errorMessage = ref('')
+const zoom = ref(1)
+const typstZoomEmitter = createZoomChangeEmitter()
 let renderToken = 0
 let runtimeConfigured = false
 const DEFAULT_TYPST_COMPILER_WASM_URL = 'https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0/pkg/typst_ts_web_compiler_bg.wasm'
@@ -169,6 +177,51 @@ const pageSummary = computed(() => {
   return `${pages.value.length} pages / ${Math.round(firstPage.width)} x ${Math.round(firstPage.height)} pt`
 })
 
+const clampZoom = (value: number) => {
+  return Math.min(3, Math.max(0.3, Number(value.toFixed(2))))
+}
+
+const getZoomState = (): FileViewerZoomState => ({
+  scale: zoom.value,
+  label: `${Math.round(zoom.value * 100)}%`,
+  canZoomIn: zoom.value < 3,
+  canZoomOut: zoom.value > 0.3,
+  canReset: zoom.value !== 1,
+  minScale: 0.3,
+  maxScale: 3
+})
+
+const attachZoomProvider = () => {
+  const host = root.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => {
+      zoom.value = clampZoom(zoom.value + 0.1)
+      return getZoomState()
+    },
+    zoomOut: () => {
+      zoom.value = clampZoom(zoom.value - 0.1)
+      return getZoomState()
+    },
+    resetZoom: () => {
+      zoom.value = 1
+      return getZoomState()
+    },
+    setZoom: scale => {
+      zoom.value = clampZoom(scale)
+      return getZoomState()
+    },
+    getState: getZoomState,
+    subscribe: typstZoomEmitter.subscribe
+  })
+}
+
+const getPreviewPageWidth = (page: TypstRenderedPage) => `${page.width * zoom.value}px`
+const getPreviewPageHeight = (page: TypstRenderedPage) => `${page.height * zoom.value}px`
+
 const buildExportStyles = () => `
   <style>
     .typst-export-document {
@@ -297,14 +350,21 @@ const renderTypst = async () => {
 
 watch(() => props.source, renderTypst, { immediate: true })
 
+watch(zoom, () => {
+  typstZoomEmitter.emit()
+})
+
+onMounted(attachZoomProvider)
+
 onBeforeUnmount(() => {
   renderToken += 1
+  unregisterFileViewerZoomProvider(root.value)
   props.exportAdapter?.(null)
 })
 </script>
 
 <template>
-  <div class='typst-viewer'>
+  <div ref='root' class='typst-viewer' data-viewer-zoom-provider='typst'>
     <header class='typst-toolbar'>
       <div>
         <strong>{{ filename || 'Typst document' }}</strong>
@@ -330,8 +390,8 @@ onBeforeUnmount(() => {
         :key='page.index'
         class='typst-page-shell'
         :style="{
-          '--typst-page-width': `${page.width}px`,
-          '--typst-page-height': `${page.height}px`
+          '--typst-page-width': getPreviewPageWidth(page),
+          '--typst-page-height': getPreviewPageHeight(page)
         }"
         :aria-label='`Page ${page.index}`'
       >

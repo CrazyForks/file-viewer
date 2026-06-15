@@ -98,7 +98,8 @@
 
 ### 压缩包、邮件与 EDA
 
-- 压缩包走 `libarchive.js`，目录读取在 Worker 中完成，只有用户点击内部文件时才按需解压对应条目，避免一次性把大包全量展开到主线程。
+- 压缩包走 `libarchive.js`，目录读取在 Worker 中完成，只有用户点击内部文件时才按需解压对应条目，避免一次性把大包全量展开到主线程。私有化部署时一般不需要写死 Worker 路径；组件会先尝试当前 viewer base 下的 `vendor/libarchive/worker-bundle.js`，失败后回退到打包内置 Worker。
+- 如果手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时，组件会继续降级到 ZIP/TAR/GZIP 兼容模式，优先保证常见压缩包能打开目录和内部文档。只有静态目录或 CDN 路径特殊时，才需要通过 `options.archive.workerUrl` / `options.archive.wasmUrl` 指定路径。
 - 压缩包内文件会继续复用同一套文件预览器，所以包里的 PDF、Word、Markdown、代码、图片、邮件或嵌套压缩包都能在体积限制内继续打开。
 - `options.archive.cache` 默认启用 IndexedDB 缓存，已解压的内部文件再次打开会更快；`maxArchiveSize` 和 `maxEntryPreviewSize` 用于限制压缩包和单个条目的内存风险。
 - EML 使用 `postal-mime` 解析 MIME、正文和附件；MSG 使用 `@kenjiuno/msgreader` 解析 Outlook MSG，附件同样支持下载和在线预览。

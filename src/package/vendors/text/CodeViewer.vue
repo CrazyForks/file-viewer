@@ -1,6 +1,12 @@
 <script setup lang='ts'>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { HLJSApi, LanguageFn } from 'highlight.js'
+import type { FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const props = defineProps<{
   // 源文件文本内容。组件只负责展示，不会执行其中的 HTML 或脚本。
@@ -8,6 +14,10 @@ const props = defineProps<{
   // 文件扩展名，用于选择最接近的高亮语言。
   type: string
 }>()
+
+const root = ref<HTMLDivElement | null>(null)
+const zoom = ref(1)
+const codeZoomEmitter = createZoomChangeEmitter()
 
 const languageMap: Record<string, string> = {
   bash: 'bash',
@@ -143,10 +153,66 @@ watch(() => [props.value, language.value] as const, updateHighlighted, { immedia
 const lineCount = computed(() => {
   return props.value.split(/\r\n|\r|\n/).length
 })
+
+const rootStyle = computed(() => ({
+  '--code-font-size': `${13 * zoom.value}px`
+}))
+
+const clampZoom = (value: number) => {
+  return Math.min(2.6, Math.max(0.6, Number(value.toFixed(2))))
+}
+
+const getZoomState = (): FileViewerZoomState => ({
+  scale: zoom.value,
+  label: `${Math.round(zoom.value * 100)}%`,
+  canZoomIn: zoom.value < 2.6,
+  canZoomOut: zoom.value > 0.6,
+  canReset: zoom.value !== 1,
+  minScale: 0.6,
+  maxScale: 2.6
+})
+
+const attachZoomProvider = () => {
+  const host = root.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => {
+      zoom.value = clampZoom(zoom.value + 0.1)
+      return getZoomState()
+    },
+    zoomOut: () => {
+      zoom.value = clampZoom(zoom.value - 0.1)
+      return getZoomState()
+    },
+    resetZoom: () => {
+      zoom.value = 1
+      return getZoomState()
+    },
+    setZoom: scale => {
+      zoom.value = clampZoom(scale)
+      return getZoomState()
+    },
+    getState: getZoomState,
+    subscribe: codeZoomEmitter.subscribe
+  })
+}
+
+watch(zoom, () => {
+  codeZoomEmitter.emit()
+})
+
+onMounted(attachZoomProvider)
+
+onBeforeUnmount(() => {
+  unregisterFileViewerZoomProvider(root.value)
+})
 </script>
 
 <template>
-  <div class='code-viewer'>
+  <div ref='root' class='code-viewer' data-viewer-zoom-provider='code' :style='rootStyle'>
     <div class='code-toolbar'>
       <span>{{ type.toUpperCase() }}</span>
       <strong>{{ lineCount }} lines</strong>
@@ -213,7 +279,7 @@ const lineCount = computed(() => {
   background: transparent;
   color: inherit;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
-  font-size: 13px;
+  font-size: var(--code-font-size, 13px);
   line-height: 1.7;
   tab-size: 2;
   white-space: pre;

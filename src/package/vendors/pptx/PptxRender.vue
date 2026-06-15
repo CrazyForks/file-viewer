@@ -5,6 +5,12 @@ import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
 import { displayChart } from './support/chart'
 import PptxWorker from './worker'
+import type { FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const props = withDefaults(defineProps<{
   // 二进制数据
@@ -17,6 +23,48 @@ const props = withDefaults(defineProps<{
 
 const wrapper = ref<null | HTMLDivElement>(null);
 const errorMessage = ref('');
+const userZoom = ref(1)
+const effectiveScale = ref(1)
+const currentFitScale = ref(1)
+const pptxZoomEmitter = createZoomChangeEmitter()
+let schedulePptxResize: (() => void) | null = null
+
+const clampZoom = (value: number) => {
+  return Math.min(3, Math.max(0.25, Number(value.toFixed(2))))
+}
+
+const getPptxZoomState = (): FileViewerZoomState => ({
+  scale: effectiveScale.value,
+  label: `${Math.round(effectiveScale.value * 100)}%`,
+  canZoomIn: effectiveScale.value < 3,
+  canZoomOut: effectiveScale.value > 0.25,
+  canReset: userZoom.value !== 1,
+  minScale: 0.25,
+  maxScale: 3
+})
+
+const setPptxUserZoom = (value: number) => {
+  userZoom.value = Math.min(6, Math.max(0.2, Number(value.toFixed(2))))
+  schedulePptxResize?.()
+  pptxZoomEmitter.emit()
+  return getPptxZoomState()
+}
+
+const attachZoomProvider = () => {
+  const host = wrapper.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => setPptxUserZoom(userZoom.value + 0.15),
+    zoomOut: () => setPptxUserZoom(userZoom.value - 0.15),
+    resetZoom: () => setPptxUserZoom(1),
+    setZoom: scale => setPptxUserZoom(scale / Math.max(currentFitScale.value, 0.01)),
+    getState: getPptxZoomState,
+    subscribe: pptxZoomEmitter.subscribe
+  })
+}
 
 // 使用闭包避免暴露
 (() => {
@@ -71,14 +119,20 @@ const errorMessage = ref('');
       if (wrapper.value) {
         const $wrapper = $(wrapper.value)
         const slidesWidth = Math.max(...Array.from($wrapper.children('.slide, section')).map(s => s.offsetWidth), 0)
-        const wrapperWidth = $wrapper[0].offsetWidth
+        const wrapperWidth = $wrapper[0].parentElement?.clientWidth || $wrapper[0].offsetWidth
         if (!slidesWidth || !wrapperWidth) {
           return
         }
+        const fitScale = Math.min(1, wrapperWidth / slidesWidth)
+        currentFitScale.value = fitScale
+        const scale = clampZoom(fitScale * userZoom.value)
+        effectiveScale.value = scale
         $wrapper.css({
-          'transform': `scale(${Math.min(1, wrapperWidth / slidesWidth)})`,
-          'transform-origin': 'top left'
+          'transform': `scale(${scale})`,
+          'transform-origin': 'top left',
+          'width': `${slidesWidth}px`
         })
+        pptxZoomEmitter.emit()
       }
     },
     // 核心处理逻辑
@@ -130,6 +184,8 @@ const errorMessage = ref('');
   }
 
   onMounted(() => {
+    schedulePptxResize = () => methods.scheduleResize()
+    attachZoomProvider()
     methods.startWorker()
     if (wrapper.value) {
       data.resizeObserver = new ResizeObserver(() => {
@@ -143,6 +199,8 @@ const errorMessage = ref('');
   })
 
   onBeforeUnmount(() => {
+    unregisterFileViewerZoomProvider(wrapper.value)
+    schedulePptxResize = null
     data.worker?.terminate()
     if (data.timer) clearInterval(data.timer)
     window.cancelAnimationFrame(data.resizeFrame)
@@ -155,7 +213,7 @@ const errorMessage = ref('');
   <div v-if='errorMessage' class='pptx-error'>
     <strong>{{ errorMessage }}</strong>
   </div>
-  <div v-else class='pptx-wrapper' ref='wrapper' />
+  <div v-else class='pptx-wrapper' ref='wrapper' data-viewer-zoom-provider='pptx' />
 </template>
 
 <style scoped>

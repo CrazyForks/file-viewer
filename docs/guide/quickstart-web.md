@@ -12,7 +12,7 @@
 推荐用 `npm` 安装，安装脚本会自动把私有化 viewer 静态产物复制到宿主项目:
 
 ```bash
-npm install --save @flyfish-group/file-viewer-web@1.0.24
+npm install --save @flyfish-group/file-viewer-web@1.0.25
 ```
 
 如果使用 pnpm 10，可能会看到 `Ignored build scripts: @flyfish-group/file-viewer-web`。这是 pnpm 的依赖脚本审批机制，不是包安装失败。请执行:
@@ -62,7 +62,7 @@ pnpm exec file-viewer-copy-assets ./public/file-viewer
       theme: 'light',
       toolbar: { position: 'bottom-right' },
       watermark: { text: '内部资料', opacity: 0.14 },
-      archive: { workerUrl: '/vendor/libarchive/worker-bundle.js', cache: true }
+      archive: { cache: true, workerTimeoutMs: 30000 }
     }
   })
 </script>
@@ -100,7 +100,7 @@ public/
 推荐通过 npm 安装后复制:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.24
+npm install @flyfish-group/file-viewer-web@1.0.25
 npx file-viewer-copy-assets ./public/file-viewer
 mkdir -p ./public/vendor/file-viewer-web
 cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/file-viewer-web/index.js
@@ -220,7 +220,7 @@ cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/f
 
 ```html
 <script type="module">
-  import { mountViewerFrame } from 'https://unpkg.com/@flyfish-group/file-viewer-web@1.0.24/dist/index.js'
+  import { mountViewerFrame } from 'https://unpkg.com/@flyfish-group/file-viewer-web@1.0.25/dist/index.js'
 
   mountViewerFrame(document.getElementById('viewer'), {
     viewerUrl: '/file-viewer/index.html',
@@ -270,7 +270,7 @@ URL 文件直接拼接 `url`:
 
 ```html
 <iframe
-  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.24"
+  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.25"
   style="width: 100%; height: 100vh; border: 0"
 ></iframe>
 ```
@@ -294,7 +294,7 @@ URL 文件直接拼接 `url`:
       frame.src = '/vendor/file-viewer/index.html' +
         '?name=' + encodeURIComponent('contract.docx') +
         '&from=' + encodeURIComponent(origin) +
-        '&__flyfish_viewer_version=1.0.24'
+        '&__flyfish_viewer_version=1.0.25'
     })
 </script>
 ```
@@ -344,14 +344,14 @@ await copyViewerAssets({
 `options` 会被序列化到 iframe 查询参数中，当前支持:
 
 - `theme`: 支持 `light`、`dark`、`system`。默认 `system` 跟随系统；浅色业务系统建议传 `light`。
-- `toolbar`: 声明是否允许下载原文件、完整打印和导出 HTML；`position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角；打印按钮仍会按当前格式和渲染链路动态显隐。
+- `toolbar`: 声明是否显示下载原文件、完整打印、导出 HTML 和统一缩放按钮；`zoom` 可单独关闭缩放按钮，`position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角；打印和缩放按钮仍会按当前格式和渲染链路动态显隐。
 - `watermark`: 配置文字或图片水印。
 - `search`: 配置搜索高亮、整词/大小写和最大命中数；PDF 等特殊格式会优先使用渲染器原生搜索，iframe 会回传 `flyfish-viewer:search` 事件。
 - `ai`: 配置文本切片结构，返回行号、页码和锚点上下文，便于业务侧做向量化、溯源、来源定位和高亮，不绑定云端模型。
 - `pdf.toolbar`: 控制是否显示 PDF 自身页码、缩放和旋转工具栏；文档比对等紧凑场景可以设为 `false`。
 - `archive`: 配置 libarchive worker、IndexedDB 缓存、压缩包体积上限和内部文件预览上限。
 
-生命周期、操作能力变化、搜索状态和当前位置会通过 `onEvent` 回传给宿主，事件类型包括 `flyfish-viewer:lifecycle`、`flyfish-viewer:operation`、`flyfish-viewer:search` 和 `flyfish-viewer:location`，其中 `operation-availability-change` 可用于同步外部下载、打印和导出按钮。由于 iframe 查询参数不能序列化函数，按钮前置校验请优先在 Vue2 / Vue3 组件模式使用 `options.beforeOperation`；iframe 模式适合做日志、审计和状态同步。
+生命周期、操作能力变化、缩放状态、搜索状态和当前位置会通过 `onEvent` 回传给宿主，事件类型包括 `flyfish-viewer:lifecycle`、`flyfish-viewer:operation`、`flyfish-viewer:search` 和 `flyfish-viewer:location`，其中 `operation-availability-change` 可用于同步外部下载、打印、导出和缩放按钮，`zoom-change` 可用于同步外部比例文本。由于 iframe 查询参数不能序列化函数，按钮前置校验请优先在 Vue2 / Vue3 组件模式使用 `options.beforeOperation`；iframe 模式适合做日志、审计和状态同步。
 
 ## 构建上线
 

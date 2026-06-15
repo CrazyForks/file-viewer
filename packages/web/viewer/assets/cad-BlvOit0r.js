@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./CadViewer-_KighJFR.js","./package-CykH2Y1v.js","./runtime-core.esm-bundler-DO-WTVbd.js","./package-OvxnQO7z.css","./CadViewer-D8GvQQr1.css"])))=>i.map(i=>d[i]);
-import{r as e,x as t}from"./package-CykH2Y1v.js";import{d as n,u as r}from"./runtime-core.esm-bundler-DO-WTVbd.js";var i=n(()=>e(()=>import(`./CadViewer-_KighJFR.js`),__vite__mapDeps([0,1,2,3,4]),import.meta.url));async function a(e,n,a,o){let s=t({render:()=>r(i,{data:e,type:a||`dxf`,options:o?.options?.cad},null)});return s.mount(n),s}export{a as default};

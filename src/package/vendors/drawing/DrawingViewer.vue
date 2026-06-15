@@ -1,6 +1,12 @@
 <script setup lang='ts'>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { readText } from '@/package/common/util'
+import type { FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const props = defineProps<{
   // 绘图文件二进制内容。Excalidraw 与 draw.io 都保持在命中格式时才解析。
@@ -26,8 +32,10 @@ let diagramsViewerPromise: Promise<void> | null = null
 
 const status = ref<'loading' | 'ready' | 'error'>('loading')
 const errorMessage = ref('')
+const root = ref<HTMLDivElement | null>(null)
 const stage = ref<HTMLDivElement | null>(null)
 const zoom = ref(1)
+const drawingZoomEmitter = createZoomChangeEmitter()
 
 const normalizedType = computed(() => props.type.toLowerCase())
 const isExcalidraw = computed(() => normalizedType.value === 'excalidraw')
@@ -58,6 +66,44 @@ const zoomOut = () => {
 
 const resetZoom = () => {
   zoom.value = 1
+}
+
+const getDrawingZoomState = (): FileViewerZoomState => ({
+  scale: zoom.value,
+  label: `${Math.round(zoom.value * 100)}%`,
+  canZoomIn: zoom.value < 3,
+  canZoomOut: zoom.value > 0.5,
+  canReset: zoom.value !== 1,
+  minScale: 0.5,
+  maxScale: 3
+})
+
+const attachZoomProvider = () => {
+  const host = root.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => {
+      zoomIn()
+      return getDrawingZoomState()
+    },
+    zoomOut: () => {
+      zoomOut()
+      return getDrawingZoomState()
+    },
+    resetZoom: () => {
+      resetZoom()
+      return getDrawingZoomState()
+    },
+    setZoom: scale => {
+      zoom.value = clampZoom(scale)
+      return getDrawingZoomState()
+    },
+    getState: getDrawingZoomState,
+    subscribe: drawingZoomEmitter.subscribe
+  })
 }
 
 const clearStage = () => {
@@ -497,11 +543,22 @@ const loadDrawing = async () => {
   }
 }
 
-onMounted(loadDrawing)
+watch(zoom, () => {
+  drawingZoomEmitter.emit()
+})
+
+onMounted(() => {
+  attachZoomProvider()
+  void loadDrawing()
+})
+
+onBeforeUnmount(() => {
+  unregisterFileViewerZoomProvider(root.value)
+})
 </script>
 
 <template>
-  <div class='drawing-viewer'>
+  <div ref='root' class='drawing-viewer' data-viewer-zoom-provider='drawing'>
     <div class='drawing-toolbar'>
       <div class='drawing-title'>
         <span>{{ formatLabel }}</span>

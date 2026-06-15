@@ -10,7 +10,12 @@ import type {
   ViewChangeEvent
 } from '@flyfish-dev/cad-viewer'
 import { CadViewer } from '@flyfish-dev/cad-viewer'
-import type { FileViewerCadOptions } from '@/package/common/type'
+import type { FileViewerCadOptions, FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const props = defineProps<{
   data: ArrayBuffer,
@@ -30,6 +35,7 @@ const CAD_DWF_WASM_PATH = 'wasm/cad/dwfv-render.wasm'
 const CAD_WORKER_TIMEOUT = 120000
 
 const root = ref<HTMLDivElement | null>(null)
+const shell = ref<HTMLDivElement | null>(null)
 const nativeHost = ref<HTMLDivElement | null>(null)
 const status = ref<CadStatus>('loading')
 const progressMessage = ref('正在加载 CAD 预览器...')
@@ -49,6 +55,7 @@ const zoomPercent = computed(() => {
 let viewer: CadViewerInstance | null = null
 let resizeObserver: ResizeObserver | null = null
 let abortController: AbortController | null = null
+const cadZoomEmitter = createZoomChangeEmitter()
 
 const normalizeType = () => {
   const normalized = props.type.toLowerCase()
@@ -88,14 +95,54 @@ const updateProgress = (progress: CadLoadProgress) => {
 
 const fitToView = () => {
   viewer?.fit()
+  cadZoomEmitter.emit()
 }
 
 const zoomIn = () => {
   viewer?.zoomIn()
+  cadZoomEmitter.emit()
 }
 
 const zoomOut = () => {
   viewer?.zoomOut()
+  cadZoomEmitter.emit()
+}
+
+const getCadZoomState = (): FileViewerZoomState => {
+  const ready = status.value === 'ready' && !!viewer
+  return {
+    scale: zoomPercent.value / 100,
+    label: `${zoomPercent.value}%`,
+    canZoomIn: ready,
+    canZoomOut: ready,
+    canReset: ready,
+    minScale: 0.05,
+    maxScale: 16
+  }
+}
+
+const attachZoomProvider = () => {
+  const host = shell.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => {
+      zoomIn()
+      return getCadZoomState()
+    },
+    zoomOut: () => {
+      zoomOut()
+      return getCadZoomState()
+    },
+    resetZoom: () => {
+      fitToView()
+      return getCadZoomState()
+    },
+    getState: getCadZoomState,
+    subscribe: cadZoomEmitter.subscribe
+  })
 }
 
 const toggleLayer = (layer: CadLayerItem) => {
@@ -131,6 +178,7 @@ const createViewer = async () => {
     wasmPath,
     workerUrl,
     dwfWasmUrl,
+    dxfEncoding: options.dxfEncoding,
     useWorker: options.useWorker ?? true,
     workerTimeoutMs: options.workerTimeoutMs ?? CAD_WORKER_TIMEOUT,
     preferDwgWasm: options.preferDwgWasm ?? true,
@@ -167,6 +215,7 @@ const createViewer = async () => {
     },
     onViewChange: event => {
       viewState.value = event
+      cadZoomEmitter.emit()
     },
     onLoad: result => {
       loadResult.value = result
@@ -209,6 +258,7 @@ const loadCad = async () => {
     const result = await viewer.loadBuffer(props.data.slice(0), buildFileName(), {
       signal: abortController.signal,
       transferInputBuffer: false,
+      dxfEncoding: options.dxfEncoding,
       wasmPath: resolvePublicUrl(options.wasmPath, CAD_WASM_PATH, true),
       workerUrl: resolvePublicUrl(options.workerUrl, CAD_WORKER_PATH),
       dwfWasmUrl: resolvePublicUrl(options.dwfWasmUrl, CAD_DWF_WASM_PATH)
@@ -218,6 +268,7 @@ const loadCad = async () => {
     status.value = 'ready'
     await nextTick()
     viewer.fit()
+    cadZoomEmitter.emit()
   } catch (reason) {
     if (abortController.signal.aborted) {
       return
@@ -229,6 +280,7 @@ const loadCad = async () => {
 }
 
 onMounted(() => {
+  attachZoomProvider()
   void loadCad()
 
   if (root.value) {
@@ -240,6 +292,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  unregisterFileViewerZoomProvider(shell.value)
   abortController?.abort()
   abortController = null
   resizeObserver?.disconnect()
@@ -250,7 +303,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class='cad-shell'>
+  <div ref='shell' class='cad-shell' data-viewer-zoom-provider='cad'>
     <div class='cad-toolbar'>
       <div class='cad-tools'>
         <button type='button' @click='fitToView'>适配</button>

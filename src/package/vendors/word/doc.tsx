@@ -1,6 +1,11 @@
 import { defaultMsDocCss, parseMsDocToHtml } from 'msdoc-viewer'
 import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels } from '@/package/common/printLayout'
-import type { AppWrapper, FileRenderContext } from '@/package/common/type'
+import type { AppWrapper, FileRenderContext, FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const PAGE_BREAK_MARKER = '<span class="msdoc-page-break"></span>'
 const EMPTY_PAGE_HTML = '<p class="msdoc-paragraph"><br></p>'
@@ -8,6 +13,9 @@ const MSDOC_PAGE_SIZE = {
   width: 794,
   height: 1123
 }
+const MSDOC_MIN_SCALE = 0.24
+const MSDOC_MAX_SCALE = 3
+const MSDOC_ZOOM_STEP = 0.15
 
 const WORD_PAGE_CSS = `
 .msdoc-stage{
@@ -86,6 +94,32 @@ const WORD_PAGE_CSS = `
 }
 `
 
+const MSDOC_ZOOM_CSS = `
+.msdoc-zoom-viewer{
+  box-sizing:border-box;
+  height:100%;
+  overflow:auto;
+  background:#ececec;
+}
+.msdoc-zoom-viewer .msdoc-stage{
+  min-width:max-content;
+}
+.msdoc-zoom-viewer .msdoc-page{
+  position:relative;
+  max-width:none;
+  overflow:visible;
+}
+.msdoc-zoom-viewer .msdoc-page > .msdoc-root{
+  position:absolute;
+  top:0;
+  left:50%;
+  width:${MSDOC_PAGE_SIZE.width}px;
+  max-width:none;
+  margin:0;
+  transform-origin:top center;
+}
+`
+
 function injectPageBreakMarkers(html: string): string {
   return html.replace(
     /<(p|table|section)([^>]*?)style="([^"]*?\bbreak-before\s*:\s*page;?[^"]*?)"([^>]*)>/gi,
@@ -104,24 +138,36 @@ function wrapAsWordPages(html: string): string {
 
 function prepareMsDocCloneForExport(target: HTMLDivElement) {
   const clone = target.cloneNode(true) as HTMLElement
+  clone.classList.remove('msdoc-zoom-viewer')
+  clone.querySelectorAll('style[data-msdoc-zoom]').forEach(style => style.remove())
   clone.querySelectorAll<HTMLElement>('.msdoc-stage, .msdoc-page, .msdoc-root').forEach(node => {
     node.style.height = 'auto'
     node.style.maxHeight = 'none'
     node.style.overflow = 'visible'
+    node.style.transform = 'none'
   })
 
   clone.querySelectorAll<HTMLElement>('.msdoc-page').forEach(page => {
     applyPrintPageSize(page, MSDOC_PAGE_SIZE, { heightMode: 'min' })
+    page.style.position = 'relative'
+    page.style.width = formatCssPixels(MSDOC_PAGE_SIZE.width)
+    page.style.maxWidth = 'none'
+    page.style.margin = '0 auto 18px'
 
     const root = page.querySelector<HTMLElement>('.msdoc-root')
     if (!root) {
       return
     }
 
+    root.style.position = 'relative'
+    root.style.top = 'auto'
+    root.style.left = 'auto'
     root.style.width = formatCssPixels(MSDOC_PAGE_SIZE.width)
     root.style.maxWidth = 'none'
     root.style.minHeight = formatCssPixels(MSDOC_PAGE_SIZE.height)
     root.style.height = 'auto'
+    root.style.transform = 'none'
+    root.style.transformOrigin = 'top left'
     root.style.boxShadow = 'none'
     root.style.border = '0'
     root.style.overflow = 'visible'
@@ -139,6 +185,105 @@ function buildMsDocPrintStyle() {
   })
 }
 
+function makeMsDocResponsive(target: HTMLDivElement) {
+  const pages = Array.from(target.querySelectorAll<HTMLElement>('.msdoc-page'))
+  if (!pages.length) {
+    return () => {}
+  }
+
+  target.classList.add('msdoc-zoom-viewer')
+  const style = document.createElement('style')
+  style.dataset.msdocZoom = 'true'
+  style.textContent = MSDOC_ZOOM_CSS
+  target.prepend(style)
+
+  const zoomEmitter = createZoomChangeEmitter()
+  let resizeFrame = 0
+  let userZoom = 1
+  let currentScale = 1
+  let currentFitScale = 1
+
+  const clampScale = (scale: number) => {
+    return Math.min(MSDOC_MAX_SCALE, Math.max(MSDOC_MIN_SCALE, Number(scale.toFixed(2))))
+  }
+
+  const resize = () => {
+    window.cancelAnimationFrame(resizeFrame)
+    resizeFrame = window.requestAnimationFrame(() => {
+      let firstScale = 1
+      let firstFitScale = 1
+
+      pages.forEach(page => {
+        const root = page.querySelector<HTMLElement>('.msdoc-root')
+        if (!root) {
+          return
+        }
+
+        const rootWidth = root.offsetWidth || MSDOC_PAGE_SIZE.width
+        const rootHeight = Math.max(root.scrollHeight, root.offsetHeight, MSDOC_PAGE_SIZE.height)
+        const availableWidth = Math.max(target.clientWidth - 48, 120)
+        const fitScale = Math.min(1, Math.max(MSDOC_MIN_SCALE, availableWidth / rootWidth))
+        const scale = clampScale(fitScale * userZoom)
+
+        firstScale = scale
+        firstFitScale = fitScale
+
+        root.style.transform = `translateX(-50%) scale(${scale})`
+        page.style.width = `${Math.ceil(Math.max(rootWidth * scale, 120))}px`
+        page.style.height = `${Math.ceil(rootHeight * scale)}px`
+      })
+
+      currentScale = firstScale
+      currentFitScale = firstFitScale
+      zoomEmitter.emit()
+    })
+  }
+
+  const getZoomState = (): FileViewerZoomState => ({
+    scale: currentScale,
+    label: `${Math.round(currentScale * 100)}%`,
+    canZoomIn: currentScale < MSDOC_MAX_SCALE,
+    canZoomOut: currentScale > MSDOC_MIN_SCALE,
+    canReset: userZoom !== 1,
+    minScale: MSDOC_MIN_SCALE,
+    maxScale: MSDOC_MAX_SCALE
+  })
+
+  const setUserZoom = (nextZoom: number) => {
+    userZoom = Math.min(6, Math.max(0.2, Number(nextZoom.toFixed(2))))
+    resize()
+    return getZoomState()
+  }
+
+  target.dataset.viewerZoomProvider = 'doc'
+  registerFileViewerZoomProvider(target, {
+    zoomIn: () => setUserZoom(userZoom + MSDOC_ZOOM_STEP),
+    zoomOut: () => setUserZoom(userZoom - MSDOC_ZOOM_STEP),
+    resetZoom: () => setUserZoom(1),
+    setZoom: scale => setUserZoom(scale / Math.max(currentFitScale, 0.01)),
+    getState: getZoomState,
+    subscribe: zoomEmitter.subscribe
+  })
+
+  const observer = new ResizeObserver(resize)
+  observer.observe(target)
+  pages.forEach(page => {
+    const root = page.querySelector<HTMLElement>('.msdoc-root')
+    if (root) {
+      observer.observe(root)
+    }
+  })
+  resize()
+
+  return () => {
+    window.cancelAnimationFrame(resizeFrame)
+    observer.disconnect()
+    unregisterFileViewerZoomProvider(target)
+    style.remove()
+    target.classList.remove('msdoc-zoom-viewer')
+  }
+}
+
 /**
  * 渲染 doc 文件
  */
@@ -150,6 +295,7 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
   })
 
   target.innerHTML = `<style data-msdoc>${rendered.css}</style>${wrapAsWordPages(rendered.html)}`
+  const disposeResponsive = makeMsDocResponsive(target)
   context?.registerExportAdapter?.({
     includeDocumentStyles: false,
     printStyle: buildMsDocPrintStyle,
@@ -160,6 +306,7 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
     $el: target,
     unmount() {
       context?.registerExportAdapter?.(null)
+      disposeResponsive()
       target.innerHTML = ''
     }
   }

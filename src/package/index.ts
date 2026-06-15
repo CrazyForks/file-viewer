@@ -85,5 +85,7 @@ export type {
   FileViewerToolbarPosition,
   FileViewerThemeMode,
   FileViewerTypstOptions,
-  FileViewerWatermarkOptions
+  FileViewerWatermarkOptions,
+  FileViewerZoomProvider,
+  FileViewerZoomState
 } from './common/type'

@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.24`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.24`，React 使用 `@flyfish-group/file-viewer-react@1.0.24`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.24`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@flyfish-group/file-viewer3@1.0.25`，Vue2.7 使用 `@flyfish-group/file-viewer@1.0.25`，React 使用 `@flyfish-group/file-viewer-react@1.0.25`，纯 JS 使用 `@flyfish-group/file-viewer-web@1.0.25`。React 和纯 JS 包只负责 iframe、参数和二进制推送，默认加载私有化静态目录 `/file-viewer/index.html`。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -156,8 +156,8 @@ const options = {
     color: '#1f7a58'
   },
   archive: {
-    workerUrl: '/vendor/libarchive/worker-bundle.js',
     cache: true,
+    workerTimeoutMs: 30000,
     maxArchiveSize: 320 * 1024 * 1024,
     maxEntryPreviewSize: 64 * 1024 * 1024
   },
@@ -188,11 +188,13 @@ const options = {
 | 选项 | 说明 |
 | --- | --- |
 | `theme` | 预览器主题，支持 `light`、`dark`、`system`。默认 `system`，继续跟随浏览器 `prefers-color-scheme`；浅色业务系统建议显式传 `light`，避免操作系统深色模式把预览区、工具栏或支持主题切换的渲染器自动切成深色 |
-| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果和导出渲染后 HTML。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
+| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果、导出渲染后 HTML 和显示统一缩放按钮。`toolbar.zoom` 可单独关闭缩放按钮；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层、canvas 或 iframe |
 | `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码、锚点和 label 上下文，业务侧可用于向量化、溯源、来源定位、召回高亮和审计 |
-| `archive.workerUrl` | libarchive.js Worker 地址；私有化部署时建议把 `worker-bundle.js` 与 `libarchive.wasm` 放在同一目录 |
+| `archive.workerUrl` | 自定义 libarchive.js Worker 地址。一般不需要配置；预览器会优先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`，失败后自动回退到内置 Worker |
+| `archive.wasmUrl` | 内置 Worker 回退时使用的 libarchive WASM 地址。只有需要指向私有 CDN 或自定义 wasm 位置时才配置 |
+| `archive.workerTimeoutMs` | Worker 初始化、加密检测和目录读取超时时间，默认 30000ms；超时后会自动尝试 ZIP/TAR 兼容模式 |
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
 | `archive.maxArchiveSize` | 单个压缩包允许读取目录的最大体积，默认 320MB |
 | `archive.maxEntryPreviewSize` | 压缩包内单文件允许预览的最大体积，默认 64MB |
@@ -264,7 +266,17 @@ const options = {
 }
 ```
 
-内置操作当前包括 `download`、`print` 和 `export-html`。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意钩子返回 `false` 都会取消本次操作。预览器还会在文件切换、渲染完成和能力变化时抛出 `operation-availability-change`，宿主可以用它同步外部操作按钮。
+内置操作当前包括 `download`、`print`、`export-html`、`zoom-in`、`zoom-out` 和 `zoom-reset`。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意钩子返回 `false` 都会取消本次操作。预览器还会在文件切换、渲染完成和能力变化时抛出 `operation-availability-change`，宿主可以用它同步外部下载、打印、HTML 和缩放按钮；缩放后的最终比例会通过 `zoom-change` 回传，适合 DOCX / PPTX 这类下一帧重排后才拿到有效比例的格式。
+
+自定义工具栏不要在预览器外层套 `transform: scale()`。这会破坏虚拟表格、canvas、PDF 文本层或 CAD 交互坐标。请通过组件 ref 调用标准缩放 API：
+
+```ts
+const state = viewerRef.value?.getZoomState()
+
+await viewerRef.value?.zoomIn()
+await viewerRef.value?.zoomOut()
+await viewerRef.value?.resetZoom()
+```
 
 React、纯 JS 和 iframe 集成无法把函数序列化进 iframe 查询参数，但可以通过事件监听拿到同样的生命周期和操作上下文。纯 JS 使用 `onEvent`，React 使用 `onViewerEvent`。
 
@@ -400,7 +412,7 @@ async function useLocal(blob: Blob) {
 
 `.typ` / `.typst` 会直接读取源文件并加载 Typst WASM 编译和 SVG 渲染链路，组件会按 Typst 输出的页面元数据拆页显示。当前更适合单文件 Typst 文档；如果文档依赖外部图片、字体或拆分源码，建议用压缩包保留项目结构。
 
-`.zip`、`.7z`、`.rar`、`.tar`、`.gz`、`.xz`、`.cab`、`.iso`、`.jar`、`.apk`、`.cbz`、`.cbr` 等压缩包会使用 `libarchive.js` Worker 读取目录。内部文件在点击后按需解压，并继续交给对应格式预览器。私有化部署时请确认 `/vendor/libarchive/worker-bundle.js` 和同目录下的 `libarchive.wasm` 可访问，或者通过 `options.archive.workerUrl` 指定自己的静态地址。
+`.zip`、`.7z`、`.rar`、`.tar`、`.gz`、`.xz`、`.cab`、`.iso`、`.jar`、`.apk`、`.cbz`、`.cbr` 等压缩包会使用 `libarchive.js` Worker 读取目录。内部文件在点击后按需解压，并继续交给对应格式预览器。私有化部署一般不需要手动配置 `archive.workerUrl`；如果静态目录或 CDN 路径特殊，可把 `worker-bundle.js` 与同目录的 `libarchive.wasm` 发布出来后配置 `options.archive.workerUrl`。当手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化失败时，组件会自动切换到 ZIP/TAR/GZIP 兼容模式，避免停留在 loading。
 
 `.eml` 使用 `postal-mime`，`.msg` 使用 `@kenjiuno/msgreader`。邮件正文会在安全 iframe 中展示，附件可以下载，也可以继续在线预览。
 

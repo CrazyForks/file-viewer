@@ -4,6 +4,20 @@
 
 ## 当前主线
 
+### 当前主线 统一缩放工具栏
+
+- `options.toolbar.zoom` 新增统一缩放按钮显示控制，默认开启；按钮是否真正展示仍由当前渲染链路的内部缩放 provider 决定，避免对虚拟表格、canvas、PDF 文本层和 CAD 交互做宿主级 CSS 强缩放
+- 组件 ref 新增 `zoomIn()`、`zoomOut()`、`resetZoom()` 和 `getZoomState()`，外部自定义工具栏可以通过标准 API 控制缩放；`operation-availability-change` 同步返回 `zoom`、`zoomIn`、`zoomOut` 和 `zoomReset`，`zoom-change` 回传最终比例文本
+- PDF、DOCX、PPTX、Excel 虚拟表格、图片、CAD、OFD、Typst、Markdown、代码和 Excalidraw / draw.io 绘图链路接入渲染器内部缩放逻辑；缩放操作同样进入 `options.beforeOperation` / `toolbar.beforeOperation` 前置校验
+
+### `v1.0.25` 移动端压缩包与表格体验修复版本
+
+- Vue3 包 `@flyfish-group/file-viewer3@1.0.25`、Vue2 包 `@flyfish-group/file-viewer@1.0.25`、React 包 `@flyfish-group/file-viewer-react@1.0.25` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.25` 继续保持连续版本
+- 压缩包预览增加 Worker 探测、初始化超时、内置 Worker 兜底和 ZIP/TAR/GZIP 兼容模式；手机 WebView、本地临时服务器、MIME 或 CSP 导致 `libarchive.js` Worker 卡住时，会自动降级，避免一直停留在 loading
+- `options.archive` 新增 `wasmUrl` 和 `workerTimeoutMs` 说明；普通私有化部署不再需要写死 `workerUrl`，只有静态目录或 CDN 路径特殊时才需要显式指定
+- 移动端 Excel / XLS 预览把工作表名称移到表格上方的横向可滚动标签栏，当前工作表自动滚入可见区域，解决手机上 sheet 名称藏在底部角落、需要技巧才能看到的问题
+- README、文档站、iframe / React / 纯 JS 接入文档、公开成品包和 workspace 依赖同步刷新到 `1.0.25`
+
 ### 当前主线 Demo 富样式公开样例升级
 
 - DOCX 渲染链路移除临时轻量预览分支，默认通过 Web Worker 运行 `docx-preview` 解析和 HTML 构建，并把同一份 docx-preview 页面按批次渐进挂载，主线程只负责挂载、缩放和打印适配；CSP 或低版本浏览器不兼容时可通过 `options.docx.worker: false` 回退原生主线程渲染

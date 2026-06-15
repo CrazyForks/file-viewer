@@ -8,29 +8,20 @@ const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const packageJson = require.resolve('@flyfish-dev/cad-viewer/package.json')
 const packageRoot = dirname(packageJson)
 const distRoot = join(packageRoot, 'dist')
+const wasmDir = join(distRoot, 'wasm')
+const dwgWorker = join(wasmDir, 'dwg-worker.js')
 const args = new Set(process.argv.slice(2))
 const targetRoots = [
   !args.has('--dist-only') && join(projectRoot, 'public', 'wasm', 'cad'),
   (args.has('--dist') || args.has('--dist-only')) && join(projectRoot, 'dist', 'wasm', 'cad')
 ].filter(Boolean)
 
-const findDwgWorker = async () => {
-  const assetsDir = join(distRoot, 'assets')
-  const files = await readdir(assetsDir)
-  const worker = files.find(file => /^DwgWorker-.+\.js$/.test(file))
-  if (!worker) {
-    throw new Error('[file-viewer] @flyfish-dev/cad-viewer DWG worker asset was not found.')
-  }
-  return join(assetsDir, worker)
-}
-
 const copyWorkerChunks = async targetRoot => {
-  const assetsDir = join(distRoot, 'assets')
-  const files = await readdir(assetsDir)
+  const files = await readdir(wasmDir)
   await Promise.all(
     files
-      .filter(file => file.endsWith('.js'))
-      .map(file => copyChecked(join(assetsDir, file), join(targetRoot, file)))
+      .filter(file => /^dwg-worker-.+\.js$/.test(file))
+      .map(file => copyChecked(join(wasmDir, file), join(targetRoot, file)))
   )
 }
 
@@ -44,11 +35,11 @@ const copyChecked = async (from, to) => {
 
 for (const targetRoot of targetRoots) {
   await mkdir(targetRoot, { recursive: true })
-  await copyChecked(join(distRoot, 'wasm', 'libredwg-web.js'), join(targetRoot, 'libredwg-web.js'))
-  await copyChecked(join(distRoot, 'wasm', 'libredwg-web.wasm'), join(targetRoot, 'libredwg-web.wasm'))
-  await copyChecked(join(distRoot, 'wasm', 'dwfv-render.wasm'), join(targetRoot, 'dwfv-render.wasm'))
+  await copyChecked(join(wasmDir, 'libredwg-web.js'), join(targetRoot, 'libredwg-web.js'))
+  await copyChecked(join(wasmDir, 'libredwg-web.wasm'), join(targetRoot, 'libredwg-web.wasm'))
+  await copyChecked(join(wasmDir, 'dwfv-render.wasm'), join(targetRoot, 'dwfv-render.wasm'))
   await copyWorkerChunks(targetRoot)
-  await copyChecked(await findDwgWorker(), join(targetRoot, 'dwg-worker.js'))
+  await copyChecked(dwgWorker, join(targetRoot, 'dwg-worker.js'))
 }
 
 console.log(`[file-viewer] CAD WASM assets copied to ${targetRoots.map(root => root.replace(`${projectRoot}/`, '')).join(', ')}`)

@@ -3,12 +3,14 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 
 import type { FileViewerArchiveOptions, FileViewerOptions, Rendered } from '@/package/common/type'
 import { createArchiveCacheKey, flattenArchiveObject, formatBytes, type ArchiveEntryView } from './shared'
 import { readArchiveCache, writeArchiveCache } from './cache'
+import { loadArchiveEntriesWithoutWorker } from './fallback'
 import { renderNestedBuffer } from '../nestedRender'
 import libarchiveWorkerSource from 'libarchive.js/dist/worker-bundle.js?raw'
 import libarchiveWasmUrl from 'libarchive.js/dist/libarchive.wasm?url'
 
 const DEFAULT_MAX_ARCHIVE_SIZE = 320 * 1024 * 1024
 const DEFAULT_MAX_ENTRY_PREVIEW_SIZE = 64 * 1024 * 1024
+const DEFAULT_WORKER_TIMEOUT_MS = 30000
 const MAX_LISTED_ENTRIES = 5000
 
 const props = defineProps<{
@@ -22,7 +24,9 @@ const entries = ref<ArchiveEntryView[]>([])
 const selectedEntry = ref<ArchiveEntryView | null>(null)
 const loading = ref(false)
 const loadingText = ref('正在读取压缩包目录...')
+const loadingHint = ref('大文件会在 Worker 中解析，避免阻塞主线程。')
 const error = ref('')
+const archiveNotice = ref('')
 const filterText = ref('')
 const encrypted = ref<boolean | null>(null)
 const nestedTarget = ref<HTMLDivElement | null>(null)
@@ -32,6 +36,7 @@ const objectUrls: string[] = []
 const maxArchiveSize = computed(() => props.options?.maxArchiveSize || DEFAULT_MAX_ARCHIVE_SIZE)
 const maxEntryPreviewSize = computed(() => props.options?.maxEntryPreviewSize || DEFAULT_MAX_ENTRY_PREVIEW_SIZE)
 const cacheEnabled = computed(() => props.options?.cache !== false)
+const workerTimeoutMs = computed(() => props.options?.workerTimeoutMs || DEFAULT_WORKER_TIMEOUT_MS)
 const nestedViewerOptions = computed<FileViewerOptions>(() => ({
   archive: props.options
 }))
@@ -54,8 +59,41 @@ const filteredEntries = computed(() => {
   return source.slice(0, MAX_LISTED_ENTRIES)
 })
 
+interface ArchiveWorkerCandidate {
+  label: string;
+  bundled?: boolean;
+  workerUrl?: string;
+}
+
+const normalizeWorkerError = (reason: unknown) => {
+  if (reason instanceof Error) {
+    return reason.message
+  }
+  return typeof reason === 'string' ? reason : JSON.stringify(reason)
+}
+
+const withTimeout = async <T,>(promise: Promise<T>, timeout: number, message: string) => {
+  let timer = 0
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = window.setTimeout(() => reject(new Error(message)), timeout)
+      })
+    ])
+  } finally {
+    window.clearTimeout(timer)
+  }
+}
+
+const getViewerBaseUrl = () => {
+  const base = import.meta.env.BASE_URL || '/'
+  return new URL(base, window.location.href).toString()
+}
+
 const createBundledWorkerUrl = () => {
-  const wasmUrlLiteral = JSON.stringify(libarchiveWasmUrl)
+  const wasmUrlLiteral = JSON.stringify(props.options?.wasmUrl || libarchiveWasmUrl)
   const workerSource = libarchiveWorkerSource
     .replace(/new URL\((['"])libarchive\.wasm\1\s*,\s*import\.meta\.url\)\.href/g, wasmUrlLiteral)
   const workerUrl = URL.createObjectURL(new Blob([workerSource], { type: 'application/javascript' }))
@@ -63,21 +101,135 @@ const createBundledWorkerUrl = () => {
   return workerUrl
 }
 
-const resolveWorkerUrl = async () => {
-  if (props.options?.workerUrl) {
-    return props.options.workerUrl
-  }
-  const publicWorkerUrl = new URL('/vendor/libarchive/worker-bundle.js', window.location.href).toString()
+const probeWorkerUrl = async (url: string) => {
   try {
-    const response = await fetch(publicWorkerUrl, { method: 'HEAD' })
+    const response = await fetch(url, { method: 'HEAD', cache: 'no-cache' })
     const contentType = response.headers.get('content-type') || ''
     if (response.ok && /javascript|ecmascript|octet-stream/i.test(contentType)) {
-      return publicWorkerUrl
+      return true
+    }
+    if (response.status && response.status !== 405) {
+      return false
     }
   } catch {
-    // 私有化部署未复制 worker 时继续回退到 bundler 产物。
+    // 某些本地服务器不支持 HEAD，继续用轻量 GET 探测。
   }
-  return createBundledWorkerUrl()
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      cache: 'no-cache',
+      headers: {
+        Range: 'bytes=0-0'
+      }
+    })
+    const contentType = response.headers.get('content-type') || ''
+    return response.ok && /javascript|ecmascript|octet-stream/i.test(contentType)
+  } catch {
+    return false
+  }
+}
+
+const resolveWorkerCandidates = async (): Promise<ArchiveWorkerCandidate[]> => {
+  const candidates: ArchiveWorkerCandidate[] = []
+
+  if (props.options?.workerUrl) {
+    candidates.push({
+      label: '自定义 libarchive Worker',
+      workerUrl: props.options.workerUrl
+    })
+  }
+
+  const publicWorkerUrl = new URL('vendor/libarchive/worker-bundle.js', getViewerBaseUrl()).toString()
+  if (!props.options?.workerUrl && await probeWorkerUrl(publicWorkerUrl)) {
+    candidates.push({
+      label: '静态 libarchive Worker',
+      workerUrl: publicWorkerUrl
+    })
+  }
+
+  candidates.push({
+    label: '内置 libarchive Worker',
+    bundled: true
+  })
+
+  return candidates
+}
+
+const createWorkerFromCandidate = (
+  candidate: ArchiveWorkerCandidate,
+  createdWorkers: Worker[]
+) => {
+  const workerUrl = candidate.bundled ? createBundledWorkerUrl() : candidate.workerUrl
+  if (!workerUrl) {
+    throw new Error('压缩包 Worker 地址为空')
+  }
+
+  const worker = new Worker(workerUrl, { type: 'module' })
+  createdWorkers.push(worker)
+  return worker
+}
+
+const terminateWorkers = (workers: Worker[]) => {
+  workers.forEach(worker => worker.terminate())
+  workers.length = 0
+}
+
+const tryOpenArchiveWithWorker = async (Archive: any, candidate: ArchiveWorkerCandidate) => {
+  const createdWorkers: Worker[] = []
+
+  try {
+    Archive.init({
+      getWorker: () => createWorkerFromCandidate(candidate, createdWorkers)
+    })
+
+    loadingText.value = `正在初始化${candidate.label}...`
+    loadingHint.value = '如果当前服务器没有正确发布 Worker/WASM，会自动切换兼容模式。'
+    const archiveFile = new File([props.data], props.filename || 'archive.bin')
+    const archive = await withTimeout<any>(
+      Archive.open(archiveFile),
+      workerTimeoutMs.value,
+      `${candidate.label} 初始化超时`
+    )
+    archiveReader.value = archive
+    encrypted.value = await withTimeout<boolean | null>(
+      archive.hasEncryptedData(),
+      workerTimeoutMs.value,
+      `${candidate.label} 加密检测超时`
+    ).catch(() => null)
+
+    loadingText.value = '正在读取压缩包目录...'
+    loadingHint.value = '目录读取完成后，点击内部文件才会按需解压。'
+    const fileTree = await withTimeout<Record<string, unknown>>(
+      archive.getFilesObject(),
+      workerTimeoutMs.value,
+      `${candidate.label} 读取目录超时`
+    )
+
+    entries.value = flattenArchiveObject(fileTree)
+      .sort((left, right) => left.path.localeCompare(right.path))
+    return true
+  } catch (reason) {
+    if (!archiveReader.value) {
+      terminateWorkers(createdWorkers)
+    }
+    throw reason
+  }
+}
+
+const tryOpenArchiveWithFallback = async () => {
+  loadingText.value = 'Worker 不可用，正在切换 ZIP/TAR 兼容模式...'
+  loadingHint.value = '兼容模式无需额外静态 Worker，适合手机 WebView 或本地临时服务器。'
+  const fallbackEntries = await loadArchiveEntriesWithoutWorker(props.data, props.filename)
+
+  if (!fallbackEntries) {
+    return false
+  }
+
+  entries.value = fallbackEntries.sort((left, right) => left.path.localeCompare(right.path))
+  encrypted.value = null
+  archiveNotice.value = '当前环境的 libarchive Worker 未能启动，已自动切换到 ZIP/TAR 兼容模式。RAR、7z 等格式仍建议发布 vendor/libarchive/worker-bundle.js 与 libarchive.wasm。'
+  return true
 }
 
 const clearNestedPreview = () => {
@@ -104,23 +256,33 @@ const openArchive = async () => {
 
   loading.value = true
   loadingText.value = '正在初始化压缩包解析 Worker...'
+  loadingHint.value = '大文件会在 Worker 中解析，避免阻塞主线程。'
   error.value = ''
+  archiveNotice.value = ''
 
   try {
-    const [{ Archive }, workerUrl] = await Promise.all([
+    const [{ Archive }, candidates] = await Promise.all([
       import('libarchive.js'),
-      resolveWorkerUrl()
+      resolveWorkerCandidates()
     ])
-    Archive.init({ workerUrl })
+    const errors: string[] = []
 
-    loadingText.value = '正在读取压缩包目录...'
-    const archiveFile = new File([props.data], props.filename || 'archive.bin')
-    const archive = await Archive.open(archiveFile)
-    archiveReader.value = archive
-    encrypted.value = await archive.hasEncryptedData().catch(() => null)
-    const fileTree = await archive.getFilesObject()
-    entries.value = flattenArchiveObject(fileTree)
-      .sort((left, right) => left.path.localeCompare(right.path))
+    for (const candidate of candidates) {
+      try {
+        await closeArchive()
+        await tryOpenArchiveWithWorker(Archive, candidate)
+        return
+      } catch (reason) {
+        errors.push(`${candidate.label}: ${normalizeWorkerError(reason)}`)
+      }
+    }
+
+    await closeArchive()
+    if (await tryOpenArchiveWithFallback()) {
+      return
+    }
+
+    throw new Error(errors.join('；') || '压缩包 Worker 初始化失败')
   } catch (nextError) {
     console.error(nextError)
     error.value = nextError instanceof Error ? nextError.message : String(nextError)
@@ -232,6 +394,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div v-if="encrypted" class="archive-warning">检测到加密内容，当前在线预览不接收密码，建议下载后本地解压。</div>
+      <div v-if="archiveNotice" class="archive-info">{{ archiveNotice }}</div>
 
       <input v-model="filterText" class="archive-search" type="search" placeholder="筛选压缩包内文件" />
 
@@ -274,8 +437,10 @@ onBeforeUnmount(() => {
     <div v-if="loading" class="archive-state">
       <div>
         <span class="archive-spinner" />
-        <strong>{{ loadingText }}</strong>
-        <p>大文件会在 Worker 中解析，避免阻塞主线程。</p>
+        <div>
+          <strong>{{ loadingText }}</strong>
+          <p>{{ loadingHint }}</p>
+        </div>
       </div>
     </div>
 
@@ -330,6 +495,7 @@ onBeforeUnmount(() => {
 }
 
 .archive-warning,
+.archive-info,
 .archive-error {
   border-radius: 12px;
   padding: 10px 12px;
@@ -337,6 +503,11 @@ onBeforeUnmount(() => {
   color: #8a4b00;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.archive-info {
+  background: #ecfdf5;
+  color: #166534;
 }
 
 .archive-search {

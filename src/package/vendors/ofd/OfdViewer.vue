@@ -1,5 +1,11 @@
 <script setup lang='ts'>
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import type { FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const props = defineProps<{
   data: ArrayBuffer
@@ -11,6 +17,8 @@ const stage = ref<HTMLDivElement | null>(null)
 const viewer = ref<HTMLDivElement | null>(null)
 const status = ref<'loading' | 'ready' | 'error'>('loading')
 const errorMessage = ref('')
+const zoom = ref(1)
+const ofdZoomEmitter = createZoomChangeEmitter()
 
 let destroyed = false
 let renderVersion = 0
@@ -67,8 +75,11 @@ const appendPages = (target: HTMLDivElement, pages: HTMLElement[]) => {
   const fragment = document.createDocumentFragment()
 
   pages.forEach(page => {
+    const frame = document.createElement('div')
+    frame.className = 'ofd-page-frame'
     page.classList.add('ofd-page')
-    fragment.appendChild(page)
+    frame.appendChild(page)
+    fragment.appendChild(frame)
   })
 
   target.appendChild(fragment)
@@ -79,6 +90,74 @@ const getRenderWidth = () => {
 
   // 使用外层容器宽度并预留滚动条和页边距空间，避免渲染后纵向滚动条改变 stage 宽度造成循环重绘。
   return Math.max(Math.floor(baseWidth - 48), 240)
+}
+
+const clampZoom = (value: number) => {
+  return Math.min(3, Math.max(0.35, Number(value.toFixed(2))))
+}
+
+const getZoomState = (): FileViewerZoomState => ({
+  scale: zoom.value,
+  label: `${Math.round(zoom.value * 100)}%`,
+  canZoomIn: zoom.value < 3,
+  canZoomOut: zoom.value > 0.35,
+  canReset: zoom.value !== 1,
+  minScale: 0.35,
+  maxScale: 3
+})
+
+const setZoom = (nextZoom: number) => {
+  zoom.value = clampZoom(nextZoom)
+  syncPageZoom()
+  ofdZoomEmitter.emit()
+  return getZoomState()
+}
+
+const syncPageZoom = () => {
+  const target = stage.value
+  if (!target) {
+    return
+  }
+
+  target.querySelectorAll<HTMLElement>('.ofd-page-frame').forEach(frame => {
+    const page = frame.firstElementChild
+    if (!(page instanceof HTMLElement)) {
+      return
+    }
+
+    page.style.position = 'absolute'
+    page.style.top = '0'
+    page.style.left = '50%'
+    page.style.transform = `translateX(-50%) scale(${zoom.value})`
+    page.style.transformOrigin = 'top center'
+    page.style.marginLeft = '0'
+    page.style.marginRight = '0'
+
+    const pageWidth = page.offsetWidth
+    const pageHeight = page.offsetHeight
+    if (!pageWidth || !pageHeight) {
+      return
+    }
+
+    frame.style.width = `${Math.ceil(pageWidth * zoom.value)}px`
+    frame.style.height = `${Math.ceil(pageHeight * zoom.value)}px`
+  })
+}
+
+const attachZoomProvider = () => {
+  const host = viewer.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => setZoom(zoom.value + 0.1),
+    zoomOut: () => setZoom(zoom.value - 0.1),
+    resetZoom: () => setZoom(1),
+    setZoom,
+    getState: getZoomState,
+    subscribe: ofdZoomEmitter.subscribe
+  })
 }
 
 const renderWithOfdJs = async (width: number) => {
@@ -127,7 +206,10 @@ const render = async (options: { force?: boolean, showLoading?: boolean } = {}) 
     clearStage()
     appendPages(target, pages)
     lastRenderedWidth = width
+    await nextTick()
+    syncPageZoom()
     status.value = 'ready'
+    ofdZoomEmitter.emit()
   } catch (reason) {
     if (destroyed || version !== renderVersion) {
       return
@@ -156,6 +238,7 @@ const startResizeObserver = () => {
 }
 
 onMounted(() => {
+  attachZoomProvider()
   void render({ force: true, showLoading: true }).finally(() => {
     startResizeObserver()
   })
@@ -167,12 +250,13 @@ onBeforeUnmount(() => {
   window.clearTimeout(resizeTimer)
   resizeObserver?.disconnect()
   resizeObserver = null
+  unregisterFileViewerZoomProvider(viewer.value)
   clearStage()
 })
 </script>
 
 <template>
-  <div ref='viewer' class='ofd-viewer'>
+  <div ref='viewer' class='ofd-viewer' data-viewer-zoom-provider='ofd'>
     <div v-if='status === "loading"' class='ofd-state'>正在解析 OFD...</div>
     <div v-else-if='status === "error"' class='ofd-state error'>{{ errorMessage }}</div>
     <div ref='stage' class='ofd-stage' />
@@ -211,10 +295,18 @@ onBeforeUnmount(() => {
 </style>
 
 <style>
+.ofd-page-frame {
+  position: relative;
+  display: block;
+  margin: 0 auto 20px;
+  overflow: visible;
+}
+
 .ofd-page {
   display: block;
   margin-left: auto !important;
   margin-right: auto !important;
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+  transition: transform 0.16s ease;
 }
 </style>

@@ -95,7 +95,7 @@ new Vue({
 React 17 / 18 / 19 项目安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-react@1.0.24
+npm install @flyfish-group/file-viewer-react@1.0.25
 ```
 
 ```tsx
@@ -117,7 +117,7 @@ export function Preview() {
 不使用框架时安装:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.24
+npm install @flyfish-group/file-viewer-web@1.0.25
 ```
 
 ```html
@@ -130,7 +130,7 @@ npm install @flyfish-group/file-viewer-web@1.0.24
     url: '/files/demo.pdf',
     options: {
       toolbar: { position: 'bottom-right' },
-      archive: { workerUrl: '/file-viewer/vendor/libarchive/worker-bundle.js' }
+      archive: { cache: true, workerTimeoutMs: 30000 }
     }
   })
 </script>

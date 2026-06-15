@@ -2,7 +2,12 @@ import type { Options, renderAsync } from 'docx-preview'
 import DocxWorker from './docx.worker.ts?worker&inline'
 import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels, getElementPrintPageSize } from '@/package/common/printLayout'
 import type { PrintPageSize } from '@/package/common/printLayout'
-import type { AppWrapper, FileRenderContext } from '@/package/common/type'
+import type { AppWrapper, FileRenderContext, FileViewerZoomState } from '@/package/common/type'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 
 const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
   width: 794,
@@ -11,6 +16,9 @@ const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
 
 const DOCX_PROGRESSIVE_BATCH_SIZE = 2
 const DOCX_WORKER_TIMEOUT = 15000
+const DOCX_MIN_SCALE = 0.24
+const DOCX_MAX_SCALE = 3
+const DOCX_ZOOM_STEP = 0.15
 
 type DocxWorkerResponse = {
   id: number;
@@ -345,10 +353,19 @@ function makeDocxResponsive(target: HTMLDivElement) {
   paginateOversizedSections(target)
   const frames = wrapDocxPages(target)
   let resizeFrame = 0
+  let userZoom = 1
+  let currentScale = 1
+  let currentFitScale = 1
+  const zoomEmitter = createZoomChangeEmitter()
+
+  const clampScale = (scale: number) => {
+    return Math.min(DOCX_MAX_SCALE, Math.max(DOCX_MIN_SCALE, Number(scale.toFixed(2))))
+  }
 
   const resize = () => {
     window.cancelAnimationFrame(resizeFrame)
     resizeFrame = window.requestAnimationFrame(() => {
+      let firstScale = 1
       frames.forEach(frame => {
         const page = frame.firstElementChild
         if (!(page instanceof HTMLElement)) {
@@ -362,23 +379,62 @@ function makeDocxResponsive(target: HTMLDivElement) {
         if (!pageWidth || !pageHeight) {
           return
         }
-        const availableWidth = Math.max(frame.clientWidth - 8, 120)
-        const scale = Math.min(1, Math.max(0.24, availableWidth / pageWidth))
+        const availableWidth = Math.max(target.clientWidth - 28, 120)
+        const fitScale = Math.min(1, Math.max(DOCX_MIN_SCALE, availableWidth / pageWidth))
+        const scale = clampScale(fitScale * userZoom)
+        firstScale = scale
+        currentFitScale = fitScale
 
         page.style.transform = `translateX(-50%) scale(${scale})`
+        frame.style.width = `${Math.ceil(Math.max(pageWidth * scale, target.clientWidth - 28, 120))}px`
+        frame.style.maxWidth = 'none'
         frame.style.height = `${Math.ceil(pageHeight * scale)}px`
       })
+      currentScale = firstScale
+      zoomEmitter.emit()
     })
   }
 
+  const getZoomState = (): FileViewerZoomState => ({
+    scale: currentScale,
+    label: `${Math.round(currentScale * 100)}%`,
+    canZoomIn: currentScale < DOCX_MAX_SCALE,
+    canZoomOut: currentScale > DOCX_MIN_SCALE,
+    canReset: userZoom !== 1,
+    minScale: DOCX_MIN_SCALE,
+    maxScale: DOCX_MAX_SCALE
+  })
+
+  const setUserZoom = (nextZoom: number) => {
+    userZoom = Math.min(6, Math.max(0.2, Number(nextZoom.toFixed(2))))
+    resize()
+    return getZoomState()
+  }
+
+  target.dataset.viewerZoomProvider = 'docx'
+  registerFileViewerZoomProvider(target, {
+    zoomIn: () => setUserZoom(userZoom + DOCX_ZOOM_STEP),
+    zoomOut: () => setUserZoom(userZoom - DOCX_ZOOM_STEP),
+    resetZoom: () => setUserZoom(1),
+    setZoom: scale => setUserZoom(scale / Math.max(currentFitScale, 0.01)),
+    getState: getZoomState,
+    subscribe: zoomEmitter.subscribe
+  })
+
   const observer = new ResizeObserver(resize)
   observer.observe(target)
-  frames.forEach(frame => observer.observe(frame))
+  frames.forEach(frame => {
+    const page = getDocxPageElement(frame)
+    if (page) {
+      observer.observe(page)
+    }
+  })
   resize()
 
   return () => {
     window.cancelAnimationFrame(resizeFrame)
     observer.disconnect()
+    unregisterFileViewerZoomProvider(target)
     style.remove()
     target.classList.remove('docx-fit-viewer')
   }

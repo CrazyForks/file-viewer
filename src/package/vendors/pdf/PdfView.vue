@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
 import { DEFAULT_PDF_RANGE_CHUNK_SIZE } from '@/package/common/sourceLoading'
@@ -8,12 +8,18 @@ import {
   registerFileViewerSearchProvider,
   unregisterFileViewerSearchProvider
 } from '@/package/use/documentSearch'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider
+} from '@/package/use/viewerZoom'
 import type {
   FileRenderExportOptions,
   FileRenderExportAdapter,
   FileViewerPdfOptions,
   FileViewerSearchOptions,
-  FileViewerSearchState
+  FileViewerSearchState,
+  FileViewerZoomState
 } from '@/package/common/type'
 import './pdf.css'
 import PDFWorkerPort from './worker'
@@ -120,6 +126,8 @@ let pdfSearchWaiters: Array<{
 type PdfNavigationResult = void | PromiseLike<void>
 type PdfFindMatchesCount = { current: number; total: number }
 type PdfSearchProviderHost = HTMLDivElement
+type PdfZoomProviderHost = HTMLDivElement
+const pdfZoomEmitter = createZoomChangeEmitter()
 
 function createPdfWorker() {
   if (typeof window === 'undefined' || !('Worker' in window)) {
@@ -305,6 +313,57 @@ async function attachPdfSearchProviderAfterRender() {
 function detachPdfSearchProvider() {
   const host = shell.value as PdfSearchProviderHost | null
   unregisterFileViewerSearchProvider(host)
+}
+
+function getPdfZoomState(): FileViewerZoomState {
+  return {
+    scale: currentScale.value,
+    label: scaleText.value,
+    canZoomIn: !!context.viewer && canZoomIn.value,
+    canZoomOut: !!context.viewer && canZoomOut.value,
+    canReset: !!context.viewer,
+    minScale: MIN_SCALE,
+    maxScale: MAX_SCALE
+  }
+}
+
+function attachPdfZoomProvider() {
+  const host = shell.value as PdfZoomProviderHost | null
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => {
+      zoomIn()
+      return getPdfZoomState()
+    },
+    zoomOut: () => {
+      zoomOut()
+      return getPdfZoomState()
+    },
+    resetZoom: () => {
+      resetScale()
+      return getPdfZoomState()
+    },
+    setZoom: scale => {
+      autoFitWidth.value = false
+      setScale(scale)
+      return getPdfZoomState()
+    },
+    getState: getPdfZoomState,
+    subscribe: pdfZoomEmitter.subscribe
+  })
+}
+
+async function attachPdfZoomProviderAfterRender() {
+  await nextTick()
+  attachPdfZoomProvider()
+}
+
+function detachPdfZoomProvider() {
+  const host = shell.value as PdfZoomProviderHost | null
+  unregisterFileViewerZoomProvider(host)
 }
 
 async function destroyPdfResource(resource: PdfResource | null) {
@@ -658,6 +717,7 @@ function setScale(scale: number) {
   const normalizedScale = clampScale(scale)
   context.viewer.currentScale = normalizedScale
   currentScale.value = normalizedScale
+  pdfZoomEmitter.emit()
 }
 
 function fitToWidth() {
@@ -761,6 +821,7 @@ function goToOutlineItem(item: PdfOutlineItemView) {
 
 onMounted(() => {
   void attachPdfSearchProviderAfterRender()
+  void attachPdfZoomProviderAfterRender()
   void loadFile()
 
   if (container.value) {
@@ -783,11 +844,16 @@ onBeforeUnmount(() => {
   context.findController = null
   context.document = null
   detachPdfSearchProvider()
+  detachPdfZoomProvider()
   outlineItems.value = []
   props.exportAdapter?.(null)
   const resource = context.resource
   context.resource = null
   void destroyPdfResource(resource)
+})
+
+watch([currentScale, loadStatus], () => {
+  pdfZoomEmitter.emit()
 })
 
 </script>
@@ -796,6 +862,7 @@ onBeforeUnmount(() => {
     ref='shell'
     class='pdf-shell'
     data-viewer-search-provider='pdf'
+    data-viewer-zoom-provider='pdf'
     :class="{ 'pdf-shell--nav-hidden': !navigationEnabled || !navVisible, 'pdf-shell--toolbar-hidden': !toolbarVisible }"
   >
     <div v-if='toolbarVisible' class='pdf-toolbar'>

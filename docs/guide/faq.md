@@ -2,9 +2,9 @@
 
 ## Vue、React 和纯 JS 应该安装哪个包
 
-Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.24`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.24`，使用 `Vue.use(FileViewer)` 注册。
+Vue3 项目安装 `@flyfish-group/file-viewer3@1.0.25`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@1.0.25`，使用 `Vue.use(FileViewer)` 注册。
 
-React 项目安装 `@flyfish-group/file-viewer-react@1.0.24`，纯 JS 或非框架页面安装 `@flyfish-group/file-viewer-web@1.0.24`。React 和纯 JS 包只做 iframe 集成，默认加载宿主项目里的 `/file-viewer/index.html`，预览能力来自 Vue3 基线构建产物。
+React 项目安装 `@flyfish-group/file-viewer-react@1.0.25`，纯 JS 或非框架页面安装 `@flyfish-group/file-viewer-web@1.0.25`。React 和纯 JS 包只做 iframe 集成，默认加载宿主项目里的 `/file-viewer/index.html`，预览能力来自 Vue3 基线构建产物。
 
 React / 纯 JS 包推荐用 `npm install`，安装后会自动复制 viewer 静态产物。pnpm 10 如果提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds`，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
@@ -104,7 +104,7 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 压缩包走 `libarchive.js` 的 WASM Worker，支持 ZIP、7z、RAR、TAR、GZIP、BZIP2、XZ、CAB、ISO、JAR、APK、CBZ/CBR 等入口。组件先读取目录，用户点击内部文件后才按需解压，避免一次性把大包展开到主线程。
 
-内部文件会继续复用统一预览器，所以压缩包里的 PDF、Office、Markdown、代码、图片、邮件或嵌套压缩包都可以在体积限制内打开。私有化部署时请确认 `worker-bundle.js` 和同目录的 `libarchive.wasm` 能访问，或通过 `options.archive.workerUrl` 指定路径。
+内部文件会继续复用统一预览器，所以压缩包里的 PDF、Office、Markdown、代码、图片、邮件或嵌套压缩包都可以在体积限制内打开。私有化部署默认会先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`，失败后自动回退到内置 Worker；如果手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时，还会切换到 ZIP/TAR/GZIP 兼容模式。只有静态目录或 CDN 路径特殊时，才需要通过 `options.archive.workerUrl` / `options.archive.wasmUrl` 指定路径。
 
 ## 邮件和 EDA 文件怎么预览
 
@@ -114,7 +114,7 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 ## 水印、打印和导出怎么配置
 
-通过 `options` 配置即可。`options.watermark` 支持文字或图片水印，`options.toolbar` 可以控制下载原文件、打印完整渲染内容、导出渲染后 HTML 和操作栏位置。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏。打印按钮会按当前文件类型、渲染完成状态和导出适配器动态显隐；表格、压缩包、邮件、EPUB、音视频、3D / 模型等不适合直接打印的链路会自动隐藏。打印和 HTML 导出不会修改原始文件；Word / PDF 会通过专属导出适配器生成完整页面，避免只打印当前视口、当前页或被滚动容器裁切。
+通过 `options` 配置即可。`options.watermark` 支持文字或图片水印，`options.toolbar` 可以控制下载原文件、打印完整渲染内容、导出渲染后 HTML、统一缩放按钮和操作栏位置。`toolbar.zoom` 可关闭缩放按钮；不要在宿主外层用 CSS transform 强行缩放预览器，PDF、表格、CAD、canvas 和文本层可能出现坐标偏移。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏。打印按钮会按当前文件类型、渲染完成状态和导出适配器动态显隐；表格、压缩包、邮件、EPUB、音视频、3D / 模型等不适合直接打印的链路会自动隐藏。打印和 HTML 导出不会修改原始文件；Word / PDF 会通过专属导出适配器生成完整页面，避免只打印当前视口、当前页或被滚动容器裁切。
 
 ## 为什么 PDF 打印不是当前屏幕截图
 

@@ -1,9 +1,15 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import EVirtTable from 'e-virt-table'
+import type { FileViewerZoomState } from '@/package/common/type'
 import type { SheetDefinition, SheetImage, SheetModel } from './worker/type'
 import { SheetJsWorker } from './worker'
-import { useWorker } from '@/package/use'
+import {
+  createZoomChangeEmitter,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider,
+  useWorker
+} from '@/package/use'
 import {
   buildRows,
   clampWindowStart,
@@ -35,7 +41,9 @@ const props = defineProps<{
   data: ArrayBuffer
 }>()
 
+const excelRoot = ref<HTMLDivElement | null>(null)
 const tableHost = ref<HTMLDivElement | null>(null)
+const sheetTabsBar = ref<HTMLDivElement | null>(null)
 const sheets = ref<SheetDefinition[]>([])
 const sheetIndex = ref(0)
 const errorMessage = ref('')
@@ -47,6 +55,7 @@ const hasInitialWindow = ref(false)
 const loadedWindowCount = ref(0)
 const loadingWindowCount = ref(0)
 const sheetImages = ref<SheetImage[]>([])
+const zoom = ref(1)
 const imageViewport = ref({
   scrollX: 0,
   scrollY: 0,
@@ -95,25 +104,35 @@ const statusSummary = computed(() => {
   }
   return `共 ${rows} 行，${cols} 列，按视口预取平滑加载`
 })
-const imageClipStyle = {
-  left: `${INDEX_COLUMN_WIDTH}px`,
-  top: `${HEADER_HEIGHT}px`
+const zoomEmitter = createZoomChangeEmitter()
+const clampZoom = (value: number) => {
+  return Math.min(2.5, Math.max(0.5, Number(value.toFixed(2))))
 }
+const scalePx = (value: number) => {
+  return Math.max(1, Math.round(value * zoom.value))
+}
+const scaleRowHeight = (value: number) => {
+  return Math.max(0.1, Math.round(value * zoom.value))
+}
+const imageClipStyle = computed(() => ({
+  left: `${scalePx(INDEX_COLUMN_WIDTH)}px`,
+  top: `${scalePx(HEADER_HEIGHT)}px`
+}))
 const imageLayerStyle = computed(() => ({
   transform: `translate(${-imageViewport.value.scrollX}px, ${-imageViewport.value.scrollY}px)`
 }))
 const visibleImages = computed(() => {
   const margin = 240
   const viewport = imageViewport.value
-  const width = Math.max(viewport.width - INDEX_COLUMN_WIDTH, 0)
-  const height = Math.max(viewport.height - HEADER_HEIGHT, 0)
+  const width = Math.max(viewport.width - scalePx(INDEX_COLUMN_WIDTH), 0)
+  const height = Math.max(viewport.height - scalePx(HEADER_HEIGHT), 0)
 
   return sheetImages.value.filter((image) => {
-    const x = image.left - viewport.scrollX
-    const y = image.top - viewport.scrollY
-    return x + image.width >= -margin &&
+    const x = scalePx(image.left) - viewport.scrollX
+    const y = scalePx(image.top) - viewport.scrollY
+    return x + scalePx(image.width) >= -margin &&
       x <= width + margin &&
-      y + image.height >= -margin &&
+      y + scalePx(image.height) >= -margin &&
       y <= height + margin
   })
 })
@@ -135,6 +154,51 @@ let viewportRange = { start: 0, end: 0 }
 let scrollDirection: ScrollDirection = 1
 let lastScrollY = 0
 let sheetSessionId = 0
+
+const applyRowHeight = (row: VirtualSheetState['rows'][number], baseHeight: number) => {
+  row.__baseHeight = baseHeight
+  row._height = scaleRowHeight(baseHeight)
+}
+
+const syncScaledRowHeights = () => {
+  virtualState.rowHeightCache.forEach((height, rowIndex) => {
+    const row = virtualState.rows[rowIndex]
+    if (row) {
+      applyRowHeight(row, height)
+    }
+  })
+}
+
+const getZoomState = (): FileViewerZoomState => ({
+  scale: zoom.value,
+  label: `${Math.round(zoom.value * 100)}%`,
+  canZoomIn: zoom.value < 2.5,
+  canZoomOut: zoom.value > 0.5,
+  canReset: zoom.value !== 1,
+  minScale: 0.5,
+  maxScale: 2.5
+})
+
+const setZoom = (scale: number) => {
+  zoom.value = clampZoom(scale)
+  return getZoomState()
+}
+
+const attachZoomProvider = () => {
+  const host = excelRoot.value
+  if (!host) {
+    return
+  }
+
+  registerFileViewerZoomProvider(host, {
+    zoomIn: () => setZoom(zoom.value + 0.1),
+    zoomOut: () => setZoom(zoom.value - 0.1),
+    resetZoom: () => setZoom(1),
+    setZoom,
+    getState: getZoomState,
+    subscribe: zoomEmitter.subscribe
+  })
+}
 
 const getActiveSheetId = () => {
   return sheetIndex.value ?? sheets.value[0]?.id
@@ -160,10 +224,10 @@ const syncImageViewport = () => {
 
 const getImageStyle = (image: SheetImage) => {
   return {
-    left: `${Math.round(image.left)}px`,
-    top: `${Math.round(image.top)}px`,
-    width: `${Math.round(image.width)}px`,
-    height: `${Math.round(image.height)}px`
+    left: `${scalePx(image.left)}px`,
+    top: `${scalePx(image.top)}px`,
+    width: `${scalePx(image.width)}px`,
+    height: `${scalePx(image.height)}px`
   }
 }
 
@@ -172,9 +236,10 @@ const buildTableView = () => {
     config: createTableConfig({
       hostHeight: getHostHeight(),
       sheetDefaults: sheetDefaults.value,
-      virtualState
+      virtualState,
+      zoomScale: zoom.value
     }),
-    columns: getDisplayColumns(virtualState.columns)
+    columns: getDisplayColumns(virtualState.columns, zoom.value)
   }
 }
 
@@ -221,7 +286,8 @@ const ensureTable = () => {
     config: createTableConfig({
       hostHeight: getHostHeight(),
       sheetDefaults: sheetDefaults.value,
-      virtualState
+      virtualState,
+      zoomScale: zoom.value
     })
   })
   table.on('onScrollX', scheduleViewportLoad)
@@ -241,9 +307,10 @@ const renderTable = (
     config: createTableConfig({
       hostHeight: getHostHeight(),
       sheetDefaults: sheetDefaults.value,
-      virtualState
+      virtualState,
+      zoomScale: zoom.value
     }),
-    columns: getDisplayColumns(columns)
+    columns: getDisplayColumns(columns, zoom.value)
   }
 
   instance.loadConfig(view.config)
@@ -385,7 +452,7 @@ const applyStructureRowHeights = (rowHeights: number | number[] | undefined) => 
       return
     }
     const height = normalizeRowHeight(rawHeight, virtualState.defaults.rowHeight)
-    row._height = height
+    applyRowHeight(row, height)
     virtualState.rowHeightCache.set(absoluteRow, height)
   })
 }
@@ -423,7 +490,7 @@ const applyWindowRows = (ws: SheetModel) => {
       getRowHeight(ws.structure?.rowHeights, absoluteRow, windowHeight),
       virtualState.defaults.rowHeight
     )
-    row._height = height
+    applyRowHeight(row, height)
     row[ROW_STATE_FIELD] = RowState.Loaded
     virtualState.rowHeightCache.set(absoluteRow, height)
     rowIndexes.push(absoluteRow)
@@ -619,8 +686,19 @@ const startSheetSession = () => {
   requestWindow(0, false)
 }
 
+const scrollActiveSheetIntoView = async () => {
+  await nextTick()
+  const activeTab = sheetTabsBar.value?.querySelector<HTMLElement>('.sheet-tab.active')
+  activeTab?.scrollIntoView({
+    block: 'nearest',
+    inline: 'center',
+    behavior: 'smooth'
+  })
+}
+
 const handleSheet = (index: number) => {
   if (sheetIndex.value === index) {
+    void scrollActiveSheetIntoView()
     return
   }
   cacheCurrentSheetState()
@@ -676,6 +754,7 @@ watch(() => props.data, () => {
   sheetSessionId += 1
   sheets.value = []
   sheetIndex.value = 0
+  zoom.value = 1
   sheetStateCache.clear()
   sheetImageCache.clear()
   sheetInitializing.value = true
@@ -683,7 +762,18 @@ watch(() => props.data, () => {
   emitParseWorkbook()
 })
 
+watch(zoom, () => {
+  syncScaledRowHeights()
+  syncTableLayout()
+  zoomEmitter.emit()
+})
+
+watch([sheetIndex, sheetTabs], () => {
+  void scrollActiveSheetIntoView()
+})
+
 onMounted(() => {
+  attachZoomProvider()
   ensureTable()
   if (tableHost.value) {
     resizeObserver = new ResizeObserver(() => {
@@ -709,13 +799,14 @@ onBeforeUnmount(() => {
   }
   resizeObserver?.disconnect()
   resizeObserver = null
+  unregisterFileViewerZoomProvider(excelRoot.value)
   table?.destroy()
   table = null
 })
 </script>
 
 <template>
-  <div class='excel-wrapper'>
+  <div ref='excelRoot' class='excel-wrapper' data-viewer-zoom-provider='xlsx'>
     <div class='loading' v-if='showBlockingLoading'>
       <div class='loading-card'>
         <div class='loading-brand'>
@@ -761,12 +852,15 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class='toolbar'>
-      <div class='btn-group'>
+      <div ref='sheetTabsBar' class='btn-group' aria-label='工作表列表'>
         <button
           v-for='sheet in sheetTabs'
           :key='sheet.id'
-          style='padding: 0 30px'
+          type='button'
+          class='sheet-tab'
           :class='{active: sheetIndex === sheet.id}'
+          :title='sheet.name'
+          :aria-pressed='sheetIndex === sheet.id'
           @click='handleSheet(sheet.id)'
         >
           {{ sheet.name }}
@@ -973,6 +1067,7 @@ onBeforeUnmount(() => {
 
 .toolbar {
   margin-top: 2px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -984,27 +1079,35 @@ onBeforeUnmount(() => {
 }
 
 .btn-group {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: flex-end;
   gap: 2px;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
-.btn-group button {
+.sheet-tab {
   outline: 0;
   border: 1px solid #c6ccd2;
   border-bottom: 2px solid transparent;
   border-top-left-radius: 7px;
   border-top-right-radius: 7px;
+  max-width: 240px;
+  padding: 0 24px;
   color: #4d5358;
   background: linear-gradient(180deg, #f7f7f7 0%, #e8ecef 100%);
   min-height: 30px;
   font-size: 12px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.btn-group button.active {
+.sheet-tab.active {
   background: #ffffff;
   color: #202124;
   border-color: #c6ccd2;
@@ -1019,6 +1122,55 @@ onBeforeUnmount(() => {
   color: #5f6368;
   font-size: 12px;
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .toolbar {
+    order: -1;
+    margin-top: 0;
+    min-height: 50px;
+    gap: 8px;
+    padding: 6px 8px;
+    border-top: 0;
+    border-bottom: 1px solid rgba(33, 163, 102, 0.16);
+    background: rgba(248, 251, 249, 0.96);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    z-index: 45;
+  }
+
+  .btn-group {
+    align-items: center;
+    gap: 6px;
+    padding: 0 2px;
+    scrollbar-width: none;
+  }
+
+  .btn-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sheet-tab {
+    flex: 0 0 auto;
+    max-width: min(58vw, 220px);
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border-bottom: 1px solid #c6ccd2;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    font-size: 13px;
+  }
+
+  .sheet-tab.active {
+    border-color: rgba(33, 163, 102, 0.35);
+    background: #ecfdf5;
+    color: #146c43;
+    box-shadow: inset 0 0 0 1px rgba(33, 163, 102, 0.24);
+  }
+
+  .summary {
+    display: none;
+  }
 }
 
 @keyframes sheet-loading-pulse {

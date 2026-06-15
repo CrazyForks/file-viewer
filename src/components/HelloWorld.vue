@@ -1,12 +1,13 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { ChevronDown, ChevronUp, X } from '@lucide/vue'
+import { ChevronDown, ChevronUp, RotateCcw, X, ZoomIn, ZoomOut } from '@lucide/vue'
 import { listenForFile } from '@/components/utils'
 import type {
   FileRef,
   FileViewerOperationAvailability,
   FileViewerOptions,
-  FileViewerSearchState
+  FileViewerSearchState,
+  FileViewerZoomState
 } from '@/package/common/type'
 import brandLogo from '@/assets/logo.png'
 
@@ -34,12 +35,16 @@ const viewerSearchState = ref<FileViewerSearchState>({
   matches: []
 })
 
-type ViewerAction = 'download' | 'print' | 'exportHtml'
+type ViewerAction = 'download' | 'print' | 'exportHtml' | 'zoomIn' | 'zoomOut' | 'resetZoom'
 
 type FileViewerExpose = {
   downloadOriginalFile: () => Promise<void>
   printRenderedHtml: () => Promise<void>
   exportRenderedHtml: () => Promise<void>
+  zoomIn: () => Promise<FileViewerZoomState>
+  zoomOut: () => Promise<FileViewerZoomState>
+  resetZoom: () => Promise<FileViewerZoomState>
+  getZoomState: () => FileViewerZoomState
   getOperationAvailability: () => FileViewerOperationAvailability
   searchDocument: (query: string) => Promise<FileViewerSearchState>
   clearDocumentSearch: () => Promise<FileViewerSearchState>
@@ -51,7 +56,18 @@ const fileViewerRef = ref<FileViewerExpose | null>(null)
 const viewerAvailability = ref<FileViewerOperationAvailability>({
   download: false,
   print: false,
-  exportHtml: false
+  exportHtml: false,
+  zoom: false,
+  zoomIn: false,
+  zoomOut: false,
+  zoomReset: false
+})
+const viewerZoomState = ref<FileViewerZoomState>({
+  scale: 1,
+  label: '100%',
+  canZoomIn: false,
+  canZoomOut: false,
+  canReset: false
 })
 
 type PresetFile = {
@@ -484,20 +500,23 @@ const externalToolbar = computed(() => {
     return {
       download: false,
       print: false,
-      exportHtml: false
+      exportHtml: false,
+      zoom: false
     }
   }
   if (toolbar && typeof toolbar === 'object') {
     return {
       download: toolbar.download !== false,
       print: toolbar.print !== false,
-      exportHtml: toolbar.exportHtml !== false
+      exportHtml: toolbar.exportHtml !== false,
+      zoom: toolbar.zoom !== false
     }
   }
   return {
     download: true,
     print: true,
-    exportHtml: true
+    exportHtml: true,
+    zoom: true
   }
 })
 
@@ -507,13 +526,14 @@ const visibleExternalToolbar = computed(() => {
   return {
     download: toolbar.download && availability.download,
     print: toolbar.print && availability.print,
-    exportHtml: toolbar.exportHtml && availability.exportHtml
+    exportHtml: toolbar.exportHtml && availability.exportHtml,
+    zoom: toolbar.zoom && availability.zoom
   }
 })
 
 const showExternalToolbar = computed(() => {
   const toolbar = visibleExternalToolbar.value
-  return toolbar.download || toolbar.print || toolbar.exportHtml
+  return toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom
 })
 
 const viewerActionDisabled = computed(() => !file.value && !preview.value)
@@ -558,7 +578,19 @@ function triggerViewerAction(action: ViewerAction) {
     void fileViewerRef.value?.printRenderedHtml()
     return
   }
-  void fileViewerRef.value?.exportRenderedHtml()
+  if (action === 'exportHtml') {
+    void fileViewerRef.value?.exportRenderedHtml()
+    return
+  }
+  const nextAction = action === 'zoomIn'
+    ? fileViewerRef.value?.zoomIn()
+    : action === 'zoomOut'
+      ? fileViewerRef.value?.zoomOut()
+      : fileViewerRef.value?.resetZoom()
+  void nextAction?.then(state => {
+    viewerZoomState.value = state
+    viewerAvailability.value = fileViewerRef.value?.getOperationAvailability() || viewerAvailability.value
+  })
 }
 
 async function runViewerSearch() {
@@ -611,10 +643,15 @@ async function previousViewerSearch() {
 
 function handleViewerAvailabilityChange(availability: FileViewerOperationAvailability) {
   viewerAvailability.value = availability
+  viewerZoomState.value = fileViewerRef.value?.getZoomState() || viewerZoomState.value
 }
 
 function handleViewerSearchChange(state: FileViewerSearchState) {
   viewerSearchState.value = state
+}
+
+function handleViewerZoomChange(state: FileViewerZoomState) {
+  viewerZoomState.value = state
 }
 
 listenForFile((body, target, options) => {
@@ -904,6 +941,47 @@ function updateSampleMenuGeometry() {
             <div class='viewer-path'>{{ displayPath }}</div>
             <div class='viewer-tools'>
               <div v-if='showExternalToolbar' class='viewer-action-group' aria-label='预览操作'>
+                <template v-if='visibleExternalToolbar.zoom'>
+                  <button
+                    type='button'
+                    class='viewer-tool-button viewer-tool-button--icon'
+                    :disabled='viewerActionDisabled || !viewerAvailability.zoomOut'
+                    title='缩小预览'
+                    aria-label='缩小预览'
+                    @click='triggerViewerAction("zoomOut")'
+                  >
+                    <ZoomOut :size='15' :stroke-width='2.4' />
+                  </button>
+                  <button
+                    type='button'
+                    class='viewer-tool-button viewer-tool-button--meter'
+                    :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
+                    title='还原比例'
+                    @click='triggerViewerAction("resetZoom")'
+                  >
+                    {{ viewerZoomState.label }}
+                  </button>
+                  <button
+                    type='button'
+                    class='viewer-tool-button viewer-tool-button--icon'
+                    :disabled='viewerActionDisabled || !viewerAvailability.zoomIn'
+                    title='放大预览'
+                    aria-label='放大预览'
+                    @click='triggerViewerAction("zoomIn")'
+                  >
+                    <ZoomIn :size='15' :stroke-width='2.4' />
+                  </button>
+                  <button
+                    type='button'
+                    class='viewer-tool-button viewer-tool-button--icon'
+                    :disabled='viewerActionDisabled || !viewerAvailability.zoomReset'
+                    title='还原比例'
+                    aria-label='还原比例'
+                    @click='triggerViewerAction("resetZoom")'
+                  >
+                    <RotateCcw :size='14' :stroke-width='2.4' />
+                  </button>
+                </template>
                 <button
                   v-if='visibleExternalToolbar.download'
                   type='button'
@@ -975,6 +1053,7 @@ function updateSampleMenuGeometry() {
               :options='viewerOptions'
               @operation-availability-change='handleViewerAvailabilityChange'
               @search-change='handleViewerSearchChange'
+              @zoom-change='handleViewerZoomChange'
             />
           </div>
         </section>
@@ -1008,6 +1087,7 @@ function updateSampleMenuGeometry() {
             :options='viewerOptions'
             @operation-availability-change='handleViewerAvailabilityChange'
             @search-change='handleViewerSearchChange'
+            @zoom-change='handleViewerZoomChange'
           />
         </div>
       </section>
@@ -1886,6 +1966,21 @@ function updateSampleMenuGeometry() {
   background: transparent;
 }
 
+.viewer-action-group .viewer-tool-button--icon {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewer-action-group .viewer-tool-button--meter {
+  min-width: 52px;
+  padding: 0 8px;
+  color: #23465e;
+}
+
 .viewer-tool-button:disabled {
   color: #a9b4c0;
   cursor: not-allowed;
@@ -2207,6 +2302,10 @@ function updateSampleMenuGeometry() {
     border-color: rgba(167, 185, 198, 0.13);
     background: rgba(22, 32, 39, 0.78);
     color: #b8c7d5;
+  }
+
+  .viewer-action-group .viewer-tool-button--meter {
+    color: #c9d7e5;
   }
 
   .viewer-tool-button:disabled {

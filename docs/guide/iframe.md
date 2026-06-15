@@ -52,7 +52,7 @@ const options = {
   theme: 'light',
   toolbar: { position: 'bottom-right' },
   watermark: { text: '内部预览', opacity: 0.14 },
-  archive: { workerUrl: '/vendor/libarchive/worker-bundle.js', cache: true }
+  archive: { cache: true, workerTimeoutMs: 30000 }
 }
 const src =
   `${viewerUrl}?name=${encodeURIComponent(filename)}` +
@@ -64,7 +64,7 @@ const src =
 
 - `name`: 文件名，用于推断扩展名
 - `from`: 允许发送消息的宿主页面 origin，预览器会据此做严格校验
-- `options`: 可选运行配置，支持 `theme`、水印、操作栏和压缩包缓存/体积限制。`theme` 可传 `light`、`dark`、`system`，默认 `system` 跟随浏览器；浅色业务系统建议显式传 `light`。`toolbar.position` 可传 `auto`、`top`、`bottom-right`，PDF 默认会悬浮到右下角以避开自身导航栏
+- `options`: 可选运行配置，支持 `theme`、水印、操作栏和压缩包缓存/体积限制。`theme` 可传 `light`、`dark`、`system`，默认 `system` 跟随浏览器；浅色业务系统建议显式传 `light`。`toolbar.position` 可传 `auto`、`top`、`bottom-right`，PDF 默认会悬浮到右下角以避开自身导航栏；`toolbar.zoom` 可关闭统一缩放按钮，真实缩放能力由当前渲染器 provider 决定
 
 #### 第二步: 在 iframe 加载完成后推送 Blob
 
@@ -108,7 +108,7 @@ frame.onload = async () => {
 - 宿主系统下载文件时，可以携带 cookie、token 或任何内部鉴权信息
 - 联调阶段先用仓库中的 `public/example` 示例文件跑通，再接入真实接口
 - React / 纯 JS 包默认使用 `/file-viewer/index.html`；如果静态目录不同，请显式传入 `viewerUrl`
-- 如果需要预览压缩包，请同时发布 `vendor/libarchive/worker-bundle.js` 与同目录的 `libarchive.wasm`，或通过 `options.archive.workerUrl` 指向你的私有静态路径
+- 压缩包默认会尝试当前 viewer 部署 base 下的 `vendor/libarchive/worker-bundle.js`，失败后自动回退到内置 Worker；只有静态目录或 CDN 路径特殊时才需要配置 `options.archive.workerUrl`
 
 ## 什么时候该优先选 iframe
 

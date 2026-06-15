@@ -64,6 +64,7 @@ interface TableConfigOptions {
   hostHeight: number
   sheetDefaults: SheetDefaults
   virtualState: VirtualSheetState
+  zoomScale?: number
 }
 
 interface TextOverflowLayout {
@@ -73,6 +74,61 @@ interface TextOverflowLayout {
 
 let measureCanvas: HTMLCanvasElement | undefined
 const textWidthCache = new Map<string, number>()
+
+const normalizeZoomScale = (scale = 1) => {
+  return Number.isFinite(scale) ? Math.min(2.5, Math.max(0.5, scale)) : 1
+}
+
+const scaleNumber = (value: number, zoomScale: number) => {
+  return Math.max(1, Math.round(value * normalizeZoomScale(zoomScale)))
+}
+
+const scaleFont = (font: string | undefined, zoomScale: number) => {
+  if (!font) {
+    return font
+  }
+  const normalizedScale = normalizeZoomScale(zoomScale)
+  return font.replace(/(\d+(?:\.\d+)?)px/g, (_, size: string) => {
+    return `${Number(size) * normalizedScale}px`
+  })
+}
+
+const scaleBorder = (border: CellBorderCache | undefined, zoomScale: number) => {
+  if (!border) {
+    return undefined
+  }
+  return {
+    ...border,
+    width: Math.max(0.5, border.width * normalizeZoomScale(zoomScale))
+  }
+}
+
+const scaleCellStyle = (style: CellStyleCache | undefined, zoomScale: number) => {
+  if (!style) {
+    return undefined
+  }
+  return {
+    ...style,
+    font: scaleFont(style.font, zoomScale),
+    borderTop: scaleBorder(style.borderTop, zoomScale),
+    borderRight: scaleBorder(style.borderRight, zoomScale),
+    borderBottom: scaleBorder(style.borderBottom, zoomScale),
+    borderLeft: scaleBorder(style.borderLeft, zoomScale)
+  }
+}
+
+const getHeaderFont = (zoomScale: number) => scaleFont(HEADER_FONT, zoomScale) || HEADER_FONT
+const getBodyFont = (zoomScale: number) => scaleFont(BODY_FONT, zoomScale) || BODY_FONT
+
+const getIndexCellStyle = (zoomScale: number): CellStyleCache => ({
+  ...INDEX_CELL_STYLE,
+  font: getHeaderFont(zoomScale)
+})
+
+const getLoadingCellStyle = (zoomScale: number): CellStyleCache => ({
+  ...LOADING_CELL_STYLE,
+  font: scaleFont(LOADING_CELL_STYLE.font, zoomScale)
+})
 
 const cloneColumns = (columns: Column[]): Column[] => {
   return columns.map(column => ({
@@ -289,9 +345,33 @@ export const buildColumns = (ws: SheetModel) => {
   return { columns, dataKeys }
 }
 
+const scaleColumn = (column: Column, zoomScale: number): Column => {
+  const nextColumn = {
+    ...column,
+    ...(column.children?.length ? { children: column.children.map(child => scaleColumn(child, zoomScale)) } : {})
+  }
+  const width = Number((column as any).width)
+  if (Number.isFinite(width) && width > 0) {
+    ;(nextColumn as any).width = scaleNumber(width, zoomScale)
+  }
+  const minWidth = Number((column as any).minWidth)
+  if (Number.isFinite(minWidth) && minWidth > 0) {
+    ;(nextColumn as any).minWidth = scaleNumber(minWidth, zoomScale)
+  }
+  const maxWidth = Number((column as any).maxWidth)
+  if (Number.isFinite(maxWidth) && maxWidth > 0) {
+    ;(nextColumn as any).maxWidth = scaleNumber(maxWidth, zoomScale)
+  }
+  return nextColumn
+}
+
 // Excel 预览优先忠实还原原始列宽，不再为了“铺满容器”二次拉伸列宽。
-export const getDisplayColumns = (columns: Column[]) => {
-  return cloneColumns(columns)
+export const getDisplayColumns = (columns: Column[], zoomScale = 1) => {
+  const normalizedScale = normalizeZoomScale(zoomScale)
+  if (normalizedScale === 1) {
+    return cloneColumns(columns)
+  }
+  return columns.map(column => scaleColumn(column, normalizedScale))
 }
 
 const toBorderWidth = (value: unknown) => {
@@ -442,8 +522,8 @@ const isNumericLikeValue = (text: string) => {
   return /^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?%?$/.test(text.trim())
 }
 
-const measureTextWidth = (text: string, font: string) => {
-  const cacheKey = `${font}\n${text}`
+const measureTextWidth = (text: string, font: string, padding: number) => {
+  const cacheKey = `${font}\n${padding}\n${text}`
   const cached = textWidthCache.get(cacheKey)
   if (cached !== undefined) {
     return cached
@@ -459,7 +539,7 @@ const measureTextWidth = (text: string, font: string) => {
   }
 
   context.font = font
-  const width = context.measureText(text).width + CELL_PADDING * 2
+  const width = context.measureText(text).width + padding * 2
   textWidthCache.set(cacheKey, width)
   return width
 }
@@ -511,7 +591,8 @@ const getExcelOverflowLayout = (
   dataColIndex: number,
   column: Column | undefined,
   style: CellStyleCache | undefined,
-  value: unknown
+  value: unknown,
+  zoomScale: number
 ): TextOverflowLayout | undefined => {
   const text = getTextValue(value)
   if (!text || style?.wrapText || style?.shrinkToFit || isNumericLikeValue(text)) {
@@ -529,7 +610,7 @@ const getExcelOverflowLayout = (
   }
 
   const font = style?.font || BODY_FONT
-  const measuredWidth = Math.ceil(measureTextWidth(text, font))
+  const measuredWidth = Math.ceil(measureTextWidth(text, font, scaleNumber(CELL_PADDING, zoomScale)))
   if (measuredWidth <= ownWidth) {
     return undefined
   }
@@ -564,12 +645,13 @@ const getCollapsedBorderStyle = (
   virtualState: VirtualSheetState,
   rowIndex: number,
   dataColIndex: number,
-  style: CellStyleCache
+  style: CellStyleCache,
+  zoomScale: number
 ) => {
-  const previousRow = virtualState.cellCache.get(displayCellKey(rowIndex - 1, dataColIndex + 1))
-  const nextRow = virtualState.cellCache.get(displayCellKey(rowIndex + 1, dataColIndex + 1))
-  const previousCol = virtualState.cellCache.get(displayCellKey(rowIndex, dataColIndex))
-  const nextCol = virtualState.cellCache.get(displayCellKey(rowIndex, dataColIndex + 2))
+  const previousRow = scaleCellStyle(virtualState.cellCache.get(displayCellKey(rowIndex - 1, dataColIndex + 1)), zoomScale)
+  const nextRow = scaleCellStyle(virtualState.cellCache.get(displayCellKey(rowIndex + 1, dataColIndex + 1)), zoomScale)
+  const previousCol = scaleCellStyle(virtualState.cellCache.get(displayCellKey(rowIndex, dataColIndex)), zoomScale)
+  const nextCol = scaleCellStyle(virtualState.cellCache.get(displayCellKey(rowIndex, dataColIndex + 2)), zoomScale)
 
   const borderTop = getBorderScore(style.borderTop) >= getBorderScore(previousRow?.borderBottom)
     ? style.borderTop
@@ -627,7 +709,7 @@ const createBorderLine = (
   return line
 }
 
-const createTextLayer = (value: unknown, style: CellStyleCache) => {
+const createTextLayer = (value: unknown, style: CellStyleCache, padding: number) => {
   const text = document.createElement('span')
   text.textContent = getTextValue(value)
 
@@ -640,7 +722,7 @@ const createTextLayer = (value: unknown, style: CellStyleCache) => {
     display: 'flex',
     alignItems: toFlexAlign(style.verticalAlign),
     justifyContent: toFlexJustify(style.horizontalAlign),
-    padding: `0 ${CELL_PADDING}px`,
+    padding: `0 ${padding}px`,
     overflow: 'hidden',
     textOverflow: style.wrapText ? 'clip' : 'ellipsis',
     whiteSpace: style.wrapText ? 'pre-wrap' : 'nowrap',
@@ -678,7 +760,8 @@ const renderCellOverlay = (
   style: CellStyleCache,
   value: unknown,
   renderText: boolean,
-  overflowLayout?: TextOverflowLayout
+  overflowLayout: TextOverflowLayout | undefined,
+  zoomScale: number
 ) => {
   cellEl.replaceChildren()
   Object.assign(cellEl.style, {
@@ -689,7 +772,7 @@ const renderCellOverlay = (
 
   const fragment = document.createDocumentFragment()
   if (renderText) {
-    const text = createTextLayer(value, style)
+    const text = createTextLayer(value, style, scaleNumber(CELL_PADDING, zoomScale))
     applyOverflowLayout(text, overflowLayout)
     fragment.appendChild(text)
   }
@@ -777,8 +860,17 @@ export const normalizeCellStyle = (
 export const createTableConfig = ({
   hostHeight,
   sheetDefaults,
-  virtualState
+  virtualState,
+  zoomScale = 1
 }: TableConfigOptions): ConfigType => {
+  const normalizedScale = normalizeZoomScale(zoomScale)
+  const scaledPadding = scaleNumber(CELL_PADDING, normalizedScale)
+  const scaledHeaderHeight = scaleNumber(HEADER_HEIGHT, normalizedScale)
+  const scaledCellHeight = scaleNumber(normalizeRowHeight(sheetDefaults.rowHeight, sheetDefaults.rowHeight), normalizedScale)
+  const scaledCellWidth = scaleNumber(sheetDefaults.colWidth, normalizedScale)
+  const headerStyle = getIndexCellStyle(normalizedScale)
+  const loadingStyle = getLoadingCellStyle(normalizedScale)
+
   const spanMethod: SpanMethod = ({ rowIndex, colIndex, column }) => {
     if (colIndex === 0) {
       return
@@ -800,11 +892,11 @@ export const createTableConfig = ({
     }
   }
 
-  const headerStyleMethod: CellHeaderStyleMethod = () => INDEX_CELL_STYLE
+  const headerStyleMethod: CellHeaderStyleMethod = () => headerStyle
 
   const styleMethod: CellStyleMethod = ({ row, rowIndex, colIndex, column }) => {
     if (colIndex === 0) {
-      return INDEX_CELL_STYLE
+      return headerStyle
     }
 
     const currentRow = row as VirtualRow
@@ -813,10 +905,10 @@ export const createTableConfig = ({
     }
 
     if (getRowState(currentRow) !== RowState.Loaded) {
-      return LOADING_CELL_STYLE
+      return loadingStyle
     }
 
-    return virtualState.cellCache.get(getCellCacheKey(rowIndex, colIndex, column))
+    return scaleCellStyle(virtualState.cellCache.get(getCellCacheKey(rowIndex, colIndex, column)), normalizedScale)
   }
 
   const renderMethod = ({
@@ -842,7 +934,7 @@ export const createTableConfig = ({
       return undefined
     }
 
-    const style = virtualState.cellCache.get(cellKey)
+    const style = scaleCellStyle(virtualState.cellCache.get(cellKey), normalizedScale)
     const dataColIndex = getDataColumnIndex(column, colIndex)
     const overflowLayout = getExcelOverflowLayout(
       virtualState,
@@ -851,7 +943,8 @@ export const createTableConfig = ({
       dataColIndex,
       column,
       style,
-      value
+      value,
+      normalizedScale
     )
     const renderText = shouldRenderTextInOverlay(style, column) || !!overflowLayout
     if (!hasBorder(style) && !renderText) {
@@ -865,9 +958,9 @@ export const createTableConfig = ({
         verticalAlign: style?.verticalAlign || column?.verticalAlign
       }
       const collapsedStyle = hasBorder(style)
-        ? getCollapsedBorderStyle(virtualState, rowIndex, dataColIndex, baseStyle)
+        ? getCollapsedBorderStyle(virtualState, rowIndex, dataColIndex, baseStyle, normalizedScale)
         : baseStyle
-      renderCellOverlay(cellEl, collapsedStyle, value, renderText, overflowLayout)
+      renderCellOverlay(cellEl, collapsedStyle, value, renderText, overflowLayout, normalizedScale)
     }) as unknown as string
   }
 
@@ -876,14 +969,14 @@ export const createTableConfig = ({
     DISABLED: true,
     HEIGHT: Math.max(hostHeight, 240),
     MAX_HEIGHT: Math.max(hostHeight, 240),
-    HEADER_HEIGHT,
-    CELL_HEIGHT: normalizeRowHeight(sheetDefaults.rowHeight, sheetDefaults.rowHeight),
-    CELL_WIDTH: sheetDefaults.colWidth,
-    CELL_PADDING,
+    HEADER_HEIGHT: scaledHeaderHeight,
+    CELL_HEIGHT: scaledCellHeight,
+    CELL_WIDTH: scaledCellWidth,
+    CELL_PADDING: scaledPadding,
     CELL_LINE_HEIGHT,
     COLUMNS_VERTICAL_ALIGN: 'middle',
-    HEADER_FONT,
-    BODY_FONT,
+    HEADER_FONT: getHeaderFont(normalizedScale),
+    BODY_FONT: getBodyFont(normalizedScale),
     BORDER_RADIUS: 0,
     BORDER_COLOR: EXCEL_GRID,
     HEADER_BG_COLOR: EXCEL_HEADER_BG,
@@ -936,7 +1029,7 @@ export const createTableConfig = ({
         return ''
       }
       const currentRow = row as VirtualRow
-      const style = virtualState.cellCache.get(getCellCacheKey(rowIndex, colIndex, column))
+      const style = scaleCellStyle(virtualState.cellCache.get(getCellCacheKey(rowIndex, colIndex, column)), normalizedScale)
       const overflowLayout = getExcelOverflowLayout(
         virtualState,
         currentRow,
@@ -944,7 +1037,8 @@ export const createTableConfig = ({
         getDataColumnIndex(column, colIndex),
         column,
         style,
-        value
+        value,
+        normalizedScale
       )
       if (shouldRenderTextInOverlay(style, column) || overflowLayout) {
         return ''
