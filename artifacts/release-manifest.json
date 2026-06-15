@@ -1,13 +1,15 @@
 {
   "version": "1.0.25",
   "package": "@flyfish-group/file-viewer3",
-  "generatedAt": "2026-06-15T09:28:20Z",
+  "generatedAt": "2026-06-15T09:36:00Z",
   "sourceBranch": "v3",
   "sourceCommit": "e49f617",
   "packageAliases": {
     "file-viewer3": {
       "version": "1.0.25",
-      "tarball": "file-viewer3-1.0.25.tgz"
+      "aliasOf": "@flyfish-group/file-viewer3",
+      "tarball": "flyfish-group-file-viewer3-1.0.25.tgz",
+      "deduplicated": true
     }
   },
   "adapterPackages": {
