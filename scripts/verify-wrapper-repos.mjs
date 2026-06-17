@@ -24,6 +24,9 @@ const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.j
 const formatModule = await loadTypescriptModule(join(sourceRoot, 'packages/core/src/formats.ts'))
 const rendererCount = formatModule.DEFAULT_RENDERER_DEFINITIONS.length
 const extensionCount = formatModule.DEFAULT_SUPPORTED_EXTENSIONS.length
+const historicalPackageNames = new Set(
+  wrapperManifest.wrappers.flatMap(wrapper => wrapper.historicalPackages)
+)
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'))
@@ -114,6 +117,16 @@ function dependencyBlocks(packageJson) {
   ].filter(Boolean)
 }
 
+function verifyNoHistoricalPackageDependency(packageJson, label) {
+  for (const block of dependencyBlocks(packageJson)) {
+    for (const dependencyName of Object.keys(block)) {
+      if (historicalPackageNames.has(dependencyName)) {
+        throw new Error(`${label} must not depend on historical compatibility package ${dependencyName}`)
+      }
+    }
+  }
+}
+
 function isParentPath(value) {
   return typeof value === 'string' && (
     value.startsWith('../') ||
@@ -121,6 +134,63 @@ function isParentPath(value) {
     value.includes('/../') ||
     value.includes('\\..\\')
   )
+}
+
+const sourceBoundaryExtensions = new Set([
+  '.js',
+  '.mjs',
+  '.ts',
+  '.tsx',
+  '.svelte',
+  '.json'
+])
+
+function extensionOf(path) {
+  const dotIndex = path.lastIndexOf('.')
+  return dotIndex >= 0 ? path.slice(dotIndex) : ''
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function hasPackageReference(content, packageName) {
+  const escaped = escapeRegExp(packageName)
+  return new RegExp(`(^|[^@\\w./-])['"]${escaped}['"]`, 'm').test(content) ||
+    new RegExp(`['"]${escaped}['"]\\s*:`, 'm').test(content)
+}
+
+function shouldVerifyBoundaryFile(relativePath) {
+  if (
+    relativePath === 'README.md' ||
+    relativePath === 'README.en.md' ||
+    relativePath === 'wrapper-repo-manifest.json' ||
+    relativePath.startsWith('viewer/')
+  ) {
+    return false
+  }
+  return (
+    relativePath === 'package.json' ||
+    relativePath === 'tsconfig.json' ||
+    relativePath.startsWith('src/') ||
+    relativePath.startsWith('scripts/')
+  ) && sourceBoundaryExtensions.has(extensionOf(relativePath))
+}
+
+async function verifyNoHistoricalPackageReferences(dir, label) {
+  const files = await readAllFiles(dir)
+  for (const file of files) {
+    const relativePath = file.slice(dir.length + 1)
+    if (!shouldVerifyBoundaryFile(relativePath)) {
+      continue
+    }
+    const content = await readFile(file, 'utf8').catch(() => '')
+    for (const historicalPackage of historicalPackageNames) {
+      if (hasPackageReference(content, historicalPackage)) {
+        throw new Error(`${label}/${relativePath} must not reference historical compatibility package ${historicalPackage}`)
+      }
+    }
+  }
 }
 
 function collectExportEntrypoints(value, paths = new Set()) {
@@ -268,6 +338,8 @@ async function verifyPackageDir(wrapper) {
   if (packageJson.private === true) {
     throw new Error(`${wrapper.packageDir} must be publishable, but package.json has private=true`)
   }
+  verifyNoHistoricalPackageDependency(packageJson, `${wrapper.packageDir}/package.json`)
+  await verifyNoHistoricalPackageReferences(packageDir, wrapper.packageDir)
   verifyStandalonePortableText(JSON.stringify(packageJson), `${wrapper.packageDir}/package.json`)
   await verifyPackageEntrypointMetadata(packageDir, packageJson, wrapper.packageDir)
 }
@@ -315,6 +387,8 @@ async function verifyExportedRepo(wrapper) {
     await verifyExportedWebViewerAssets(repoDir, wrapper.repository)
   }
   await verifyPackageEntrypointMetadata(repoDir, packageJson, wrapper.repository)
+  verifyNoHistoricalPackageDependency(packageJson, `${wrapper.repository}/package.json`)
+  await verifyNoHistoricalPackageReferences(repoDir, wrapper.repository)
   for (const block of dependencyBlocks(packageJson)) {
     for (const [dependencyName, range] of Object.entries(block)) {
       if (String(range).includes('workspace:')) {
