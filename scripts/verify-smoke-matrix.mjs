@@ -1,11 +1,11 @@
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
+import { readCoreRendererDefinitions } from './lib/format-support.mjs'
 
 const sourceRoot = process.cwd()
 const matrixPath = join(sourceRoot, 'ecosystem', 'smoke-matrix.json')
 const wrapperManifestPath = join(sourceRoot, 'ecosystem', 'wrappers.json')
-const formatSourcePath = join(sourceRoot, 'packages', 'core', 'src', 'formats.ts')
 const examplesRoot = join(sourceRoot, 'public', 'example')
 
 function fail(message) {
@@ -14,46 +14,6 @@ function fail(message) {
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'))
-}
-
-function quotedValues(text) {
-  return [...text.matchAll(/'([^']+)'/g)].map(match => match[1])
-}
-
-async function readRendererDefinitions() {
-  const source = await readFile(formatSourcePath, 'utf8')
-  const constants = new Map()
-  const constantPattern = /export const ([A-Z0-9_]+) = \[([\s\S]*?)\] as const;/g
-  for (const match of source.matchAll(constantPattern)) {
-    constants.set(match[1], quotedValues(match[2]))
-  }
-
-  const renderers = new Map()
-  const rendererPattern = /\{\s*id:\s*'([^']+)'([\s\S]*?)capabilities:/g
-  for (const match of source.matchAll(rendererPattern)) {
-    const id = match[1]
-    const body = match[2]
-    const extensionMatch = body.match(/extensions:\s*(\[[\s\S]*?\]|[A-Z0-9_]+)/)
-    if (!extensionMatch) {
-      fail(`Renderer ${id} does not declare extensions`)
-    }
-    const expression = extensionMatch[1].trim()
-    const extensions = expression.startsWith('[')
-      ? quotedValues(expression)
-      : constants.get(expression)
-    if (!extensions?.length) {
-      fail(`Renderer ${id} references unknown extension list ${expression}`)
-    }
-    renderers.set(id, {
-      id,
-      extensions: new Set(extensions)
-    })
-  }
-
-  if (!renderers.size) {
-    fail('No renderer definitions were detected')
-  }
-  return renderers
 }
 
 function assertUnique(items, label, selectId = item => item.id) {
@@ -99,7 +59,7 @@ function assertRendererSample(entry, label) {
 const [matrix, wrapperManifest, renderers] = await Promise.all([
   readJson(matrixPath),
   readJson(wrapperManifestPath),
-  readRendererDefinitions()
+  readCoreRendererDefinitions(sourceRoot)
 ])
 
 if (matrix.schemaVersion !== 1) {

@@ -28,6 +28,7 @@ pnpm install
 | `pnpm verify:demo-browser-smoke` | 使用 Playwright 打开构建后的主 Demo 和文档比对页，验证轻量样例渲染、双栏组件挂载和比对页快捷键搜索 |
 | `pnpm verify:branch-roles` | 校验 `origin` 私有 Gitea 源码边界、main/v2/v3 分支职责、core 私有策略、wrapper 公开仓库和公开成品仓库策略 |
 | `pnpm verify:core-api` | 校验 `@file-viewer/core` 入口、实例方法、framework-neutral 类型、ESM/声明产物元数据和纯 TS 源码边界 |
+| `pnpm verify:format-support` | 校验 core 格式矩阵保持 194 个扩展名、23 条预览链路、无重复扩展名归属，并确认 README / 文档站 / wrapper README 口径一致 |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
 | `pnpm verify:wrapper-api` | 校验标准 wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法，防止不同框架接入体验漂移 |
 | `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
@@ -36,7 +37,7 @@ pnpm install
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准 wrapper 仓库元数据和历史包依赖边界 |
 | `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口和可导入 ESM 入口 |
-| `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、smoke 矩阵、分支职责、wrapper 源包、wrapper 运行 API、wrapper 参数面、兼容包 README、生态版本和 npm manifest 校验 |
+| `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、格式矩阵、smoke 矩阵、分支职责、wrapper 源包、wrapper 运行 API、wrapper 参数面、兼容包 README、生态版本和 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
 | `pnpm docker:build` | 使用 Dockerfile 构建本机架构镜像 |
@@ -73,6 +74,7 @@ pnpm build:adapter-demo
 pnpm release:ecosystem:list
 pnpm verify:branch-roles
 pnpm verify:core-api
+pnpm verify:format-support
 pnpm verify:ecosystem-versions
 pnpm wrappers:readme
 pnpm wrappers:verify --source-only
@@ -132,7 +134,7 @@ pnpm release:pack
 - README 和文档站是否同时写清 Vue3 / Vue2 / React / 纯 JS 包名、版本和接入方式
 - 文档站中的支持格式、iframe 协议和 Demo 截图是否最新
 - `file` / `url` 的行为说明是否与运行逻辑一致
-- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、smoke 矩阵、分支职责/源码边界、core API 与纯 TS 边界、wrapper 源包校验、wrapper 运行 API 与参数面一致性、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
+- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、格式矩阵、smoke 矩阵、分支职责/源码边界、core API 与纯 TS 边界、wrapper 源包校验、wrapper 运行 API 与参数面一致性、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
 - 新增格式、示例或 wrapper 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
 - 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准 wrapper 和历史兼容包不会漂移，且标准 wrapper 仍指向对应 GitHub 公开仓库

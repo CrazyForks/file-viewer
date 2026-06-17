@@ -25,6 +25,7 @@
 
 - [ ] 用户看到的主 Demo、文档比对页、iframe 体验、示例文件选择器、工具栏、水印、搜索、缩放、打印、导出、主题、生命周期 hooks 和 beforeOperation 行为保持一致。
 - [ ] 当前 194 个扩展名、23 条预览链路的支持矩阵不得倒退。
+  - [x] 新增 `pnpm verify:format-support`，从 core 格式矩阵校验 194 个扩展名、23 条预览链路、无重复扩展名归属，并确认 README / 文档站 / wrapper README 口径一致。
 - [ ] 各生态 wrapper 共享同一个 core 版本、同一套类型定义、同一套参数语义和同一套能力判断。
 - [ ] core 源码只在 Gitea 私有仓库维护，不把私有 core 源码推到公开 GitHub/Gitee。
 - [ ] 除 core 之外的生态 wrapper 项目公开维护，GitHub 和 Gitee 均在 `flyfish-dev` 组织下同步。
@@ -55,6 +56,7 @@
 - [x] 补充统一 smoke 清单，至少覆盖 PDF、DOCX、XLSX、PPTX、OFD、CAD、DWF/DWFX、EPUB、压缩包、邮件、Markdown、代码、图片、音视频、地理数据、数据资产。
   - [x] 新增 `ecosystem/smoke-matrix.json`，覆盖 23 条 renderer pipeline、Phase 0 要求的格式族、真实示例文件和 8 个 wrapper 基础入口。
   - [x] 新增 `pnpm verify:smoke-matrix`，反查 core renderer 定义、wrapper manifest 和 `public/example` 样本，避免 smoke 清单漂移。
+  - [x] `pnpm verify:format-support` 作为支持矩阵防回退门禁，保证文档宣传数量和 core 实际注册数量一致。
 - [ ] 为 wrapper 迁移准备对比用例: Vue3 当前组件、iframe 当前组件、React 当前适配层、纯 JS 当前适配层。
 - [ ] 明确“体验完全相同”的证据: DOM 快照、关键截图、事件回调、能力按钮显隐、options 行为、打印/导出结果。
 
