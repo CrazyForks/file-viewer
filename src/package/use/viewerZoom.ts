@@ -1,14 +1,15 @@
-import { reactive, shallowRef, type Ref } from 'vue'
+import { reactive, type Ref } from 'vue'
 import {
-  createFileViewerZoomState,
-  findFileViewerZoomProvider
+  cloneFileViewerZoomState,
+  createFileViewerZoomController,
+  createFileViewerZoomState
 } from '@file-viewer/core'
 export {
   findFileViewerZoomProvider,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider
 } from '@file-viewer/core'
-import type { FileViewerZoomProvider, FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerOperationType, FileViewerZoomProvider, FileViewerZoomState } from '@/package/common/type'
 
 export const createZoomChangeEmitter = () => {
   const listeners = new Set<() => void>()
@@ -28,7 +29,7 @@ export const createZoomChangeEmitter = () => {
 interface UseViewerZoomOptions {
   root: Ref<HTMLElement | null>;
   enabled?: () => boolean;
-  beforeZoom?: (operation: 'zoom-in' | 'zoom-out' | 'zoom-reset') => Promise<boolean> | boolean;
+  beforeZoom?: (operation: Extract<FileViewerOperationType, 'zoom-in' | 'zoom-out' | 'zoom-reset'>) => Promise<boolean> | boolean;
 }
 
 /**
@@ -42,11 +43,12 @@ export const useViewerZoom = ({
   enabled,
   beforeZoom
 }: UseViewerZoomOptions) => {
-  const provider = shallowRef<FileViewerZoomProvider | null>(null)
   const state = reactive(createFileViewerZoomState())
-
-  let unsubscribe: (() => void) | null = null
-  let observer: MutationObserver | null = null
+  const controller = createFileViewerZoomController({
+    root: () => root.value,
+    enabled,
+    beforeZoom
+  })
 
   const applyState = (nextState?: FileViewerZoomState | null) => {
     const normalized = createFileViewerZoomState(nextState || {})
@@ -59,81 +61,49 @@ export const useViewerZoom = ({
     state.maxScale = normalized.maxScale
   }
 
-  const clearProvider = () => {
-    unsubscribe?.()
-    unsubscribe = null
-    provider.value = null
-    applyState(null)
-  }
-
-  const syncProvider = () => {
-    if (enabled?.() === false) {
-      clearProvider()
-      return null
-    }
-
-    const nextProvider = findFileViewerZoomProvider(root.value)
-    if (nextProvider !== provider.value) {
-      unsubscribe?.()
-      provider.value = nextProvider
-      unsubscribe = nextProvider?.subscribe?.(() => {
-        applyState(nextProvider.getState())
-      }) || null
-    }
-    applyState(nextProvider?.getState?.() || null)
+  const syncFromController = (nextProvider: FileViewerZoomProvider | null = controller.provider) => {
+    applyState(controller.state)
     return nextProvider
-  }
-
-  const runZoomAction = async (
-    operation: 'zoom-in' | 'zoom-out' | 'zoom-reset',
-    action: (nextProvider: FileViewerZoomProvider) => FileViewerZoomState | Promise<FileViewerZoomState>
-  ) => {
-    const nextProvider = syncProvider()
-    if (!nextProvider) {
-      return createFileViewerZoomState(state)
-    }
-
-    if (beforeZoom && await beforeZoom(operation) === false) {
-      return createFileViewerZoomState(state)
-    }
-
-    const nextState = await action(nextProvider)
-    applyState(nextState || nextProvider.getState())
-    return createFileViewerZoomState(state)
-  }
-
-  const startObserving = () => {
-    observer?.disconnect()
-    if (!root.value || typeof MutationObserver === 'undefined') {
-      syncProvider()
-      return
-    }
-    observer = new MutationObserver(() => {
-      syncProvider()
-    })
-    observer.observe(root.value, {
-      childList: true,
-      subtree: true
-    })
-    syncProvider()
-  }
-
-  const stopObserving = () => {
-    observer?.disconnect()
-    observer = null
-    clearProvider()
   }
 
   return {
     zoomState: state,
-    hasZoomProvider: () => !!syncProvider(),
-    refreshZoomProvider: syncProvider,
-    startZoomObserver: startObserving,
-    stopZoomObserver: stopObserving,
-    clearZoomProvider: clearProvider,
-    getZoomState: () => createFileViewerZoomState(state),
-    zoomIn: () => runZoomAction('zoom-in', nextProvider => nextProvider.zoomIn()),
-    zoomOut: () => runZoomAction('zoom-out', nextProvider => nextProvider.zoomOut()),
-    resetZoom: () => runZoomAction('zoom-reset', nextProvider => nextProvider.resetZoom())
+    hasZoomProvider: () => {
+      const nextProvider = controller.refreshProvider()
+      syncFromController(nextProvider)
+      return !!nextProvider
+    },
+    refreshZoomProvider: () => {
+      const nextProvider = controller.refreshProvider()
+      return syncFromController(nextProvider)
+    },
+    startZoomObserver: () => {
+      controller.observe()
+      syncFromController()
+    },
+    stopZoomObserver: () => {
+      controller.destroy()
+      syncFromController(null)
+    },
+    clearZoomProvider: () => {
+      controller.clearProvider()
+      syncFromController(null)
+    },
+    getZoomState: () => cloneFileViewerZoomState(state),
+    zoomIn: async () => {
+      const nextState = await controller.zoomIn()
+      applyState(nextState)
+      return cloneFileViewerZoomState(state)
+    },
+    zoomOut: async () => {
+      const nextState = await controller.zoomOut()
+      applyState(nextState)
+      return cloneFileViewerZoomState(state)
+    },
+    resetZoom: async () => {
+      const nextState = await controller.resetZoom()
+      applyState(nextState)
+      return cloneFileViewerZoomState(state)
+    }
   }
 }

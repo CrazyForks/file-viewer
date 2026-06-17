@@ -109,6 +109,7 @@
     - [ ] 打印窗口打开、beforeOperation 编排、错误提示仍在 Vue wrapper hook 中，后续继续抽成 core controller + wrapper adapter。
 - [ ] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
   - [x] 缩放状态标准化迁入 `@file-viewer/core`。
+  - [x] 缩放 provider 发现、订阅、MutationObserver 和 beforeZoom 编排迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] 搜索 options / empty state 标准化迁入 `@file-viewer/core`。
   - [x] AI 文本切片生成迁入 `@file-viewer/core`。
   - [x] DOM 锚点采集、DOM 搜索高亮、provider 注册表和 Vue 响应式门面继续拆分。

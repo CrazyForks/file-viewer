@@ -5,6 +5,7 @@ import {
   collectFileViewerDocumentAnchors,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
+  createFileViewerZoomController,
   createFileViewerZoomState,
   findFileViewerSearchProvider,
   findFileViewerZoomProvider,
@@ -254,5 +255,87 @@ describe('@file-viewer/core document helpers', () => {
     });
     expect(root.querySelectorAll('mark')).toHaveLength(0);
     expect(paragraph.textContent).toBe('Alpha PDF beta pdf.');
+  });
+
+  it('runs the zoom controller without framework state', async () => {
+    const { document } = parseHTML('<main id="root"><section id="zoom" data-viewer-zoom-provider="docx"></section></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const zoomHost = document.getElementById('zoom') as HTMLElement;
+    const listeners = new Set<() => void>();
+    const beforeOperations: string[] = [];
+    let scale = 1;
+    let allowZoomOut = false;
+    const getState = () => createFileViewerZoomState({
+      scale,
+      canZoomIn: scale < 2,
+      canZoomOut: scale > 0.5,
+      canReset: scale !== 1,
+      minScale: 0.5,
+      maxScale: 2,
+    });
+    const emit = () => {
+      listeners.forEach(listener => listener());
+    };
+    const zoomProvider: FileViewerZoomProvider = {
+      zoomIn: () => {
+        scale = 1.25;
+        emit();
+        return getState();
+      },
+      zoomOut: () => {
+        scale = 0.75;
+        emit();
+        return getState();
+      },
+      resetZoom: () => {
+        scale = 1;
+        emit();
+        return getState();
+      },
+      getState,
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => {
+          listeners.delete(listener);
+        };
+      },
+    };
+
+    registerFileViewerZoomProvider(zoomHost, zoomProvider);
+    const controller = createFileViewerZoomController({
+      root: () => root,
+      beforeZoom: operation => {
+        beforeOperations.push(operation);
+        return operation !== 'zoom-out' || allowZoomOut;
+      },
+    });
+
+    expect(controller.hasProvider()).toBe(true);
+    expect(controller.state).toMatchObject({
+      scale: 1,
+      label: '100%',
+      canZoomIn: true,
+    });
+
+    await expect(controller.zoomIn()).resolves.toMatchObject({ scale: 1.25, label: '125%' });
+    expect(beforeOperations).toEqual(['zoom-in']);
+    expect(controller.state.canReset).toBe(true);
+
+    scale = 1.5;
+    emit();
+    expect(controller.state).toMatchObject({ scale: 1.5, label: '150%' });
+
+    await expect(controller.zoomOut()).resolves.toMatchObject({ scale: 1.5 });
+    expect(beforeOperations).toEqual(['zoom-in', 'zoom-out']);
+
+    allowZoomOut = true;
+    await expect(controller.zoomOut()).resolves.toMatchObject({ scale: 0.75, label: '75%' });
+
+    controller.clearProvider();
+    expect(controller.provider).toBeNull();
+    expect(controller.getState()).toEqual(createFileViewerZoomState());
+
+    controller.destroy();
+    unregisterFileViewerZoomProvider(zoomHost);
   });
 });

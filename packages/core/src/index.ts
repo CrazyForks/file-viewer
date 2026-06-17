@@ -36,6 +36,10 @@ export {
   createFileViewerDomSearchController,
 } from './documentSearch';
 export {
+  cloneFileViewerZoomState,
+  createFileViewerZoomController,
+} from './documentZoom';
+export {
   DEFAULT_FILE_VIEWER_ANCHOR_EXCLUDE_SELECTOR,
   DEFAULT_FILE_VIEWER_ANCHOR_SELECTOR,
   collectFileViewerDocumentAnchors,
@@ -159,6 +163,10 @@ export type {
   CreateFileViewerDomSearchControllerOptions,
   FileViewerInternalSearchMatch,
 } from './documentSearch';
+export type {
+  CreateFileViewerZoomControllerOptions,
+  FileViewerZoomOperation,
+} from './documentZoom';
 export type { CreateViewerOptions } from './viewer';
 export type {
   BuildExportHtmlDocumentOptions,
