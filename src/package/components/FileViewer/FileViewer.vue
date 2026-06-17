@@ -1,13 +1,8 @@
 <script setup lang='ts'>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
-  createFileViewerErrorState,
-  createFileViewerRequestController,
-  formatFileViewerErrorMessage,
-  getExtension,
-  normalizeFilename,
-  normalizeFileViewerToolbar
+  createFileViewerRequestController
 } from '@file-viewer/core'
 import type {
   FileRef,
@@ -17,13 +12,13 @@ import type {
   FileViewerOptions,
   FileViewerOperationContext,
   FileViewerSearchState,
-  FileViewerToolbarOptions,
   FileViewerZoomState
 } from '@/package/common/type'
 import { useLoading } from '@/package/use'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerLifecycle } from './hooks/useViewerLifecycle'
+import { useViewerErrorState, useViewerPresentation } from './hooks/useViewerPresentation'
 import { useViewerRenderSurface } from './hooks/useViewerRenderSurface'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
 import { useViewerToolbar } from './hooks/useViewerToolbar'
@@ -91,18 +86,17 @@ const {
   emitLocationChange: anchor => emit('location-change', anchor)
 })
 
-const displayFilename = computed(() => getSourceFilename())
-const currentExtend = computed(() => {
-  return getExtension(displayFilename.value)
-})
-
-const normalizedToolbar = computed<FileViewerToolbarOptions>(() => {
-  return normalizeFileViewerToolbar(props.options)
-})
-
-const viewerTheme = computed(() => {
-  const theme = props.options?.theme
-  return theme === 'light' || theme === 'dark' ? theme : 'system'
+const {
+  displayFilename,
+  currentExtend,
+  normalizedToolbar,
+  viewerTheme,
+  formatErrorMessage
+} = useViewerPresentation({
+  filename,
+  getFile: () => props.file,
+  getUrl: () => props.url,
+  getOptions: () => props.options
 })
 
 const {
@@ -124,29 +118,16 @@ const {
   resetLoading
 } = useLoading(currentExtend)
 
-const errorState = computed(() => createFileViewerErrorState(currentExtend.value, error.value, loadingTheme.value))
+const errorState = useViewerErrorState({
+  currentExtend,
+  error,
+  loadingTheme
+})
 
 const requestController = createFileViewerRequestController()
 
-const getSourceFilename = () => {
-  if (filename.value) {
-    return filename.value
-  }
-  if (props.file instanceof File && props.file.name) {
-    return normalizeFilename(props.file.name)
-  }
-  if (typeof props.url === 'string' && props.url) {
-    return normalizeFilename(props.url)
-  }
-  return ''
-}
-
 const isCurrentRequest = (version: number) => {
   return requestController.isCurrent(version)
-}
-
-const formatErrorMessage = (prefix: string, nextError: unknown) => {
-  return formatFileViewerErrorMessage(prefix, nextError)
 }
 
 const {
