@@ -25,7 +25,7 @@ Generate local standalone repository folders for review or push:
 pnpm wrappers:export
 ```
 
-By default the script writes to `.release/wrapper-repos/<repository>`. Each folder contains:
+The export command first refreshes all wrapper README files from `ecosystem/wrappers.json` and the core format definitions, then writes to `.release/wrapper-repos/<repository>`. Each folder contains:
 
 - package source and package metadata
 - Chinese and English README
@@ -34,6 +34,12 @@ By default the script writes to `.release/wrapper-repos/<repository>`. Each fold
 - `wrapper-repo-manifest.json` with source commit and repository metadata
 
 Workspace dependency specifiers such as `workspace:^1.0.26` are rewritten to normal npm ranges before export, so the folders are ready to initialize as standalone public repositories.
+
+Refresh README files without exporting standalone repositories:
+
+```bash
+pnpm wrappers:readme
+```
 
 ## Public Artifact Sync
 
