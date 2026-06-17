@@ -33,6 +33,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./assets": {
+      "types": "./dist/assets.d.ts",
+      "import": "./dist/assets.js",
+      "default": "./dist/assets.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

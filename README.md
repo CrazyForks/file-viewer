@@ -250,7 +250,7 @@ export function Preview() {
 }
 ```
 
-`@flyfish-group/file-viewer-react` 支持 React 17 / 18 / 19，内部复用 `@flyfish-group/file-viewer-web` 的 iframe 协议工具。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 推送给预览器。静态目录不是 `public/file-viewer` 时，可以运行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并覆盖 `viewerUrl="/vendor/file-viewer/index.html"`。helper 会默认追加 `__flyfish_viewer_version`，避免旧入口 HTML 缓存继续引用已经不存在的 hash chunk。
+`@flyfish-group/file-viewer-react` 支持 React 17 / 18 / 19，内部复用 `@flyfish-group/file-viewer-web` 的 iframe 协议工具。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 推送给预览器。静态目录不是 `public/file-viewer` 时，可以运行 `npx file-viewer-copy-assets ./public/vendor/file-viewer`，并覆盖 `viewerUrl="/vendor/file-viewer/index.html"`。helper 会默认追加 `__flyfish_viewer_version`，避免旧入口 HTML 缓存继续引用已经不存在的 hash chunk。复制命令还会写入 `flyfish-viewer-assets.json`，按 `@file-viewer/core` 的 renderer asset manifest 校验 archive、CAD 等 worker/WASM 静态资源，便于部署前排查缺失文件。
 
 本仓库内置了一个私有化适配层演示应用，覆盖 React 组件和纯 Web helper 两种入口。调试时直接运行:
 

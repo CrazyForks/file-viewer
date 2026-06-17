@@ -95,6 +95,7 @@
   - [x] `@file-viewer/core` 提供 viewer asset URL、archive worker/wasm、CAD wasm/worker、Typst compiler wasm 默认解析。
   - [x] archive / CAD / Typst 首批重型资源链路接入 core resolver，保持现有默认路径与 fallback 行为。
   - [x] renderer asset manifest 已由 core 声明 archive、CAD、Typst 的 worker/WASM 资源，并提供统一解析 API，供 React/Vue/Svelte/pure JS wrapper 自动复制或外链。
+  - [x] `@flyfish-group/file-viewer-web` / `@file-viewer/web` 复制脚本接入 core manifest，生成 `flyfish-viewer-assets.json` 并校验 public worker/WASM 资源。
 
 ## Phase 2: 抽离现有能力到 core
 

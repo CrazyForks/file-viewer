@@ -3,10 +3,10 @@
 纯 Web 文件预览组件。只提供私有化部署路线: npm 包随包携带 Vue 基线 viewer 产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会自动复制到宿主项目的 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.23
+npm install @flyfish-group/file-viewer-web@1.0.26
 ```
 
-pnpm 10 默认会拦截依赖包的 `postinstall`。如果安装后提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。复制脚本会先清空目标目录再复制，避免 `index.html` 和 `assets/*` hash 不同版本导致动态 import 404。
+pnpm 10 默认会拦截依赖包的 `postinstall`。如果安装后提示 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。复制脚本会先清空目标目录再复制，避免 `index.html` 和 `assets/*` hash 不同版本导致动态 import 404；同时会写入 `flyfish-viewer-assets.json`，并根据 `@file-viewer/core` 的 renderer asset manifest 校验 archive、CAD 等 worker/WASM 资源是否齐全。
 
 标准接入只有两条: 使用 `mountViewerFrame` 加载安装时复制出来的 `/file-viewer/index.html`，或使用 `file-viewer-copy-assets` 把完整 viewer 目录复制到自定义静态路径后传入 `viewerUrl`。只复制入口 HTML、混用不同版本 hash 文件、或让服务端把缺失 JS 回退成 HTML 都不属于支持范围。
 
@@ -60,7 +60,7 @@ mountViewerFrame(el, {
 无构建工具项目可以自托管 helper，并通过浏览器原生 ES Module script 引入:
 
 ```bash
-npm install @flyfish-group/file-viewer-web@1.0.23
+npm install @flyfish-group/file-viewer-web@1.0.26
 npx file-viewer-copy-assets ./public/file-viewer
 mkdir -p ./public/vendor/file-viewer-web
 cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/file-viewer-web/index.js
@@ -111,7 +111,7 @@ cp ./node_modules/@flyfish-group/file-viewer-web/dist/index.js ./public/vendor/f
 
 ```html
 <iframe
-  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.23"
+  src="/vendor/file-viewer/index.html?url=%2Ffiles%2Fdemo.docx&__flyfish_viewer_version=1.0.26"
   style="width: 100%; height: 100vh; border: 0"
 ></iframe>
 ```

@@ -12,6 +12,8 @@ The package installs the `file-viewer-copy-assets` command. Copy the complete vi
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
+The copy command writes `flyfish-viewer-assets.json` into the target directory and validates public worker/WASM files against the renderer asset manifest exported by `@file-viewer/core`. This catches missing archive or CAD deployment assets before users open a document.
+
 ```ts
 import { mountViewerFrame } from '@flyfish-group/file-viewer-web'
 

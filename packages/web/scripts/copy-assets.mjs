@@ -2,7 +2,7 @@
 import { cp, mkdir, readdir, rm } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const scriptFile = fileURLToPath(import.meta.url)
 const packageDir = resolve(dirname(scriptFile), '..')
@@ -51,9 +51,44 @@ const removeMacMetadata = async dir => {
   }))
 }
 
-await rm(targetDir, { force: true, recursive: true })
-await mkdir(targetDir, { recursive: true })
-await cp(sourceDir, targetDir, { recursive: true })
-await removeMacMetadata(targetDir)
+const copyWithBuiltHelper = async () => {
+  const helperPath = resolve(packageDir, 'dist/node.js')
+  if (!existsSync(helperPath)) {
+    return false
+  }
 
-console.log(`[file-viewer-web] viewer assets copied to ${targetDir}`)
+  const { copyViewerAssets } = await import(pathToFileURL(helperPath).href)
+  const result = await copyViewerAssets({ sourceDir, targetDir })
+  if (result.validation?.missingOptional?.length) {
+    console.warn(
+      `[file-viewer-web] optional viewer assets missing: ${
+        result.validation.missingOptional.map(asset => asset.relativePath).join(', ')
+      }`
+    )
+  }
+  console.log(`[file-viewer-web] viewer assets copied to ${result.targetDir}`)
+  console.log(`[file-viewer-web] viewer asset manifest written to ${result.assetManifestPath}`)
+  return true
+}
+
+const copyWithFallback = async () => {
+  await rm(targetDir, { force: true, recursive: true })
+  await mkdir(targetDir, { recursive: true })
+  await cp(sourceDir, targetDir, { recursive: true })
+  await removeMacMetadata(targetDir)
+  console.log(`[file-viewer-web] viewer assets copied to ${targetDir}`)
+}
+
+try {
+  if (!await copyWithBuiltHelper()) {
+    await copyWithFallback()
+  }
+} catch (reason) {
+  const message = reason instanceof Error ? reason.message : String(reason)
+  if (isPostinstall) {
+    console.warn(`[file-viewer-web] viewer asset copy skipped: ${message}`)
+    process.exit(0)
+  }
+  console.error(`[file-viewer-web] viewer asset copy failed: ${message}`)
+  process.exit(1)
+}

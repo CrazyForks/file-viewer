@@ -1,7 +1,12 @@
-import { cp, mkdir, readdir, rm } from 'node:fs/promises'
+import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
+import {
+  listFileViewerRendererAssetManifests,
+  type FileViewerRendererAssetDefinition,
+  type FileViewerRendererAssetManifest
+} from '@file-viewer/core/assets'
 
 export interface CopyViewerAssetsOptions {
   /**
@@ -18,11 +23,68 @@ export interface CopyViewerAssetsOptions {
   clean?: boolean
 }
 
+export interface ValidateViewerAssetsOptions {
+  /**
+   * viewer 静态目录。默认使用当前包随带的 `viewer/`。
+   */
+  sourceDir?: string
+}
+
+export interface ViewerAssetValidationItem {
+  id: string
+  rendererId: string
+  kind: FileViewerRendererAssetDefinition['kind']
+  target: FileViewerRendererAssetDefinition['target']
+  required: boolean
+  relativePath: string
+  absolutePath: string
+  exists: boolean
+  description: string
+}
+
+export interface ViewerAssetValidationResult {
+  sourceDir: string
+  valid: boolean
+  checkedAt: string
+  assets: ViewerAssetValidationItem[]
+  missingRequired: ViewerAssetValidationItem[]
+  missingOptional: ViewerAssetValidationItem[]
+}
+
+export type ViewerAssetManifestValidationItem = Omit<
+  ViewerAssetValidationItem,
+  'absolutePath'
+>
+
+export interface ViewerAssetManifestValidationResult {
+  valid: boolean
+  checkedAt: string
+  assets: ViewerAssetManifestValidationItem[]
+  missingRequired: ViewerAssetManifestValidationItem[]
+  missingOptional: ViewerAssetManifestValidationItem[]
+}
+
+export interface ViewerAssetManifestFile {
+  schemaVersion: 1
+  generatedAt: string
+  rendererAssetManifests: FileViewerRendererAssetManifest[]
+  validation: ViewerAssetManifestValidationResult
+}
+
+export interface CopyViewerAssetsResult {
+  sourceDir: string
+  targetDir: string
+  viewerUrl: string
+  assetManifestPath: string
+  validation: ViewerAssetValidationResult
+}
+
 const distDir = dirname(fileURLToPath(import.meta.url))
 const packageDir = resolve(distDir, '..')
 
 export const DEFAULT_VIEWER_PUBLIC_DIR = 'public/file-viewer'
 export const DEFAULT_VIEWER_PUBLIC_URL = '/file-viewer/index.html'
+export const VIEWER_ASSET_MANIFEST_FILENAME = 'flyfish-viewer-assets.json'
 
 export const getViewerAssetDir = () => resolve(packageDir, 'viewer')
 
@@ -44,7 +106,100 @@ const removeMacMetadata = async (dir: string) => {
   }))
 }
 
-export const copyViewerAssets = async (options: CopyViewerAssetsOptions = {}) => {
+const isExpectedAssetKind = (
+  asset: FileViewerRendererAssetDefinition,
+  pathStat: { isDirectory(): boolean; isFile(): boolean }
+) => {
+  return asset.kind === 'wasm-directory' ? pathStat.isDirectory() : pathStat.isFile()
+}
+
+export const validateViewerAssets = async (
+  options: ValidateViewerAssetsOptions = {}
+): Promise<ViewerAssetValidationResult> => {
+  const sourceDir = resolve(options.sourceDir || getViewerAssetDir())
+  const assets = await Promise.all(
+    listFileViewerRendererAssetManifests()
+      .flatMap(manifest => manifest.assets)
+      .filter(asset => asset.target === 'public' && asset.defaultPath)
+      .map(async asset => {
+        const relativePath = asset.defaultPath || ''
+        const absolutePath = resolve(sourceDir, relativePath)
+        let exists = false
+
+        try {
+          exists = isExpectedAssetKind(asset, await stat(absolutePath))
+        } catch {
+          exists = false
+        }
+
+        return {
+          id: asset.id,
+          rendererId: asset.rendererId,
+          kind: asset.kind,
+          target: asset.target,
+          required: asset.required,
+          relativePath,
+          absolutePath,
+          exists,
+          description: asset.description
+        } satisfies ViewerAssetValidationItem
+      })
+  )
+  const missingRequired = assets.filter(asset => asset.required && !asset.exists)
+  const missingOptional = assets.filter(asset => !asset.required && !asset.exists)
+
+  return {
+    sourceDir,
+    valid: missingRequired.length === 0,
+    checkedAt: new Date().toISOString(),
+    assets,
+    missingRequired,
+    missingOptional
+  }
+}
+
+const toViewerAssetManifestValidationItem = (
+  item: ViewerAssetValidationItem
+): ViewerAssetManifestValidationItem => {
+  const { absolutePath: _absolutePath, ...manifestItem } = item
+  return manifestItem
+}
+
+export const toViewerAssetManifestValidation = (
+  validation: ViewerAssetValidationResult
+): ViewerAssetManifestValidationResult => {
+  return {
+    valid: validation.valid,
+    checkedAt: validation.checkedAt,
+    assets: validation.assets.map(toViewerAssetManifestValidationItem),
+    missingRequired: validation.missingRequired.map(toViewerAssetManifestValidationItem),
+    missingOptional: validation.missingOptional.map(toViewerAssetManifestValidationItem)
+  }
+}
+
+export const buildViewerAssetManifest = (
+  validation: ViewerAssetValidationResult
+): ViewerAssetManifestFile => {
+  return {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    rendererAssetManifests: listFileViewerRendererAssetManifests(),
+    validation: toViewerAssetManifestValidation(validation)
+  }
+}
+
+export const writeViewerAssetManifest = async (
+  targetDir: string,
+  manifest: ViewerAssetManifestFile
+) => {
+  const assetManifestPath = resolve(targetDir, VIEWER_ASSET_MANIFEST_FILENAME)
+  await writeFile(assetManifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
+  return assetManifestPath
+}
+
+export const copyViewerAssets = async (
+  options: CopyViewerAssetsOptions = {}
+): Promise<CopyViewerAssetsResult> => {
   const sourceDir = resolve(options.sourceDir || getViewerAssetDir())
   const targetDir = resolve(options.targetDir || getDefaultViewerTargetDir())
 
@@ -59,10 +214,24 @@ export const copyViewerAssets = async (options: CopyViewerAssetsOptions = {}) =>
   await mkdir(targetDir, { recursive: true })
   await cp(sourceDir, targetDir, { recursive: true })
   await removeMacMetadata(targetDir)
+  const validation = await validateViewerAssets({ sourceDir: targetDir })
+  const assetManifestPath = await writeViewerAssetManifest(
+    targetDir,
+    buildViewerAssetManifest(validation)
+  )
+
+  if (!validation.valid) {
+    const missing = validation.missingRequired
+      .map(asset => `${asset.rendererId}:${asset.relativePath}`)
+      .join(', ')
+    throw new Error(`viewer 静态产物缺少必要资源: ${missing}`)
+  }
 
   return {
     sourceDir,
     targetDir,
-    viewerUrl: DEFAULT_VIEWER_PUBLIC_URL
+    viewerUrl: DEFAULT_VIEWER_PUBLIC_URL,
+    assetManifestPath,
+    validation
   }
 }
