@@ -43,6 +43,7 @@ const webHelperExports = [
   'buildViewerSrc',
   'createViewerFrame',
   'createViewerFrameControllerHandle',
+  'createViewerFrameFilePostController',
   'createViewerMountedFrameHandle',
   'mountViewerFrame',
   'mountViewer',
@@ -177,7 +178,7 @@ function verifyVueWrapper(source, label, version) {
 function verifyReactWrapper(source, label) {
   assertImportsFrom(source, 'react', label)
   assertImportsFrom(source, '@file-viewer/web', label)
-  assertImportsFrom(source, '@file-viewer/core', label)
+  assertNotImportsFrom(source, '@file-viewer/core', label)
   assertSharedFrameProps(source, label)
   assertTokens(source, [
     'FileViewerHandle',
@@ -185,7 +186,7 @@ function verifyReactWrapper(source, label) {
     'forwardRef',
     'useImperativeHandle',
     'buildViewerSrc',
-    'createFileViewerFrameFilePostController',
+    'createViewerFrameFilePostController',
     'postFile',
     'reload',
     'onViewerEvent',

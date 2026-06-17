@@ -106,7 +106,12 @@ async function assertWebGlobalEntrypoint(entry) {
     filename: `${entry.packageName}/${webGlobalBundle}`
   })
   const globalApi = context.window.FlyfishFileViewerWeb || context.FlyfishFileViewerWeb
-  for (const exportName of ['mountViewerFrame', 'mountViewer', 'buildViewerSrc']) {
+  for (const exportName of [
+    'mountViewerFrame',
+    'mountViewer',
+    'buildViewerSrc',
+    'createViewerFrameFilePostController'
+  ]) {
     if (typeof globalApi?.[exportName] !== 'function') {
       throw new Error(`${entry.packageName} browser global bundle is missing ${exportName}`)
     }

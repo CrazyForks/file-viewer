@@ -23,6 +23,8 @@ const requiredViewerTypeExports = [
   'ViewerFrameEventHandler',
   'ViewerFrameEventPayload',
   'ViewerFrameEventType',
+  'ViewerFrameFilePostController',
+  'ViewerFrameFilePostControllerOptions',
   'ViewerFrameHostComponentProps',
   'ViewerFrameIframeComponentProps',
   'ViewerFrameOptions',

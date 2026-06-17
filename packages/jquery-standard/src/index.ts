@@ -179,6 +179,8 @@ export type {
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
   ViewerFrameEventType,
+  ViewerFrameFilePostController,
+  ViewerFrameFilePostControllerOptions,
   ViewerFrameHostComponentProps,
   ViewerFrameIframeComponentProps,
   ViewerFrameOptions,

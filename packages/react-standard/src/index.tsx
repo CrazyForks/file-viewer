@@ -11,15 +11,11 @@ import {
   type SyntheticEvent
 } from 'react'
 import {
-  createFileViewerFrameFilePostController
-} from '@file-viewer/core'
-import type {
-  FileViewerFrameFilePostController
-} from '@file-viewer/core'
-import {
   buildViewerSrc,
+  createViewerFrameFilePostController,
   isViewerFrameEvent,
   type ViewerDirectFrameHandle,
+  type ViewerFrameFilePostController,
   type ViewerFrameComponentProps,
   type ViewerFrameEventPayload,
   type ViewerFrameOptions
@@ -41,6 +37,8 @@ export type {
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
   ViewerFrameEventType,
+  ViewerFrameFilePostController,
+  ViewerFrameFilePostControllerOptions,
   ViewerFrameHostComponentProps,
   ViewerFrameIframeComponentProps,
   ViewerFrameOptions,
@@ -111,9 +109,9 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
   const src = useMemo(() => buildReactViewerSrc(frameOptions), [frameOptions])
   const frameOptionsRef = useRef<ViewerFrameOptions>(frameOptions)
   frameOptionsRef.current = frameOptions
-  const filePostControllerRef = useRef<FileViewerFrameFilePostController | null>(null)
+  const filePostControllerRef = useRef<ViewerFrameFilePostController | null>(null)
   if (!filePostControllerRef.current) {
-    filePostControllerRef.current = createFileViewerFrameFilePostController({
+    filePostControllerRef.current = createViewerFrameFilePostController({
       getFrame: () => iframeRef.current,
       getOptions: () => frameOptionsRef.current
     })

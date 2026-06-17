@@ -4,6 +4,7 @@ import {
   buildFileViewerFrameSrc,
   createFileViewerFrameControllerHandle,
   createFileViewerFrame as createCoreFileViewerFrame,
+  createFileViewerFrameFilePostController,
   createFileViewerMountedFrameHandle,
   getFileViewerCurrentOrigin,
   getFileViewerFrameOrigin,
@@ -24,6 +25,8 @@ import type {
   FileViewerDirectFrameHandle as CoreFileViewerDirectFrameHandle,
   FileViewerFrameControllerHandle as CoreFileViewerFrameControllerHandle,
   FileViewerFrameController as CoreFileViewerFrameController,
+  FileViewerFrameFilePostController as CoreFileViewerFrameFilePostController,
+  FileViewerFrameFilePostControllerOptions as CoreFileViewerFrameFilePostControllerOptions,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
   FileViewerFrameComponentBridgeOptions as CoreFileViewerFrameComponentBridgeOptions,
@@ -97,6 +100,10 @@ export interface ViewerFrameController extends CoreFileViewerFrameController {}
 
 export type ViewerFrameControllerAccessor = FileViewerFrameControllerAccessor
 
+export interface ViewerFrameFilePostController extends CoreFileViewerFrameFilePostController {}
+
+export interface ViewerFrameFilePostControllerOptions extends CoreFileViewerFrameFilePostControllerOptions {}
+
 export interface ViewerDirectFrameHandle extends CoreFileViewerDirectFrameHandle {}
 
 export interface ViewerMountedFrameHandle extends CoreFileViewerMountedFrameHandle {}
@@ -165,6 +172,8 @@ export const createViewerFrame = (options: CreateViewerFrameOptions = {}) => {
 export const createViewerMountedFrameHandle = createFileViewerMountedFrameHandle
 
 export const createViewerFrameControllerHandle = createFileViewerFrameControllerHandle
+
+export const createViewerFrameFilePostController = createFileViewerFrameFilePostController
 
 export const mountViewerFrame = (
   container: HTMLElement,

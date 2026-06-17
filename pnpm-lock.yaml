@@ -361,9 +361,6 @@ importers:
 
   packages/react-standard:
     dependencies:
-      '@file-viewer/core':
-        specifier: workspace:^1.0.26
-        version: link:../core
       '@file-viewer/web':
         specifier: workspace:^1.0.26
         version: link:../web-standard

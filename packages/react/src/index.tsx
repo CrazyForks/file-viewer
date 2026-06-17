@@ -26,6 +26,7 @@ import type {
   FileViewerFrameHostComponentProps,
   FileViewerFrameIframeComponentProps,
   FileViewerFrameFilePostController,
+  FileViewerFrameFilePostControllerOptions,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
   FileViewerFrameOptions,
@@ -50,6 +51,8 @@ export type ViewerFrameHostComponentProps<
   ContainerStyle = unknown
 > = FileViewerFrameHostComponentProps<ContainerClass, ContainerStyle>
 export type ViewerFrameIframeComponentProps = FileViewerFrameIframeComponentProps
+export type ViewerFrameFilePostController = FileViewerFrameFilePostController
+export type ViewerFrameFilePostControllerOptions = FileViewerFrameFilePostControllerOptions
 export type ViewerFrameOptions = FileViewerFrameOptions
 export type ViewerFrameEventType = FileViewerPostMessageType
 export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>

@@ -30,6 +30,8 @@ export type {
   ViewerFrameEventHandler,
   ViewerFrameEventPayload,
   ViewerFrameEventType,
+  ViewerFrameFilePostController,
+  ViewerFrameFilePostControllerOptions,
   ViewerFrameOptions,
   ViewerPdfOptions,
   ViewerRuntimeOptions,
