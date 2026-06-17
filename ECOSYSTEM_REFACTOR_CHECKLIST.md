@@ -213,7 +213,7 @@
 - [x] 提供 `scripts/sync-wrapper-repos.mjs`，可把 monorepo 中的 wrapper 包导出为独立公开仓库目录，并自动去除 `workspace:` 依赖。
 - [x] 提供 `scripts/verify-wrapper-repos.mjs`，校验 wrapper 源目录和独立导出仓库的包名、npm 入口元数据、中英文 README、格式矩阵、Demo/文档链接、License、manifest、GitHub/Gitee 元数据、`workspace:` 依赖和私有 workspace 泄露。
 - [x] 提供 `scripts/publish-wrapper-repos.mjs`，可把独立 wrapper 导出目录初始化为 Git 仓库，配置 GitHub/Gitee 远端，提交并按需推送。
-- [x] `scripts/sync-public-artifacts.mjs` 接入 wrapper manifest，公开产物仓库会同步所有标准 wrapper tarball 和仓库矩阵。
+- [x] `scripts/sync-public-artifacts.mjs` 接入统一 ecosystem npm release manifest，公开产物仓库会同步标准 wrapper tarball、仓库矩阵，并记录重复兼容 tarball 的省略策略。
 - [x] 根 README / README.en.md 接入同一份 wrapper manifest，公开产物仓库同步时会自动写明标准 npm 包、GitHub/Gitee wrapper 仓库、core 源码私有边界和当前格式数量。
 - [ ] 为每个 wrapper 创建 GitHub 公开仓库。
 - [ ] 为每个 wrapper 创建 Gitee 镜像仓库。

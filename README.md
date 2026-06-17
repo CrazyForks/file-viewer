@@ -35,7 +35,6 @@
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
-npm install ./artifacts/file-viewer3-1.0.26.tgz
 npm install ./artifacts/file-viewer-core-1.0.26.tgz
 npm install ./artifacts/file-viewer-vue3-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-1.0.26.tgz
@@ -43,7 +42,7 @@ npm install ./artifacts/flyfish-group-file-viewer-web-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.26.tgz
 ```
 
-Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随公开成品仓库一起生成。离线安装 React 包时请先安装同版本 web 包；React / 纯 JS 包推荐用 `npm install` 获得安装即复制的体验。pnpm 10 默认会拦截依赖包的 `postinstall`，如果看到 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或安装后运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随公开成品仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，公开成品仓库不再重复存储该 tarball。离线安装 React 包时请先安装同版本 web 包；React / 纯 JS 包推荐用 `npm install` 获得安装即复制的体验。pnpm 10 默认会拦截依赖包的 `postinstall`，如果看到 `Ignored build scripts: @flyfish-group/file-viewer-web`，请执行 `pnpm approve-builds` 允许该包，或安装后运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
 GitHub Release 会同步提供完整下载项:
 
@@ -63,10 +62,11 @@ GitHub Release 会同步提供完整下载项:
 | `file-viewer-jquery-*.tgz` | jQuery 标准 wrapper 本地 npm 安装包 |
 | `file-viewer-svelte-*.tgz` | Svelte 标准 wrapper 本地 npm 安装包 |
 | `flyfish-group-file-viewer3-*.tgz` | Vue3 本地 npm 安装包 |
-| `file-viewer3-*.tgz` | Vue3 非 scoped 历史兼容包 |
 | `flyfish-group-file-viewer-*.tgz` | Vue2.7 本地 npm 安装包 |
 | `flyfish-group-file-viewer-web-*.tgz` | 纯 JS iframe helper，本地安装后复制 viewer 静态产物 |
 | `flyfish-group-file-viewer-react-*.tgz` | React iframe 组件，本地安装时请同时安装同版本 web 包 |
+
+`file-viewer3` 非 scoped 历史兼容包仍会走 npm 发布链路；公开成品仓库下载区使用 `flyfish-group-file-viewer3-*.tgz` 作为 Vue3 兼容 tarball，避免重复存储相同包体。
 
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## 标准生态包与公开仓库

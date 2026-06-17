@@ -89,10 +89,10 @@ It verifies public publish settings, type declarations, package entry files, REA
 
 ## Public Artifact Sync
 
-`scripts/sync-public-artifacts.mjs` also reads `ecosystem/wrappers.json`. During a full public artifact release it packs:
+`scripts/sync-public-artifacts.mjs` delegates npm tarball creation to the same ecosystem release helper, then reads the generated `npm-release-manifest.json`. During a full public artifact release it packs:
 
 - the compiled core foundation tarball `@file-viewer/core`
-- historical compatibility packages such as `@flyfish-group/file-viewer-web`, `@flyfish-group/file-viewer-react` and `file-viewer3`
+- historical compatibility packages such as `@flyfish-group/file-viewer3`, `@flyfish-group/file-viewer-web`, and `@flyfish-group/file-viewer-react`
 - every standard wrapper package listed in the manifest
 
-The generated `artifacts/release-manifest.json` records the wrapper package, tarball, GitHub repository and Gitee mirror for each public integration.
+The unscoped `file-viewer3` compatibility package remains part of the npm release flow, but the public artifact repository omits its duplicate tarball and records that policy in `artifacts/release-manifest.json`. The generated manifest records each package, whether its tarball is included, the GitHub repository, and the Gitee mirror for every public integration.

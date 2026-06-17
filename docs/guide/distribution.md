@@ -107,7 +107,6 @@ mountViewerFrame(document.getElementById('viewer')!, {
 
 ```bash
 npm install ./artifacts/flyfish-group-file-viewer3-1.0.26.tgz
-npm install ./artifacts/file-viewer3-1.0.26.tgz
 npm install ./artifacts/file-viewer-core-1.0.26.tgz
 npm install ./artifacts/file-viewer-vue3-1.0.26.tgz
 npm install ./artifacts/file-viewer-vue2.7-1.0.26.tgz
@@ -122,7 +121,7 @@ npm install ./artifacts/flyfish-group-file-viewer-web-1.0.26.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-1.0.26.tgz
 ```
 
-Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随公开成品仓库一起生成。React tarball 会依赖同版本的 web 包，所以离线安装时请先安装 web 包，再安装 React 包。
+Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随公开成品仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，公开成品仓库下载区只保留 `flyfish-group-file-viewer3-*.tgz` 这一份 Vue3 兼容 tarball。React tarball 会依赖同版本的 web 包，所以离线安装时请先安装 web 包，再安装 React 包。
 
 ## 成品仓库内容
 

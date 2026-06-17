@@ -1,8 +1,13 @@
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import {
+  collectPackageEntrypoints,
+  ecosystemPackageManifestEntry,
+  loadEcosystemReleaseContext
+} from './lib/ecosystem-packages.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -25,56 +30,7 @@ const packDir = resolve(
   readArg('--pack-dir', process.env.FILE_VIEWER_ECOSYSTEM_PACK_DIR || '.release/ecosystem')
 )
 
-const rootPackage = await readJson(join(sourceRoot, 'package.json'))
-const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
-
-const packageSpecs = [
-  {
-    id: 'core',
-    kind: 'core',
-    packageDir: 'packages/core',
-    publicSource: false
-  },
-  {
-    id: 'vue3-compat-scoped',
-    kind: 'compatibility',
-    packageDir: '.',
-    publicSource: false
-  },
-  {
-    id: 'vue3-compat-unscoped',
-    kind: 'compatibility',
-    packageDir: 'packages/vue3-unscoped',
-    publicSource: false
-  },
-  {
-    id: 'web-compat',
-    kind: 'compatibility',
-    packageDir: 'packages/web',
-    publicSource: false
-  },
-  {
-    id: 'react-compat',
-    kind: 'compatibility',
-    packageDir: 'packages/react',
-    publicSource: false
-  },
-  ...wrapperManifest.wrappers.map(wrapper => ({
-    id: wrapper.id,
-    kind: 'standard-wrapper',
-    packageDir: wrapper.packageDir,
-    wrapper,
-    publicSource: true
-  }))
-]
-
-async function readJson(path) {
-  return JSON.parse(await readFile(path, 'utf8'))
-}
-
-function npmPackFilename(packageName, packageVersion) {
-  return `${packageName.replace(/^@/, '').replace(/\//g, '-')}-${packageVersion}.tgz`
-}
+const { rootPackage, entries } = await loadEcosystemReleaseContext(sourceRoot)
 
 function run(command, commandArgs, cwd = sourceRoot) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -108,53 +64,6 @@ async function assertFile(path, label = path) {
   }
 }
 
-function collectExportEntrypoints(value, paths = new Set()) {
-  if (!value) {
-    return paths
-  }
-  if (typeof value === 'string') {
-    paths.add(value)
-    return paths
-  }
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      collectExportEntrypoints(item, paths)
-    }
-    return paths
-  }
-  if (typeof value === 'object') {
-    for (const item of Object.values(value)) {
-      collectExportEntrypoints(item, paths)
-    }
-  }
-  return paths
-}
-
-function collectPackageEntrypoints(packageJson) {
-  const entrypoints = new Set()
-  for (const field of ['main', 'module', 'browser', 'types', 'svelte']) {
-    if (typeof packageJson[field] === 'string') {
-      entrypoints.add(packageJson[field])
-    }
-  }
-  for (const item of collectExportEntrypoints(packageJson.exports)) {
-    entrypoints.add(item)
-  }
-  for (const item of Object.values(packageJson.bin || {})) {
-    if (typeof item === 'string') {
-      entrypoints.add(item)
-    }
-  }
-  return [...entrypoints].filter(entrypoint =>
-    !entrypoint.startsWith('/') &&
-    !entrypoint.includes(':') &&
-    !entrypoint.includes('*') &&
-    !entrypoint.startsWith('#') &&
-    entrypoint !== './' &&
-    entrypoint !== '.'
-  )
-}
-
 async function verifyPackageEntrypoints(entry, { requireFiles }) {
   for (const field of ['main', 'module', 'types']) {
     if (!entry.packageJson[field]) {
@@ -177,19 +86,6 @@ async function verifyPackageEntrypoints(entry, { requireFiles }) {
   }
 }
 
-async function packageEntry(spec) {
-  const absoluteDir = resolve(sourceRoot, spec.packageDir)
-  const packageJson = await readJson(join(absoluteDir, 'package.json'))
-  return {
-    ...spec,
-    absoluteDir,
-    packageJson,
-    packageName: packageJson.name,
-    version: packageJson.version,
-    tarballName: npmPackFilename(packageJson.name, packageJson.version)
-  }
-}
-
 async function verifyPackage(entry, options) {
   await assertDirectory(entry.absoluteDir, entry.packageDir)
   await assertFile(join(entry.absoluteDir, 'package.json'), `${entry.packageDir}/package.json`)
@@ -209,7 +105,6 @@ async function verifyPackage(entry, options) {
   await verifyPackageEntrypoints(entry, options)
 }
 
-const entries = await Promise.all(packageSpecs.map(packageEntry))
 const names = new Set()
 for (const entry of entries) {
   if (names.has(entry.packageName)) {
@@ -223,15 +118,8 @@ if (mode === 'list') {
   console.log(JSON.stringify({
     version: rootPackage.version,
     packages: entries.map(entry => ({
-      id: entry.id,
-      kind: entry.kind,
-      packageName: entry.packageName,
-      version: entry.version,
-      packageDir: entry.packageDir,
-      tarballName: entry.tarballName,
-      publicSource: entry.publicSource,
-      github: entry.wrapper?.github ?? null,
-      gitee: entry.wrapper?.gitee ?? null
+      ...ecosystemPackageManifestEntry(entry),
+      tarballName: entry.tarballName
     }))
   }, null, 2))
   process.exit(0)
@@ -250,17 +138,7 @@ if (mode === 'pack') {
     version: rootPackage.version,
     generatedAt: new Date().toISOString(),
     packageCount: entries.length,
-    packages: entries.map(entry => ({
-      id: entry.id,
-      kind: entry.kind,
-      packageName: entry.packageName,
-      version: entry.version,
-      packageDir: entry.packageDir,
-      tarball: entry.tarballName,
-      publicSource: entry.publicSource,
-      github: entry.wrapper?.github ?? null,
-      gitee: entry.wrapper?.gitee ?? null
-    }))
+    packages: entries.map(ecosystemPackageManifestEntry)
   }
   await writeFile(
     join(packDir, 'npm-release-manifest.json'),

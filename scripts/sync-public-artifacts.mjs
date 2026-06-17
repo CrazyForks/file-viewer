@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
-import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { basename, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
 
 const sourceRoot = process.cwd()
 const args = process.argv.slice(2)
@@ -24,50 +25,12 @@ const slimArtifacts =
   (args.includes('--slim') || process.env.FILE_VIEWER_PUBLIC_SLIM === '1') &&
   !args.includes('--expanded-assets')
 const keepExpandedAssets = !slimArtifacts
-const packageJson = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'))
+const {
+  rootPackage: packageJson,
+  wrapperManifest,
+  entries: ecosystemPackageEntries
+} = await loadEcosystemReleaseContext(sourceRoot)
 const version = packageJson.version
-const wrapperManifest = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrappers.json'), 'utf8'))
-const additionalArtifactPackageSpecs = [
-  {
-    packageDir: 'packages/core',
-    kind: 'core'
-  },
-  {
-    packageDir: 'packages/vue3-unscoped',
-    kind: 'compatibility'
-  }
-]
-const historicalAdapterPackageDirs = ['packages/web', 'packages/react']
-const additionalArtifactPackages = await Promise.all(
-  additionalArtifactPackageSpecs.map(spec =>
-    loadAdapterArtifactPackage({
-      packageDir: spec.packageDir,
-      kind: spec.kind
-    })
-  )
-)
-const historicalAdapterPackages = await Promise.all(
-  historicalAdapterPackageDirs.map(packageDir =>
-    loadAdapterArtifactPackage({
-      packageDir,
-      kind: 'compatibility'
-    })
-  )
-)
-const standardWrapperPackages = await Promise.all(
-  wrapperManifest.wrappers.map(wrapper =>
-    loadAdapterArtifactPackage({
-      packageDir: wrapper.packageDir,
-      kind: 'standard',
-      wrapper
-    })
-  )
-)
-const adapterArtifactPackages = [
-  ...additionalArtifactPackages,
-  ...historicalAdapterPackages,
-  ...standardWrapperPackages
-]
 const vue2Tarball = resolve(
   readArg(
     '--vue2-tarball',
@@ -78,23 +41,7 @@ const vue2Tarball = resolve(
 const releaseDir = join(sourceRoot, '.release', `file-viewer-v3-${version}`)
 const demoStagingDir = join(releaseDir, 'demo')
 const adapterDemoStagingDir = join(releaseDir, 'adapter-demo')
-const npmPackDir = join(releaseDir, 'npm')
-const adapterPackDir = join(releaseDir, 'adapters')
-
-function npmPackFilename(packageName, packageVersion) {
-  return `${packageName.replace(/^@/, '').replace(/\//g, '-')}-${packageVersion}.tgz`
-}
-
-async function loadAdapterArtifactPackage({ packageDir, kind, wrapper = null }) {
-  const packageJson = JSON.parse(await readFile(join(sourceRoot, packageDir, 'package.json'), 'utf8'))
-  return {
-    kind,
-    wrapper,
-    packageDir,
-    packageJson,
-    tarballName: npmPackFilename(packageJson.name, packageJson.version)
-  }
-}
+const ecosystemPackDir = join(releaseDir, 'ecosystem')
 
 function run(command, commandArgs, options = {}) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -164,7 +111,9 @@ async function removeOldArtifacts(artifactsDir) {
     return
   }
   const entries = await readdir(artifactsDir)
-  const currentAdapterTarballs = new Set(adapterArtifactPackages.map(adapterPackage => adapterPackage.tarballName))
+  const currentEcosystemTarballs = new Set(
+    ecosystemPackageEntries.map(ecosystemPackage => ecosystemPackage.tarballName)
+  )
   for (const entry of entries) {
     if (/^file-viewer-v3-.*-(demo|adapter-demo|lib-dist|docs)\.tar\.gz$/.test(entry)) {
       await removePath(join(artifactsDir, entry))
@@ -173,7 +122,7 @@ async function removeOldArtifacts(artifactsDir) {
       await removePath(join(artifactsDir, entry))
     }
     if (
-      currentAdapterTarballs.has(entry) ||
+      currentEcosystemTarballs.has(entry) ||
       /^(file-viewer3|file-viewer-core)-.*\.tgz$/.test(entry) ||
       /^file-viewer-(vue3|vue2\.7|vue2\.6|react|react-legacy|web|jquery|svelte)-.*\.tgz$/.test(entry)
     ) {
@@ -187,24 +136,27 @@ async function createTarball(sourceDir, targetFile) {
   run('tar', ['-czf', targetFile, '-C', sourceDir, '.'])
 }
 
-async function findPackedNpmTarball() {
-  const entries = await readdir(npmPackDir)
-  const match = entries.find(entry => entry === `flyfish-group-file-viewer3-${version}.tgz`)
-  if (!match) {
-    throw new Error(`Expected npm tarball was not found in ${npmPackDir}`)
-  }
-  return join(npmPackDir, match)
+function shouldPublishArtifactTarball(packageRecord) {
+  return packageRecord.publicArtifact?.includeTarball !== false
 }
 
-async function findAdapterTarballs() {
-  const entries = await readdir(adapterPackDir)
-  const expected = adapterArtifactPackages.map(adapterPackage => adapterPackage.tarballName)
-  for (const name of expected) {
-    if (!entries.includes(name)) {
-      throw new Error(`Expected adapter tarball was not found in ${adapterPackDir}: ${name}`)
+async function readEcosystemPackManifest() {
+  const manifestPath = join(ecosystemPackDir, 'npm-release-manifest.json')
+  await assertFile(manifestPath, 'Ecosystem npm release manifest')
+  const manifest = await readJson(manifestPath)
+  const packageRecords = manifest.packages || []
+  const packedPackages = new Set(packageRecords.map(packageRecord => packageRecord.packageName))
+  for (const entry of ecosystemPackageEntries) {
+    if (!packedPackages.has(entry.packageName)) {
+      throw new Error(`Ecosystem pack manifest is missing ${entry.packageName}`)
     }
   }
-  return expected.map(name => join(adapterPackDir, name))
+  for (const packageRecord of packageRecords) {
+    if (shouldPublishArtifactTarball(packageRecord)) {
+      await assertFile(join(ecosystemPackDir, packageRecord.tarball), `${packageRecord.packageName} tarball`)
+    }
+  }
+  return manifest
 }
 
 async function assertArtifactOnlyRepo(repoDir) {
@@ -233,10 +185,12 @@ async function assertArtifactOnlyRepo(repoDir) {
   }
 }
 
-async function writeReleaseManifest(repoDir) {
+async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
     ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
     : ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'artifacts']
+  const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
+  const packages = ecosystemPackManifest.packages || []
   const manifest = {
     version,
     package: packageJson.name,
@@ -245,22 +199,26 @@ async function writeReleaseManifest(repoDir) {
     sourceCommit: run('git', ['rev-parse', '--short', 'HEAD'], { capture: true }),
     corePackage: wrapperManifest.corePackage,
     adapterPackages: Object.fromEntries(
-      adapterArtifactPackages.map(adapterPackage => [
-        adapterPackage.packageJson.name,
-        adapterPackage.packageJson.version
-      ])
+      packages.map(packageRecord => [packageRecord.packageName, packageRecord.version])
     ),
-    adapterArtifacts: adapterArtifactPackages.map(adapterPackage => ({
-      name: adapterPackage.packageJson.name,
-      version: adapterPackage.packageJson.version,
-      kind: adapterPackage.kind,
-      framework: adapterPackage.wrapper?.framework ?? null,
-      packageDir: adapterPackage.packageDir,
-      tarball: adapterPackage.tarballName,
-      github: adapterPackage.wrapper?.github ?? null,
-      gitee: adapterPackage.wrapper?.gitee ?? null,
-      historicalPackages: adapterPackage.wrapper?.historicalPackages ?? []
-    })),
+    adapterArtifacts: packages.map(packageRecord => {
+      const wrapper = wrappersByPackageName.get(packageRecord.packageName)
+      const includeTarball = shouldPublishArtifactTarball(packageRecord)
+      return {
+        name: packageRecord.packageName,
+        version: packageRecord.version,
+        kind: packageRecord.kind,
+        framework: wrapper?.framework ?? null,
+        packageDir: packageRecord.packageDir,
+        tarball: includeTarball ? packageRecord.tarball : null,
+        artifactIncluded: includeTarball,
+        artifactDuplicateOf: packageRecord.publicArtifact?.duplicateOf ?? null,
+        artifactNote: packageRecord.publicArtifact?.reason ?? null,
+        github: packageRecord.github ?? null,
+        gitee: packageRecord.gitee ?? null,
+        historicalPackages: wrapper?.historicalPackages ?? []
+      }
+    }),
     wrapperRepositories: wrapperManifest.wrappers.map(wrapper => ({
       framework: wrapper.framework,
       packageName: wrapper.packageName,
@@ -301,29 +259,26 @@ if (!skipBuild) {
   await removePath(releaseDir)
   await mkdir(demoStagingDir, { recursive: true })
   await mkdir(adapterDemoStagingDir, { recursive: true })
-  await mkdir(npmPackDir, { recursive: true })
-  await mkdir(adapterPackDir, { recursive: true })
+  await mkdir(ecosystemPackDir, { recursive: true })
 
-  run('pnpm', ['run', 'build-only'])
+  run('pnpm', ['run', 'build:viewer-assets'])
   await copyCleanDir(join(sourceRoot, 'dist'), demoStagingDir)
 
   run('pnpm', ['run', 'build:adapter-demo'])
   await copyCleanDir(join(sourceRoot, 'packages', 'demo', 'dist'), adapterDemoStagingDir)
-  for (const adapterPackage of adapterArtifactPackages) {
-    run('pnpm', ['--filter', adapterPackage.packageJson.name, 'build'])
-    run('pnpm', ['-C', adapterPackage.packageDir, 'pack', '--pack-destination', adapterPackDir])
-  }
 
+  run('pnpm', ['--filter', '@file-viewer/core', 'build'])
+  run('pnpm', ['run', 'build:adapter-packages'])
   run('pnpm', ['run', 'build-lib-only'])
   run('pnpm', ['run', 'obfuscate'])
   run('pnpm', ['run', 'docs:build'])
-  run('npm', ['pack', '--pack-destination', npmPackDir, '--registry=https://registry.npmjs.org/'])
+  run('node', ['scripts/release-ecosystem-packages.mjs', '--pack', '--pack-dir', ecosystemPackDir, '--clean'])
 } else {
   await assertDirectory(demoStagingDir, 'Demo staging directory')
   await assertDirectory(adapterDemoStagingDir, 'Adapter demo staging directory')
   await assertDirectory(join(sourceRoot, 'dist'), 'Library dist directory')
   await assertDirectory(join(sourceRoot, 'docs', '.vitepress', 'dist'), 'Docs dist directory')
-  await assertDirectory(adapterPackDir, 'Adapter pack directory')
+  await assertDirectory(ecosystemPackDir, 'Ecosystem pack directory')
 }
 
 const artifactsDir = join(publicRepoDir, 'artifacts')
@@ -347,21 +302,25 @@ await cp(join(sourceRoot, 'README.en.md'), join(publicRepoDir, 'README.en.md'), 
 await cp(join(sourceRoot, 'LICENSE'), join(publicRepoDir, 'LICENSE'), { force: true })
 await cp(join(sourceRoot, 'package.json'), join(publicRepoDir, 'package.json'), { force: true })
 
-const npmTarball = await findPackedNpmTarball()
-await cp(npmTarball, join(artifactsDir, basename(npmTarball)), { force: true })
+const ecosystemPackManifest = await readEcosystemPackManifest()
+for (const packageRecord of ecosystemPackManifest.packages || []) {
+  if (!shouldPublishArtifactTarball(packageRecord)) {
+    continue
+  }
+  await cp(join(ecosystemPackDir, packageRecord.tarball), join(artifactsDir, packageRecord.tarball), {
+    force: true
+  })
+}
 if (!skipVue2Tarball) {
   await assertFile(vue2Tarball, 'Vue2 npm tarball')
   await cp(vue2Tarball, join(artifactsDir, basename(vue2Tarball)), { force: true })
-}
-for (const adapterTarball of await findAdapterTarballs()) {
-  await cp(adapterTarball, join(artifactsDir, basename(adapterTarball)), { force: true })
 }
 
 await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v3-${version}-demo.tar.gz`))
 await createTarball(adapterDemoStagingDir, join(artifactsDir, `file-viewer-v3-${version}-adapter-demo.tar.gz`))
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v3-${version}-lib-dist.tar.gz`))
 await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v3-${version}-docs.tar.gz`))
-await writeReleaseManifest(publicRepoDir)
+await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)
 await assertArtifactOnlyRepo(publicRepoDir)
 
 console.log(`Public artifacts prepared in ${publicRepoDir}`)
