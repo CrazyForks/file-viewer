@@ -51,6 +51,7 @@
     "react": ">=17 <20"
   },
   "dependencies": {
+    "@file-viewer/core": "workspace:^1.0.26",
     "@flyfish-group/file-viewer-web": "workspace:^1.0.25"
   },
   "devDependencies": {

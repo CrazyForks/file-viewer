@@ -11,23 +11,32 @@ import {
   type SyntheticEvent
 } from 'react'
 import {
-  buildViewerSrc,
-  isViewerFrameEvent,
-  postFileToViewer,
-  type FileRef,
-  type ViewerFrameEventHandler,
-  type ViewerFrameOptions
-} from '@flyfish-group/file-viewer-web'
+  DEFAULT_FILE_VIEWER_URL,
+  buildFileViewerFrameSrc,
+  isFileViewerFrameEvent,
+  postFileToFileViewerFrame
+} from '@file-viewer/core'
+import type {
+  FileViewerFileRef,
+  FileViewerFrameEventHandler,
+  FileViewerFrameEventPayload,
+  FileViewerFrameOptions,
+  FileViewerPostMessageType,
+  FileViewerSerializableOptions,
+  FileViewerSerializableToolbarOptions,
+  FileViewerThemeMode,
+  FileViewerToolbarPosition
+} from '@file-viewer/core'
 
-export type {
-  FileRef,
-  ViewerFrameEventHandler,
-  ViewerFrameOptions,
-  ViewerRuntimeOptions,
-  ViewerToolbarOptions,
-  ViewerToolbarPosition,
-  ViewerThemeMode
-} from '@flyfish-group/file-viewer-web'
+export type FileRef = FileViewerFileRef
+export type ViewerFrameOptions = FileViewerFrameOptions
+export type ViewerFrameEventType = FileViewerPostMessageType
+export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>
+export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string, unknown> | null>
+export type ViewerRuntimeOptions = FileViewerSerializableOptions
+export type ViewerToolbarOptions = FileViewerSerializableToolbarOptions
+export type ViewerToolbarPosition = FileViewerToolbarPosition
+export type ViewerThemeMode = FileViewerThemeMode
 
 export interface FileViewerHandle {
   iframe: HTMLIFrameElement | null
@@ -87,6 +96,20 @@ const defaultStyle: CSSProperties = {
   display: 'block'
 }
 
+const REACT_VIEWER_FRAME_CACHE_KEY = '1.0.23'
+
+const isReactViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
+  return isFileViewerFrameEvent(value)
+}
+
+const buildReactViewerSrc = (options: ViewerFrameOptions) => {
+  return buildFileViewerFrameSrc({
+    ...options,
+    defaultViewerUrl: DEFAULT_FILE_VIEWER_URL,
+    defaultCacheKey: REACT_VIEWER_FRAME_CACHE_KEY
+  })
+}
+
 export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, forwardedRef) => {
   const {
     viewerUrl,
@@ -120,13 +143,13 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
     options
   }), [viewerUrl, url, file, name, from, targetOrigin, params, cacheKey, options])
 
-  const src = useMemo(() => buildViewerSrc(frameOptions), [frameOptions])
+  const src = useMemo(() => buildReactViewerSrc(frameOptions), [frameOptions])
   const retryTimerRef = useRef<number | undefined>(undefined)
   const retryCountRef = useRef(0)
   const lifecycleAcknowledgedRef = useRef(false)
 
   const postFile = useCallback(() => {
-    return postFileToViewer(iframeRef.current, frameOptions)
+    return postFileToFileViewerFrame(iframeRef.current, frameOptions)
   }, [frameOptions])
 
   const clearFilePostRetry = useCallback(() => {
@@ -195,7 +218,7 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
       if (event.source !== iframeRef.current?.contentWindow) {
         return
       }
-      if (!isViewerFrameEvent(event.data)) {
+      if (!isReactViewerFrameEvent(event.data)) {
         return
       }
       if (event.data.type === 'flyfish-viewer:lifecycle') {

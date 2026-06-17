@@ -292,6 +292,9 @@ importers:
 
   packages/react:
     dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^1.0.26
+        version: link:../core
       '@flyfish-group/file-viewer-web':
         specifier: workspace:^1.0.25
         version: link:../web
