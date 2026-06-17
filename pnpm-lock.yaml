@@ -290,6 +290,22 @@ importers:
         specifier: ^8.0.16
         version: 8.0.16(@types/node@25.9.2)(sass@1.100.0)
 
+  packages/jquery-standard:
+    dependencies:
+      '@file-viewer/web':
+        specifier: workspace:^1.0.26
+        version: link:../web-standard
+      jquery:
+        specifier: '>=3 <5'
+        version: 4.0.0
+    devDependencies:
+      '@types/jquery':
+        specifier: ^4.0.1
+        version: 4.0.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
   packages/react:
     dependencies:
       '@file-viewer/core':
