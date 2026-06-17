@@ -370,6 +370,19 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/vue26-standard:
+    dependencies:
+      '@file-viewer/web':
+        specifier: workspace:^1.0.26
+        version: link:../web-standard
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vue:
+        specifier: 2.6.14
+        version: 2.6.14
+
   packages/vue27-standard:
     dependencies:
       '@file-viewer/web':
@@ -5032,6 +5045,10 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
+
+  vue@2.6.14:
+    resolution: {integrity: sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==}
+    deprecated: Vue 2 has reached EOL and is no longer actively maintained. See https://v2.vuejs.org/eol/ for more details.
 
   vue@2.7.16:
     resolution: {integrity: sha512-4gCtFXaAA3zYZdTp5s4Hl2sozuySsgz4jy1EnpBHNfpMa9dK1ZCG7viqBPCwXtmgc8nHqUsAu3G4gtmXkkY3Sw==}
@@ -9938,6 +9955,8 @@ snapshots:
       '@volar/typescript': 2.4.28
       '@vue/language-core': 3.3.4
       typescript: 6.0.3
+
+  vue@2.6.14: {}
 
   vue@2.7.16:
     dependencies:
