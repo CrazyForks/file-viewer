@@ -145,9 +145,10 @@
   - [x] AI 文本切片生成迁入 `@file-viewer/core`。
   - [x] DOM 锚点采集、DOM 搜索高亮、provider 注册表和 Vue 响应式门面继续拆分。
     - [x] DOM 锚点采集、当前定位和锚点滚动迁入 `@file-viewer/core`，Vue 旧路径保留 re-export/门面。
-    - [x] 搜索/缩放 provider 注册表和查找协议迁入 `@file-viewer/core`，Vue 旧路径保持兼容。
+    - [x] 搜索/缩放 provider 注册表和查找协议迁入 `@file-viewer/core`，vendor 和组件 hooks 均直接依赖 core。
     - [x] DOM 搜索高亮、命中滚动和 MutationObserver 调度迁入 pure TS controller，Vue hook 仅负责响应式状态同步。
     - [x] 删除未使用的 `src/package/use/documentLocation.ts` Vue 门面，FileViewer 文档能力 hook 直接调用 core 的锚点、滚动和文本切片函数。
+    - [x] 删除 `src/package/use/documentSearch.ts` 与 `src/package/use/viewerZoom.ts` Vue 门面，搜索/缩放响应式状态收敛到 FileViewer 同级 hooks。
 - [x] 从 `src/package/vendors/renders.ts` 抽出 registry，保证格式注册不依赖 Vue。
   - [x] rendererId 到扩展名 handler 的派发器迁入 `@file-viewer/core`，Vue3 仅提供实际异步渲染 handler。
   - [x] FileRenderHandler 调用、legacy handler 到 RendererLoader 的适配和渲染实例销毁协议迁入 `@file-viewer/core`。

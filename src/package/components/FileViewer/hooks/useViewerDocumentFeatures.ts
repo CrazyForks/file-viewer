@@ -12,7 +12,7 @@ import {
   postFileViewerMessageToParent,
   scrollToFileViewerDocumentAnchor
 } from '@file-viewer/core'
-import { useDocumentSearch } from '@/package/use/documentSearch'
+import { useDocumentSearch } from './useDocumentSearch'
 
 interface UseViewerDocumentFeaturesOptions {
   output: Ref<HTMLDivElement | null>;

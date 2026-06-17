@@ -181,6 +181,7 @@ const vue3ScopedRuntimeFacadeImportPattern = new RegExp(
   `from\\s+['"][^'"]*common/(${vue3ScopedRuntimeFacadeNames.map(escapeRegExp).join('|')})['"]`
 )
 const vue3ScopedCommonTypeImportPattern = /from\s+['"][^'"]*common\/type(?:\.ts)?['"]/
+const vue3ScopedUseSearchZoomImportPattern = /from\s+['"]@\/package\/use\/(?:documentSearch|viewerZoom)['"]/
 const vue3ScopedVendorUseFacadeImportPattern = /from\s+['"]@\/package\/use\/(?:viewerZoom|documentSearch)['"]/
 const sourceFileExtensions = new Set(['.ts', '.tsx', '.vue', '.js', '.mjs'])
 
@@ -414,6 +415,32 @@ async function verifyVue3ScopedCompatibility() {
     !existsSync(join(entry.absoluteDir, 'src/package/use/index.ts')),
     `${entry.packageName} must import Vue runtime hooks explicitly instead of reintroducing src/package/use/index.ts`
   )
+  for (const removedHookPath of [
+    'src/package/use/documentSearch.ts',
+    'src/package/use/viewerZoom.ts'
+  ]) {
+    assert(
+      !existsSync(join(entry.absoluteDir, removedHookPath)),
+      `${entry.packageName} must keep search/zoom component hooks beside FileViewer instead of reintroducing ${removedHookPath}`
+    )
+  }
+
+  const vueDocumentSearchHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useDocumentSearch.ts')
+  const vueDocumentSearchHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useDocumentSearch.ts`
+  assertImportsFrom(vueDocumentSearchHookSource, '@file-viewer/core', vueDocumentSearchHookLabel)
+  assertTokens(vueDocumentSearchHookSource, [
+    'createFileViewerDomSearchController',
+    'controller.destroy()'
+  ], vueDocumentSearchHookLabel)
+
+  const vueZoomHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerZoom.ts')
+  const vueZoomHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerZoom.ts`
+  assertImportsFrom(vueZoomHookSource, '@file-viewer/core', vueZoomHookLabel)
+  assertTokens(vueZoomHookSource, [
+    'createFileViewerZoomController',
+    'cloneFileViewerZoomState',
+    'controller.destroy()'
+  ], vueZoomHookLabel)
 
   const vueWorkerHookSource = await readSource(entry, 'src/package/use/worker.ts')
   const vueWorkerHookLabel = `${entry.packageName} src/package/use/worker.ts`
@@ -458,6 +485,11 @@ async function verifyVue3ScopedCompatibility() {
     assert(
       !/from\s+['"]@\/package\/use['"]/.test(source),
       `${entry.packageName} ${relativePath} must import a concrete Vue hook module instead of @/package/use`
+    )
+    const searchZoomUseImport = vue3ScopedUseSearchZoomImportPattern.exec(source)
+    assert(
+      !searchZoomUseImport,
+      `${entry.packageName} ${relativePath} must keep search/zoom Vue state beside FileViewer hooks and use @file-viewer/core directly instead of ${searchZoomUseImport?.[0]}`
     )
     const runtimeFacadeImport = vue3ScopedRuntimeFacadeImportPattern.exec(source)
     assert(

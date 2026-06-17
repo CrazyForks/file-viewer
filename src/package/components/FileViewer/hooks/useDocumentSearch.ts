@@ -2,16 +2,10 @@ import { nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
 import {
   cloneFileViewerSearchState,
   createEmptyFileViewerSearchState,
-  createFileViewerDomSearchController
-} from '@file-viewer/core'
-export {
-  registerFileViewerSearchProvider,
-  unregisterFileViewerSearchProvider
-} from '@file-viewer/core'
-import type {
-  FileViewerDocumentAnchor,
-  FileViewerSearchOptions,
-  FileViewerSearchState
+  createFileViewerDomSearchController,
+  type FileViewerDocumentAnchor,
+  type FileViewerSearchOptions,
+  type FileViewerSearchState
 } from '@file-viewer/core'
 
 const applySearchState = (
@@ -26,6 +20,12 @@ const applySearchState = (
   target.matches = nextState.matches
 }
 
+/**
+ * FileViewer 组件内的文档搜索响应式门面。
+ *
+ * DOM 锚点采集、搜索高亮、命中滚动和 MutationObserver 调度均由 core controller 负责，
+ * 这里仅把纯 TS 快照同步为 Vue 响应式状态并绑定组件卸载生命周期。
+ */
 export const useDocumentSearch = (
   root: Ref<HTMLElement | null>,
   optionsSource?: () => boolean | FileViewerSearchOptions | undefined,
