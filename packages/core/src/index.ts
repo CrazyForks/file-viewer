@@ -319,6 +319,7 @@ export type {
   FileViewerOptions,
   FileViewerPdfOptions,
   FileViewerPrintOptions,
+  FileViewerRenderedInstance,
   FileViewerRenderStateKind,
   FileViewerRendererCategory,
   FileViewerSearchMatch,

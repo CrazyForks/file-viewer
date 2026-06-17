@@ -349,7 +349,8 @@
   - [x] Vue3 公共打印布局和导出 HTML 模板改为复用 core。
   - [x] Vue3 iframe options 解析改为复用 core 序列化协议。
   - [x] Vue3 公共 watermark、toolbar、archive、PDF、DOCX、Typst、CAD、search、AI、lifecycle、operation、zoom 等 options / state 类型改为 core 类型别名，避免两套声明漂移。
-  - [ ] Vue3 入口仍存在旧类型 re-export 和 Vue 相关 `Rendered` 类型，需要继续拆薄。
+  - [x] Vue3 `Rendered` / `AppWrapper` 兼容名改为 core `FileViewerRenderedInstance`，入口类型不再绑定 Vue `App`。
+  - [ ] Vue3 入口仍存在旧类型 re-export 和 Vue 组件 props / emits / expose 类型，需要继续拆薄。
 - [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。
   - [x] `FileViewer.vue` 已改用 core 的 lifecycle/operation/toolbar helper，继续保留 Vue emit、DOM 挂载和响应式状态。

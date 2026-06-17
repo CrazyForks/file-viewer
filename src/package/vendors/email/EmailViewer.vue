@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { disposeFileViewerRendered } from '@file-viewer/core'
 import type { FileViewerOptions, Rendered } from '@/package/common/type'
 import { renderNestedBuffer } from '../nestedRender'
 
@@ -256,7 +257,7 @@ const parseEmail = async () => {
 }
 
 const clearAttachmentPreview = () => {
-  nestedRendered?.unmount?.()
+  disposeFileViewerRendered(nestedRendered)
   nestedRendered = undefined
   const target = attachmentTarget.value
   if (target) {

@@ -59,7 +59,8 @@ const requiredTypeExports = [
   'FileRenderExportAdapter',
   'FileViewerFrameController',
   'FileViewerSerializableOptions',
-  'CreateViewerOptions'
+  'CreateViewerOptions',
+  'FileViewerRenderedInstance'
 ]
 
 const requiredInstanceMethods = [

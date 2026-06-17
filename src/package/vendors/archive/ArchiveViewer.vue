@@ -8,6 +8,7 @@ import { renderNestedBuffer } from '../nestedRender'
 import libarchiveWorkerSource from 'libarchive.js/dist/worker-bundle.js?raw'
 import libarchiveWasmUrl from 'libarchive.js/dist/libarchive.wasm?url'
 import {
+  disposeFileViewerRendered,
   resolveFileViewerArchiveWasmUrl,
   resolveFileViewerArchiveWorkerUrl
 } from '@file-viewer/core'
@@ -237,7 +238,7 @@ const tryOpenArchiveWithFallback = async () => {
 }
 
 const clearNestedPreview = () => {
-  nestedRendered?.unmount?.()
+  disposeFileViewerRendered(nestedRendered)
   nestedRendered = undefined
   const target = nestedTarget.value
   if (target) {

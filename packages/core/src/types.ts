@@ -125,6 +125,27 @@ export interface FileRenderHandlerComposite<
   handler: FileRenderHandler<Rendered, Target>;
 }
 
+/**
+ * Framework-neutral instance returned by a renderer after it mounts content.
+ *
+ * Vue, React legacy, Web Components or imperative renderers may expose different
+ * teardown names, but wrappers can share this single contract when bridging old
+ * renderer handlers into the core registry.
+ */
+export type FileViewerRenderedInstance =
+  | {
+      $el?: Node;
+      unmount: () => void | Promise<void>;
+    }
+  | {
+      $el?: Node;
+      $destroy: () => void | Promise<void>;
+    }
+  | {
+      $el?: Node;
+      destroy: () => void | Promise<void>;
+    };
+
 export interface FileViewerTypstOptions {
   compilerWasmUrl?: string;
 }

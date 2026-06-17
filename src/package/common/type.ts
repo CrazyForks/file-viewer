@@ -1,4 +1,3 @@
-import type { App } from 'vue'
 import type {
   FileViewerAiOptions as CoreFileViewerAiOptions,
   FileViewerArchiveOptions as CoreFileViewerArchiveOptions,
@@ -18,6 +17,7 @@ import type {
   FileViewerOperationType as CoreFileViewerOperationType,
   FileViewerOptions as CoreFileViewerOptions,
   FileViewerPdfOptions as CoreFileViewerPdfOptions,
+  FileViewerRenderedInstance as CoreFileViewerRenderedInstance,
   FileRenderContext as CoreFileRenderContext,
   FileRenderExportAdapter as CoreFileRenderExportAdapter,
   FileRenderExportMode as CoreFileRenderExportMode,
@@ -39,21 +39,17 @@ import type {
 } from '@file-viewer/core'
 
 /**
- * 渲染器返回的 Vue 包装实例。
+ * 渲染器返回的可卸载包装实例。
  *
- * Vue3 渲染器直接返回 `App`，少量兼容渲染器会返回只暴露 `$el`
- * 与 `unmount()` 的轻量包装对象。
+ * 旧版 Vue3 渲染器通常返回 Vue `App` 或只暴露 `$el` 与 `unmount()`
+ * 的轻量对象。现在统一复用 core 的 framework-neutral 销毁契约。
  */
-export interface AppWrapper {
-  $el: Node,
-
-  unmount(): void
-}
+export type AppWrapper = CoreFileViewerRenderedInstance;
 
 /**
  * 任意渲染器挂载完成后返回的可卸载实例。
  */
-export type Rendered = App | AppWrapper;
+export type Rendered = CoreFileViewerRenderedInstance;
 
 /**
  * 组件可接受的本地二进制来源。
