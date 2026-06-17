@@ -13,11 +13,11 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@file-viewer/core": ["../core/src/index.ts"]
+      "@flyfish-group/file-viewer-web": ["../web/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "references": [
-    { "path": "../core" }
+    { "path": "../web" }
   ]
 }

@@ -13,6 +13,7 @@ const entryByName = new Map()
 const entryById = new Map()
 const entryByDir = new Map()
 const historicalPackageNames = new Set()
+const standardPackageByHistoricalName = new Map()
 
 function assert(condition, message) {
   if (!condition) {
@@ -73,6 +74,7 @@ for (const wrapper of wrapperManifest.wrappers) {
   for (const packageName of wrapper.historicalPackages) {
     assert(!historicalPackageNames.has(packageName), `Duplicate historical package ${packageName}`)
     historicalPackageNames.add(packageName)
+    standardPackageByHistoricalName.set(packageName, wrapper.packageName)
   }
 }
 
@@ -152,6 +154,18 @@ for (const entry of entries) {
       historicalPackageNames.has(entry.packageName),
       `${entry.packageName} compatibility package is not declared in ecosystem/wrappers.json historicalPackages`
     )
+    const standardPackageName = standardPackageByHistoricalName.get(entry.packageName)
+    const dependencies = runtimeDependencies(entry.packageJson)
+    if (standardPackageName === '@file-viewer/react') {
+      assert(
+        !dependencies[corePackageName],
+        `${entry.packageName} must consume the web compatibility facade instead of depending on ${corePackageName}`
+      )
+      assert(
+        dependencies['@flyfish-group/file-viewer-web'] === expectedWorkspaceRange,
+        `${entry.packageName} must depend on @flyfish-group/file-viewer-web@${expectedWorkspaceRange}`
+      )
+    }
   }
 }
 

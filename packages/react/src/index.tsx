@@ -11,56 +11,36 @@ import {
   type SyntheticEvent
 } from 'react'
 import {
-  DEFAULT_FILE_VIEWER_URL,
-  buildFileViewerFrameSrc,
-  createFileViewerFrameFilePostController,
-  isFileViewerFrameEvent,
-} from '@file-viewer/core'
-import type {
-  FileViewerFileRef,
-  FileViewerFrameComponentBridgeOptions,
-  FileViewerFrameContainerComponentProps,
-  FileViewerDirectFrameHandle,
-  FileViewerFrameControllerAccessor,
-  FileViewerFrameComponentProps,
-  FileViewerFrameHostComponentProps,
-  FileViewerFrameIframeComponentProps,
-  FileViewerFrameFilePostController,
-  FileViewerFrameFilePostControllerOptions,
-  FileViewerFrameEventHandler,
-  FileViewerFrameEventPayload,
-  FileViewerFrameOptions,
-  FileViewerPostMessageType,
-  FileViewerSerializableOptions,
-  FileViewerSerializableToolbarOptions,
-  FileViewerThemeMode,
-  FileViewerToolbarPosition
-} from '@file-viewer/core'
+  buildViewerSrc,
+  createViewerFrameFilePostController,
+  isViewerFrameEvent,
+  type ViewerDirectFrameHandle,
+  type ViewerFrameComponentProps,
+  type ViewerFrameFilePostController,
+  type ViewerFrameEventPayload,
+  type ViewerFrameOptions
+} from '@flyfish-group/file-viewer-web'
 
-export type FileRef = FileViewerFileRef
-export type ViewerDirectFrameHandle = FileViewerDirectFrameHandle
-export type ViewerFrameComponentBridgeOptions = FileViewerFrameComponentBridgeOptions
-export type ViewerFrameControllerAccessor = FileViewerFrameControllerAccessor
-export type ViewerFrameComponentProps = FileViewerFrameComponentProps
-export type ViewerFrameContainerComponentProps<
-  ContainerClass = unknown,
-  ContainerStyle = unknown
-> = FileViewerFrameContainerComponentProps<ContainerClass, ContainerStyle>
-export type ViewerFrameHostComponentProps<
-  ContainerClass = unknown,
-  ContainerStyle = unknown
-> = FileViewerFrameHostComponentProps<ContainerClass, ContainerStyle>
-export type ViewerFrameIframeComponentProps = FileViewerFrameIframeComponentProps
-export type ViewerFrameFilePostController = FileViewerFrameFilePostController
-export type ViewerFrameFilePostControllerOptions = FileViewerFrameFilePostControllerOptions
-export type ViewerFrameOptions = FileViewerFrameOptions
-export type ViewerFrameEventType = FileViewerPostMessageType
-export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>
-export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string, unknown> | null>
-export type ViewerRuntimeOptions = FileViewerSerializableOptions
-export type ViewerToolbarOptions = FileViewerSerializableToolbarOptions
-export type ViewerToolbarPosition = FileViewerToolbarPosition
-export type ViewerThemeMode = FileViewerThemeMode
+export type {
+  FileRef,
+  ViewerDirectFrameHandle,
+  ViewerFrameComponentBridgeOptions,
+  ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
+  ViewerFrameComponentProps,
+  ViewerFrameEventHandler,
+  ViewerFrameEventPayload,
+  ViewerFrameEventType,
+  ViewerFrameFilePostController,
+  ViewerFrameFilePostControllerOptions,
+  ViewerFrameHostComponentProps,
+  ViewerFrameIframeComponentProps,
+  ViewerFrameOptions,
+  ViewerRuntimeOptions,
+  ViewerThemeMode,
+  ViewerToolbarOptions,
+  ViewerToolbarPosition
+} from '@flyfish-group/file-viewer-web'
 
 export interface FileViewerHandle extends ViewerDirectFrameHandle {}
 
@@ -75,18 +55,12 @@ const defaultStyle: CSSProperties = {
   display: 'block'
 }
 
-const REACT_VIEWER_FRAME_CACHE_KEY = '1.0.23'
-
 const isReactViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
-  return isFileViewerFrameEvent(value)
+  return isViewerFrameEvent(value)
 }
 
 const buildReactViewerSrc = (options: ViewerFrameOptions) => {
-  return buildFileViewerFrameSrc({
-    ...options,
-    defaultViewerUrl: DEFAULT_FILE_VIEWER_URL,
-    defaultCacheKey: REACT_VIEWER_FRAME_CACHE_KEY
-  })
+  return buildViewerSrc(options)
 }
 
 export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, forwardedRef) => {
@@ -125,9 +99,9 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
   const src = useMemo(() => buildReactViewerSrc(frameOptions), [frameOptions])
   const frameOptionsRef = useRef<ViewerFrameOptions>(frameOptions)
   frameOptionsRef.current = frameOptions
-  const filePostControllerRef = useRef<FileViewerFrameFilePostController | null>(null)
+  const filePostControllerRef = useRef<ViewerFrameFilePostController | null>(null)
   if (!filePostControllerRef.current) {
-    filePostControllerRef.current = createFileViewerFrameFilePostController({
+    filePostControllerRef.current = createViewerFrameFilePostController({
       getFrame: () => iframeRef.current,
       getOptions: () => frameOptionsRef.current
     })
