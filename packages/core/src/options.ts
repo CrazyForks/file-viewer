@@ -2,6 +2,7 @@ import type {
   FileViewerArchiveOptions,
   FileViewerCadOptions,
   FileViewerOptions,
+  FileViewerThemeMode,
   FileViewerToolbarOptions,
 } from './types';
 
@@ -92,6 +93,12 @@ const stripRuntimeOnlyOptions = (value: Record<string, unknown>) => {
   }
 
   return rest;
+};
+
+export const normalizeFileViewerTheme = (
+  theme: FileViewerThemeMode | undefined
+): FileViewerThemeMode => {
+  return theme === 'light' || theme === 'dark' || theme === 'system' ? theme : 'system';
 };
 
 export const sanitizeFileViewerOptions = (

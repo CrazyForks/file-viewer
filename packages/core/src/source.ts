@@ -47,8 +47,35 @@ const getSourceKind = (source: FileViewerSource): FileViewerSourceKind => {
   return 'empty';
 };
 
-const getBlobName = (file: File | Blob | undefined) => {
+const getBlobName = (file: FileViewerFileRef | undefined) => {
   return file && 'name' in file && typeof file.name === 'string' ? file.name : undefined;
+};
+
+export const resolveFileViewerSourceFilename = ({
+  filename,
+  file,
+  url,
+  fallback = '',
+}: {
+  filename?: string;
+  file?: FileViewerFileRef;
+  url?: string;
+  fallback?: string;
+}) => {
+  if (filename) {
+    return normalizeFilename(filename, fallback);
+  }
+
+  const fileName = getBlobName(file);
+  if (fileName) {
+    return normalizeFilename(fileName, fallback);
+  }
+
+  if (url) {
+    return normalizeFilename(url, fallback);
+  }
+
+  return fallback;
 };
 
 export const normalizeSource = (source: FileViewerSource): NormalizedFileViewerSource => {

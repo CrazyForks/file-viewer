@@ -3,12 +3,28 @@ import {
   createFileViewerRequestController,
   isFileViewerAbortError,
   normalizePdfStreamingMode,
+  resolveFileViewerSourceFilename,
   shouldStreamPdfUrl
 } from '../packages/core/src'
 
 const pageHref = 'https://viewer.flyfish.dev/app/index.html'
 
 describe('remote source loading helpers', () => {
+  it('resolves display filenames from explicit names, file refs and urls', () => {
+    expect(resolveFileViewerSourceFilename({
+      filename: '/tmp/manual.PDF?token=1',
+      file: new File(['demo'], 'ignored.docx'),
+      url: '/example/report.docx'
+    })).toBe('manual.PDF')
+    expect(resolveFileViewerSourceFilename({
+      file: new File(['demo'], '合同.docx')
+    })).toBe('合同.docx')
+    expect(resolveFileViewerSourceFilename({
+      url: '/example/%E6%8A%A5%E5%91%8A.pdf?token=1'
+    })).toBe('报告.pdf')
+    expect(resolveFileViewerSourceFilename({ fallback: '' })).toBe('')
+  })
+
   it('tracks current load versions and aborts stale remote requests', () => {
     const controller = createFileViewerRequestController()
     const firstVersion = controller.createVersion()

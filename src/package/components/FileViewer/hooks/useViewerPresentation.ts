@@ -3,8 +3,9 @@ import {
   createFileViewerErrorState,
   formatFileViewerErrorMessage,
   getExtension,
-  normalizeFilename,
+  normalizeFileViewerTheme,
   normalizeFileViewerToolbar,
+  resolveFileViewerSourceFilename,
   type FileViewerStateTheme
 } from '@file-viewer/core'
 import type {
@@ -37,31 +38,14 @@ export const useViewerPresentation = ({
   getUrl,
   getOptions
 }: UseViewerPresentationOptions) => {
-  const getSourceFilename = () => {
-    if (filename.value) {
-      return filename.value
-    }
-
-    const file = getFile()
-    if (file instanceof File && file.name) {
-      return normalizeFilename(file.name)
-    }
-
-    const url = getUrl()
-    if (typeof url === 'string' && url) {
-      return normalizeFilename(url)
-    }
-
-    return ''
-  }
-
-  const displayFilename = computed(() => getSourceFilename())
+  const displayFilename = computed(() => resolveFileViewerSourceFilename({
+    filename: filename.value,
+    file: getFile(),
+    url: getUrl()
+  }))
   const currentExtend = computed(() => getExtension(displayFilename.value))
   const normalizedToolbar = computed(() => normalizeFileViewerToolbar(getOptions()))
-  const viewerTheme = computed(() => {
-    const theme = getOptions()?.theme
-    return theme === 'light' || theme === 'dark' ? theme : 'system'
-  })
+  const viewerTheme = computed(() => normalizeFileViewerTheme(getOptions()?.theme))
 
   return {
     displayFilename,

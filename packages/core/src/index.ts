@@ -159,6 +159,7 @@ export {
 } from './loading';
 export {
   getFileViewerOptionsSearchParam,
+  normalizeFileViewerTheme,
   parseFileViewerOptions,
   sanitizeFileViewerOptions,
   serializeFileViewerOptions,
@@ -180,6 +181,7 @@ export {
   getExtension,
   normalizeFileExtension,
   normalizeFilename,
+  resolveFileViewerSourceFilename,
   normalizeSource,
   readFileViewerBuffer,
   readFileViewerDataUrl,

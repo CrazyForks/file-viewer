@@ -424,6 +424,25 @@ async function verifyVue3ScopedCompatibility() {
     'resolveFileViewerLoadingTheme'
   ], vueLoadingHookLabel)
 
+  const vuePresentationHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerPresentation.ts')
+  const vuePresentationHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerPresentation.ts`
+  assertImportsFrom(vuePresentationHookSource, '@file-viewer/core', vuePresentationHookLabel)
+  assertTokens(vuePresentationHookSource, [
+    'resolveFileViewerSourceFilename',
+    'normalizeFileViewerTheme',
+    'normalizeFileViewerToolbar'
+  ], vuePresentationHookLabel)
+  for (const forbiddenToken of [
+    'const getSourceFilename',
+    "theme === 'light'",
+    "theme === 'dark'"
+  ]) {
+    assert(
+      !vuePresentationHookSource.includes(forbiddenToken),
+      `${vuePresentationHookLabel} must delegate source filename and theme normalization to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueDocumentSearchHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useDocumentSearch.ts')
   const vueDocumentSearchHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useDocumentSearch.ts`
   assertImportsFrom(vueDocumentSearchHookSource, '@file-viewer/core', vueDocumentSearchHookLabel)

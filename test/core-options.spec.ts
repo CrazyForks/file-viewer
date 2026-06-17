@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   getFileViewerOptionsSearchParam,
+  normalizeFileViewerTheme,
   parseFileViewerOptions,
   sanitizeFileViewerOptions,
   serializeFileViewerOptions,
@@ -8,6 +9,13 @@ import {
 } from '../packages/core/src'
 
 describe('@file-viewer/core option serialization helpers', () => {
+  it('normalizes viewer theme options for every wrapper', () => {
+    expect(normalizeFileViewerTheme('light')).toBe('light')
+    expect(normalizeFileViewerTheme('dark')).toBe('dark')
+    expect(normalizeFileViewerTheme('system')).toBe('system')
+    expect(normalizeFileViewerTheme(undefined)).toBe('system')
+  })
+
   it('serializes iframe-safe options without runtime-only hooks', () => {
     const serialized = serializeFileViewerOptions({
       theme: 'light',

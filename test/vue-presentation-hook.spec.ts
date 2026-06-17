@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { computed, ref } from 'vue'
 import { useViewerErrorState, useViewerPresentation } from '../src/package/components/FileViewer/hooks/useViewerPresentation'
-import { resolveLoadingTheme } from '../src/package/use'
+import { resolveFileViewerLoadingTheme } from '../packages/core/src'
 import type { FileViewerOptions } from '../src/package/common/type'
 
 describe('Vue FileViewer presentation hook', () => {
@@ -49,7 +49,7 @@ describe('Vue FileViewer presentation hook', () => {
   it('builds error state with the active extension and loading theme', () => {
     const currentExtend = ref('pdf')
     const error = ref('解析失败')
-    const loadingTheme = computed(() => resolveLoadingTheme(currentExtend.value))
+    const loadingTheme = computed(() => resolveFileViewerLoadingTheme(currentExtend.value))
     const errorState = useViewerErrorState({
       currentExtend: computed(() => currentExtend.value),
       error: computed(() => error.value),
