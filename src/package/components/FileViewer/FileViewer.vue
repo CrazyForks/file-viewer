@@ -6,7 +6,7 @@ import {
   type FileViewerComponentEmits as FileViewerEmits,
   type FileViewerComponentProps as FileViewerProps
 } from '@file-viewer/core'
-import { useLoading } from '@/package/use'
+import { useLoading } from '@/package/use/loading'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerLifecycle } from './hooks/useViewerLifecycle'

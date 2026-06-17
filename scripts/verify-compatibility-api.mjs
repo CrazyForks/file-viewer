@@ -410,6 +410,10 @@ async function verifyVue3ScopedCompatibility() {
     !existsSync(join(entry.absoluteDir, 'src/package/use/documentLocation.ts')),
     `${entry.packageName} must keep document location helpers in @file-viewer/core instead of reintroducing src/package/use/documentLocation.ts`
   )
+  assert(
+    !existsSync(join(entry.absoluteDir, 'src/package/use/index.ts')),
+    `${entry.packageName} must import Vue runtime hooks explicitly instead of reintroducing src/package/use/index.ts`
+  )
 
   for (const [relativePath, requiredTokens] of vue3ScopedRuntimeFacades) {
     const facadeSource = await readSource(entry, relativePath)
@@ -431,6 +435,10 @@ async function verifyVue3ScopedCompatibility() {
       continue
     }
     const source = await readFile(file, 'utf8')
+    assert(
+      !/from\s+['"]@\/package\/use['"]/.test(source),
+      `${entry.packageName} ${relativePath} must import a concrete Vue hook module instead of @/package/use`
+    )
     const runtimeFacadeImport = vue3ScopedRuntimeFacadeImportPattern.exec(source)
     assert(
       !runtimeFacadeImport,

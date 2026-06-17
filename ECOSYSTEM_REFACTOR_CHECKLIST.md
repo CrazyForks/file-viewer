@@ -127,6 +127,7 @@
   - [x] Vue3 vendor 层渲染上下文、缩放状态、导出 adapter 和 rendered instance 类型直接从 `@file-viewer/core` 获取，`common/type` 仅保留对外兼容类型门面。
   - [x] Vue3 入口组件、组件 hooks 和 `src/package/use/*` 内部能力层直接使用 `@file-viewer/core` 类型，只有 `src/package/index.ts` 继续从 `common/type` re-export 公开兼容类型。
   - [x] 缩放变更 emitter、搜索 provider 注册和缩放 provider 注册进入 `@file-viewer/core`，Vue3 vendor 不再通过 `src/package/use` 门面获取这些 framework-neutral 能力。
+  - [x] 删除 `src/package/use/index.ts` 聚合入口，Vue3 内部只允许显式导入具体 hook 模块，避免 `use` 门面继续承载隐式架构边界。
   - [x] Vue3 对外实例方法拆到组件 hooks，并沉淀 `FileViewerExpose` 类型，demo / compare 复用同一 API 契约。
   - [x] Vue3 props / emits 契约沉淀为 `FileViewerProps` / `FileViewerEmits`，入口组件复用公共类型。
   - [ ] 打印导出执行链路迁入 `@file-viewer/core`。

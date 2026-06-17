@@ -9,7 +9,7 @@ import {
 } from '@file-viewer/core'
 import type { SheetDefinition, SheetImage, SheetModel } from './worker/type'
 import { SheetJsWorker } from './worker'
-import { useWorker } from '@/package/use'
+import { useWorker } from '@/package/use/worker'
 import {
   buildRows,
   clampWindowStart,
