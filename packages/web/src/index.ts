@@ -1,8 +1,14 @@
-import { setFileViewerOptionsSearchParam } from '@file-viewer/core'
+import {
+  isFileViewerFrameEvent,
+  setFileViewerOptionsSearchParam
+} from '@file-viewer/core'
 import type {
   FileViewerAiOptions,
   FileViewerArchiveOptions,
+  FileViewerFrameEventHandler,
+  FileViewerFrameEventPayload,
   FileViewerPdfOptions,
+  FileViewerPostMessageType,
   FileViewerSearchOptions,
   FileViewerSerializableOptions,
   FileViewerSerializableToolbarOptions,
@@ -25,22 +31,9 @@ export type ViewerAiOptions = FileViewerAiOptions
 export type ViewerThemeMode = FileViewerThemeMode
 export type ViewerRuntimeOptions = FileViewerSerializableOptions
 
-export type ViewerFrameEventType =
-  | 'flyfish-viewer:lifecycle'
-  | 'flyfish-viewer:operation'
-  | 'flyfish-viewer:search'
-  | 'flyfish-viewer:location'
-
-export interface ViewerFrameEventPayload {
-  type: ViewerFrameEventType
-  event: string
-  payload: Record<string, unknown>
-}
-
-export type ViewerFrameEventHandler = (
-  event: ViewerFrameEventPayload,
-  rawEvent: MessageEvent
-) => void
+export type ViewerFrameEventType = FileViewerPostMessageType
+export type ViewerFrameEventPayload = FileViewerFrameEventPayload<Record<string, unknown> | null>
+export type ViewerFrameEventHandler = FileViewerFrameEventHandler<Record<string, unknown> | null>
 
 export interface ViewerFrameOptions {
   /**
@@ -158,14 +151,7 @@ const appendSearchParam = (target: URL, key: string, value: ViewerFrameParamValu
 }
 
 export const isViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-  const candidate = value as ViewerFrameEventPayload
-  return candidate.type === 'flyfish-viewer:lifecycle' ||
-    candidate.type === 'flyfish-viewer:operation' ||
-    candidate.type === 'flyfish-viewer:search' ||
-    candidate.type === 'flyfish-viewer:location'
+  return isFileViewerFrameEvent(value)
 }
 
 export const getCurrentOrigin = () => {

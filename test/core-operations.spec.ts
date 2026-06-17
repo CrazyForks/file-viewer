@@ -8,6 +8,7 @@ import {
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
+  isFileViewerFrameEvent,
   normalizeFileViewerToolbar,
   postFileViewerMessageToParent,
   resolveFileViewerOperationAvailability,
@@ -96,6 +97,23 @@ describe('@file-viewer/core operation helpers', () => {
     const topWindow = {} as Window & { parent: Window };
     topWindow.parent = topWindow;
     expect(postFileViewerMessageToParent(payload, '*', topWindow)).toBe(false);
+  });
+
+  it('guards iframe postMessage events through the core protocol', () => {
+    expect(isFileViewerFrameEvent(createFileViewerRawPostMessagePayload('flyfish-viewer:search', 'search-change', {
+      query: 'pdf',
+    }))).toBe(true);
+    expect(isFileViewerFrameEvent(createFileViewerRawPostMessagePayload('flyfish-viewer:location', 'location-change', null))).toBe(true);
+    expect(isFileViewerFrameEvent({
+      type: 'flyfish-viewer:unknown',
+      event: 'search-change',
+      payload: {},
+    })).toBe(false);
+    expect(isFileViewerFrameEvent({
+      type: 'flyfish-viewer:search',
+      payload: {},
+    })).toBe(false);
+    expect(isFileViewerFrameEvent(null)).toBe(false);
   });
 
   it('runs lifecycle hooks and operation guards in deterministic order', async () => {

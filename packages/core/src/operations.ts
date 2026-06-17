@@ -74,11 +74,25 @@ export type FileViewerPostMessageType =
   | 'flyfish-viewer:search'
   | 'flyfish-viewer:location';
 
+const FILE_VIEWER_POST_MESSAGE_TYPES: readonly FileViewerPostMessageType[] = [
+  'flyfish-viewer:lifecycle',
+  'flyfish-viewer:operation',
+  'flyfish-viewer:search',
+  'flyfish-viewer:location',
+];
+
 export interface FileViewerPostMessagePayload<Payload = unknown> {
   type: FileViewerPostMessageType;
   event: string;
   payload: Payload;
 }
+
+export type FileViewerFrameEventPayload<Payload = unknown> = FileViewerPostMessagePayload<Payload>;
+
+export type FileViewerFrameEventHandler<Payload = unknown> = (
+  event: FileViewerFrameEventPayload<Payload>,
+  rawEvent: MessageEvent
+) => void;
 
 export interface ResolveFileViewerOperationAvailabilityInput {
   extension: string;
@@ -261,6 +275,17 @@ export const createFileViewerRawPostMessagePayload = <Payload>(
     event,
     payload,
   };
+};
+
+export const isFileViewerFrameEvent = (value: unknown): value is FileViewerFrameEventPayload => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<FileViewerPostMessagePayload>;
+  return typeof candidate.event === 'string' &&
+    typeof candidate.type === 'string' &&
+    FILE_VIEWER_POST_MESSAGE_TYPES.includes(candidate.type as FileViewerPostMessageType);
 };
 
 export const postFileViewerMessageToParent = <Payload>(

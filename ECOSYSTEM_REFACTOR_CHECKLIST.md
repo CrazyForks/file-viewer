@@ -81,6 +81,7 @@
   - [x] runtime-only hooks / beforeOperation 在 iframe 查询参数中显式剥离，避免不同 wrapper 行为漂移。
   - [x] `packages/web`、Vue 基线入口和 React wrapper 复用同一协议。
   - [x] iframe / wrapper postMessage 事件桥接迁入 core，生命周期、操作、搜索、定位、缩放状态复用同一投递协议。
+  - [x] iframe 事件 payload 类型与校验 guard 迁入 core，`packages/web` / React wrapper 复用同一事件识别逻辑。
 - [x] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
   - [x] `@file-viewer/core` 提供 `FileViewerStateDescriptor` / `FileViewerStateTheme`，覆盖 loading、ready、empty、unsupported、error。
   - [x] 下载、流式 PDF、常规解析的默认进度文案迁入 core，Vue3 入口复用同一常量。
