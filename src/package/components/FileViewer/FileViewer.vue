@@ -4,10 +4,7 @@ import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
   FILE_VIEWER_PREVIEW_MESSAGES,
-  buildFileViewerLifecycleContext,
-  buildFileViewerOperationContext,
   createFileViewerErrorState,
-  createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
   createFileViewerRequestController,
   formatFileViewerErrorMessage,
@@ -20,8 +17,6 @@ import {
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,
-  runFileViewerBeforeOperation,
-  runFileViewerLifecycleHook,
   shouldStreamPdfUrl,
   wrapFileViewerFileRef
 } from '@file-viewer/core'
@@ -30,11 +25,9 @@ import type {
   FileViewerDocumentAnchor,
   FileRenderExportAdapter,
   FileViewerLifecycleContext,
-  FileViewerLifecyclePhase,
   FileViewerOperationAvailability,
   FileViewerOptions,
   FileViewerOperationContext,
-  FileViewerOperationType,
   FileViewerSearchState,
   FileViewerToolbarOptions,
   FileViewerToolbarPosition,
@@ -44,6 +37,7 @@ import { useLoading } from '@/package/use'
 import { renderSession, type FileViewerVueRenderSession } from './util'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
+import { useViewerLifecycle } from './hooks/useViewerLifecycle'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
 import { useViewerZoom } from './hooks/useViewerZoom'
 
@@ -148,9 +142,7 @@ const {
 const errorState = computed(() => createFileViewerErrorState(currentExtend.value, error.value, loadingTheme.value))
 
 let activeRenderSession: FileViewerVueRenderSession | null = null
-let activeDocumentContext: FileViewerLifecycleContext | null = null
 const requestController = createFileViewerRequestController()
-const loadStartedAt = new Map<number, number>()
 
 const getSourceFilename = () => {
   if (filename.value) {
@@ -165,14 +157,6 @@ const getSourceFilename = () => {
   return ''
 }
 
-const postViewerEvent = (
-  type: 'flyfish-viewer:lifecycle' | 'flyfish-viewer:operation',
-  event: string,
-  context: FileViewerLifecycleContext | FileViewerOperationContext
-) => {
-  postFileViewerMessageToParent(createFileViewerPostMessagePayload(type, event, context))
-}
-
 const postViewerAvailability = (availability: FileViewerOperationAvailability) => {
   postFileViewerMessageToParent(
     createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'operation-availability-change', availability)
@@ -183,81 +167,6 @@ const postViewerZoomState = (state: FileViewerZoomState) => {
   postFileViewerMessageToParent(
     createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'zoom-change', state)
   )
-}
-
-const buildLifecycleContext = ({
-  phase,
-  version,
-  source,
-  file,
-  sourceUrl,
-  reason
-}: {
-  phase: FileViewerLifecyclePhase;
-  version: number;
-  source: FileViewerLifecycleContext['source'];
-  file?: File | null;
-  sourceUrl?: string;
-  reason?: FileViewerLifecycleContext['reason'];
-}): FileViewerLifecycleContext => {
-  return buildFileViewerLifecycleContext({
-    phase,
-    source,
-    version,
-    file,
-    filename: filename.value,
-    url: sourceUrl,
-    bufferSize: currentBuffer.value?.byteLength,
-    startedAt: loadStartedAt.get(version),
-    reason
-  })
-}
-
-const notifyLifecycle = (context: FileViewerLifecycleContext) => {
-  if (context.phase === 'load-start') {
-    emit('load-start', context)
-  } else if (context.phase === 'load-complete') {
-    emit('load-complete', context)
-  } else if (context.phase === 'unload-start') {
-    emit('unload-start', context)
-  } else {
-    emit('unload-complete', context)
-  }
-  void runFileViewerLifecycleHook(context, props.options?.hooks, error => {
-      console.error(`FileViewer ${context.phase} hook failed`, error)
-  })
-  postViewerEvent('flyfish-viewer:lifecycle', context.phase, context)
-}
-
-const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {
-  const base = activeDocumentContext || buildLifecycleContext({
-    phase: 'load-complete',
-    version: requestController.version,
-    source: props.file ? 'file' : (props.url ? 'url' : 'empty'),
-    file: currentFile.value,
-    sourceUrl: props.url
-  })
-  return buildFileViewerOperationContext(operation, base)
-}
-
-const runBeforeOperation = async (operation: FileViewerOperationType) => {
-  const context = buildOperationContext(operation)
-  return runFileViewerBeforeOperation({
-    context,
-    options: props.options,
-    onBefore: nextContext => {
-      emit('operation-before', nextContext)
-      postViewerEvent('flyfish-viewer:operation', 'operation-before', nextContext)
-    },
-    onCancel: nextContext => {
-      emit('operation-cancel', nextContext)
-      postViewerEvent('flyfish-viewer:operation', 'operation-cancel', nextContext)
-    },
-    onError: nextError => {
-      console.error(nextError)
-      showError(formatErrorMessage('操作前置校验失败', nextError))
-    }
-  })
 }
 
 // 每次开始新的预览任务时都生成一个版本号。
@@ -277,6 +186,50 @@ const isCurrentRequest = (version: number) => {
   return requestController.isCurrent(version)
 }
 
+const formatErrorMessage = (prefix: string, nextError: unknown) => {
+  return formatFileViewerErrorMessage(prefix, nextError)
+}
+
+const {
+  markLoadStarted,
+  clearLoadStarted,
+  buildLifecycleContext,
+  notifyLifecycle,
+  notifyActiveUnloadStart,
+  notifyActiveUnloadComplete,
+  setActiveDocumentContext,
+  clearActiveDocumentContext,
+  runBeforeOperation
+} = useViewerLifecycle({
+  getOptions: () => props.options,
+  getFilename: () => filename.value,
+  getBufferSize: () => currentBuffer.value?.byteLength,
+  getCurrentFile: () => currentFile.value,
+  getCurrentVersion: () => requestController.version,
+  getFallbackSource: () => props.file ? 'file' : (props.url ? 'url' : 'empty'),
+  getFallbackSourceUrl: () => props.url,
+  emitLifecycle: (event, context) => {
+    if (event === 'load-start') {
+      emit('load-start', context)
+    } else if (event === 'load-complete') {
+      emit('load-complete', context)
+    } else if (event === 'unload-start') {
+      emit('unload-start', context)
+    } else {
+      emit('unload-complete', context)
+    }
+  },
+  emitOperationBefore: context => emit('operation-before', context),
+  emitOperationCancel: context => emit('operation-cancel', context),
+  handleLifecycleError: (nextError, context) => {
+    console.error(`FileViewer ${context.phase} hook failed`, nextError)
+  },
+  handleOperationError: (nextError) => {
+    console.error(nextError)
+    showError(formatErrorMessage('操作前置校验失败', nextError))
+  }
+})
+
 const finishLoading = (version: number) => {
   if (isCurrentRequest(version)) {
     stopLoading()
@@ -294,10 +247,6 @@ const waitForBrowserPaint = () => {
       window.requestAnimationFrame(() => resolve())
     })
   })
-}
-
-const formatErrorMessage = (prefix: string, nextError: unknown) => {
-  return formatFileViewerErrorMessage(prefix, nextError)
 }
 
 const {
@@ -365,21 +314,13 @@ const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
 
 // 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
 const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-  const context = activeDocumentContext
-  if (context) {
-    notifyLifecycle({
-      ...context,
-      phase: 'unload-start',
-      timestamp: Date.now(),
-      reason
-    })
-  }
+  const context = notifyActiveUnloadStart(reason)
 
   try {
     destroyRenderSession(activeRenderSession)
   } finally {
     activeRenderSession = null
-    activeDocumentContext = null
+    clearActiveDocumentContext()
     activeExportAdapter.value = null
     renderedReady.value = false
     progressiveReady.value = false
@@ -395,14 +336,7 @@ const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 're
     }
   }
 
-  if (context) {
-    notifyLifecycle({
-      ...context,
-      phase: 'unload-complete',
-      timestamp: Date.now(),
-      reason
-    })
-  }
+  notifyActiveUnloadComplete(context, reason)
 }
 
 const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
@@ -502,9 +436,9 @@ const readAndRenderFile = async (
     file,
     sourceUrl
   })
-  activeDocumentContext = context
+  setActiveDocumentContext(context)
   notifyLifecycle(context)
-  loadStartedAt.delete(version)
+  clearLoadStarted(version)
 }
 
 const canStreamRemotePdf = (url: string, nextFilename: string) => {
@@ -538,9 +472,9 @@ const previewRemotePdfStream = async (url: string, version: number, nextFilename
       source: 'url',
       sourceUrl: url
     })
-    activeDocumentContext = context
+    setActiveDocumentContext(context)
     notifyLifecycle(context)
-    loadStartedAt.delete(version)
+    clearLoadStarted(version)
   } catch (nextError) {
     if (!isCurrentRequest(version)) {
       return
@@ -548,7 +482,7 @@ const previewRemotePdfStream = async (url: string, version: number, nextFilename
     console.error(nextError)
     showError(formatErrorMessage('加载 PDF 流式预览异常', nextError))
   } finally {
-    loadStartedAt.delete(version)
+    clearLoadStarted(version)
     finishLoading(version)
   }
 }
@@ -556,7 +490,7 @@ const previewRemotePdfStream = async (url: string, version: number, nextFilename
 const previewLocalFile = async (source: FileRef, version: number) => {
   const file = wrapFileViewerFileRef(source, filename.value || 'preview.bin')
   filename.value = normalizeFilename(file.name || '')
-  loadStartedAt.set(version, Date.now())
+  markLoadStarted(version)
   notifyLifecycle(buildLifecycleContext({
     phase: 'load-start',
     version,
@@ -574,7 +508,7 @@ const previewLocalFile = async (source: FileRef, version: number) => {
     console.error(nextError)
     showError(formatErrorMessage('读取文件异常', nextError))
   } finally {
-    loadStartedAt.delete(version)
+    clearLoadStarted(version)
     finishLoading(version)
   }
 }
@@ -583,7 +517,7 @@ const previewLocalFile = async (source: FileRef, version: number) => {
 const previewRemoteFile = async (url: string, version: number) => {
   const nextFilename = normalizeFilename(url)
   filename.value = nextFilename
-  loadStartedAt.set(version, Date.now())
+  markLoadStarted(version)
   notifyLifecycle(buildLifecycleContext({
     phase: 'load-start',
     version,
@@ -626,7 +560,7 @@ const previewRemoteFile = async (url: string, version: number) => {
     showError(formatErrorMessage('加载文件异常', nextError))
   } finally {
     requestController.clearAbortController(controller)
-    loadStartedAt.delete(version)
+    clearLoadStarted(version)
     finishLoading(version)
   }
 }
