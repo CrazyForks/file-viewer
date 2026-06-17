@@ -317,6 +317,25 @@ export interface FileViewerDocumentChunk {
   endLine: number;
 }
 
+export interface FileViewerDownloadOptions {
+  filename?: string;
+}
+
+export interface FileViewerExportHtmlOptions {
+  download?: boolean;
+  filename?: string;
+  title?: string;
+  watermarkInlineStyle?: string;
+}
+
+export interface FileViewerPrintOptions {
+  autoPrint?: boolean;
+  openWindow?: () => Window | null;
+  printWindow?: Window | null;
+  title?: string;
+  watermarkInlineStyle?: string;
+}
+
 export interface FileViewerSource {
   url?: string;
   file?: File | Blob;
@@ -372,6 +391,7 @@ export interface RendererLoadContext {
   surface: RenderSurface;
   options: FileViewerOptions;
   signal?: AbortSignal;
+  registerExportAdapter?: (adapter: FileRenderExportAdapter | null) => void;
 }
 
 export interface RendererSession {
@@ -399,6 +419,11 @@ export interface FileViewerInstance {
   getCapabilities(extension?: string): FileViewerOperationAvailability;
   getRenderer(extension?: string): RendererDefinition | undefined;
   getSource(): NormalizedFileViewerSource | null;
+  registerExportAdapter(adapter: FileRenderExportAdapter | null): void;
+  getExportAdapter(): FileRenderExportAdapter | null;
+  download(options?: FileViewerDownloadOptions): Promise<void>;
+  exportHtml(options?: FileViewerExportHtmlOptions): Promise<string>;
+  print(options?: FileViewerPrintOptions): Promise<void>;
   zoomIn(): Promise<FileViewerZoomState>;
   zoomOut(): Promise<FileViewerZoomState>;
   resetZoom(): Promise<FileViewerZoomState>;

@@ -130,6 +130,12 @@ export {
   normalizeFileViewerErrorMessage,
 } from './state';
 export {
+  buildFileViewerWatermarkBackgroundImage,
+  buildFileViewerWatermarkInlineStyle,
+  buildFileViewerWatermarkSvg,
+  normalizeFileViewerWatermark,
+} from './watermark';
+export {
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
   isSameOriginUrl,
   normalizePdfStreamingMode,
@@ -187,7 +193,9 @@ export type {
   FileViewerCadRenderer,
   FileViewerDocumentAnchor,
   FileViewerDocumentChunk,
+  FileViewerDownloadOptions,
   FileViewerDocxOptions,
+  FileViewerExportHtmlOptions,
   FileViewerFileRef,
   FileRenderContext,
   FileRenderExportAdapter,
@@ -204,6 +212,7 @@ export type {
   FileViewerOperationType,
   FileViewerOptions,
   FileViewerPdfOptions,
+  FileViewerPrintOptions,
   FileViewerRenderStateKind,
   FileViewerRendererCategory,
   FileViewerSearchMatch,
