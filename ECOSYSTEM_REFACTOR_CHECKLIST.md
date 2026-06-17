@@ -51,6 +51,7 @@
 - [ ] 给当前 `v3` 最新状态创建迁移基线 tag，记录支持矩阵和关键截图。
 - [x] 把 `pnpm type-check`、`pnpm build-only`、`pnpm docs:build` 固化为每轮迁移必跑 gate。
   - [x] 新增 `pnpm verify:migration-gates`，统一执行类型检查、主 Demo 构建、文档站构建、wrapper 源包校验和生态 npm manifest 列表校验。
+  - [x] `pnpm verify:migration-gates` 已串联 wrapper 运行 API 和参数面校验，避免标准 wrapper 体验漂移。
 - [x] 补充统一 smoke 清单，至少覆盖 PDF、DOCX、XLSX、PPTX、OFD、CAD、DWF/DWFX、EPUB、压缩包、邮件、Markdown、代码、图片、音视频、地理数据、数据资产。
   - [x] 新增 `ecosystem/smoke-matrix.json`，覆盖 23 条 renderer pipeline、Phase 0 要求的格式族、真实示例文件和 8 个 wrapper 基础入口。
   - [x] 新增 `pnpm verify:smoke-matrix`，反查 core renderer 定义、wrapper manifest 和 `public/example` 样本，避免 smoke 清单漂移。
@@ -221,6 +222,7 @@
   - [x] `@file-viewer/web` 统一导出 `ViewerRuntimeOptions`、toolbar、watermark、search、AI、PDF、DOCX、Typst、Archive、CAD 等运行时 option 类型别名。
   - [x] React、Vue 3、Vue 2.7、Vue 2.6、React legacy、jQuery、Svelte 标准 wrapper 统一 re-export `@file-viewer/web` 的完整类型面。
   - [x] 新增 `pnpm verify:wrapper-options`，阻止标准 wrapper 直接从 core 引入运行时 option 类型或重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等参数字段。
+  - [x] 新增 `pnpm verify:wrapper-api`，校验 Vue、React、Pure JS、jQuery、Svelte wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法。
 
 ## Phase 5: 公开仓库与 README
 
@@ -316,6 +318,7 @@
   - [x] Svelte
   - [x] `ecosystem/smoke-matrix.json` 的 `wrapperCoverage` 已为每个 wrapper 展开 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据 smoke target。
 - [x] wrapper repository export smoke 覆盖: `pnpm wrappers:export` 会刷新 README、导出 8 个独立 wrapper 仓库目录并运行 `pnpm wrappers:verify`。
+- [x] wrapper runtime API smoke 覆盖: `pnpm verify:wrapper-api` 静态校验 8 个标准 wrapper 的运行入口和控制器能力。
 - [x] 每个 wrapper 至少验证 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据。
 - [ ] 生产构建验证每个 wrapper 的 ESM/CJS/UMD/script tag 入口。
   - [x] 新增 `pnpm verify:production-entrypoints`，校验完整生态构建后的 package 声明入口、可导入 ESM 入口、纯 Web viewer 静态入口和 Vue3 基线静态资源入口。
