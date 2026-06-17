@@ -113,6 +113,62 @@ const vue3ScopedPublicTypeExports = new Set([
   'FileViewerZoomState'
 ])
 
+const vue3ScopedRuntimeFacades = new Map([
+  ['src/package/common/printCapability.ts', [
+    'ADAPTER_PRINT_REQUIRED_EXTENSIONS',
+    'DOM_PRINTABLE_EXTENSIONS',
+    'isDomPrintableExtension',
+    'isKnownNonPrintableExtension',
+    'needsDedicatedPrintAdapter',
+    'NON_PRINTABLE_EXTENSIONS',
+    'normalizeFileExtension',
+    'resolvePrintAvailability'
+  ]],
+  ['src/package/common/printLayout.ts', [
+    'applyPrintPageSize',
+    'buildPrintPageStyle',
+    'formatCssPixels',
+    'getElementPrintPageSize',
+    'ApplyPrintPageSizeOptions',
+    'BuildPrintPageStyleOptions',
+    'PrintPageSize'
+  ]],
+  ['src/package/common/sourceLoading.ts', [
+    'DEFAULT_PDF_RANGE_CHUNK_SIZE',
+    'isSameOriginUrl',
+    'normalizePdfStreamingMode',
+    'shouldStreamPdfUrl'
+  ]],
+  ['src/package/common/util.ts', [
+    'FileViewerReadResult',
+    'readFileViewerBuffer as readBuffer',
+    'readFileViewerDataUrl as readDataURL',
+    'readFileViewerText as readText'
+  ]],
+  ['src/package/common/worker-ref.ts', [
+    'WorkerRefImpl',
+    'refWorker',
+    'WorkerProvider',
+    'WorkerRef',
+    'WorkerRefImpl as default'
+  ]]
+])
+
+const forbiddenVue3ScopedRuntimeFacadeTokens = [
+  'new FileReader',
+  'readAsArrayBuffer',
+  'readAsDataURL',
+  'readAsText',
+  'new Promise',
+  'reader.',
+  'function ',
+  '=>',
+  'const ',
+  'let ',
+  'class ',
+  'return '
+]
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message)
@@ -320,19 +376,17 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
-  const utilityFacadeSource = await readSource(entry, 'src/package/common/util.ts')
-  assertImportsFrom(utilityFacadeSource, '@file-viewer/core', `${entry.packageName} utility facade`)
-  assertTokens(utilityFacadeSource, [
-    'FileViewerReadResult',
-    'readFileViewerBuffer as readBuffer',
-    'readFileViewerDataUrl as readDataURL',
-    'readFileViewerText as readText'
-  ], `${entry.packageName} utility facade`)
-  for (const forbiddenToken of ['new FileReader', 'readAsArrayBuffer', 'readAsDataURL', 'readAsText']) {
-    assert(
-      !utilityFacadeSource.includes(forbiddenToken),
-      `${entry.packageName} utility facade must not keep local browser read implementation ${forbiddenToken}`
-    )
+  for (const [relativePath, requiredTokens] of vue3ScopedRuntimeFacades) {
+    const facadeSource = await readSource(entry, relativePath)
+    const label = `${entry.packageName} ${relativePath}`
+    assertImportsFrom(facadeSource, '@file-viewer/core', label)
+    assertTokens(facadeSource, requiredTokens, label)
+    for (const forbiddenToken of forbiddenVue3ScopedRuntimeFacadeTokens) {
+      assert(
+        !facadeSource.includes(forbiddenToken),
+        `${label} must remain a pure @file-viewer/core re-export facade and must not contain ${forbiddenToken.trim()}`
+      )
+    }
   }
 }
 

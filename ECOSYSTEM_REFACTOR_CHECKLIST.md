@@ -122,6 +122,7 @@
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。
   - [x] 渲染上下文 `FileRenderContext`、通用 handler 协议迁入 `@file-viewer/core`。
   - [x] worker ref 管理迁入 `@file-viewer/core`，Vue3 兼容路径改为 re-export。
+  - [x] `pnpm verify:compatibility-api` 锁定 Vue3 旧 `src/package/common` 运行时文件只能作为 `@file-viewer/core` re-export 门面，禁止回流本地实现逻辑。
   - [x] Vue3 对外实例方法拆到组件 hooks，并沉淀 `FileViewerExpose` 类型，demo / compare 复用同一 API 契约。
   - [x] Vue3 props / emits 契约沉淀为 `FileViewerProps` / `FileViewerEmits`，入口组件复用公共类型。
   - [ ] 打印导出执行链路迁入 `@file-viewer/core`。
