@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   buildExportHtmlDocument,
   buildFileViewerRenderedHtmlDocument,
   buildPrintPageStyle,
   formatCssPixels,
   resolveFileViewerPrintStyle,
+  waitForFileViewerNextPaint,
 } from '../packages/core/src'
 
 describe('print layout helpers', () => {
@@ -69,5 +70,18 @@ describe('print layout helpers', () => {
     expect(html).toContain('<article data-mode="print">adapter.docx</article>')
     expect(html).toContain('<style data-viewer-print-style>/* print:adapter.docx */</style>')
     expect(html).toContain('viewer-export-watermark')
+  })
+
+  it('falls back to a timer when requestAnimationFrame is unavailable', async () => {
+    const schedule = vi.fn((callback: () => void) => {
+      callback()
+      return 1
+    })
+
+    await expect(waitForFileViewerNextPaint({
+      setTimeout: schedule as unknown as Window['setTimeout']
+    })).resolves.toBeUndefined()
+
+    expect(schedule).toHaveBeenCalledTimes(1)
   })
 })

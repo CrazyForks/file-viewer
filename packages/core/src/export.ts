@@ -390,10 +390,22 @@ export const replaceFileViewerCanvasWithImages = (source: HTMLElement, clone: HT
   })
 }
 
-export const waitForFileViewerNextPaint = () => {
+export const waitForFileViewerNextPaint = (
+  targetWindow?: Partial<Pick<Window, 'requestAnimationFrame' | 'setTimeout'>>
+) => {
   return new Promise<void>(resolve => {
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => resolve())
+    const currentWindow = targetWindow || (typeof window !== 'undefined' ? window : undefined)
+    if (!currentWindow || typeof currentWindow.requestAnimationFrame !== 'function') {
+      const schedule = currentWindow?.setTimeout
+        ? currentWindow.setTimeout.bind(currentWindow)
+        : globalThis.setTimeout.bind(globalThis)
+      schedule(() => resolve(), 0)
+      return
+    }
+
+    const requestAnimationFrame = currentWindow.requestAnimationFrame.bind(currentWindow)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => resolve())
     })
   })
 }

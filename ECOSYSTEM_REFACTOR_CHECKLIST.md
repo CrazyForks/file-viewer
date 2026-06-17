@@ -164,6 +164,7 @@
   - [x] Vue3 实际渲染入口改为通过 core renderer registry `load()` 进入，并透传旧版 `FileRenderContext` 保持现有渲染行为。
   - [x] Vue3 渲染实例卸载改为使用 core `RendererSession`，旧版 rendered 对象由 core session helper 统一包装。
   - [x] Vue3 渲染面板 surface 拆到组件 hooks，入口只组合 DOM surface、source loading 和 core registry bridge。
+  - [x] 渲染挂载前 paint 调度与无 `requestAnimationFrame` 兜底迁入 `@file-viewer/core`，Vue surface hook 直接复用 core helper。
   - [x] Vue3 `FileViewer` 旧 catch-all `util.ts` 删除，渲染桥接收口到 `rendererBridge.ts`，只暴露 session 化入口并由兼容门禁防回流。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
   - [ ] Office Word/DOCX/DOC/DOT/RTF/ODT

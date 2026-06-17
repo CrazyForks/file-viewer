@@ -498,6 +498,23 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
+  const vueRenderSurfaceHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerRenderSurface.ts')
+  const vueRenderSurfaceHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRenderSurface.ts`
+  assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)
+  assertTokens(vueRenderSurfaceHookSource, [
+    'waitForFileViewerNextPaint'
+  ], vueRenderSurfaceHookLabel)
+  for (const forbiddenToken of [
+    'const waitForBrowserPaint',
+    'requestAnimationFrame !==',
+    'setTimeout(resolve'
+  ]) {
+    assert(
+      !vueRenderSurfaceHookSource.includes(forbiddenToken),
+      `${vueRenderSurfaceHookLabel} must delegate paint scheduling fallback to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueWorkerHookSource = await readSource(entry, 'src/package/vendors/xlsx/hooks/useWorker.ts')
   const vueWorkerHookLabel = `${entry.packageName} src/package/vendors/xlsx/hooks/useWorker.ts`
   assertImportsFrom(vueWorkerHookSource, '@file-viewer/core', vueWorkerHookLabel)

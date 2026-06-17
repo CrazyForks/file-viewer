@@ -30,14 +30,6 @@ interface UseViewerRenderSurfaceOptions {
   refreshZoomProvider: () => void;
 }
 
-const waitForBrowserPaint = () => {
-  if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
-    return new Promise<void>(resolve => setTimeout(resolve, 0))
-  }
-
-  return waitForFileViewerNextPaint()
-}
-
 /**
  * FileViewer 组件层的渲染面板门面。
  *
@@ -137,7 +129,7 @@ export const useViewerRenderSurface = ({
     out.appendChild(child)
     startZoomObserver()
     await nextTick()
-    await waitForBrowserPaint()
+    await waitForFileViewerNextPaint()
 
     if (!isCurrentRequest(version)) {
       if (child.parentNode === out) {
