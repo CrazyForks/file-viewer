@@ -1,5 +1,4 @@
 export * from './loading'
 export * from './worker'
-export * from './documentLocation'
 export * from './documentSearch'
 export * from './viewerZoom'

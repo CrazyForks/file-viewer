@@ -6,15 +6,13 @@ import type {
   FileViewerSearchState
 } from '@file-viewer/core'
 import {
+  buildFileViewerDocumentTextChunks,
   createFileViewerRawPostMessagePayload,
-  postFileViewerMessageToParent
+  getCurrentFileViewerDocumentAnchor,
+  postFileViewerMessageToParent,
+  scrollToFileViewerDocumentAnchor
 } from '@file-viewer/core'
-import {
-  buildDocumentTextChunks,
-  getCurrentDocumentAnchor,
-  scrollToDocumentAnchor,
-  useDocumentSearch
-} from '@/package/use'
+import { useDocumentSearch } from '@/package/use/documentSearch'
 
 interface UseViewerDocumentFeaturesOptions {
   output: Ref<HTMLDivElement | null>;
@@ -55,8 +53,8 @@ const cloneSearchState = (state: FileViewerSearchState): FileViewerSearchState =
 /**
  * FileViewer 的文档交互门面。
  *
- * 底层搜索、高亮、锚点收集继续放在 `src/package/use` 的通用 hooks 中；
- * 这里只负责把这些能力组合成组件对外暴露的 API，并处理 iframe 事件桥接。
+ * 底层锚点、滚动和文本切片由 core 负责，Vue 侧只保留搜索响应式 hook；
+ * 这里负责把这些能力组合成组件对外暴露的 API，并处理 iframe 事件桥接。
  */
 export const useViewerDocumentFeatures = ({
   output,
@@ -100,7 +98,7 @@ export const useViewerDocumentFeatures = ({
   }
 
   const notifyLocationChange = () => {
-    const anchor = getCurrentDocumentAnchor(output.value, documentSearch.anchors.value)
+    const anchor = getCurrentFileViewerDocumentAnchor(output.value, documentSearch.anchors.value)
     emitLocationChange(anchor)
     postViewerPayload('flyfish-viewer:location', 'location-change', anchor)
     return anchor
@@ -148,7 +146,7 @@ export const useViewerDocumentFeatures = ({
     if (!documentSearch.anchors.value.length) {
       await refreshDocumentIndex()
     }
-    const result = scrollToDocumentAnchor(output.value, anchor)
+    const result = scrollToFileViewerDocumentAnchor(output.value, anchor)
     notifyLocationChange()
     return result
   }
@@ -157,13 +155,13 @@ export const useViewerDocumentFeatures = ({
     if (!documentSearch.anchors.value.length) {
       await refreshDocumentIndex()
     }
-    const result = scrollToDocumentAnchor(output.value, line)
+    const result = scrollToFileViewerDocumentAnchor(output.value, line)
     notifyLocationChange()
     return result
   }
 
   const getDocumentTextChunks = (): FileViewerDocumentChunk[] => {
-    return buildDocumentTextChunks(documentSearch.anchors.value, getOptions()?.ai)
+    return buildFileViewerDocumentTextChunks(documentSearch.anchors.value, getOptions()?.ai)
   }
 
   return {

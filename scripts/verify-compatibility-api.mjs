@@ -406,6 +406,10 @@ async function verifyVue3ScopedCompatibility() {
       `${entry.packageName} package entry must not re-export unexpected public type ${typeName}`
     )
   }
+  assert(
+    !existsSync(join(entry.absoluteDir, 'src/package/use/documentLocation.ts')),
+    `${entry.packageName} must keep document location helpers in @file-viewer/core instead of reintroducing src/package/use/documentLocation.ts`
+  )
 
   for (const [relativePath, requiredTokens] of vue3ScopedRuntimeFacades) {
     const facadeSource = await readSource(entry, relativePath)
