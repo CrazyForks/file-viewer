@@ -5,12 +5,12 @@ import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
 import { displayChart } from './support/chart'
 import PptxWorker from './worker'
-import type { FileViewerZoomState } from '@file-viewer/core'
 import {
-  createZoomChangeEmitter,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
+  unregisterFileViewerZoomProvider,
+  type FileViewerZoomState
+} from '@file-viewer/core'
 
 const props = withDefaults(defineProps<{
   // 二进制数据

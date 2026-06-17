@@ -2,16 +2,14 @@ import { defaultMsDocCss, parseMsDocToHtml } from 'msdoc-viewer'
 import {
   applyPrintPageSize,
   buildPrintPageStyle,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   formatCssPixels,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider,
   type FileRenderContext,
   type FileViewerRenderedInstance as AppWrapper,
   type FileViewerZoomState
 } from '@file-viewer/core'
-import {
-  createZoomChangeEmitter,
-  registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
 
 const PAGE_BREAK_MARKER = '<span class="msdoc-page-break"></span>'
 const EMPTY_PAGE_HTML = '<p class="msdoc-paragraph"><br></p>'

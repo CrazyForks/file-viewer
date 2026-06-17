@@ -1,12 +1,12 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { readFileViewerText as readText } from '@file-viewer/core'
-import type { FileViewerZoomState } from '@file-viewer/core'
 import {
-  createZoomChangeEmitter,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
+  readFileViewerText as readText,
   registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
+  unregisterFileViewerZoomProvider,
+  type FileViewerZoomState
+} from '@file-viewer/core'
 
 const props = defineProps<{
   // 绘图文件二进制内容。Excalidraw 与 draw.io 都保持在命中格式时才解析。

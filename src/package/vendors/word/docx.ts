@@ -3,18 +3,16 @@ import DocxWorker from './docx.worker.ts?worker&inline'
 import {
   applyPrintPageSize,
   buildPrintPageStyle,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   formatCssPixels,
   getElementPrintPageSize,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerZoomProvider,
   type FileRenderContext,
   type FileViewerRenderedInstance as AppWrapper,
   type FileViewerZoomState,
   type PrintPageSize
 } from '@file-viewer/core'
-import {
-  createZoomChangeEmitter,
-  registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
 
 const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
   width: 794,

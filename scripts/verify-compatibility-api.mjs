@@ -181,6 +181,7 @@ const vue3ScopedRuntimeFacadeImportPattern = new RegExp(
   `from\\s+['"][^'"]*common/(${vue3ScopedRuntimeFacadeNames.map(escapeRegExp).join('|')})['"]`
 )
 const vue3ScopedCommonTypeImportPattern = /from\s+['"][^'"]*common\/type(?:\.ts)?['"]/
+const vue3ScopedVendorUseFacadeImportPattern = /from\s+['"]@\/package\/use\/(?:viewerZoom|documentSearch)['"]/
 const sourceFileExtensions = new Set(['.ts', '.tsx', '.vue', '.js', '.mjs'])
 
 function assert(condition, message) {
@@ -442,6 +443,11 @@ async function verifyVue3ScopedCompatibility() {
       assert(
         !vendorCommonTypeImport,
         `${entry.packageName} ${relativePath} must import renderer contracts directly from @file-viewer/core instead of ${vendorCommonTypeImport?.[0]}`
+      )
+      const vendorUseFacadeImport = vue3ScopedVendorUseFacadeImportPattern.exec(source)
+      assert(
+        !vendorUseFacadeImport,
+        `${entry.packageName} ${relativePath} must import search/zoom provider helpers directly from @file-viewer/core instead of ${vendorUseFacadeImport?.[0]}`
       )
     }
   }

@@ -1,11 +1,11 @@
 <script setup lang='ts'>
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { FileViewerZoomState } from '@file-viewer/core'
 import {
-  createZoomChangeEmitter,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
+  unregisterFileViewerZoomProvider,
+  type FileViewerZoomState
+} from '@file-viewer/core'
 
 const props = defineProps<{
   data: ArrayBuffer

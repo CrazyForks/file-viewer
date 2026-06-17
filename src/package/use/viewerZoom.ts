@@ -5,26 +5,12 @@ import {
   createFileViewerZoomState
 } from '@file-viewer/core'
 export {
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   findFileViewerZoomProvider,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider
 } from '@file-viewer/core'
 import type { FileViewerOperationType, FileViewerZoomProvider, FileViewerZoomState } from '@file-viewer/core'
-
-export const createZoomChangeEmitter = () => {
-  const listeners = new Set<() => void>()
-  return {
-    emit() {
-      listeners.forEach(listener => listener())
-    },
-    subscribe(listener: () => void) {
-      listeners.add(listener)
-      return () => {
-        listeners.delete(listener)
-      }
-    }
-  }
-}
 
 interface UseViewerZoomOptions {
   root: Ref<HTMLElement | null>;

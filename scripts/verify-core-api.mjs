@@ -34,6 +34,7 @@ const requiredValueExports = [
   'executeFileViewerPrintOperation',
   'collectFileViewerDocumentAnchors',
   'createFileViewerDomSearchController',
+  'createFileViewerZoomChangeEmitter',
   'createFileViewerZoomController',
   'resolveFileViewerRendererAssets',
   'DEFAULT_RENDERER_DEFINITIONS',

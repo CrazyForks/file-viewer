@@ -5,7 +5,12 @@ import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } f
 import {
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
   buildPrintPageStyle,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   formatCssPixels,
+  registerFileViewerSearchProvider,
+  registerFileViewerZoomProvider,
+  unregisterFileViewerSearchProvider,
+  unregisterFileViewerZoomProvider,
   type FileRenderExportAdapter,
   type FileRenderExportOptions,
   type FileViewerPdfOptions,
@@ -13,15 +18,6 @@ import {
   type FileViewerSearchState,
   type FileViewerZoomState
 } from '@file-viewer/core'
-import {
-  registerFileViewerSearchProvider,
-  unregisterFileViewerSearchProvider
-} from '@/package/use/documentSearch'
-import {
-  createZoomChangeEmitter,
-  registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
 import './pdf.css'
 import PDFWorkerPort from './worker'
 

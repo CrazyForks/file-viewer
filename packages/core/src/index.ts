@@ -42,6 +42,7 @@ export {
   createFileViewerDomSearchController,
 } from './documentSearch';
 export {
+  createFileViewerZoomChangeEmitter,
   cloneFileViewerZoomState,
   createFileViewerZoomController,
 } from './documentZoom';

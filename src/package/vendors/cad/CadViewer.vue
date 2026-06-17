@@ -10,13 +10,14 @@ import type {
   ViewChangeEvent
 } from '@flyfish-dev/cad-viewer'
 import { CadViewer } from '@flyfish-dev/cad-viewer'
-import { resolveFileViewerCadAssetUrls } from '@file-viewer/core'
-import type { FileViewerCadOptions, FileViewerZoomState } from '@file-viewer/core'
 import {
-  createZoomChangeEmitter,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
+  resolveFileViewerCadAssetUrls,
   registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
+  unregisterFileViewerZoomProvider,
+  type FileViewerCadOptions,
+  type FileViewerZoomState
+} from '@file-viewer/core'
 
 const props = defineProps<{
   data: ArrayBuffer,

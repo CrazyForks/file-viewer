@@ -27,6 +27,21 @@ export const cloneFileViewerZoomState = (state: FileViewerZoomState): FileViewer
   maxScale: state.maxScale,
 });
 
+export const createFileViewerZoomChangeEmitter = () => {
+  const listeners = new Set<() => void>();
+  return {
+    emit() {
+      listeners.forEach(listener => listener());
+    },
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+};
+
 const getMutationObserverConstructor = (root: HTMLElement | null | undefined) => {
   return root?.ownerDocument?.defaultView?.MutationObserver ||
     (typeof MutationObserver !== 'undefined' ? MutationObserver : undefined);

@@ -1,12 +1,12 @@
 <script setup lang='ts'>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { HLJSApi, LanguageFn } from 'highlight.js'
-import type { FileViewerZoomState } from '@file-viewer/core'
 import {
-  createZoomChangeEmitter,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '@/package/use/viewerZoom'
+  unregisterFileViewerZoomProvider,
+  type FileViewerZoomState
+} from '@file-viewer/core'
 
 const props = defineProps<{
   // 源文件文本内容。组件只负责展示，不会执行其中的 HTML 或脚本。
