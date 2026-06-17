@@ -7,6 +7,7 @@ import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   getExtension,
   normalizeFilename,
+  resolveFileViewerSourceFilename,
   wrapFileViewerFileRef,
 } from './source';
 
@@ -52,6 +53,27 @@ export interface MutableFileViewerPreviewState extends MutableFileViewerPreviewR
   filename: string;
   renderedReady: boolean;
 }
+
+export interface FileViewerReadPreviewState {
+  filename: string;
+  file: File;
+  buffer: ArrayBuffer;
+  sourceUrl: string | null;
+}
+
+export interface CreateFileViewerReadPreviewStateInput {
+  file: File;
+  buffer: ArrayBuffer;
+  sourceUrl?: string | null;
+  fallbackFilename?: string;
+}
+
+export type MutableFileViewerReadPreviewState = Pick<
+  MutableFileViewerPreviewState,
+  'filename' | 'file' | 'buffer' | 'sourceUrl'
+>;
+
+export type MutableFileViewerPreviewSourceUrlState = Pick<MutableFileViewerPreviewState, 'sourceUrl'>;
 
 export const createFileViewerRequestController = (): FileViewerRequestController => {
   let version = 0;
@@ -163,6 +185,37 @@ export const applyFileViewerEmptyPreviewState = <Target extends MutableFileViewe
   target.filename = state.filename;
   target.renderedReady = state.renderedReady;
   applyFileViewerPreviewRequestResetState(target, state);
+  return target;
+};
+
+export const createFileViewerReadPreviewState = ({
+  file,
+  buffer,
+  sourceUrl,
+  fallbackFilename = '',
+}: CreateFileViewerReadPreviewStateInput): FileViewerReadPreviewState => ({
+  filename: resolveFileViewerSourceFilename({ file, fallback: fallbackFilename }),
+  file,
+  buffer,
+  sourceUrl: normalizeFileViewerSourceUrl(sourceUrl),
+});
+
+export const applyFileViewerReadPreviewState = <Target extends MutableFileViewerReadPreviewState>(
+  target: Target,
+  state: FileViewerReadPreviewState
+) => {
+  target.filename = state.filename;
+  target.file = state.file;
+  target.buffer = state.buffer;
+  target.sourceUrl = state.sourceUrl;
+  return target;
+};
+
+export const applyFileViewerPreviewSourceUrlState = <Target extends MutableFileViewerPreviewSourceUrlState>(
+  target: Target,
+  sourceUrl?: string | null
+) => {
+  target.sourceUrl = normalizeFileViewerSourceUrl(sourceUrl);
   return target;
 };
 

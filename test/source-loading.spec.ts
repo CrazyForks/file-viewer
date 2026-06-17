@@ -3,8 +3,11 @@ import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
   applyFileViewerEmptyPreviewState,
+  applyFileViewerPreviewSourceUrlState,
+  applyFileViewerReadPreviewState,
   applyFileViewerPreviewRequestResetState,
   createFileViewerEmptyPreviewState,
+  createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
   createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
@@ -126,6 +129,40 @@ describe('remote source loading helpers', () => {
       renderedReady: false,
       progressiveReady: false
     })
+  })
+
+  it('applies read source and stream URL state without framework-specific refs', () => {
+    const file = new File(['demo'], '合同.docx')
+    const buffer = new ArrayBuffer(4)
+    const readState = createFileViewerReadPreviewState({
+      file,
+      buffer,
+      sourceUrl: '/example/%E5%90%88%E5%90%8C.docx?download=1'
+    })
+
+    expect(readState).toEqual({
+      filename: '合同.docx',
+      file,
+      buffer,
+      sourceUrl: '/example/%E5%90%88%E5%90%8C.docx?download=1'
+    })
+
+    const target = {
+      filename: '',
+      file: null as File | null,
+      buffer: null as ArrayBuffer | null,
+      sourceUrl: null as string | null,
+      renderedReady: false,
+      progressiveReady: false
+    }
+
+    expect(applyFileViewerReadPreviewState(target, readState)).toBe(target)
+    expect(target).toMatchObject(readState)
+
+    expect(applyFileViewerPreviewSourceUrlState(target, '')).toBe(target)
+    expect(target.sourceUrl).toBeNull()
+    applyFileViewerPreviewSourceUrlState(target, '/example/pdf.pdf')
+    expect(target.sourceUrl).toBe('/example/pdf.pdf')
   })
 
   it('defaults PDF streaming to same-origin URLs', () => {

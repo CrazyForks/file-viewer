@@ -234,8 +234,11 @@ export {
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
   applyFileViewerEmptyPreviewState,
+  applyFileViewerPreviewSourceUrlState,
+  applyFileViewerReadPreviewState,
   applyFileViewerPreviewRequestResetState,
   createFileViewerEmptyPreviewState,
+  createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
   createFileViewerRequestController,
   createFileViewerStreamingPdfPlaceholderFile,
@@ -249,12 +252,16 @@ export {
   shouldStreamPdfUrl,
 } from './sourceLoading';
 export type {
+  CreateFileViewerReadPreviewStateInput,
   FileViewerEmptyPreviewState,
   FileViewerPreviewRequestResetState,
+  FileViewerReadPreviewState,
   FileViewerRemoteSourcePlan,
   FileViewerRequestController,
+  MutableFileViewerPreviewSourceUrlState,
   MutableFileViewerPreviewRequestState,
   MutableFileViewerPreviewState,
+  MutableFileViewerReadPreviewState,
   ResolveFileViewerPreviewRequestReasonInput,
 } from './sourceLoading';
 export { createViewer } from './viewer';

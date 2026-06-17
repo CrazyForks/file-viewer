@@ -4,10 +4,12 @@ import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerEmptyPreviewState,
+  applyFileViewerPreviewSourceUrlState,
+  applyFileViewerReadPreviewState,
   applyFileViewerPreviewRequestResetState,
+  createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
   isFileViewerAbortError,
-  normalizeFileViewerSourceUrl,
   resolveFileViewerPreviewRequestReason,
   readFileViewerBuffer,
   resolveFileViewerRemoteSourcePlan,
@@ -160,14 +162,16 @@ export const useViewerSourceLoading = ({
     sourceUrl?: string,
     source: FileViewerLifecycleContext['source'] = sourceUrl ? 'url' : 'file'
   ) => {
-    filename.value = resolveFileViewerSourceFilename({ file, fallback: '' })
     const arrayBuffer = await readFileViewerBuffer(file)
     if (!isCurrentRequest(version)) {
       return
     }
-    currentFile.value = file
-    currentBuffer.value = arrayBuffer
-    currentSourceUrl.value = normalizeFileViewerSourceUrl(sourceUrl)
+    applyFileViewerReadPreviewState(previewStateTarget, createFileViewerReadPreviewState({
+      file,
+      buffer: arrayBuffer,
+      sourceUrl,
+      fallbackFilename: ''
+    }))
 
     const session = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
     if (!isCurrentRequest(version)) {
@@ -193,7 +197,7 @@ export const useViewerSourceLoading = ({
 
     try {
       const placeholderFile = createFileViewerStreamingPdfPlaceholderFile(nextFilename)
-      currentSourceUrl.value = url
+      applyFileViewerPreviewSourceUrlState(previewStateTarget, url)
       const session = await mountRenderedContent(new ArrayBuffer(0), placeholderFile, version, url, url)
       if (!isCurrentRequest(version)) {
         destroyRenderSession(session)
