@@ -1,8 +1,12 @@
-import { existsSync } from 'node:fs'
-import { readdir, readFile, stat } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
+import {
+  assertDirectory,
+  assertFile,
+  assertPublicArtifactOnlyRepo
+} from './lib/public-artifacts.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -30,65 +34,12 @@ function assert(condition, message) {
   }
 }
 
-async function assertDirectory(path, label = path) {
-  assert(existsSync(path), `Missing directory: ${label}`)
-  const info = await stat(path)
-  assert(info.isDirectory(), `Not a directory: ${label}`)
-}
-
-async function assertFile(path, label = path) {
-  assert(existsSync(path), `Missing file: ${label}`)
-  const info = await stat(path)
-  assert(info.isFile(), `Not a file: ${label}`)
-}
-
 async function readText(path) {
   return readFile(path, 'utf8')
 }
 
 function assertIncludes(content, needle, label) {
   assert(content.includes(needle), `${label} is missing ${needle}`)
-}
-
-async function assertArtifactOnlyLayout(repoDir, manifest) {
-  const forbiddenTopLevel = [
-    '.env',
-    '.eslintrc.cjs',
-    '.prettierrc.json',
-    '.vscode',
-    'build.sh',
-    'env.d.ts',
-    'index.html',
-    'pnpm-lock.yaml',
-    'pnpm-workspace.yaml',
-    'public',
-    'scripts',
-    'src',
-    'yarn.lock'
-  ]
-  for (const entry of forbiddenTopLevel) {
-    assert(!existsSync(join(repoDir, entry)), `Forbidden source workspace entry found: ${entry}`)
-  }
-  assert(!existsSync(join(repoDir, 'docs', '.vitepress')), 'Forbidden VitePress source directory found: docs/.vitepress')
-
-  const allowedRoots = new Set([
-    '.git',
-    ...(Array.isArray(manifest.allowedRoots) ? manifest.allowedRoots : [
-      'README.md',
-      'README.en.md',
-      'LICENSE',
-      'package.json',
-      'dist',
-      'demo',
-      'adapter-demo',
-      'docs',
-      'example',
-      'artifacts'
-    ])
-  ])
-  for (const entry of await readdir(repoDir)) {
-    assert(allowedRoots.has(entry), `Unexpected top-level entry in public artifact repo: ${entry}`)
-  }
 }
 
 function assertPackageRecord(record, entry) {
@@ -184,7 +135,7 @@ for (const requiredDirectory of ['dist', 'artifacts']) {
 }
 
 const manifest = await assertReleaseManifest(publicRepoDir)
-await assertArtifactOnlyLayout(publicRepoDir, manifest)
+await assertPublicArtifactOnlyRepo(publicRepoDir, { allowedRoots: manifest.allowedRoots })
 await assertReadmes(publicRepoDir)
 
 console.log(`Verified public artifact repository at ${publicRepoDir} for ${version}.`)

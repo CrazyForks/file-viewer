@@ -3,6 +3,7 @@ import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { basename, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
+import { assertPublicArtifactOnlyRepo } from './lib/public-artifacts.mjs'
 
 const sourceRoot = process.cwd()
 const args = process.argv.slice(2)
@@ -159,32 +160,6 @@ async function readEcosystemPackManifest() {
   return manifest
 }
 
-async function assertArtifactOnlyRepo(repoDir) {
-  const forbiddenTopLevel = [
-    '.env',
-    '.eslintrc.cjs',
-    '.prettierrc.json',
-    '.vscode',
-    'build.sh',
-    'env.d.ts',
-    'index.html',
-    'pnpm-lock.yaml',
-    'pnpm-workspace.yaml',
-    'public',
-    'scripts',
-    'src',
-    'yarn.lock'
-  ]
-  for (const entry of forbiddenTopLevel) {
-    if (existsSync(join(repoDir, entry))) {
-      throw new Error(`Forbidden source workspace entry found in public repo: ${entry}`)
-    }
-  }
-  if (existsSync(join(repoDir, 'docs', '.vitepress'))) {
-    throw new Error('Forbidden VitePress source directory found in public repo: docs/.vitepress')
-  }
-}
-
 async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
     ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'adapter-demo', 'docs', 'example', 'artifacts']
@@ -253,7 +228,7 @@ if (currentBranch() !== 'v3' && process.env.FILE_VIEWER_ALLOW_NON_V3 !== '1') {
 }
 
 await assertCleanGitRepo(publicRepoDir, 'Public artifact repository')
-await assertArtifactOnlyRepo(publicRepoDir)
+await assertPublicArtifactOnlyRepo(publicRepoDir)
 
 if (!skipBuild) {
   await removePath(releaseDir)
@@ -321,7 +296,7 @@ await createTarball(adapterDemoStagingDir, join(artifactsDir, `file-viewer-v3-${
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v3-${version}-lib-dist.tar.gz`))
 await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v3-${version}-docs.tar.gz`))
 await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)
-await assertArtifactOnlyRepo(publicRepoDir)
+await assertPublicArtifactOnlyRepo(publicRepoDir)
 run('node', ['scripts/verify-public-artifacts.mjs', '--public-repo-dir', publicRepoDir])
 
 console.log(`Public artifacts prepared in ${publicRepoDir}`)
