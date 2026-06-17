@@ -36,6 +36,7 @@ const requiredValueExports = [
   'createFileViewerDomSearchController',
   'createFileViewerZoomChangeEmitter',
   'createFileViewerZoomController',
+  'createFileViewerWorkerController',
   'resolveFileViewerRendererAssets',
   'DEFAULT_RENDERER_DEFINITIONS',
   'DEFAULT_SUPPORTED_EXTENSIONS'
@@ -81,7 +82,8 @@ const requiredTypeExports = [
   'FileViewerFrameIframeComponentProps',
   'FileViewerDirectFrameHandle',
   'FileViewerMountedFrameHandle',
-  'FileViewerFrameControllerHandle'
+  'FileViewerFrameControllerHandle',
+  'FileViewerWorkerController'
 ]
 
 const requiredInstanceMethods = [

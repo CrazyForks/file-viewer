@@ -415,6 +415,26 @@ async function verifyVue3ScopedCompatibility() {
     `${entry.packageName} must import Vue runtime hooks explicitly instead of reintroducing src/package/use/index.ts`
   )
 
+  const vueWorkerHookSource = await readSource(entry, 'src/package/use/worker.ts')
+  const vueWorkerHookLabel = `${entry.packageName} src/package/use/worker.ts`
+  assertImportsFrom(vueWorkerHookSource, '@file-viewer/core', vueWorkerHookLabel)
+  assertTokens(vueWorkerHookSource, [
+    'createFileViewerWorkerController',
+    'FileViewerWorkerFactory',
+    'controller.destroy()'
+  ], vueWorkerHookLabel)
+  for (const forbiddenToken of [
+    "addEventListener('message'",
+    "addEventListener('error'",
+    'postMessage({',
+    'terminate()'
+  ]) {
+    assert(
+      !vueWorkerHookSource.includes(forbiddenToken),
+      `${vueWorkerHookLabel} must delegate worker event plumbing to @file-viewer/core instead of using ${forbiddenToken}`
+    )
+  }
+
   for (const [relativePath, requiredTokens] of vue3ScopedRuntimeFacades) {
     const facadeSource = await readSource(entry, relativePath)
     const label = `${entry.packageName} ${relativePath}`

@@ -140,6 +140,7 @@
   - [x] 缩放状态标准化迁入 `@file-viewer/core`。
   - [x] 缩放 provider 发现、订阅、MutationObserver 和 beforeZoom 编排迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] loading 主题矩阵、运行态状态机和错误/消息切换迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
+  - [x] XLSX worker 消息分发、事件注册和销毁控制迁入 `@file-viewer/core`，Vue hook 仅保留 loading ref 与组件卸载生命周期。
   - [x] 搜索 options / empty state 标准化迁入 `@file-viewer/core`。
   - [x] AI 文本切片生成迁入 `@file-viewer/core`。
   - [x] DOM 锚点采集、DOM 搜索高亮、provider 注册表和 Vue 响应式门面继续拆分。

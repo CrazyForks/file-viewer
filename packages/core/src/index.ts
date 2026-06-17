@@ -212,7 +212,11 @@ export {
 } from './sourceLoading';
 export type { FileViewerRequestController } from './sourceLoading';
 export { createViewer } from './viewer';
-export { WorkerRefImpl, refWorker } from './worker';
+export {
+  WorkerRefImpl,
+  createFileViewerWorkerController,
+  refWorker,
+} from './worker';
 export type {
   FileViewerRendererAssetDefinition,
   FileViewerRendererAssetKind,
@@ -305,7 +309,17 @@ export type {
   BuildPrintPageStyleOptions,
   PrintPageSize,
 } from './printLayout';
-export type { WorkerProvider, WorkerRef } from './worker';
+export type {
+  CreateFileViewerWorkerControllerOptions,
+  FileViewerWorkerContext,
+  FileViewerWorkerController,
+  FileViewerWorkerErrorHook,
+  FileViewerWorkerEventHandler,
+  FileViewerWorkerFactory,
+  FileViewerWorkerMessageHook,
+  WorkerProvider,
+  WorkerRef,
+} from './worker';
 export type {
   FileViewerAiOptions,
   FileViewerArchiveOptions,
