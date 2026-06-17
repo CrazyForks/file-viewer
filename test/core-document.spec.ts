@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseHTML } from 'linkedom';
 import {
+  applyFileViewerZoomState,
   buildFileViewerDocumentTextChunks,
   collectFileViewerDocumentAnchors,
   cloneFileViewerSearchState,
@@ -335,6 +336,16 @@ describe('@file-viewer/core document helpers', () => {
     const zoomHost = document.getElementById('zoom') as HTMLElement;
     const listeners = new Set<() => void>();
     const beforeOperations: string[] = [];
+    const stateTarget = createFileViewerZoomState();
+    expect(applyFileViewerZoomState(stateTarget, { scale: 2, canZoomOut: true })).toBe(stateTarget);
+    expect(stateTarget).toMatchObject({
+      scale: 2,
+      label: '200%',
+      canZoomOut: true,
+    });
+    applyFileViewerZoomState(stateTarget, null);
+    expect(stateTarget).toEqual(createFileViewerZoomState());
+
     let scale = 1;
     let allowZoomOut = false;
     const getState = () => createFileViewerZoomState({

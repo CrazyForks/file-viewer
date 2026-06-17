@@ -549,10 +549,21 @@ async function verifyVue3ScopedCompatibility() {
   const vueZoomHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerZoom.ts`
   assertImportsFrom(vueZoomHookSource, '@file-viewer/core', vueZoomHookLabel)
   assertTokens(vueZoomHookSource, [
+    'applyFileViewerZoomState',
     'createFileViewerZoomController',
     'cloneFileViewerZoomState',
     'controller.destroy()'
   ], vueZoomHookLabel)
+  for (const forbiddenToken of [
+    'const applyState',
+    'state.scale = normalized.scale',
+    'state.maxScale = normalized.maxScale'
+  ]) {
+    assert(
+      !vueZoomHookSource.includes(forbiddenToken),
+      `${vueZoomHookLabel} must delegate zoom state application to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
 
   const vueToolbarHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerToolbar.ts')
   const vueToolbarHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerToolbar.ts`

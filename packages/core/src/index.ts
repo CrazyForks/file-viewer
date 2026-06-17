@@ -42,9 +42,13 @@ export {
   createFileViewerDomSearchController,
 } from './documentSearch';
 export {
+  applyFileViewerZoomState,
   createFileViewerZoomChangeEmitter,
   cloneFileViewerZoomState,
   createFileViewerZoomController,
+} from './documentZoom';
+export type {
+  MutableFileViewerZoomState,
 } from './documentZoom';
 export {
   DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_INTERVAL,

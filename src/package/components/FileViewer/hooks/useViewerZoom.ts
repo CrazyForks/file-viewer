@@ -1,11 +1,11 @@
 import { reactive, type Ref } from 'vue'
 import {
+  applyFileViewerZoomState,
   cloneFileViewerZoomState,
   createFileViewerZoomController,
   createFileViewerZoomState,
   type FileViewerOperationType,
-  type FileViewerZoomProvider,
-  type FileViewerZoomState
+  type FileViewerZoomProvider
 } from '@file-viewer/core'
 
 interface UseFileViewerZoomOptions {
@@ -32,19 +32,8 @@ export const useViewerZoom = ({
     beforeZoom: operation => runBeforeOperation(operation)
   })
 
-  const applyState = (nextState?: FileViewerZoomState | null) => {
-    const normalized = createFileViewerZoomState(nextState || {})
-    state.scale = normalized.scale
-    state.label = normalized.label
-    state.canZoomIn = normalized.canZoomIn
-    state.canZoomOut = normalized.canZoomOut
-    state.canReset = normalized.canReset
-    state.minScale = normalized.minScale
-    state.maxScale = normalized.maxScale
-  }
-
   const syncFromController = (nextProvider: FileViewerZoomProvider | null = controller.provider) => {
-    applyState(controller.state)
+    applyFileViewerZoomState(state, controller.state)
     return nextProvider
   }
 
@@ -74,17 +63,17 @@ export const useViewerZoom = ({
     getZoomState: () => cloneFileViewerZoomState(state),
     zoomIn: async () => {
       const nextState = await controller.zoomIn()
-      applyState(nextState)
+      applyFileViewerZoomState(state, nextState)
       return cloneFileViewerZoomState(state)
     },
     zoomOut: async () => {
       const nextState = await controller.zoomOut()
-      applyState(nextState)
+      applyFileViewerZoomState(state, nextState)
       return cloneFileViewerZoomState(state)
     },
     resetZoom: async () => {
       const nextState = await controller.resetZoom()
-      applyState(nextState)
+      applyFileViewerZoomState(state, nextState)
       return cloneFileViewerZoomState(state)
     }
   }

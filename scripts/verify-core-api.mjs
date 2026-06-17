@@ -80,6 +80,7 @@ const requiredValueExports = [
   'cloneFileViewerSearchState',
   'resolveFileViewerScrollContainer',
   'createFileViewerDomSearchController',
+  'applyFileViewerZoomState',
   'createFileViewerZoomChangeEmitter',
   'createFileViewerZoomController',
   'createFileViewerWorkerController',
@@ -150,7 +151,8 @@ const requiredTypeExports = [
   'FileViewerFrameControllerHandle',
   'FileViewerWorkerController',
   'FileViewerLoadingRuntimeState',
-  'MutableFileViewerLoadingRuntimeState'
+  'MutableFileViewerLoadingRuntimeState',
+  'MutableFileViewerZoomState'
 ]
 
 const requiredInstanceMethods = [

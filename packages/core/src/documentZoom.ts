@@ -17,6 +17,8 @@ export interface CreateFileViewerZoomControllerOptions {
   beforeZoom?: (operation: FileViewerZoomOperation) => Promise<boolean> | boolean;
 }
 
+export type MutableFileViewerZoomState = FileViewerZoomState;
+
 export const cloneFileViewerZoomState = (state: FileViewerZoomState): FileViewerZoomState => ({
   scale: state.scale,
   label: state.label,
@@ -26,6 +28,22 @@ export const cloneFileViewerZoomState = (state: FileViewerZoomState): FileViewer
   minScale: state.minScale,
   maxScale: state.maxScale,
 });
+
+export const applyFileViewerZoomState = <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  source?: Partial<FileViewerZoomState> | null
+) => {
+  const normalized = createFileViewerZoomState(source || {});
+  target.scale = normalized.scale;
+  target.label = normalized.label;
+  target.canZoomIn = normalized.canZoomIn;
+  target.canZoomOut = normalized.canZoomOut;
+  target.canReset = normalized.canReset;
+  target.minScale = normalized.minScale;
+  target.maxScale = normalized.maxScale;
+
+  return target;
+};
 
 export const createFileViewerZoomChangeEmitter = () => {
   const listeners = new Set<() => void>();
@@ -57,22 +75,11 @@ export const createFileViewerZoomController = ({
   let observer: MutationObserver | null = null;
   const state = createFileViewerZoomState();
 
-  const applyState = (nextState?: FileViewerZoomState | null) => {
-    const normalized = createFileViewerZoomState(nextState || {});
-    state.scale = normalized.scale;
-    state.label = normalized.label;
-    state.canZoomIn = normalized.canZoomIn;
-    state.canZoomOut = normalized.canZoomOut;
-    state.canReset = normalized.canReset;
-    state.minScale = normalized.minScale;
-    state.maxScale = normalized.maxScale;
-  };
-
   const clearProvider = () => {
     unsubscribe?.();
     unsubscribe = null;
     provider = null;
-    applyState(null);
+    applyFileViewerZoomState(state, null);
   };
 
   const syncProvider = () => {
@@ -86,10 +93,10 @@ export const createFileViewerZoomController = ({
       unsubscribe?.();
       provider = nextProvider;
       unsubscribe = nextProvider?.subscribe?.(() => {
-        applyState(nextProvider.getState());
+        applyFileViewerZoomState(state, nextProvider.getState());
       }) || null;
     }
-    applyState(nextProvider?.getState?.() || null);
+    applyFileViewerZoomState(state, nextProvider?.getState?.() || null);
     return nextProvider;
   };
 
@@ -112,7 +119,7 @@ export const createFileViewerZoomController = ({
     }
 
     const nextState = await action(nextProvider);
-    applyState(nextState || nextProvider.getState());
+    applyFileViewerZoomState(state, nextState || nextProvider.getState());
     return cloneFileViewerZoomState(state);
   };
 

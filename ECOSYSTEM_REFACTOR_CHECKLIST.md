@@ -161,6 +161,7 @@
     - [x] 原始文件来源对象构建迁入 `@file-viewer/core`，core viewer 与 Vue export hook 共用 buffer / file / url / mimeType 归一化。
 - [x] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
   - [x] 缩放状态标准化迁入 `@file-viewer/core`。
+  - [x] 缩放 runtime state 应用迁入 `@file-viewer/core`，core controller 与 Vue zoom hook 共用同一套字段归一化。
   - [x] 缩放 provider 发现、订阅、MutationObserver 和 beforeZoom 编排迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] loading 主题矩阵、运行态状态机和错误/消息切换迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] XLSX worker 消息分发、事件注册和销毁控制迁入 `@file-viewer/core`，Vue hook 仅保留 loading ref 与组件卸载生命周期。
