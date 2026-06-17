@@ -108,6 +108,75 @@ async function assertFile(path, label = path) {
   }
 }
 
+function collectExportEntrypoints(value, paths = new Set()) {
+  if (!value) {
+    return paths
+  }
+  if (typeof value === 'string') {
+    paths.add(value)
+    return paths
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectExportEntrypoints(item, paths)
+    }
+    return paths
+  }
+  if (typeof value === 'object') {
+    for (const item of Object.values(value)) {
+      collectExportEntrypoints(item, paths)
+    }
+  }
+  return paths
+}
+
+function collectPackageEntrypoints(packageJson) {
+  const entrypoints = new Set()
+  for (const field of ['main', 'module', 'browser', 'types', 'svelte']) {
+    if (typeof packageJson[field] === 'string') {
+      entrypoints.add(packageJson[field])
+    }
+  }
+  for (const item of collectExportEntrypoints(packageJson.exports)) {
+    entrypoints.add(item)
+  }
+  for (const item of Object.values(packageJson.bin || {})) {
+    if (typeof item === 'string') {
+      entrypoints.add(item)
+    }
+  }
+  return [...entrypoints].filter(entrypoint =>
+    !entrypoint.startsWith('/') &&
+    !entrypoint.includes(':') &&
+    !entrypoint.includes('*') &&
+    !entrypoint.startsWith('#') &&
+    entrypoint !== './' &&
+    entrypoint !== '.'
+  )
+}
+
+async function verifyPackageEntrypoints(entry, { requireFiles }) {
+  for (const field of ['main', 'module', 'types']) {
+    if (!entry.packageJson[field]) {
+      throw new Error(`${entry.packageName} is missing package.json ${field}`)
+    }
+  }
+  if (!entry.packageJson.exports?.['.']) {
+    throw new Error(`${entry.packageName} is missing package.json exports["."]`)
+  }
+
+  if (!requireFiles) {
+    return
+  }
+
+  for (const entrypoint of collectPackageEntrypoints(entry.packageJson)) {
+    await assertFile(
+      join(entry.absoluteDir, entrypoint),
+      `${entry.packageName} entrypoint ${entrypoint}. Run pnpm release:ecosystem:build before packing or publishing`
+    )
+  }
+}
+
 async function packageEntry(spec) {
   const absoluteDir = resolve(sourceRoot, spec.packageDir)
   const packageJson = await readJson(join(absoluteDir, 'package.json'))
@@ -121,7 +190,7 @@ async function packageEntry(spec) {
   }
 }
 
-async function verifyPackage(entry) {
+async function verifyPackage(entry, options) {
   await assertDirectory(entry.absoluteDir, entry.packageDir)
   await assertFile(join(entry.absoluteDir, 'package.json'), `${entry.packageDir}/package.json`)
   await assertFile(join(entry.absoluteDir, 'README.md'), `${entry.packageDir}/README.md`)
@@ -137,9 +206,7 @@ async function verifyPackage(entry) {
   if (entry.packageJson.publishConfig?.access !== 'public') {
     throw new Error(`${entry.packageName} must publish with access=public`)
   }
-  if (!entry.packageJson.types) {
-    throw new Error(`${entry.packageName} is missing package.json types`)
-  }
+  await verifyPackageEntrypoints(entry, options)
 }
 
 const entries = await Promise.all(packageSpecs.map(packageEntry))
@@ -149,7 +216,7 @@ for (const entry of entries) {
     throw new Error(`Duplicate release package: ${entry.packageName}`)
   }
   names.add(entry.packageName)
-  await verifyPackage(entry)
+  await verifyPackage(entry, { requireFiles: mode !== 'list' })
 }
 
 if (mode === 'list') {

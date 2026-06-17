@@ -49,7 +49,7 @@ Verify source wrapper packages and exported standalone repositories:
 pnpm wrappers:verify
 ```
 
-The verifier checks package names, README language pairs, generated ecosystem/format blocks, official documentation and demo links, Apache-2.0 attribution guidance, standalone manifests, GitHub/Gitee metadata and the absence of `workspace:` dependencies in exported repositories.
+The verifier checks package names, npm entry metadata (`main`, `module`, `types`, `exports`), README language pairs, generated ecosystem/format blocks, official documentation and demo links, Apache-2.0 attribution guidance, standalone manifests, GitHub/Gitee metadata, and the absence of build output, workspace dependencies or private workspace folders in exported repositories.
 
 Prepare the exported folders as standalone Git repositories without pushing:
 
@@ -85,7 +85,7 @@ The helper currently covers 13 public npm targets:
 - `@flyfish-group/file-viewer3`, `file-viewer3`
 - `@flyfish-group/file-viewer-web`, `@flyfish-group/file-viewer-react`
 
-It verifies public publish settings, type declarations, README language pairs and version alignment before packing or publishing. The compatibility packages remain synchronized for existing customers; new integrations should prefer the standard `@file-viewer/*` names.
+It verifies public publish settings, type declarations, package entry files, README language pairs and version alignment before packing or publishing. The compatibility packages remain synchronized for existing customers; new integrations should prefer the standard `@file-viewer/*` names.
 
 ## Public Artifact Sync
 

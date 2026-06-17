@@ -91,6 +91,66 @@ function dependencyBlocks(packageJson) {
   ].filter(Boolean)
 }
 
+function collectExportEntrypoints(value, paths = new Set()) {
+  if (!value) {
+    return paths
+  }
+  if (typeof value === 'string') {
+    paths.add(value)
+    return paths
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectExportEntrypoints(item, paths)
+    }
+    return paths
+  }
+  if (typeof value === 'object') {
+    for (const item of Object.values(value)) {
+      collectExportEntrypoints(item, paths)
+    }
+  }
+  return paths
+}
+
+function collectPackageEntrypoints(packageJson) {
+  const entrypoints = new Set()
+  for (const field of ['main', 'module', 'browser', 'types', 'svelte']) {
+    if (typeof packageJson[field] === 'string') {
+      entrypoints.add(packageJson[field])
+    }
+  }
+  for (const item of collectExportEntrypoints(packageJson.exports)) {
+    entrypoints.add(item)
+  }
+  return [...entrypoints].filter(entrypoint =>
+    !entrypoint.startsWith('/') &&
+    !entrypoint.includes(':') &&
+    !entrypoint.includes('*') &&
+    !entrypoint.startsWith('#') &&
+    entrypoint !== './' &&
+    entrypoint !== '.'
+  )
+}
+
+async function verifyPackageEntrypointMetadata(dir, packageJson, label) {
+  for (const field of ['main', 'module', 'types']) {
+    if (!packageJson[field]) {
+      throw new Error(`${label} package.json is missing ${field}`)
+    }
+  }
+  if (!packageJson.exports?.['.']) {
+    throw new Error(`${label} package.json is missing exports["."]`)
+  }
+
+  for (const entrypoint of collectPackageEntrypoints(packageJson)) {
+    if (entrypoint.includes('/dist/') || entrypoint.startsWith('dist/')) {
+      continue
+    }
+    await assertFile(join(dir, entrypoint), `${label} package entry ${entrypoint}`)
+  }
+}
+
 async function verifyReadmePair(dir, wrapper, label) {
   const zhPath = join(dir, 'README.md')
   const enPath = join(dir, 'README.en.md')
@@ -137,6 +197,7 @@ async function verifyPackageDir(wrapper) {
   if (packageJson.private === true) {
     throw new Error(`${wrapper.packageDir} must be publishable, but package.json has private=true`)
   }
+  await verifyPackageEntrypointMetadata(packageDir, packageJson, wrapper.packageDir)
 }
 
 async function readAllFiles(dir) {
@@ -177,6 +238,7 @@ async function verifyExportedRepo(wrapper) {
   if (packageJson.bugs?.url !== `${wrapper.github}/issues`) {
     throw new Error(`${wrapper.repository} bugs URL mismatch`)
   }
+  await verifyPackageEntrypointMetadata(repoDir, packageJson, wrapper.repository)
   for (const block of dependencyBlocks(packageJson)) {
     for (const [dependencyName, range] of Object.entries(block)) {
       if (String(range).includes('workspace:')) {
@@ -205,7 +267,11 @@ async function verifyExportedRepo(wrapper) {
   const allFiles = await readAllFiles(repoDir)
   for (const file of allFiles) {
     const relativePath = file.slice(repoDir.length + 1)
-    if (relativePath.includes('node_modules/') || relativePath.startsWith('dist/')) {
+    if (
+      relativePath.includes('node_modules/') ||
+      relativePath.startsWith('dist/') ||
+      relativePath.startsWith('packages/')
+    ) {
       throw new Error(`${wrapper.repository} exported build/dependency output leaked: ${relativePath}`)
     }
     const content = await readFile(file, 'utf8').catch(() => '')
