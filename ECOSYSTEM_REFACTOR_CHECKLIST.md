@@ -129,6 +129,7 @@
   - [x] Vue3 handler 列表可由 core 组合为带 `load()` 的 renderer registry，后续 wrapper 能复用同一桥接协议。
   - [x] Vue3 实际渲染入口改为通过 core renderer registry `load()` 进入，并透传旧版 `FileRenderContext` 保持现有渲染行为。
   - [x] Vue3 渲染实例卸载改为使用 core `RendererSession`，旧版 rendered 对象由 core session helper 统一包装。
+  - [x] Vue3 渲染面板 surface 拆到组件 hooks，入口只组合 DOM surface、source loading 和 core registry bridge。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
   - [ ] Office Word/DOCX/DOC/DOT/RTF/ODT
   - [ ] Excel/表格

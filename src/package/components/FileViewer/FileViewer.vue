@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
   createFileViewerErrorState,
@@ -12,7 +12,6 @@ import {
 import type {
   FileRef,
   FileViewerDocumentAnchor,
-  FileRenderExportAdapter,
   FileViewerLifecycleContext,
   FileViewerOperationAvailability,
   FileViewerOptions,
@@ -22,10 +21,10 @@ import type {
   FileViewerZoomState
 } from '@/package/common/type'
 import { useLoading } from '@/package/use'
-import { renderSession, type FileViewerVueRenderSession } from './util'
 import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerLifecycle } from './hooks/useViewerLifecycle'
+import { useViewerRenderSurface } from './hooks/useViewerRenderSurface'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
 import { useViewerToolbar } from './hooks/useViewerToolbar'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
@@ -106,10 +105,6 @@ const viewerTheme = computed(() => {
   return theme === 'light' || theme === 'dark' ? theme : 'system'
 })
 
-const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
-const renderedReady = ref(false)
-const progressiveReady = ref(false)
-
 const {
   watermarkStyle,
   watermarkInlineStyle
@@ -131,7 +126,6 @@ const {
 
 const errorState = computed(() => createFileViewerErrorState(currentExtend.value, error.value, loadingTheme.value))
 
-let activeRenderSession: FileViewerVueRenderSession | null = null
 const requestController = createFileViewerRequestController()
 
 const getSourceFilename = () => {
@@ -195,19 +189,6 @@ const {
   }
 })
 
-const waitForBrowserPaint = () => {
-  return new Promise<void>(resolve => {
-    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
-      setTimeout(resolve, 0)
-      return
-    }
-
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => resolve())
-    })
-  })
-}
-
 const {
   zoomState,
   refreshZoomProvider,
@@ -222,6 +203,29 @@ const {
   output,
   enabled: () => true,
   runBeforeOperation
+})
+
+const {
+  activeExportAdapter,
+  renderedReady,
+  progressiveReady,
+  clearRenderedContent,
+  destroyRenderSession,
+  mountRenderedContent,
+  setActiveRenderSession
+} = useViewerRenderSurface({
+  output,
+  getOptions: () => props.options,
+  isCurrentRequest,
+  notifyActiveUnloadStart,
+  notifyActiveUnloadComplete,
+  clearActiveDocumentContext,
+  clearDocumentState,
+  refreshDocumentIndex,
+  startZoomObserver,
+  stopZoomObserver,
+  clearZoomProvider,
+  refreshZoomProvider
 })
 
 const {
@@ -246,121 +250,6 @@ const {
   emitOperationAvailabilityChange: availability => emit('operation-availability-change', availability),
   emitZoomChange: state => emit('zoom-change', state)
 })
-
-const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
-  if (!session) {
-    return
-  }
-
-  try {
-    const result = session.destroy?.()
-    if (result && typeof result === 'object' && 'then' in result) {
-      void (result as Promise<void>).catch(nextError => {
-        console.warn('预览内容卸载失败', nextError)
-      })
-    }
-  } catch (nextError) {
-    console.warn('预览内容卸载失败', nextError)
-  }
-}
-
-const setActiveRenderSession = (session: FileViewerVueRenderSession | null) => {
-  activeRenderSession = session
-}
-
-// 卸载旧预览实例并清空容器，避免不同预览器残留 DOM 或事件监听。
-const clearRenderedContent = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-  const context = notifyActiveUnloadStart(reason)
-
-  try {
-    destroyRenderSession(activeRenderSession)
-  } finally {
-    activeRenderSession = null
-    clearActiveDocumentContext()
-    activeExportAdapter.value = null
-    renderedReady.value = false
-    progressiveReady.value = false
-    clearDocumentState()
-    stopZoomObserver()
-    clearZoomProvider()
-
-    const out = output.value
-    if (out) {
-      while (out.firstChild) {
-        out.removeChild(out.firstChild)
-      }
-    }
-  }
-
-  notifyActiveUnloadComplete(context, reason)
-}
-
-const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
-  activeExportAdapter.value = adapter
-}
-
-const mountRenderedContent = async (
-  buffer: ArrayBuffer,
-  file: File,
-  version: number,
-  sourceUrl?: string,
-  streamUrl?: string
-) => {
-  if (!output.value) {
-    await nextTick()
-  }
-
-  const out = output.value
-  if (!out || !isCurrentRequest(version)) {
-    return undefined
-  }
-
-  clearRenderedContent('replace')
-
-  const child = document.createElement('div')
-  child.className = 'file-render'
-  out.appendChild(child)
-  startZoomObserver()
-  await nextTick()
-  await waitForBrowserPaint()
-
-  if (!isCurrentRequest(version)) {
-    if (child.parentNode === out) {
-      out.removeChild(child)
-    }
-    return undefined
-  }
-
-  try {
-    const session = await renderSession(buffer, getExtension(file.name), child, {
-      filename: file.name,
-      url: sourceUrl,
-      streamUrl,
-      options: props.options,
-      registerExportAdapter,
-      onProgressiveRender: () => {
-        if (isCurrentRequest(version)) {
-          progressiveReady.value = true
-        }
-      }
-    })
-    if (!isCurrentRequest(version)) {
-      destroyRenderSession(session)
-      if (child.parentNode === out) {
-        out.removeChild(child)
-      }
-      return undefined
-    }
-    void refreshDocumentIndex()
-    refreshZoomProvider()
-    return session
-  } catch (nextError) {
-    if (child.parentNode === out) {
-      out.removeChild(child)
-    }
-    throw nextError
-  }
-}
 
 const {
   cancelPreview,
