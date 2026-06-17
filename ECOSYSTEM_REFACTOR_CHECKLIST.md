@@ -84,7 +84,7 @@
 
 - [ ] 从 `src/package/common` 抽出 source loading、类型识别、能力判断、打印导出、worker ref、生命周期事件。
 - [ ] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
-- [ ] 从 `src/package/vendors/renders.ts` 抽出 registry，保证格式注册不依赖 Vue。
+- [x] 从 `src/package/vendors/renders.ts` 抽出 registry，保证格式注册不依赖 Vue。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
   - [ ] Office Word/DOCX/DOC/DOT/RTF/ODT
   - [ ] Excel/表格
@@ -117,6 +117,8 @@
 - [ ] 将 `v3` 定义为 Vue 3 wrapper 分支。
 - [ ] 给 `main`、`v2`、`v3` 写入分支职责 README 和发布流程说明。
 - [ ] 确保 `v2` / `v3` wrapper 都依赖同一个 `@file-viewer/core`，不复制核心渲染逻辑。
+  - [x] `v3` 的格式矩阵和渲染分发入口先接入 `@file-viewer/core`。
+  - [ ] `v2` 同步接入同一个 `@file-viewer/core`。
 - [ ] 从当前 Vue3 根包迁移出 wrapper 代码后，保留兼容 alias 发布流程。
 
 ## Phase 4: Wrapper 标准实现
@@ -233,7 +235,7 @@
 
 - [x] 在当前仓库新增 `packages/core` 或 `src/core` 草案目录，先迁移 framework-neutral 类型和 renderer registry。
 - [ ] 将 `src/package/common/type.ts` 中与 Vue 无关的类型抽到 core。
-- [ ] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
+- [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。
 - [x] 新增 `@file-viewer/core` package manifest 草案，暂不发布。
 - [ ] 新增 wrapper README 模板，统一中英文结构和格式矩阵。

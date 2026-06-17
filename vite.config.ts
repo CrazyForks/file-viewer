@@ -21,17 +21,23 @@ const viewerQueryFallbackPlugin = (): Plugin => ({
 
 // https://vitejs.dev/config/
 export default defineConfig(ctx => {
+  const alias: Record<string, string> = {
+    '@': fileURLToPath(new URL('./src', import.meta.url)),
+    events: 'events',
+    path: 'path-browserify',
+    stream: 'stream-browserify',
+    zlib: 'browserify-zlib'
+  }
+
+  if (ctx.mode !== 'lib') {
+    alias['@file-viewer/core'] = fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url))
+  }
+
   const config: UserConfigExport = {
     plugins: [viewerQueryFallbackPlugin(), vue(), vueJsx()],
     base: './',
     resolve: {
-      alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url)),
-        events: 'events',
-        path: 'path-browserify',
-        stream: 'stream-browserify',
-        zlib: 'browserify-zlib'
-      }
+      alias
     }
   }
   if (ctx.mode === 'lib') {
@@ -49,7 +55,7 @@ export default defineConfig(ctx => {
       },
       rollupOptions: {
         // 确保外部化处理那些你不想打包进库的依赖
-        external: ['vue'],
+        external: ['vue', '@file-viewer/core'],
         output: {
           // 不输出hash
           chunkFileNames: 'components/[name].js'

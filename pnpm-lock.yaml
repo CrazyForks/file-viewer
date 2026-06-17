@@ -11,6 +11,9 @@ importers:
       '@excalidraw/excalidraw':
         specifier: ^0.18.1
         version: 0.18.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@file-viewer/core':
+        specifier: workspace:^1.0.26
+        version: link:packages/core
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)

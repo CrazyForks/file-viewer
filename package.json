@@ -86,6 +86,7 @@
   "types": "dist/src/package/index.d.ts",
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
+    "@file-viewer/core": "workspace:^1.0.26",
     "@flyfish-dev/cad-viewer": "^0.6.4",
     "@kenjiuno/msgreader": "^1.28.0",
     "@lucide/vue": "^1.17.0",

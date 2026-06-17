@@ -1,6 +1,10 @@
-import { ARCHIVE_EXTENSIONS } from './archive/shared'
-import { MODEL_EXTENSIONS } from './model/shared'
-import type { AppWrapper, FileHandler, FileHandlerComposite, FileRenderContext } from '@/package/common/type'
+import { DEFAULT_RENDERER_DEFINITIONS, createRendererRegistry } from '@file-viewer/core'
+import type { AppWrapper, FileHandler, FileRenderContext } from '@/package/common/type'
+
+interface VueRendererHandler {
+  rendererId: string;
+  handler: FileHandler;
+}
 
 // 假装构造一个vue的包装，让上层统一处理销毁和替换节点
 const createWrapper = (el: HTMLDivElement): AppWrapper => ({
@@ -10,10 +14,10 @@ const createWrapper = (el: HTMLDivElement): AppWrapper => ({
   }
 })
 
-const handlers: Array<FileHandlerComposite> = [
+const handlers: Array<VueRendererHandler> = [
   // 使用docxjs支持，目前效果最好的渲染器
   {
-    accepts: ['docx', 'docm', 'dotx', 'dotm'],
+    rendererId: 'office-word-openxml',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { renderDocx } = await import('./word')
       const rendered = await renderDocx(buffer, target, context)
@@ -22,7 +26,7 @@ const handlers: Array<FileHandlerComposite> = [
     }
   },
   {
-    accepts: ['doc', 'dot'],
+    rendererId: 'office-word-binary',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { renderDoc } = await import('./word')
       return renderDoc(buffer, target, context)
@@ -30,7 +34,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 使用pptx2html，已通过默认值更替
   {
-    accepts: ['pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'],
+    rendererId: 'office-presentation',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderPptx } = await import('./pptx')
       await renderPptx(buffer, target, type)
@@ -40,7 +44,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // RTF / ODT / ODP 是兼容型开放文档入口，保持独立异步块，避免影响主 Office 链路。
   {
-    accepts: ['rtf', 'odt', 'odp'],
+    rendererId: 'open-document',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderOpenDocument } = await import('./open-document')
       return renderOpenDocument(buffer, target, type)
@@ -48,15 +52,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 使用 styled-exceljs + e-virt-table，统一处理 XLSX / XLS 的数据和样式读取。
   {
-    accepts: ['xlsx', 'xltx'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
-      const { default: renderXlsx } = await import('./xlsx')
-      return renderXlsx(buffer, target, type)
-    }
-  },
-  // 二进制工作簿也走同一解析链路，避免 XLS / XLSX 出现样式能力差异。
-  {
-    accepts: ['xlsm', 'xlsb', 'xls', 'xlt', 'xltm', 'csv', 'ods', 'fods', 'numbers'],
+    rendererId: 'spreadsheet-openxml',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderXlsx } = await import('./xlsx')
       return renderXlsx(buffer, target, type)
@@ -64,7 +60,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 使用pdfjs，渲染pdf，效果最好
   {
-    accepts: ['pdf'],
+    rendererId: 'pdf',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { default: renderPdf } = await import('./pdf')
       return renderPdf(buffer, target, context)
@@ -72,7 +68,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // OFD 是国产版式文档格式，解析和页面渲染依赖较重，必须保持在独立异步块里按需加载。
   {
-    accepts: ['ofd'],
+    rendererId: 'ofd',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
       const { default: renderOfd } = await import('./ofd')
       return renderOfd(buffer, target)
@@ -80,7 +76,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // Typst 使用 WASM 编译器和 SVG 渲染链路，只有打开 .typ/.typst 时才加载重型运行时。
   {
-    accepts: ['typ', 'typst'],
+    rendererId: 'typst',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderTypst } = await import('./typst')
       return renderTypst(buffer, target, type, context)
@@ -88,7 +84,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 压缩包依赖 libarchive.js 的 WASM Worker。只在命中压缩包扩展名时加载，并且内部文件按点击解压。
   {
-    accepts: ARCHIVE_EXTENSIONS,
+    rendererId: 'archive',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { default: renderArchive } = await import('./archive')
       return renderArchive(buffer, target, context)
@@ -96,7 +92,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // EML/MSG 使用成熟邮件解析库读取头信息、正文与附件，附件继续交给统一渲染器预览。
   {
-    accepts: ['eml', 'msg', 'mbox'],
+    rendererId: 'email',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderEmail } = await import('./email')
       return renderEmail(buffer, target, type, context)
@@ -104,7 +100,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // OLB/DRA 常见于 OrCAD / Allegro 生态，优先按 CFB 容器解析结构树、对象和属性，失败时退化为安全的二进制结构预览。
   {
-    accepts: ['olb', 'dra'],
+    rendererId: 'eda',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderEda } = await import('./eda')
       return renderEda(buffer, target, type, context)
@@ -112,7 +108,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // CAD 使用 @flyfish-dev/cad-viewer。DWG 走 Worker + LibreDWG WASM，DWF/DWFx/XPS 走 native renderer。
   {
-    accepts: ['dxf', 'dwg', 'dwf', 'dwfx', 'xps'],
+    rendererId: 'cad',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderCad } = await import('./cad')
       return renderCad(buffer, target, type, context)
@@ -120,7 +116,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 3D 模型使用 Three.js 按需解析，覆盖浏览器可交互渲染的主流交换格式。
   {
-    accepts: MODEL_EXTENSIONS,
+    rendererId: 'model',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderModel } = await import('./model')
       return renderModel(buffer, target, type, context)
@@ -128,7 +124,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // KML / GPX / Shapefile / GeoJSON 统一转换到 GeoJSON 后离线 SVG 预览，不依赖地图瓦片服务。
   {
-    accepts: ['geojson', 'kml', 'gpx', 'shp'],
+    rendererId: 'geo',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderGeo } = await import('./geo')
       return renderGeo(buffer, target, type)
@@ -136,7 +132,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // Excalidraw / draw.io 都是绘图类文本格式，使用官方预览库并保持独立异步加载。
   {
-    accepts: ['excalidraw', 'drawio', 'dio'],
+    rendererId: 'drawing',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderDrawing } = await import('./drawing')
       return renderDrawing(buffer, target, type)
@@ -144,7 +140,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // EPUB 使用成熟的 epubjs 阅读引擎，目录、资源和分页都保持在独立异步块里按需加载。
   {
-    accepts: ['epub'],
+    rendererId: 'epub',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
       const { default: renderEpub } = await import('./ebook')
       return renderEpub(buffer, target)
@@ -152,7 +148,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // UMD 是老移动端电子书格式，当前没有可靠前端整库，按格式结构解析文本/图集并用 pako 解压正文段。
   {
-    accepts: ['umd'],
+    rendererId: 'umd',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
       const { default: renderUmd } = await import('./umd')
       return renderUmd(buffer, target)
@@ -160,14 +156,14 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 图片过滤器
   {
-    accepts: ['gif', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'png', 'svg', 'webp', 'avif', 'ico', 'heic', 'heif', 'jxl'],
+    rendererId: 'image',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderImage } = await import('./image')
       return renderImage(buffer, target, type)
     }
   },
   {
-    accepts: ['md', 'markdown'],
+    rendererId: 'markdown',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
       const { default: renderMd } = await import('./md')
       return renderMd(buffer, target)
@@ -175,11 +171,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 纯文本 / 代码预览：使用 highlight.js 按扩展名高亮，HTML 也只作为源码显示。
   {
-    accepts: [
-      'txt', 'json', 'js', 'mjs', 'cjs', 'css', 'java', 'py', 'html', 'htm', 'jsx', 'ts', 'tsx', 'xml', 'log',
-      'vue', 'yaml', 'yml', 'ini', 'sh', 'bash', 'sql', 'go', 'rs', 'php', 'c', 'cpp', 'cc', 'h', 'hpp', 'cs', 'diff',
-      'jsonc', 'json5', 'ipynb', 'toml', 'proto', 'hcl', 'tex', 'gv', 'http', 'react', 'rb', 'swift', 'kt'
-    ],
+    rendererId: 'code',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderText } = await import('./text')
       return renderText(buffer, target, type)
@@ -187,7 +179,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 视频预览：MP4 / WebM 走原生 video，M3U8 按需加载 hls.js。
   {
-    accepts: ['mp4', 'webm', 'm3u8'],
+    rendererId: 'video',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderMp4 } = await import('./mp4')
       return renderMp4(buffer, target, type, context)
@@ -195,7 +187,7 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 音频文件交给浏览器原生 `<audio>` 播放，扩展名入口覆盖主流 Web 可播放格式。
   {
-    accepts: ['mp3', 'mpeg', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba', 'midi', 'mid'],
+    rendererId: 'audio',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
       const { default: renderAudio } = await import('./audio')
       return renderAudio(buffer, target, type)
@@ -203,27 +195,42 @@ const handlers: Array<FileHandlerComposite> = [
   },
   // 字体、设计资产和结构化数据使用专属异步链路，避免重型解析器进入常规首屏。
   {
-    accepts: ['ttf', 'otf', 'woff', 'woff2', 'psd', 'ai', 'eps', 'sqlite', 'wasm', 'parquet', 'avro', 'webarchive'],
+    rendererId: 'data-asset',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderDataAsset } = await import('./data')
       return renderDataAsset(buffer, target, type, context)
     }
-  },
-  // 错误处理
-  {
-    accepts: ['error'],
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
-      target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
-<div style='text-align: center'>支持 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体和数据资产的在线预览</div>`
-      return createWrapper(target)
-    }
   }
 ]
 
-// 匹配
-const renders = handlers.reduce((result, { accepts, handler }) => {
-  accepts.forEach(type => result.set(type, handler))
+// 错误处理
+const renderUnsupported: FileHandler = async (_buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
+  target.innerHTML = `<div style='text-align: center; margin-top: 80px'>不支持.${type}格式的在线预览，请下载后预览或转换为支持的格式</div>
+<div style='text-align: center'>支持 Office、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体和数据资产的在线预览</div>`
+  return createWrapper(target)
+}
+
+const coreRendererRegistry = createRendererRegistry(DEFAULT_RENDERER_DEFINITIONS)
+const handlersByRendererId = handlers.reduce((result, { rendererId, handler }) => {
+  result.set(rendererId, handler)
   return result
 }, new Map<string, FileHandler>())
+
+export const missingCoreRendererHandlers = coreRendererRegistry
+  .list()
+  .filter(definition => !handlersByRendererId.has(definition.id))
+  .map(definition => definition.id)
+
+// 现有 Vue3 预览器仍负责渲染，扩展名与格式矩阵统一由 core registry 派发。
+const renders = coreRendererRegistry.list().reduce((result, definition) => {
+  const handler = handlersByRendererId.get(definition.id)
+  if (!handler) {
+    return result
+  }
+  definition.extensions.forEach(type => result.set(type, handler))
+  return result
+}, new Map<string, FileHandler>())
+
+renders.set('error', renderUnsupported)
 
 export default renders
