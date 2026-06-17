@@ -285,17 +285,18 @@
   - [x] renderer registry
   - [x] capability state
   - [x] search/location/zoom provider
-- [ ] wrapper smoke 覆盖:
-  - [ ] Vue 3
-  - [ ] Vue 2.7
-  - [ ] Vue 2.6
-  - [ ] React modern
-  - [ ] React legacy
-  - [ ] Pure JS
-  - [ ] jQuery
-  - [ ] Svelte
+- [x] wrapper smoke 覆盖:
+  - [x] Vue 3
+  - [x] Vue 2.7
+  - [x] Vue 2.6
+  - [x] React modern
+  - [x] React legacy
+  - [x] Pure JS
+  - [x] jQuery
+  - [x] Svelte
+  - [x] `ecosystem/smoke-matrix.json` 的 `wrapperCoverage` 已为每个 wrapper 展开 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据 smoke target。
 - [x] wrapper repository export smoke 覆盖: `pnpm wrappers:export` 会刷新 README、导出 8 个独立 wrapper 仓库目录并运行 `pnpm wrappers:verify`。
-- [ ] 每个 wrapper 至少验证 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据。
+- [x] 每个 wrapper 至少验证 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件、地理数据。
 - [ ] 生产构建验证每个 wrapper 的 ESM/CJS/UMD/script tag 入口。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。
 - [ ] 发布前检查 npm tarball 内容，不泄露私有源码。

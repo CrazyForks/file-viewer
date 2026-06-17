@@ -80,6 +80,74 @@
       "surface": "svelte"
     }
   ],
+  "wrapperCoverage": {
+    "requireEveryWrapper": true,
+    "requiredFamilies": [
+      {
+        "family": "pdf",
+        "rendererId": "pdf",
+        "extension": "pdf",
+        "sample": "pdf.pdf",
+        "assertions": ["load-complete", "page-navigation", "search"]
+      },
+      {
+        "family": "docx",
+        "rendererId": "office-word-openxml",
+        "extension": "docx",
+        "sample": "word.docx",
+        "assertions": ["load-complete", "paper-layout", "search"]
+      },
+      {
+        "family": "xlsx",
+        "rendererId": "spreadsheet-openxml",
+        "extension": "xlsx",
+        "sample": "excel.xlsx",
+        "assertions": ["load-complete", "sheet-tabs", "search"]
+      },
+      {
+        "family": "image",
+        "rendererId": "image",
+        "extension": "png",
+        "sample": "pic.png",
+        "assertions": ["load-complete", "fit-to-view", "zoom"]
+      },
+      {
+        "family": "markdown",
+        "rendererId": "markdown",
+        "extension": "md",
+        "sample": "markdown.md",
+        "assertions": ["load-complete", "dark-mode-readable", "search"]
+      },
+      {
+        "family": "cad",
+        "rendererId": "cad",
+        "extension": "dwg",
+        "sample": "sample.dwg",
+        "assertions": ["load-complete", "fit-to-view", "zoom"]
+      },
+      {
+        "family": "archive",
+        "rendererId": "archive",
+        "extension": "zip",
+        "sample": "archive.zip",
+        "assertions": ["load-complete", "entry-tree", "nested-preview"]
+      },
+      {
+        "family": "email",
+        "rendererId": "email",
+        "extension": "msg",
+        "sample": "sample.msg",
+        "assertions": ["load-complete", "headers", "attachments"]
+      },
+      {
+        "family": "geo",
+        "rendererId": "geo",
+        "extension": "geojson",
+        "sample": "map.geojson",
+        "assertions": ["load-complete", "map-fit", "zoom"]
+      }
+    ]
+  },
   "cases": [
     {
       "id": "word-openxml-docx",

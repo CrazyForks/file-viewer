@@ -84,6 +84,18 @@ function sampleExtension(sample, explicitExtension) {
   return extname(sample).replace(/^\./, '').toLowerCase()
 }
 
+function assertRendererSample(entry, label) {
+  const renderer = renderers.get(entry.rendererId)
+  if (!renderer) {
+    fail(`${label} references unknown renderer ${entry.rendererId}`)
+  }
+  const extension = sampleExtension(entry.sample, entry.extension)
+  if (!renderer.extensions.has(extension)) {
+    fail(`${label} extension ${extension} is not supported by renderer ${entry.rendererId}`)
+  }
+  assertSampleExists(entry.sample, label)
+}
+
 const [matrix, wrapperManifest, renderers] = await Promise.all([
   readJson(matrixPath),
   readJson(wrapperManifestPath),
@@ -120,15 +132,7 @@ assertUnique(matrix.cases || [], 'cases')
 const coveredRendererIds = new Set()
 const coveredFamilies = new Set()
 for (const smokeCase of matrix.cases || []) {
-  const renderer = renderers.get(smokeCase.rendererId)
-  if (!renderer) {
-    fail(`Case ${smokeCase.id} references unknown renderer ${smokeCase.rendererId}`)
-  }
-  const extension = sampleExtension(smokeCase.sample, smokeCase.extension)
-  if (!renderer.extensions.has(extension)) {
-    fail(`Case ${smokeCase.id} extension ${extension} is not supported by renderer ${smokeCase.rendererId}`)
-  }
-  assertSampleExists(smokeCase.sample, `Case ${smokeCase.id}`)
+  assertRendererSample(smokeCase, `Case ${smokeCase.id}`)
   if (!Array.isArray(smokeCase.surfaces) || !smokeCase.surfaces.length) {
     fail(`Case ${smokeCase.id} must declare at least one surface`)
   }
@@ -176,6 +180,31 @@ for (const wrapper of wrapperManifest.wrappers) {
   }
 }
 
+const requiredWrapperFamilies = matrix.wrapperCoverage?.requiredFamilies || []
+assertUnique(requiredWrapperFamilies, 'wrapperCoverage.requiredFamilies', item => item.family)
+if (matrix.wrapperCoverage?.requireEveryWrapper && !requiredWrapperFamilies.length) {
+  fail('wrapperCoverage.requireEveryWrapper is enabled but no requiredFamilies were declared')
+}
+for (const family of requiredWrapperFamilies) {
+  assertRendererSample(family, `Wrapper required family ${family.family}`)
+  if (!Array.isArray(family.assertions) || !family.assertions.length) {
+    fail(`Wrapper required family ${family.family} must declare at least one assertion`)
+  }
+}
+
+let wrapperTargetCount = 0
+if (matrix.wrapperCoverage?.requireEveryWrapper) {
+  for (const wrapper of wrapperManifest.wrappers) {
+    const matrixWrapper = matrixWrappers.get(wrapper.id)
+    if (!matrixWrapper) {
+      fail(`Wrapper coverage cannot find wrapper ${wrapper.id}`)
+    }
+    for (const family of requiredWrapperFamilies) {
+      wrapperTargetCount += 1
+    }
+  }
+}
+
 console.log(
-  `[smoke-matrix] Verified ${matrix.cases.length} format cases, ${matrix.wrapperCases.length} wrapper cases, ${renderers.size} renderer pipelines.`
+  `[smoke-matrix] Verified ${matrix.cases.length} format cases, ${matrix.wrapperCases.length} wrapper cases, ${wrapperTargetCount} wrapper family targets, ${renderers.size} renderer pipelines.`
 )

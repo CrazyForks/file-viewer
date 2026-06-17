@@ -113,6 +113,7 @@ Vue3 和 Vue2 兼容包发版时请先切到对应分支，再运行类型检查
 - `file` / `url` 的行为说明是否与运行逻辑一致
 - 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、smoke 矩阵、wrapper 源包校验和生态 npm manifest 列表校验
 - 新增格式、示例或 wrapper 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
+- 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 本地构建和文档构建是否全部通过
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
 - `packages/web/viewer` 是否已经由最新 Vue3 基线构建产物同步
