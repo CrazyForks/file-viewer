@@ -29,6 +29,13 @@ export {
   normalizeFileViewerSearchOptions,
 } from './document';
 export {
+  DEFAULT_FILE_VIEWER_SEARCH_ACTIVE_CLASS,
+  DEFAULT_FILE_VIEWER_SEARCH_MATCH_CLASS,
+  DEFAULT_FILE_VIEWER_SEARCH_MAX_MATCHES,
+  cloneFileViewerSearchState,
+  createFileViewerDomSearchController,
+} from './documentSearch';
+export {
   DEFAULT_FILE_VIEWER_ANCHOR_EXCLUDE_SELECTOR,
   DEFAULT_FILE_VIEWER_ANCHOR_SELECTOR,
   collectFileViewerDocumentAnchors,
@@ -148,6 +155,10 @@ export type {
   FileViewerSearchProviderHost,
   FileViewerZoomProviderHost,
 } from './documentDom';
+export type {
+  CreateFileViewerDomSearchControllerOptions,
+  FileViewerInternalSearchMatch,
+} from './documentSearch';
 export type { CreateViewerOptions } from './viewer';
 export type {
   BuildExportHtmlDocumentOptions,

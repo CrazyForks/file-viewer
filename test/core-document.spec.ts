@@ -4,6 +4,7 @@ import {
   buildFileViewerDocumentTextChunks,
   collectFileViewerDocumentAnchors,
   createEmptyFileViewerSearchState,
+  createFileViewerDomSearchController,
   createFileViewerZoomState,
   findFileViewerSearchProvider,
   findFileViewerZoomProvider,
@@ -191,5 +192,67 @@ describe('@file-viewer/core document helpers', () => {
     expect(findFileViewerSearchProvider(root)).toBeNull();
     expect(findFileViewerZoomProvider(zoomHost)).toBeNull();
     expect(zoomHost.dataset.viewerZoomProvider).toBeUndefined();
+  });
+
+  it('runs the DOM search controller without framework state', async () => {
+    const { document } = parseHTML(`
+      <main id="root">
+        <article>
+          <p>Alpha PDF beta pdf.</p>
+          <button>pdf ignored</button>
+          <canvas>pdf ignored</canvas>
+        </article>
+      </main>
+    `);
+    const root = document.getElementById('root') as HTMLElement;
+    const paragraph = root.querySelector('p') as HTMLElement;
+
+    Object.defineProperty(root, 'clientHeight', { configurable: true, value: 80 });
+    Object.defineProperty(root, 'scrollHeight', { configurable: true, value: 400 });
+    Object.defineProperty(root, 'clientWidth', { configurable: true, value: 200 });
+    Object.defineProperty(root, 'scrollWidth', { configurable: true, value: 200 });
+    Object.defineProperty(root, 'scrollTop', { configurable: true, writable: true, value: 0 });
+    Object.defineProperty(root, 'scrollLeft', { configurable: true, writable: true, value: 18 });
+    root.scrollTo = (options?: ScrollToOptions | number, y?: number) => {
+      if (typeof options === 'number') {
+        root.scrollLeft = options;
+        root.scrollTop = y || 0;
+        return;
+      }
+      root.scrollTop = Number(options?.top || 0);
+      root.scrollLeft = Number(options?.left || 0);
+    };
+    setRect(root, { top: 0, left: 0, width: 200, height: 80 });
+    setRect(paragraph, { top: 40, left: 10, width: 180, height: 20 });
+
+    const controller = createFileViewerDomSearchController({
+      root: () => root,
+      waitForDomUpdate: () => Promise.resolve(),
+      preferredScrollContainer: () => root,
+    });
+
+    await controller.search('pdf');
+
+    expect(controller.state).toMatchObject({
+      query: 'pdf',
+      total: 2,
+      currentIndex: 0,
+    });
+    expect(Array.from(root.querySelectorAll('mark')).map(mark => mark.textContent)).toEqual(['PDF', 'pdf']);
+    expect(root.querySelectorAll('.flyfish-search-match--active')).toHaveLength(1);
+    expect(root.scrollLeft).toBe(18);
+
+    await controller.next();
+    expect(controller.state.currentIndex).toBe(1);
+
+    await controller.clear();
+    expect(controller.state).toMatchObject({
+      query: '',
+      total: 0,
+      currentIndex: -1,
+      current: null,
+    });
+    expect(root.querySelectorAll('mark')).toHaveLength(0);
+    expect(paragraph.textContent).toBe('Alpha PDF beta pdf.');
   });
 });

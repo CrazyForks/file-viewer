@@ -1,9 +1,8 @@
-import { computed, nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
+import { nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
 import {
+  cloneFileViewerSearchState,
   createEmptyFileViewerSearchState,
-  findFileViewerAnchorForElement,
-  findFileViewerSearchProvider,
-  normalizeFileViewerSearchOptions
+  createFileViewerDomSearchController
 } from '@file-viewer/core'
 export {
   registerFileViewerSearchProvider,
@@ -11,93 +10,20 @@ export {
 } from '@file-viewer/core'
 import type {
   FileViewerDocumentAnchor,
-  FileViewerSearchMatch,
   FileViewerSearchOptions,
-  FileViewerSearchProvider,
   FileViewerSearchState
 } from '@/package/common/type'
-import { collectDocumentAnchors } from './documentLocation'
 
-interface InternalSearchMatch extends FileViewerSearchMatch {
-  element: HTMLElement;
-}
-
-const DEFAULT_MATCH_CLASS = 'flyfish-search-match'
-const DEFAULT_ACTIVE_CLASS = 'flyfish-search-match--active'
-const DEFAULT_MAX_MATCHES = 1000
-
-const SKIP_SELECTOR = [
-  'script',
-  'style',
-  'textarea',
-  'input',
-  'select',
-  'button',
-  '.viewer-actions',
-  '.viewer-watermark',
-  '.state-panel',
-  '.pdf-toolbar',
-  '.pdf-nav-pane',
-  '.flyfish-search-match',
-  '.textLayer',
-  '.annotationLayer',
-  '.xfaLayer',
-  'svg',
-  'canvas',
-  'iframe',
-  'video',
-  'audio'
-].join(',')
-
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-const normalizeQuery = (value: string) => value.replace(/\s+/g, ' ').trim()
-
-const createSearchRegExp = (query: string, options: FileViewerSearchOptions) => {
-  const source = options.wholeWord ? `\\b${escapeRegExp(query)}\\b` : escapeRegExp(query)
-  return new RegExp(source, options.caseSensitive ? 'g' : 'gi')
-}
-
-const getSerializableMatches = (matches: InternalSearchMatch[]): FileViewerSearchMatch[] => {
-  return matches.map(({ element: _element, ...match }) => match)
-}
-
-const unwrapMark = (mark: HTMLElement) => {
-  const parent = mark.parentNode
-  if (!parent) {
-    return
-  }
-  while (mark.firstChild) {
-    parent.insertBefore(mark.firstChild, mark)
-  }
-  parent.removeChild(mark)
-  parent.normalize()
-}
-
-const isSkippableTextNode = (node: Text, root: HTMLElement) => {
-  const parent = node.parentElement
-  if (!parent || parent.closest(SKIP_SELECTOR)) {
-    return true
-  }
-  return !root.contains(parent) || !node.data.trim()
-}
-
-const walkTextNodes = (root: HTMLElement) => {
-  const nodes: Text[] = []
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      return isSkippableTextNode(node as Text, root)
-        ? NodeFilter.FILTER_REJECT
-        : NodeFilter.FILTER_ACCEPT
-    }
-  })
-
-  let current = walker.nextNode()
-  while (current) {
-    nodes.push(current as Text)
-    current = walker.nextNode()
-  }
-  return nodes
+const applySearchState = (
+  target: FileViewerSearchState,
+  source: FileViewerSearchState
+) => {
+  const nextState = cloneFileViewerSearchState(source)
+  target.query = nextState.query
+  target.total = nextState.total
+  target.currentIndex = nextState.currentIndex
+  target.current = nextState.current
+  target.matches = nextState.matches
 }
 
 export const useDocumentSearch = (
@@ -105,328 +31,55 @@ export const useDocumentSearch = (
   optionsSource?: () => boolean | FileViewerSearchOptions | undefined,
   scrollContainerSource?: () => HTMLElement | null | undefined
 ) => {
-  const options = computed(() => normalizeFileViewerSearchOptions(optionsSource?.()))
   const anchors = shallowRef<FileViewerDocumentAnchor[]>([])
-  const internalMatches = shallowRef<InternalSearchMatch[]>([])
-  const marks = new Set<HTMLElement>()
-  const state = reactive<FileViewerSearchState>({
-    query: '',
-    total: 0,
-    currentIndex: -1,
-    current: null,
-    matches: []
+  const state = reactive<FileViewerSearchState>(createEmptyFileViewerSearchState())
+  const controller = createFileViewerDomSearchController({
+    root: () => root.value,
+    options: optionsSource,
+    waitForDomUpdate: () => nextTick(),
+    preferredScrollContainer: scrollContainerSource
   })
 
-  let observer: MutationObserver | null = null
-  let shouldObserve = false
-  let debounceTimer: number | null = null
-  let applying = false
-
-  const syncState = () => {
-    const serializable = getSerializableMatches(internalMatches.value)
-    state.total = serializable.length
-    state.currentIndex = serializable.length ? Math.max(0, Math.min(state.currentIndex, serializable.length - 1)) : -1
-    state.current = state.currentIndex >= 0 ? serializable[state.currentIndex] : null
-    state.matches = serializable
-  }
-
-  const applyExternalState = (nextState: FileViewerSearchState) => {
-    state.query = nextState.query
-    state.total = nextState.total
-    state.currentIndex = nextState.currentIndex
-    state.current = nextState.current ? { ...nextState.current } : null
-    state.matches = nextState.matches.map(match => ({ ...match }))
+  const syncFromController = () => {
+    anchors.value = controller.anchors
+    applySearchState(state, controller.state)
     return state
-  }
-
-  const runProviderAction = async (
-    action: (provider: FileViewerSearchProvider) => FileViewerSearchState | Promise<FileViewerSearchState> | undefined,
-    fallbackQuery = state.query
-  ) => {
-    const provider = findFileViewerSearchProvider(root.value)
-    if (!provider) {
-      return null
-    }
-    clearMarks()
-    const nextState = await action(provider)
-    return applyExternalState(nextState || provider.getState?.() || createEmptyFileViewerSearchState(fallbackQuery))
-  }
-
-  const clearMarks = () => {
-    Array.from(marks).forEach(unwrapMark)
-    marks.clear()
-    internalMatches.value = []
-    state.total = 0
-    state.currentIndex = -1
-    state.current = null
-    state.matches = []
-  }
-
-  const disconnectObserver = () => {
-    observer?.disconnect()
-    observer = null
-  }
-
-  const startObserver = () => {
-    disconnectObserver()
-    if (!shouldObserve || !root.value || typeof MutationObserver === 'undefined') {
-      return
-    }
-    observer = new MutationObserver(rerunAfterDomChange)
-    observer.observe(root.value, {
-      childList: true,
-      subtree: true,
-      characterData: true
-    })
-  }
-
-  const resumeObserver = () => {
-    if (!shouldObserve || typeof window === 'undefined') {
-      return
-    }
-    window.setTimeout(startObserver, 0)
-  }
-
-  const isScrollableElement = (element: HTMLElement) => {
-    const range = Math.max(0, element.scrollHeight - element.clientHeight)
-    if (range <= 2) {
-      return false
-    }
-    if (typeof window === 'undefined') {
-      return true
-    }
-    const style = window.getComputedStyle(element)
-    const overflowY = style.overflowY || style.overflow
-    return ['auto', 'scroll', 'overlay', 'visible'].includes(overflowY)
-  }
-
-  const getMatchScrollContainer = (element: HTMLElement) => {
-    const currentRoot = root.value
-    const preferred = scrollContainerSource?.()
-    if (preferred && (preferred === element || preferred.contains(element))) {
-      return preferred
-    }
-
-    let current: HTMLElement | null = element.parentElement
-    while (current) {
-      if (isScrollableElement(current)) {
-        return current
-      }
-      if (current === currentRoot) {
-        break
-      }
-      current = current.parentElement
-    }
-    return currentRoot
-  }
-
-  const scrollMatchIntoView = (element: HTMLElement) => {
-    const container = getMatchScrollContainer(element)
-    if (!container) {
-      element.scrollIntoView({ block: 'center', inline: 'nearest' })
-      return
-    }
-
-    const lockedLeft = container.scrollLeft
-    const containerRect = container.getBoundingClientRect()
-    const elementRect = element.getBoundingClientRect()
-    const targetTop = elementRect.top - containerRect.top + container.scrollTop
-      - (container.clientHeight / 2)
-      + (elementRect.height / 2)
-    const maxTop = Math.max(0, container.scrollHeight - container.clientHeight)
-
-    container.scrollTo({
-      top: Math.max(0, Math.min(targetTop, maxTop)),
-      left: lockedLeft,
-      behavior: 'auto'
-    })
-    container.scrollLeft = lockedLeft
-  }
-
-  const setActiveMatch = (index: number, scroll = true) => {
-    const matches = internalMatches.value
-    if (!matches.length) {
-      syncState()
-      return state
-    }
-    const normalized = ((index % matches.length) + matches.length) % matches.length
-    matches.forEach(match => {
-      match.element.classList.remove(options.value.activeClassName || DEFAULT_ACTIVE_CLASS)
-    })
-    const active = matches[normalized]
-    active.element.classList.add(options.value.activeClassName || DEFAULT_ACTIVE_CLASS)
-    state.currentIndex = normalized
-    syncState()
-    if (scroll) {
-      scrollMatchIntoView(active.element)
-    }
-    return state
-  }
-
-  const highlightTextNode = (
-    node: Text,
-    expression: RegExp,
-    maxMatches: number,
-    nextMatches: InternalSearchMatch[]
-  ) => {
-    const text = node.data
-    let lastIndex = 0
-    let match: RegExpExecArray | null
-    const fragment = document.createDocumentFragment()
-    let matched = false
-
-    expression.lastIndex = 0
-    while ((match = expression.exec(text)) && nextMatches.length < maxMatches) {
-      if (!match[0]) {
-        expression.lastIndex += 1
-        continue
-      }
-      if (match.index > lastIndex) {
-        fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)))
-      }
-
-      const mark = document.createElement('mark')
-      mark.className = options.value.className || DEFAULT_MATCH_CLASS
-      mark.textContent = match[0]
-      mark.dataset.searchMatchId = `viewer-search-match-${nextMatches.length + 1}`
-      marks.add(mark)
-      fragment.appendChild(mark)
-      matched = true
-
-      const anchor = findFileViewerAnchorForElement(node.parentElement, anchors.value, root.value)
-      nextMatches.push({
-        id: mark.dataset.searchMatchId,
-        index: nextMatches.length,
-        text: match[0],
-        anchor,
-        line: anchor?.line,
-        page: anchor?.page,
-        element: mark
-      })
-
-      lastIndex = match.index + match[0].length
-    }
-
-    if (!matched) {
-      return
-    }
-
-    if (lastIndex < text.length) {
-      fragment.appendChild(document.createTextNode(text.slice(lastIndex)))
-    }
-    node.parentNode?.replaceChild(fragment, node)
-  }
-
-  const runSearch = async (query: string, preferredIndex = 0) => {
-    const normalizedQuery = normalizeQuery(query)
-    state.query = normalizedQuery
-    disconnectObserver()
-    applying = true
-
-    try {
-      clearMarks()
-
-      if (!normalizedQuery || options.value.enabled === false || !root.value) {
-        const providerState = await runProviderAction(provider => provider.clear?.(), normalizedQuery)
-        if (providerState) {
-          return providerState
-        }
-        return state
-      }
-
-      const providerState = await runProviderAction(
-        provider => provider.search(normalizedQuery, options.value),
-        normalizedQuery
-      )
-      if (providerState) {
-        return providerState
-      }
-
-      await nextTick()
-      anchors.value = collectDocumentAnchors(root.value)
-      const expression = createSearchRegExp(normalizedQuery, options.value)
-      const maxMatches = Math.max(1, options.value.maxMatches || DEFAULT_MAX_MATCHES)
-      const nextMatches: InternalSearchMatch[] = []
-      const textNodes = walkTextNodes(root.value)
-
-      for (const node of textNodes) {
-        if (nextMatches.length >= maxMatches) {
-          break
-        }
-        highlightTextNode(node, expression, maxMatches, nextMatches)
-      }
-      internalMatches.value = nextMatches
-      syncState()
-      if (nextMatches.length) {
-        setActiveMatch(preferredIndex, true)
-      }
-    } finally {
-      applying = false
-      resumeObserver()
-    }
-
-    return state
-  }
-
-  const rerunAfterDomChange = () => {
-    if (!state.query || applying || options.value.enabled === false) {
-      return
-    }
-    if (debounceTimer !== null) {
-      window.clearTimeout(debounceTimer)
-    }
-    debounceTimer = window.setTimeout(() => {
-      debounceTimer = null
-      void runSearch(state.query, Math.max(0, state.currentIndex))
-    }, options.value.debounce ?? 180)
   }
 
   const observe = () => {
-    shouldObserve = true
-    startObserver()
+    controller.observe()
+    syncFromController()
   }
 
   const refreshAnchors = async () => {
-    await nextTick()
-    anchors.value = collectDocumentAnchors(root.value)
+    await controller.refreshAnchors()
+    syncFromController()
     return anchors.value
   }
 
-  const search = async (query: string) => runSearch(query, 0)
-  const next = async () => {
-    const providerState = await runProviderAction(provider => provider.next?.() || provider.getState?.())
-    return providerState || setActiveMatch(state.currentIndex + 1)
+  const search = async (query: string) => {
+    await controller.search(query)
+    return syncFromController()
   }
+
+  const next = async () => {
+    await controller.next()
+    return syncFromController()
+  }
+
   const previous = async () => {
-    const providerState = await runProviderAction(provider => provider.previous?.() || provider.getState?.())
-    return providerState || setActiveMatch(state.currentIndex - 1)
+    await controller.previous()
+    return syncFromController()
   }
 
   const clear = async () => {
-    state.query = ''
-    disconnectObserver()
-    applying = true
-    try {
-      clearMarks()
-      const providerState = await runProviderAction(provider => provider.clear?.(), '')
-      if (providerState) {
-        return providerState
-      }
-      return state
-    } finally {
-      applying = false
-      resumeObserver()
-    }
+    await controller.clear()
+    return syncFromController()
   }
 
   onBeforeUnmount(() => {
-    shouldObserve = false
-    disconnectObserver()
-    if (debounceTimer !== null) {
-      window.clearTimeout(debounceTimer)
-      debounceTimer = null
-    }
-    clearMarks()
+    controller.destroy()
+    syncFromController()
   })
 
   return {
