@@ -9,8 +9,10 @@ import {
   createFileViewerErrorState,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
+  createFileViewerRequestController,
   formatFileViewerErrorMessage,
   getExtension,
+  isFileViewerAbortError,
   normalizeFilename,
   normalizeFileViewerToolbar,
   postFileViewerMessageToParent,
@@ -147,8 +149,7 @@ const errorState = computed(() => createFileViewerErrorState(currentExtend.value
 
 let activeRenderSession: FileViewerVueRenderSession | null = null
 let activeDocumentContext: FileViewerLifecycleContext | null = null
-let renderVersion = 0
-let pendingDownloadController: AbortController | null = null
+const requestController = createFileViewerRequestController()
 const loadStartedAt = new Map<number, number>()
 
 const getSourceFilename = () => {
@@ -231,7 +232,7 @@ const notifyLifecycle = (context: FileViewerLifecycleContext) => {
 const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {
   const base = activeDocumentContext || buildLifecycleContext({
     phase: 'load-complete',
-    version: renderVersion,
+    version: requestController.version,
     source: props.file ? 'file' : (props.url ? 'url' : 'empty'),
     file: currentFile.value,
     sourceUrl: props.url
@@ -262,20 +263,18 @@ const runBeforeOperation = async (operation: FileViewerOperationType) => {
 // 每次开始新的预览任务时都生成一个版本号。
 // 所有异步回包都必须校验版本，避免旧任务把新视图覆盖掉。
 const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-  renderVersion += 1
-  pendingDownloadController?.abort()
-  pendingDownloadController = null
+  const version = requestController.createVersion()
   clearRenderedContent(reason)
   currentFile.value = null
   currentBuffer.value = null
   currentSourceUrl.value = null
   progressiveReady.value = false
   clearError()
-  return renderVersion
+  return version
 }
 
 const isCurrentRequest = (version: number) => {
-  return version === renderVersion
+  return requestController.isCurrent(version)
 }
 
 const finishLoading = (version: number) => {
@@ -295,19 +294,6 @@ const waitForBrowserPaint = () => {
       window.requestAnimationFrame(() => resolve())
     })
   })
-}
-
-const isAbortError = (nextError: unknown) => {
-  if (axios.isCancel(nextError)) {
-    return true
-  }
-  if (nextError instanceof DOMException && nextError.name === 'AbortError') {
-    return true
-  }
-  return typeof nextError === 'object' &&
-    nextError !== null &&
-    'code' in nextError &&
-    nextError.code === 'ERR_CANCELED'
 }
 
 const formatErrorMessage = (prefix: string, nextError: unknown) => {
@@ -611,8 +597,7 @@ const previewRemoteFile = async (url: string, version: number) => {
     return
   }
 
-  const controller = typeof AbortController === 'function' ? new AbortController() : null
-  pendingDownloadController = controller
+  const controller = requestController.createAbortController()
 
   try {
     const { data } = await axios({
@@ -634,15 +619,13 @@ const previewRemoteFile = async (url: string, version: number) => {
     setLoadingMessage(FILE_VIEWER_PREVIEW_MESSAGES.reading)
     await readAndRenderFile(wrapFileViewerFileRef(data, nextFilename), version, url, 'url')
   } catch (nextError) {
-    if (!isCurrentRequest(version) || isAbortError(nextError)) {
+    if (!isCurrentRequest(version) || isFileViewerAbortError(nextError)) {
       return
     }
     console.error(nextError)
     showError(formatErrorMessage('加载文件异常', nextError))
   } finally {
-    if (pendingDownloadController === controller) {
-      pendingDownloadController = null
-    }
+    requestController.clearAbortController(controller)
     loadStartedAt.delete(version)
     finishLoading(version)
   }

@@ -166,6 +166,8 @@ export {
 } from './watermark';
 export {
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
+  createFileViewerRequestController,
+  isFileViewerAbortError,
   isSameOriginUrl,
   normalizePdfStreamingMode,
   shouldStreamPdfUrl,

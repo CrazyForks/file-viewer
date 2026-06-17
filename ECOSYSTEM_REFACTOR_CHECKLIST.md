@@ -94,6 +94,7 @@
 
 - [ ] 从 `src/package/common` 抽出 source loading、类型识别、能力判断、打印导出、worker ref、生命周期事件。
   - [x] source loading 的 PDF 流式策略迁入 `@file-viewer/core`。
+  - [x] source loading 的请求版本、AbortController 和取消错误识别迁入 `@file-viewer/core`，wrapper 只负责触发 UI 状态。
   - [x] 文件名归一化、扩展名识别和 source 归一化迁入 `@file-viewer/core`。
   - [x] `File | Blob | ArrayBuffer` 输入包装和 ArrayBuffer 读取迁入 `@file-viewer/core`。
   - [x] 打印能力矩阵和 `resolvePrintAvailability` 迁入 `@file-viewer/core`。
