@@ -3,16 +3,11 @@ import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue
 import { RotateCcw, ZoomIn, ZoomOut } from '@lucide/vue'
 import {
   createFileViewerErrorState,
-  createFileViewerRawPostMessagePayload,
   createFileViewerRequestController,
   formatFileViewerErrorMessage,
   getExtension,
   normalizeFilename,
-  normalizeFileViewerToolbar,
-  postFileViewerMessageToParent,
-  resolveFileViewerOperationAvailability,
-  resolveFileViewerToolbarPosition,
-  resolveVisibleFileViewerToolbar
+  normalizeFileViewerToolbar
 } from '@file-viewer/core'
 import type {
   FileRef,
@@ -24,7 +19,6 @@ import type {
   FileViewerOperationContext,
   FileViewerSearchState,
   FileViewerToolbarOptions,
-  FileViewerToolbarPosition,
   FileViewerZoomState
 } from '@/package/common/type'
 import { useLoading } from '@/package/use'
@@ -33,6 +27,7 @@ import { useViewerDocumentFeatures } from './hooks/useViewerDocumentFeatures'
 import { useViewerExport } from './hooks/useViewerExport'
 import { useViewerLifecycle } from './hooks/useViewerLifecycle'
 import { useViewerSourceLoading } from './hooks/useViewerSourceLoading'
+import { useViewerToolbar } from './hooks/useViewerToolbar'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
 import { useViewerZoom } from './hooks/useViewerZoom'
 
@@ -152,18 +147,6 @@ const getSourceFilename = () => {
   return ''
 }
 
-const postViewerAvailability = (availability: FileViewerOperationAvailability) => {
-  postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'operation-availability-change', availability)
-  )
-}
-
-const postViewerZoomState = (state: FileViewerZoomState) => {
-  postFileViewerMessageToParent(
-    createFileViewerRawPostMessagePayload('flyfish-viewer:operation', 'zoom-change', state)
-  )
-}
-
 const isCurrentRequest = (version: number) => {
   return requestController.isCurrent(version)
 }
@@ -241,35 +224,28 @@ const {
   runBeforeOperation
 })
 
-const operationAvailability = computed<FileViewerOperationAvailability>(() => {
-  return resolveFileViewerOperationAvailability({
-    extension: currentExtend.value,
-    hasOriginalSource: !!currentBuffer.value || !!currentSourceUrl.value,
-    renderedReady: renderedReady.value,
-    hasError: !!error.value,
-    adapter: activeExportAdapter.value,
-    zoomState
-  })
+const {
+  operationAvailability,
+  visibleToolbar,
+  showToolbar,
+  toolbarPosition,
+  toolbarDisabled,
+  zoomButtonDisabled
+} = useViewerToolbar({
+  activeExportAdapter,
+  currentBuffer,
+  currentExtend,
+  currentSourceUrl,
+  error,
+  getOptions: () => props.options,
+  getZoomState,
+  loading,
+  normalizedToolbar,
+  renderedReady,
+  zoomState,
+  emitOperationAvailabilityChange: availability => emit('operation-availability-change', availability),
+  emitZoomChange: state => emit('zoom-change', state)
 })
-
-const visibleToolbar = computed<FileViewerToolbarOptions>(() => {
-  return resolveVisibleFileViewerToolbar(normalizedToolbar.value, operationAvailability.value)
-})
-
-const showToolbar = computed(() => {
-  const toolbar = visibleToolbar.value
-  return toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom
-})
-
-const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
-  return resolveFileViewerToolbarPosition(props.options, currentExtend.value)
-})
-
-const toolbarDisabled = computed(() => loading.value || !!error.value)
-
-const zoomButtonDisabled = (action: keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>) => {
-  return toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]
-}
 
 const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
   if (!session) {
@@ -456,28 +432,6 @@ defineExpose({
   scrollToLine,
   getDocumentTextChunks
 })
-
-watch(operationAvailability, availability => {
-  const payload = { ...availability }
-  emit('operation-availability-change', payload)
-  postViewerAvailability(payload)
-}, { immediate: true })
-
-watch(
-  () => [
-    zoomState.scale,
-    zoomState.label,
-    zoomState.canZoomIn,
-    zoomState.canZoomOut,
-    zoomState.canReset
-  ] as const,
-  () => {
-    const state = getZoomState()
-    emit('zoom-change', state)
-    postViewerZoomState(state)
-  },
-  { immediate: true }
-)
 
 watch([() => props.file, () => props.url], () => {
   void refreshPreview()
