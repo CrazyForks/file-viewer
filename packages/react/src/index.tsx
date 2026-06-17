@@ -13,11 +13,12 @@ import {
 import {
   DEFAULT_FILE_VIEWER_URL,
   buildFileViewerFrameSrc,
+  createFileViewerFrameFilePostController,
   isFileViewerFrameEvent,
-  postFileToFileViewerFrame
 } from '@file-viewer/core'
 import type {
   FileViewerFileRef,
+  FileViewerFrameFilePostController,
   FileViewerFrameEventHandler,
   FileViewerFrameEventPayload,
   FileViewerFrameOptions,
@@ -144,48 +145,20 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
   }), [viewerUrl, url, file, name, from, targetOrigin, params, cacheKey, options])
 
   const src = useMemo(() => buildReactViewerSrc(frameOptions), [frameOptions])
-  const retryTimerRef = useRef<number | undefined>(undefined)
-  const retryCountRef = useRef(0)
-  const lifecycleAcknowledgedRef = useRef(false)
+  const frameOptionsRef = useRef<ViewerFrameOptions>(frameOptions)
+  frameOptionsRef.current = frameOptions
+  const filePostControllerRef = useRef<FileViewerFrameFilePostController | null>(null)
+  if (!filePostControllerRef.current) {
+    filePostControllerRef.current = createFileViewerFrameFilePostController({
+      getFrame: () => iframeRef.current,
+      getOptions: () => frameOptionsRef.current
+    })
+  }
+  const filePostController = filePostControllerRef.current
 
   const postFile = useCallback(() => {
-    return postFileToFileViewerFrame(iframeRef.current, frameOptions)
-  }, [frameOptions])
-
-  const clearFilePostRetry = useCallback(() => {
-    if (retryTimerRef.current) {
-      window.clearTimeout(retryTimerRef.current)
-      retryTimerRef.current = undefined
-    }
-  }, [])
-
-  const scheduleFilePost = useCallback(() => {
-    clearFilePostRetry()
-    retryCountRef.current = 0
-    lifecycleAcknowledgedRef.current = false
-
-    if (!frameOptions.file) {
-      return
-    }
-
-    const post = () => {
-      if (lifecycleAcknowledgedRef.current) {
-        clearFilePostRetry()
-        return
-      }
-
-      postFile()
-      retryCountRef.current += 1
-
-      if (retryCountRef.current < 8) {
-        retryTimerRef.current = window.setTimeout(post, 120)
-      } else {
-        retryTimerRef.current = undefined
-      }
-    }
-
-    post()
-  }, [clearFilePostRetry, frameOptions.file, postFile])
+    return filePostController.postNow()
+  }, [filePostController])
 
   const reload = useCallback(() => {
     if (iframeRef.current) {
@@ -202,16 +175,15 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
   }), [postFile, reload])
 
   useEffect(() => {
-    clearFilePostRetry()
-    lifecycleAcknowledgedRef.current = false
+    filePostController.reset()
     setFrameReady(false)
-  }, [clearFilePostRetry, src])
+  }, [filePostController, src])
 
   useEffect(() => {
     if (frameReady) {
-      scheduleFilePost()
+      filePostController.schedule()
     }
-  }, [frameReady, scheduleFilePost])
+  }, [frameReady, filePostController, frameOptions])
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -221,19 +193,16 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
       if (!isReactViewerFrameEvent(event.data)) {
         return
       }
-      if (event.data.type === 'flyfish-viewer:lifecycle') {
-        lifecycleAcknowledgedRef.current = true
-        clearFilePostRetry()
-      }
+      filePostController.handleFrameEvent(event.data)
       onViewerEvent?.(event.data, event)
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [clearFilePostRetry, onViewerEvent])
+  }, [filePostController, onViewerEvent])
 
   useEffect(() => {
-    return () => clearFilePostRetry()
-  }, [clearFilePostRetry])
+    return () => filePostController.cancel()
+  }, [filePostController])
 
   const handleLoad = useCallback((event: SyntheticEvent<HTMLIFrameElement>) => {
     setFrameReady(true)

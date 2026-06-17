@@ -2,10 +2,11 @@ import {
   setFileViewerOptionsSearchParam,
   type FileViewerSerializableOptions,
 } from './options';
-import type { FileViewerFrameEventHandler } from './operations';
+import { isFileViewerFrameEvent, type FileViewerFrameEventHandler } from './operations';
 import type { FileViewerFileRef } from './types';
 
 export type FileViewerFrameParamValue = string | number | boolean | null | undefined;
+export type FileViewerFrameTimer = ReturnType<typeof globalThis.setTimeout>;
 
 export interface FileViewerFrameOptions {
   /**
@@ -71,8 +72,71 @@ export interface BuildFileViewerFrameSrcOptions extends FileViewerFrameOptions {
   currentOrigin?: string;
 }
 
+export interface FileViewerFrameFilePostControllerOptions {
+  /**
+   * 返回当前 iframe。React/Vue 等 wrapper 可用 ref 包一层，避免闭包拿到旧节点。
+   */
+  getFrame: () => HTMLIFrameElement | null | undefined;
+  /**
+   * 返回当前 iframe 协议参数。用于文件切换后继续复用同一个控制器。
+   */
+  getOptions: () => FileViewerFrameOptions;
+  /**
+   * 最大重试次数。默认兼容历史 wrapper 行为。
+   */
+  retryLimit?: number;
+  /**
+   * 两次文件 postMessage 之间的间隔，单位毫秒。
+   */
+  retryInterval?: number;
+  /**
+   * 测试或非浏览器封装可注入自己的定时器实现。
+   */
+  setTimeout?: (callback: () => void, timeout: number) => FileViewerFrameTimer;
+  /**
+   * 与 setTimeout 配套的清理函数。
+   */
+  clearTimeout?: (timer: FileViewerFrameTimer) => void;
+  /**
+   * 自定义文件投递函数。默认使用 core 的 postFileToFileViewerFrame。
+   */
+  postFile?: (
+    frame: HTMLIFrameElement | null | undefined,
+    options: FileViewerFrameOptions
+  ) => boolean;
+}
+
+export interface FileViewerFrameFilePostController {
+  /**
+   * 立即投递一次当前文件。
+   */
+  postNow(): boolean;
+  /**
+   * 从第一次投递开始调度重试，直到收到生命周期事件或达到上限。
+   */
+  schedule(): void;
+  /**
+   * 标记 iframe 已发出生命周期事件，并停止后续重试。
+   */
+  acknowledge(): void;
+  /**
+   * 处理 iframe 发来的事件。生命周期事件会自动 acknowledge。
+   */
+  handleFrameEvent(value: unknown): boolean;
+  /**
+   * 重置 acknowledge 状态并清理已有定时器。
+   */
+  reset(): void;
+  /**
+   * 清理已有定时器。
+   */
+  cancel(): void;
+}
+
 export const DEFAULT_FILE_VIEWER_PUBLIC_DIR = '/file-viewer';
 export const DEFAULT_FILE_VIEWER_URL = `${DEFAULT_FILE_VIEWER_PUBLIC_DIR}/index.html`;
+export const DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_LIMIT = 8;
+export const DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_INTERVAL = 120;
 
 export const canUseFileViewerDom = () => {
   return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -223,4 +287,88 @@ export const postFileToFileViewerFrame = (
 
   targetWindow.postMessage(data, options.targetOrigin || getFileViewerFrameOrigin(options.viewerUrl));
   return true;
+};
+
+export const createFileViewerFrameFilePostController = (
+  controllerOptions: FileViewerFrameFilePostControllerOptions
+): FileViewerFrameFilePostController => {
+  const retryLimit = controllerOptions.retryLimit ?? DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_LIMIT;
+  const retryInterval = controllerOptions.retryInterval ?? DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_INTERVAL;
+  const scheduleTimer = controllerOptions.setTimeout ?? ((callback, timeout) => {
+    return globalThis.setTimeout(callback, timeout);
+  });
+  const clearTimer = controllerOptions.clearTimeout ?? ((timer) => {
+    globalThis.clearTimeout(timer);
+  });
+  const postFile = controllerOptions.postFile ?? postFileToFileViewerFrame;
+
+  let retryTimer: FileViewerFrameTimer | undefined;
+  let retryCount = 0;
+  let lifecycleAcknowledged = false;
+
+  const cancel = () => {
+    if (retryTimer !== undefined) {
+      clearTimer(retryTimer);
+      retryTimer = undefined;
+    }
+  };
+
+  const postNow = () => postFile(controllerOptions.getFrame(), controllerOptions.getOptions());
+
+  const acknowledge = () => {
+    lifecycleAcknowledged = true;
+    cancel();
+  };
+
+  const schedule = () => {
+    cancel();
+    retryCount = 0;
+    lifecycleAcknowledged = false;
+
+    if (!controllerOptions.getOptions().file) {
+      return;
+    }
+
+    const post = () => {
+      if (lifecycleAcknowledged) {
+        cancel();
+        return;
+      }
+
+      postNow();
+      retryCount += 1;
+
+      if (retryCount < retryLimit) {
+        retryTimer = scheduleTimer(post, retryInterval);
+      } else {
+        retryTimer = undefined;
+      }
+    };
+
+    post();
+  };
+
+  const handleFrameEvent = (value: unknown) => {
+    if (!isFileViewerFrameEvent(value)) {
+      return false;
+    }
+    if (value.type === 'flyfish-viewer:lifecycle') {
+      acknowledge();
+      return true;
+    }
+    return false;
+  };
+
+  return {
+    postNow,
+    schedule,
+    acknowledge,
+    handleFrameEvent,
+    reset() {
+      lifecycleAcknowledged = false;
+      retryCount = 0;
+      cancel();
+    },
+    cancel,
+  };
 };

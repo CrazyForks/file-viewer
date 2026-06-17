@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   buildFileViewerFrameSrc,
+  createFileViewerFrameFilePostController,
   getFileViewerFrameOrigin,
   getFileViewerFrameSourceFilename,
   getFileViewerFrameUrl,
@@ -104,5 +105,58 @@ describe('@file-viewer/core iframe frame helpers', () => {
     expect(postMessage).toHaveBeenCalledWith(blob, 'https://viewer.example')
     expect(postFileToFileViewerFrame(undefined, { file: blob })).toBe(false)
     expect(postFileToFileViewerFrame(frame, {})).toBe(false)
+  })
+
+  it('retries local file posts until the viewer lifecycle is acknowledged', () => {
+    const blob = new Blob(['hello'])
+    const frame = {} as HTMLIFrameElement
+    const postFile = vi.fn(() => true)
+    const clearTimeout = vi.fn()
+    const scheduledCallbacks: Array<() => void> = []
+    const controller = createFileViewerFrameFilePostController({
+      getFrame: () => frame,
+      getOptions: () => ({ file: blob }),
+      retryLimit: 3,
+      retryInterval: 10,
+      postFile,
+      setTimeout: callback => {
+        scheduledCallbacks.push(callback)
+        return scheduledCallbacks.length
+      },
+      clearTimeout
+    })
+
+    controller.schedule()
+    expect(postFile).toHaveBeenCalledTimes(1)
+    expect(scheduledCallbacks).toHaveLength(1)
+
+    scheduledCallbacks.shift()?.()
+    expect(postFile).toHaveBeenCalledTimes(2)
+    expect(scheduledCallbacks).toHaveLength(1)
+
+    expect(controller.handleFrameEvent({
+      type: 'flyfish-viewer:lifecycle',
+      event: 'load-start',
+      payload: null
+    })).toBe(true)
+    expect(clearTimeout).toHaveBeenCalled()
+
+    scheduledCallbacks.shift()?.()
+    expect(postFile).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not schedule local file posts when no binary file is present', () => {
+    const postFile = vi.fn(() => true)
+    const setTimeout = vi.fn(() => 1)
+    const controller = createFileViewerFrameFilePostController({
+      getFrame: () => ({} as HTMLIFrameElement),
+      getOptions: () => ({ url: '/demo.pdf' }),
+      postFile,
+      setTimeout
+    })
+
+    controller.schedule()
+    expect(postFile).not.toHaveBeenCalled()
+    expect(setTimeout).not.toHaveBeenCalled()
   })
 })

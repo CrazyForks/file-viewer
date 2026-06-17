@@ -40,11 +40,14 @@ export {
   createFileViewerZoomController,
 } from './documentZoom';
 export {
+  DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_INTERVAL,
+  DEFAULT_FILE_VIEWER_FRAME_FILE_POST_RETRY_LIMIT,
   DEFAULT_FILE_VIEWER_PUBLIC_DIR,
   DEFAULT_FILE_VIEWER_URL,
   appendFileViewerFrameSearchParam,
   buildFileViewerFrameSrc,
   canUseFileViewerDom,
+  createFileViewerFrameFilePostController,
   createFileViewerFrameUrl,
   getFileViewerCurrentOrigin,
   getFileViewerFrameOrigin,
@@ -222,8 +225,11 @@ export type {
 } from './viewerOperations';
 export type {
   BuildFileViewerFrameSrcOptions,
+  FileViewerFrameFilePostController,
+  FileViewerFrameFilePostControllerOptions,
   FileViewerFrameOptions,
   FileViewerFrameParamValue,
+  FileViewerFrameTimer,
 } from './frame';
 export type {
   FileViewerSerializableCadOptions,

@@ -3,6 +3,7 @@ import {
   DEFAULT_FILE_VIEWER_URL,
   buildFileViewerFrameSrc,
   canUseFileViewerDom,
+  createFileViewerFrameFilePostController,
   getFileViewerCurrentOrigin,
   getFileViewerFrameOrigin,
   getFileViewerFrameSourceFilename,
@@ -69,8 +70,6 @@ export const DEFAULT_VIEWER_PUBLIC_DIR = DEFAULT_FILE_VIEWER_PUBLIC_DIR
 export const DEFAULT_VIEWER_URL = DEFAULT_FILE_VIEWER_URL
 export const VIEWER_FRAME_CACHE_KEY = '1.0.23'
 const DEFAULT_FRAME_TITLE = 'Flyfish Viewer 文件预览'
-const FILE_POST_RETRY_LIMIT = 8
-const FILE_POST_RETRY_INTERVAL = 120
 
 const canUseDom = canUseFileViewerDom
 
@@ -154,57 +153,20 @@ export const mountViewerFrame = (
 ): ViewerFrameController => {
   let options = initialOptions
   let src = buildViewerSrc(options)
-  let filePostRetryTimer: number | undefined
-  let filePostRetryCount = 0
-  let lifecycleAcknowledged = false
   const frame = createViewerFrame({ ...options, autoPostFile: false })
-
-  const clearFilePostRetry = () => {
-    if (filePostRetryTimer) {
-      window.clearTimeout(filePostRetryTimer)
-      filePostRetryTimer = undefined
-    }
-  }
-
-  const scheduleFilePost = () => {
-    clearFilePostRetry()
-    filePostRetryCount = 0
-    lifecycleAcknowledged = false
-
-    if (!options.file) {
-      return
-    }
-
-    const post = () => {
-      if (lifecycleAcknowledged) {
-        clearFilePostRetry()
-        return
-      }
-
-      postFileToViewer(frame, options)
-      filePostRetryCount += 1
-
-      if (filePostRetryCount < FILE_POST_RETRY_LIMIT) {
-        filePostRetryTimer = window.setTimeout(post, FILE_POST_RETRY_INTERVAL)
-      } else {
-        filePostRetryTimer = undefined
-      }
-    }
-
-    post()
-  }
+  const filePostController = createFileViewerFrameFilePostController({
+    getFrame: () => frame,
+    getOptions: () => options
+  })
 
   const handleLoad = () => {
-    scheduleFilePost()
+    filePostController.schedule()
   }
   const handleMessage = (event: MessageEvent) => {
     if (event.source !== frame.contentWindow || !isViewerFrameEvent(event.data)) {
       return
     }
-    if (event.data.type === 'flyfish-viewer:lifecycle') {
-      lifecycleAcknowledged = true
-      clearFilePostRetry()
-    }
+    filePostController.handleFrameEvent(event.data)
     options.onEvent?.(event.data, event)
   }
 
@@ -218,13 +180,13 @@ export const mountViewerFrame = (
       return src
     },
     destroy() {
-      clearFilePostRetry()
+      filePostController.cancel()
       frame.removeEventListener('load', handleLoad)
       window.removeEventListener('message', handleMessage)
       frame.remove()
     },
     postFile() {
-      return postFileToViewer(frame, options)
+      return filePostController.postNow()
     },
     reload() {
       frame.src = src
@@ -234,7 +196,7 @@ export const mountViewerFrame = (
       const previousSrc = frame.src
       src = syncViewerFrame(frame, options)
       if (frame.src === previousSrc) {
-        scheduleFilePost()
+        filePostController.schedule()
       }
       return src
     }

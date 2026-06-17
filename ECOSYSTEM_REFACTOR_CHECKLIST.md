@@ -84,6 +84,7 @@
   - [x] iframe 事件 payload 类型与校验 guard 迁入 core，`packages/web` / React wrapper 复用同一事件识别逻辑。
   - [x] iframe URL 构建、来源文件名推导、本地文件 Blob 投递迁入 core，`packages/web` 保留原 API 薄封装。
   - [x] React wrapper 运行逻辑直接依赖 core iframe 协议，`packages/web` 仅作为 viewer 静态产物兼容分发通道。
+  - [x] iframe 本地文件 postMessage 重试、生命周期确认和定时器清理迁入 core，`packages/web` / React wrapper 复用同一控制器。
 - [x] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
   - [x] `@file-viewer/core` 提供 `FileViewerStateDescriptor` / `FileViewerStateTheme`，覆盖 loading、ready、empty、unsupported、error。
   - [x] 下载、流式 PDF、常规解析的默认进度文案迁入 core，Vue3 入口复用同一常量。
