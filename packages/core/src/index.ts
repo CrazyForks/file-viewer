@@ -229,15 +229,24 @@ export {
 export {
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
   DEFAULT_PDF_RANGE_CHUNK_SIZE,
-  createFileViewerStreamingPdfPlaceholderFile,
+  createFileViewerEmptyPreviewState,
   createFileViewerRequestController,
+  createFileViewerStreamingPdfPlaceholderFile,
+  hasFileViewerPreviewSource,
   isFileViewerAbortError,
   isSameOriginUrl,
+  normalizeFileViewerSourceUrl,
   normalizePdfStreamingMode,
+  resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
   shouldStreamPdfUrl,
 } from './sourceLoading';
-export type { FileViewerRemoteSourcePlan, FileViewerRequestController } from './sourceLoading';
+export type {
+  FileViewerEmptyPreviewState,
+  FileViewerRemoteSourcePlan,
+  FileViewerRequestController,
+  ResolveFileViewerPreviewRequestReasonInput,
+} from './sourceLoading';
 export { createViewer } from './viewer';
 export {
   WorkerRefImpl,

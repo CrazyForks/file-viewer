@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
+  createFileViewerEmptyPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
+  hasFileViewerPreviewSource,
   isFileViewerAbortError,
+  normalizeFileViewerSourceUrl,
   normalizePdfStreamingMode,
+  resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerSourceFilename,
   shouldStreamPdfUrl
@@ -56,6 +60,27 @@ describe('remote source loading helpers', () => {
     expect(isFileViewerAbortError({ code: 'ERR_CANCELED' })).toBe(true)
     expect(isFileViewerAbortError({ __CANCEL__: true })).toBe(true)
     expect(isFileViewerAbortError(new Error('network failed'))).toBe(false)
+  })
+
+  it('keeps preview source reset and refresh reason rules in core', () => {
+    const file = new File(['demo'], 'demo.txt')
+
+    expect(hasFileViewerPreviewSource({ file })).toBe(true)
+    expect(hasFileViewerPreviewSource({ url: '/example/demo.pdf' })).toBe(true)
+    expect(hasFileViewerPreviewSource()).toBe(false)
+    expect(resolveFileViewerPreviewRequestReason({ file })).toBe('replace')
+    expect(resolveFileViewerPreviewRequestReason({ url: '/example/demo.pdf' })).toBe('replace')
+    expect(resolveFileViewerPreviewRequestReason()).toBe('reset')
+    expect(normalizeFileViewerSourceUrl('/example/demo.pdf')).toBe('/example/demo.pdf')
+    expect(normalizeFileViewerSourceUrl()).toBeNull()
+    expect(createFileViewerEmptyPreviewState()).toEqual({
+      filename: '',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: false
+    })
   })
 
   it('defaults PDF streaming to same-origin URLs', () => {

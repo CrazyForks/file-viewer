@@ -1,4 +1,8 @@
-import type { FileViewerPdfOptions } from './types';
+import type {
+  FileViewerFileRef,
+  FileViewerLifecycleContext,
+  FileViewerPdfOptions,
+} from './types';
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   getExtension,
@@ -16,6 +20,20 @@ export interface FileViewerRequestController {
   createAbortController(): AbortController | null;
   clearAbortController(controller: AbortController | null): void;
   abort(): void;
+}
+
+export interface ResolveFileViewerPreviewRequestReasonInput {
+  file?: FileViewerFileRef | null;
+  url?: string | null;
+}
+
+export interface FileViewerEmptyPreviewState {
+  filename: '';
+  file: null;
+  buffer: null;
+  sourceUrl: null;
+  renderedReady: false;
+  progressiveReady: false;
 }
 
 export const createFileViewerRequestController = (): FileViewerRequestController => {
@@ -71,6 +89,34 @@ export const isFileViewerAbortError = (error: unknown) => {
     candidate.code === 'ERR_CANCELED' ||
     candidate.name === 'AbortError' ||
     candidate.name === 'CanceledError';
+};
+
+export const hasFileViewerPreviewSource = ({
+  file,
+  url,
+}: ResolveFileViewerPreviewRequestReasonInput = {}) => {
+  return !!file || !!url;
+};
+
+export const resolveFileViewerPreviewRequestReason = (
+  input: ResolveFileViewerPreviewRequestReasonInput = {}
+): FileViewerLifecycleContext['reason'] => {
+  return hasFileViewerPreviewSource(input) ? 'replace' : 'reset';
+};
+
+export const normalizeFileViewerSourceUrl = (sourceUrl?: string | null) => {
+  return sourceUrl || null;
+};
+
+export const createFileViewerEmptyPreviewState = (): FileViewerEmptyPreviewState => {
+  return {
+    filename: '',
+    file: null,
+    buffer: null,
+    sourceUrl: null,
+    renderedReady: false,
+    progressiveReady: false,
+  };
 };
 
 export const normalizePdfStreamingMode = (

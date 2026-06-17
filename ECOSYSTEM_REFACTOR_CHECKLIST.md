@@ -111,6 +111,7 @@
   - [x] source loading 的 PDF 流式策略迁入 `@file-viewer/core`。
   - [x] source loading 的请求版本、AbortController 和取消错误识别迁入 `@file-viewer/core`，wrapper 只负责触发 UI 状态。
   - [x] Vue3 来源加载门面拆到组件 hooks，复用 core source loading / source / state helper，继续削薄主入口。
+  - [x] source loading 的 refresh reason、sourceUrl 归一化和空预览状态快照迁入 `@file-viewer/core`，Vue hook 只写回响应式状态。
   - [x] 远程 URL 加载计划（文件名、扩展名、PDF 流式开关）迁入 `@file-viewer/core`，wrapper 只负责网络请求和挂载。
   - [x] 源文件默认 fallback 名称与 PDF 流式占位文件创建迁入 `@file-viewer/core`，Vue source loading 不再硬编码 `preview.*` 默认值。
   - [x] 文件名归一化、扩展名识别和 source 归一化迁入 `@file-viewer/core`。

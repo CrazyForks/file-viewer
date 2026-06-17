@@ -3,8 +3,11 @@ import type { Ref } from 'vue'
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   FILE_VIEWER_PREVIEW_MESSAGES,
+  createFileViewerEmptyPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
   isFileViewerAbortError,
+  normalizeFileViewerSourceUrl,
+  resolveFileViewerPreviewRequestReason,
   readFileViewerBuffer,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerSourceFilename,
@@ -127,7 +130,7 @@ export const useViewerSourceLoading = ({
     }
     currentFile.value = file
     currentBuffer.value = arrayBuffer
-    currentSourceUrl.value = sourceUrl || null
+    currentSourceUrl.value = normalizeFileViewerSourceUrl(sourceUrl)
 
     const session = await mountRenderedContent(arrayBuffer, file, version, sourceUrl)
     if (!isCurrentRequest(version)) {
@@ -265,12 +268,13 @@ export const useViewerSourceLoading = ({
   }
 
   const resetViewer = () => {
-    filename.value = ''
-    currentFile.value = null
-    currentBuffer.value = null
-    currentSourceUrl.value = null
-    renderedReady.value = false
-    progressiveReady.value = false
+    const emptyState = createFileViewerEmptyPreviewState()
+    filename.value = emptyState.filename
+    currentFile.value = emptyState.file
+    currentBuffer.value = emptyState.buffer
+    currentSourceUrl.value = emptyState.sourceUrl
+    renderedReady.value = emptyState.renderedReady
+    progressiveReady.value = emptyState.progressiveReady
     clearRenderedContent()
     resetLoading()
   }
@@ -278,8 +282,7 @@ export const useViewerSourceLoading = ({
   const refreshPreview = async () => {
     const file = getFile()
     const url = getUrl()
-    const hasSource = !!file || !!url
-    const version = createRequestVersion(hasSource ? 'replace' : 'reset')
+    const version = createRequestVersion(resolveFileViewerPreviewRequestReason({ file, url }))
 
     if (file) {
       await previewLocalFile(file, version)
