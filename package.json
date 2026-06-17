@@ -68,6 +68,8 @@
     "wrappers:readme": "node scripts/sync-wrapper-readmes.mjs",
     "wrappers:verify": "node scripts/verify-wrapper-repos.mjs",
     "wrappers:export": "pnpm wrappers:readme && node scripts/sync-wrapper-repos.mjs && pnpm wrappers:verify",
+    "wrappers:publish:dry-run": "pnpm wrappers:export && node scripts/publish-wrapper-repos.mjs --dry-run",
+    "wrappers:publish": "pnpm wrappers:export && node scripts/publish-wrapper-repos.mjs --push",
     "obfuscate": "node scripts/obfuscate-dist.mjs",
     "prebuild-lib-only": "node scripts/patch-msdoc-viewer.mjs && node scripts/copy-cad-wasm.mjs",
     "release:pack": "pnpm type-check && pnpm build-lib-only && pnpm obfuscate && npm pack",

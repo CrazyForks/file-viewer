@@ -51,6 +51,20 @@ pnpm wrappers:verify
 
 The verifier checks package names, README language pairs, generated ecosystem/format blocks, official documentation and demo links, Apache-2.0 attribution guidance, standalone manifests, GitHub/Gitee metadata and the absence of `workspace:` dependencies in exported repositories.
 
+Prepare the exported folders as standalone Git repositories without pushing:
+
+```bash
+pnpm wrappers:publish:dry-run
+```
+
+Push every exported wrapper repository to its GitHub `origin` and Gitee `gitee` remotes:
+
+```bash
+pnpm wrappers:publish
+```
+
+`wrappers:publish` runs the export and verification pipeline first, then initializes or updates each folder in `.release/wrapper-repos`, configures remotes from `ecosystem/wrappers.json`, commits the current export with `chore: sync wrapper release`, and pushes the selected branch. Use `node scripts/publish-wrapper-repos.mjs --id=react --push` or `--package=@file-viewer/react --push` when only one wrapper needs to be refreshed.
+
 ## npm Ecosystem Release
 
 Use the ecosystem release helper to keep core, standard wrappers and compatibility packages on the same version:
