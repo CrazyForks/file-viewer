@@ -1,6 +1,6 @@
 # @flyfish-group/file-viewer-react
 
-React 文件预览组件。只提供私有化部署路线: 组件运行协议直接复用 `@file-viewer/core`，依赖的 `@flyfish-group/file-viewer-web` 仅用于携带基线 viewer 静态产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会复制到宿主项目 `public/file-viewer`。React 组件默认加载 `/file-viewer/index.html`，不依赖任何外部服务。
+React 文件预览组件。只提供私有化部署路线: 组件运行协议直接复用 `@file-viewer/core`，依赖的 `@flyfish-group/file-viewer-web` 仅用于携带基线 viewer 静态产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会复制到宿主项目 `public/file-viewer`。React 组件默认加载 `/file-viewer/index.html`，不依赖任何外部服务。新项目建议优先使用标准包名 `@file-viewer/react`；该历史包继续同步维护用于兼容已有系统。
 
 ```bash
 npm install @flyfish-group/file-viewer-react

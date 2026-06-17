@@ -4,7 +4,7 @@
 
 把 Word、Excel、PPT、PDF、Typst、压缩包、邮件、音视频、地理数据、字体、设计资产和结构化数据稳稳带进浏览器里。
 
-`@file-viewer/vue3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件，历史包名 `@flyfish-group/file-viewer3` 继续同步维护。Vue2.7 项目请使用同能力包 `@flyfish-group/file-viewer`。两条 npm 包线保持一致的格式覆盖、示例体验和 API 语义，Vue3 构建产物作为 React、纯 Web 和其他适配层的统一预览基线。
+`@file-viewer/vue3` 是一款基于 Vue 3、TypeScript 和 Vite 构建的纯前端文件预览组件。新项目建议优先使用标准包名 `@file-viewer/vue3`，历史包名 `@flyfish-group/file-viewer3` 继续同步维护用于兼容已有系统。Vue2.7 项目请使用同能力包 `@flyfish-group/file-viewer`。两条 npm 包线保持一致的格式覆盖、示例体验和 API 语义，Vue3 构建产物作为 React、纯 Web 和其他适配层的统一预览基线。
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 

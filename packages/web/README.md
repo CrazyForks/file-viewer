@@ -1,6 +1,6 @@
 # @flyfish-group/file-viewer-web
 
-纯 Web 文件预览组件。只提供私有化部署路线: npm 包随包携带 Vue 基线 viewer 产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会自动复制到宿主项目的 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。
+纯 Web 文件预览组件。只提供私有化部署路线: npm 包随包携带 Vue 基线 viewer 产物；使用 `npm install` 或已允许 pnpm 安装脚本后，会自动复制到宿主项目的 `public/file-viewer`，组件默认加载 `/file-viewer/index.html`。新项目建议优先使用标准包名 `@file-viewer/web`；该历史包继续同步维护用于兼容已有系统。
 
 ```bash
 npm install @flyfish-group/file-viewer-web@1.0.26

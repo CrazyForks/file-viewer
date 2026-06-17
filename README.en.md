@@ -4,7 +4,7 @@
 
 Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
-`@file-viewer/vue3` is a pure frontend file preview component built with Vue 3, TypeScript, and Vite. The historical package name `@flyfish-group/file-viewer3` remains supported. Vue 2.7 projects should use the matching `@flyfish-group/file-viewer` package. The Vue 3 build is also the baseline runtime for the React, vanilla JavaScript, and iframe integration packages.
+`@file-viewer/vue3` is a pure frontend file preview component built with Vue 3, TypeScript, and Vite. New integrations should prefer the standard package name `@file-viewer/vue3`; the historical package name `@flyfish-group/file-viewer3` remains synchronized for compatibility with existing systems. Vue 2.7 projects should use the matching `@flyfish-group/file-viewer` package. The Vue 3 build is also the baseline runtime for the React, vanilla JavaScript, and iframe integration packages.
 
 The viewer does not require a backend conversion service. It is designed for OA systems, knowledge bases, attachment centers, workflow platforms, customer support portals, document approval flows, intranet systems, and offline-capable deployments where file preview should feel like a maintained product module rather than a temporary feature.
 
