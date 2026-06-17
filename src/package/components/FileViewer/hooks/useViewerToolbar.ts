@@ -1,5 +1,6 @@
 import { computed, watch, type ComputedRef, type Ref, type ShallowRef } from 'vue'
 import {
+  createFileViewerOriginalSourceState,
   postFileViewerOperationAvailabilityChange,
   postFileViewerZoomChange,
   resolveFileViewerOperationAvailability,
@@ -57,11 +58,11 @@ export const useViewerToolbar = ({
   const operationAvailability = computed<FileViewerOperationAvailability>(() => {
     return resolveFileViewerOperationAvailability({
       extension: currentExtend.value,
-      source: {
+      source: createFileViewerOriginalSourceState({
         buffer: currentBuffer.value,
         file: currentFile.value,
         url: currentSourceUrl.value
-      },
+      }),
       renderedReady: renderedReady.value,
       hasError: !!error.value,
       adapter: activeExportAdapter.value,
