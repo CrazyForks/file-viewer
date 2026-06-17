@@ -153,6 +153,22 @@ const normalizePackageJson = async (targetDir, wrapper) => {
   await writeJson(packagePath, packageJson)
 }
 
+const normalizeStandaloneTsConfig = async targetDir => {
+  const tsconfigPath = join(targetDir, 'tsconfig.json')
+  if (!existsSync(tsconfigPath)) {
+    return
+  }
+
+  const tsconfig = await readJson(tsconfigPath)
+  if (tsconfig.compilerOptions?.paths) {
+    delete tsconfig.compilerOptions.paths
+  }
+  if (tsconfig.references) {
+    delete tsconfig.references
+  }
+  await writeJson(tsconfigPath, tsconfig)
+}
+
 const writeGitignore = async targetDir => {
   await writeFile(
     join(targetDir, '.gitignore'),
@@ -234,6 +250,7 @@ for (const wrapper of wrappers) {
   await cp(join(sourceRoot, 'LICENSE'), join(targetDir, 'LICENSE'), { force: true })
   await writeGitignore(targetDir)
   await normalizePackageJson(targetDir, wrapper)
+  await normalizeStandaloneTsConfig(targetDir)
   const targetPackageJson = await readJson(join(targetDir, 'package.json'))
   await writeStandaloneManifest(targetDir, wrapper, targetPackageJson)
   await assertStandaloneRepo(targetDir, wrapper)

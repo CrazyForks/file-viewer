@@ -110,6 +110,15 @@ function dependencyBlocks(packageJson) {
   ].filter(Boolean)
 }
 
+function isParentPath(value) {
+  return typeof value === 'string' && (
+    value.startsWith('../') ||
+    value.startsWith('..\\') ||
+    value.includes('/../') ||
+    value.includes('\\..\\')
+  )
+}
+
 function collectExportEntrypoints(value, paths = new Set()) {
   if (!value) {
     return paths
@@ -167,6 +176,30 @@ async function verifyPackageEntrypointMetadata(dir, packageJson, label) {
       continue
     }
     await assertFile(join(dir, entrypoint), `${label} package entry ${entrypoint}`)
+  }
+}
+
+async function verifyExportedTsConfig(repoDir, label) {
+  const tsconfigPath = join(repoDir, 'tsconfig.json')
+  if (!existsSync(tsconfigPath)) {
+    return
+  }
+
+  const tsconfig = await readJson(tsconfigPath)
+  const paths = tsconfig.compilerOptions?.paths || {}
+  for (const [alias, targets] of Object.entries(paths)) {
+    const targetList = Array.isArray(targets) ? targets : [targets]
+    for (const target of targetList) {
+      if (isParentPath(target)) {
+        throw new Error(`${label} tsconfig paths.${alias} still points outside the standalone repo: ${target}`)
+      }
+    }
+  }
+
+  for (const reference of tsconfig.references || []) {
+    if (isParentPath(reference?.path)) {
+      throw new Error(`${label} tsconfig reference still points outside the standalone repo: ${reference.path}`)
+    }
   }
 }
 
@@ -258,6 +291,7 @@ async function verifyExportedRepo(wrapper) {
   if (packageJson.bugs?.url !== `${wrapper.github}/issues`) {
     throw new Error(`${wrapper.repository} bugs URL mismatch`)
   }
+  await verifyExportedTsConfig(repoDir, wrapper.repository)
   await verifyPackageEntrypointMetadata(repoDir, packageJson, wrapper.repository)
   for (const block of dependencyBlocks(packageJson)) {
     for (const [dependencyName, range] of Object.entries(block)) {

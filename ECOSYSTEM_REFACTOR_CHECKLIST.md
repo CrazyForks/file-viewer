@@ -217,7 +217,7 @@
 
 - [x] 建立 `ecosystem/wrappers.json` 作为 wrapper npm 包、GitHub/Gitee 仓库和历史兼容包名的单一维护来源。
 - [x] 提供 `scripts/sync-wrapper-readmes.mjs`，从 core 格式定义和 wrapper manifest 生成中英文 README 的生态矩阵与完整格式矩阵。
-- [x] 提供 `scripts/sync-wrapper-repos.mjs`，可把 monorepo 中的 wrapper 包导出为独立公开仓库目录，并自动去除 `workspace:` 依赖。
+- [x] 提供 `scripts/sync-wrapper-repos.mjs`，可把 monorepo 中的 wrapper 包导出为独立公开仓库目录，并自动去除 `workspace:` 依赖和 monorepo-only `tsconfig` 路径引用。
 - [x] 提供 `scripts/verify-wrapper-repos.mjs`，校验 wrapper 源目录和独立导出仓库的包名、npm 入口元数据、中英文 README、格式矩阵、Demo/文档链接、License、manifest、GitHub/Gitee 元数据、`workspace:` 依赖、monorepo-only 脚本路径和私有 workspace 泄露。
 - [x] 提供 `scripts/publish-wrapper-repos.mjs`，可把独立 wrapper 导出目录初始化为 Git 仓库，配置 GitHub/Gitee 远端，提交并按需推送。
 - [x] `scripts/sync-public-artifacts.mjs` 接入统一 ecosystem npm release manifest，公开产物仓库会同步标准 wrapper tarball、仓库矩阵，并记录重复兼容 tarball 的省略策略。
