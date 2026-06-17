@@ -1,5 +1,5 @@
 import { createApp, defineAsyncComponent } from 'vue'
-import type { FileRenderContext } from '@/package/common/type'
+import type { FileRenderContext } from '@file-viewer/core'
 
 const PdfView = defineAsyncComponent(() => import('./PdfView.vue'))
 export default async function renderPdf(buffer: ArrayBuffer, target: HTMLDivElement, context?: FileRenderContext) {

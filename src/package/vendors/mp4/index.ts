@@ -1,5 +1,5 @@
 import { createApp, defineAsyncComponent, h } from 'vue'
-import type { FileRenderContext } from '@/package/common/type'
+import type { FileRenderContext } from '@file-viewer/core'
 
 const VideoViewer = defineAsyncComponent(() => import('./VideoViewer.vue'))
 

@@ -1,4 +1,8 @@
-import type { AppWrapper, FileRenderContext, Rendered } from '@/package/common/type'
+import type {
+  FileRenderContext,
+  FileViewerRenderedInstance as AppWrapper,
+  FileViewerRenderedInstance as Rendered
+} from '@file-viewer/core'
 import { ARCHIVE_EXTENSIONS } from './archive/shared'
 import { MODEL_EXTENSIONS } from './model/shared'
 

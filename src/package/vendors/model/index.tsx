@@ -1,5 +1,5 @@
 import { createApp, defineAsyncComponent } from 'vue'
-import type { FileRenderContext } from '@/package/common/type'
+import type { FileRenderContext } from '@file-viewer/core'
 export { MODEL_EXTENSIONS } from './shared'
 
 const ModelViewer = defineAsyncComponent(() => import('./ModelViewer.vue'))

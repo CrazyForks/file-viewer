@@ -2,7 +2,17 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { getDocument, PDFWorker as PdfJsWorker, PixelsPerInch, version } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { EventBus, GenericL10n, PDFFindController, PDFLinkService, PDFViewer } from 'pdfjs-dist/legacy/web/pdf_viewer.mjs'
-import { DEFAULT_PDF_RANGE_CHUNK_SIZE, buildPrintPageStyle, formatCssPixels } from '@file-viewer/core'
+import {
+  DEFAULT_PDF_RANGE_CHUNK_SIZE,
+  buildPrintPageStyle,
+  formatCssPixels,
+  type FileRenderExportAdapter,
+  type FileRenderExportOptions,
+  type FileViewerPdfOptions,
+  type FileViewerSearchOptions,
+  type FileViewerSearchState,
+  type FileViewerZoomState
+} from '@file-viewer/core'
 import {
   registerFileViewerSearchProvider,
   unregisterFileViewerSearchProvider
@@ -12,14 +22,6 @@ import {
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider
 } from '@/package/use/viewerZoom'
-import type {
-  FileRenderExportOptions,
-  FileRenderExportAdapter,
-  FileViewerPdfOptions,
-  FileViewerSearchOptions,
-  FileViewerSearchState,
-  FileViewerZoomState
-} from '@/package/common/type'
 import './pdf.css'
 import PDFWorkerPort from './worker'
 

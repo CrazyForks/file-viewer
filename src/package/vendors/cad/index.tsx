@@ -1,5 +1,5 @@
 import { createApp, defineAsyncComponent } from 'vue'
-import type { FileRenderContext } from '@/package/common/type'
+import type { FileRenderContext } from '@file-viewer/core'
 
 const CadViewer = defineAsyncComponent(() => import('./CadViewer.vue'))
 

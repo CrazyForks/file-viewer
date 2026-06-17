@@ -124,6 +124,7 @@
   - [x] worker ref 管理迁入 `@file-viewer/core`，Vue3 兼容路径改为 re-export。
   - [x] `pnpm verify:compatibility-api` 锁定 Vue3 旧 `src/package/common` 运行时文件只能作为 `@file-viewer/core` re-export 门面，禁止回流本地实现逻辑。
   - [x] Vue3 渲染链路不再从旧 `src/package/common` 运行时门面取工具函数，文本读取、worker ref 和 PDF range 常量统一直接使用 `@file-viewer/core`。
+  - [x] Vue3 vendor 层渲染上下文、缩放状态、导出 adapter 和 rendered instance 类型直接从 `@file-viewer/core` 获取，`common/type` 仅保留对外兼容类型门面。
   - [x] Vue3 对外实例方法拆到组件 hooks，并沉淀 `FileViewerExpose` 类型，demo / compare 复用同一 API 契约。
   - [x] Vue3 props / emits 契约沉淀为 `FileViewerProps` / `FileViewerEmits`，入口组件复用公共类型。
   - [ ] 打印导出执行链路迁入 `@file-viewer/core`。

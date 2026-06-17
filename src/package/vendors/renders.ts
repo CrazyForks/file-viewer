@@ -4,7 +4,13 @@ import {
   createFileViewerRendererDispatcher,
   createFileViewerUnsupportedState
 } from '@file-viewer/core'
-import type { AppWrapper, FileHandler, FileRenderContext } from '@/package/common/type'
+import type {
+  FileRenderContext,
+  FileRenderHandler,
+  FileViewerRenderedInstance as AppWrapper
+} from '@file-viewer/core'
+
+type FileHandler = FileRenderHandler<AppWrapper, HTMLDivElement>
 
 interface VueRendererHandler {
   rendererId: string;

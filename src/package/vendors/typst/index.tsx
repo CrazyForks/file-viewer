@@ -1,6 +1,6 @@
 import { readFileViewerText as readText } from '@file-viewer/core'
 import { createApp, defineAsyncComponent } from 'vue'
-import type { FileRenderContext } from '@/package/common/type'
+import type { FileRenderContext } from '@file-viewer/core'
 
 const TypstViewer = defineAsyncComponent(() => import('./TypstViewer.vue'))
 

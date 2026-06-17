@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { readFileViewerText as readText } from '@file-viewer/core'
-import type { FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerZoomState } from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,

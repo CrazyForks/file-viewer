@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
-import type { FileViewerArchiveOptions, FileViewerOptions, Rendered } from '@/package/common/type'
+import type {
+  FileViewerArchiveOptions,
+  FileViewerOptions,
+  FileViewerRenderedInstance as Rendered
+} from '@file-viewer/core'
 import { createArchiveCacheKey, flattenArchiveObject, formatBytes, type ArchiveEntryView } from './shared'
 import { readArchiveCache, writeArchiveCache } from './cache'
 import { loadArchiveEntriesWithoutWorker } from './fallback'

@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import EVirtTable from 'e-virt-table'
-import type { FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerZoomState } from '@file-viewer/core'
 import type { SheetDefinition, SheetImage, SheetModel } from './worker/type'
 import { SheetJsWorker } from './worker'
 import {

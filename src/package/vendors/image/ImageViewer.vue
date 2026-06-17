@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { component as VueViewer } from 'v-viewer'
 import 'viewerjs/dist/viewer.css'
-import type { FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerZoomState } from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,

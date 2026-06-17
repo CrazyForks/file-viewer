@@ -2,7 +2,7 @@
 import { marked } from 'marked'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import 'github-markdown-css/github-markdown.css'
-import type { FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerZoomState } from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,

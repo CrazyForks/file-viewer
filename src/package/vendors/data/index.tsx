@@ -1,6 +1,6 @@
 import { createApp, defineAsyncComponent } from 'vue'
 import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
-import type { FileRenderContext } from '@/package/common/type'
+import type { FileRenderContext } from '@file-viewer/core'
 
 const DataAssetViewer = defineAsyncComponent(() => import('./DataAssetViewer.vue'))
 

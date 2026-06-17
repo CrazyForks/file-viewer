@@ -5,7 +5,7 @@ import { DefaultOptions } from './options.js'
 import './styles/pptxjs.css'
 import { displayChart } from './support/chart'
 import PptxWorker from './worker'
-import type { FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerZoomState } from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,

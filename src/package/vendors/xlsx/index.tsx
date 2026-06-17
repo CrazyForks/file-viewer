@@ -1,6 +1,6 @@
 import type { App } from 'vue'
 import { createApp, defineAsyncComponent } from 'vue'
-import type { FileRenderContext } from '@/package/common/type'
+import type { FileRenderContext } from '@file-viewer/core'
 
 // 导入异步组件
 const XlsxTable = defineAsyncComponent(() => import('./XlsxTable.vue'))

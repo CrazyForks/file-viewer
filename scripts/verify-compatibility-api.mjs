@@ -180,6 +180,7 @@ const vue3ScopedRuntimeFacadeNames = [
 const vue3ScopedRuntimeFacadeImportPattern = new RegExp(
   `from\\s+['"][^'"]*common/(${vue3ScopedRuntimeFacadeNames.map(escapeRegExp).join('|')})['"]`
 )
+const vue3ScopedVendorCommonTypeImportPattern = /from\s+['"][^'"]*common\/type(?:\.ts)?['"]/
 const sourceFileExtensions = new Set(['.ts', '.tsx', '.vue', '.js', '.mjs'])
 
 function assert(condition, message) {
@@ -430,6 +431,13 @@ async function verifyVue3ScopedCompatibility() {
       !runtimeFacadeImport,
       `${entry.packageName} ${relativePath} must import runtime helpers from @file-viewer/core instead of ${runtimeFacadeImport?.[0]}`
     )
+    if (relativePath.startsWith('src/package/vendors/')) {
+      const vendorCommonTypeImport = vue3ScopedVendorCommonTypeImportPattern.exec(source)
+      assert(
+        !vendorCommonTypeImport,
+        `${entry.packageName} ${relativePath} must import renderer contracts directly from @file-viewer/core instead of ${vendorCommonTypeImport?.[0]}`
+      )
+    }
   }
 }
 

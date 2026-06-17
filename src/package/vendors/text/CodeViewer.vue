@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { HLJSApi, LanguageFn } from 'highlight.js'
-import type { FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerZoomState } from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,

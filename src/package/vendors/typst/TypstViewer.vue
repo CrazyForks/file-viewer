@@ -2,8 +2,13 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { $typst } from '@myriaddreamin/typst.ts'
 import typstRendererWasmUrl from '@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url'
-import { formatCssPixels, resolveFileViewerTypstCompilerWasmUrl, type PrintPageSize } from '@file-viewer/core'
-import type { FileRenderExportAdapter, FileViewerZoomState } from '@/package/common/type'
+import {
+  formatCssPixels,
+  resolveFileViewerTypstCompilerWasmUrl,
+  type FileRenderExportAdapter,
+  type FileViewerZoomState,
+  type PrintPageSize
+} from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,

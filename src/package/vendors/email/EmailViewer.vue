@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { disposeFileViewerRendered } from '@file-viewer/core'
-import type { FileViewerOptions, Rendered } from '@/package/common/type'
+import type { FileViewerOptions, FileViewerRenderedInstance as Rendered } from '@file-viewer/core'
 import { renderNestedBuffer } from '../nestedRender'
 
 type EmailAddress = {

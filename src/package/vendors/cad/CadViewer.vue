@@ -11,7 +11,7 @@ import type {
 } from '@flyfish-dev/cad-viewer'
 import { CadViewer } from '@flyfish-dev/cad-viewer'
 import { resolveFileViewerCadAssetUrls } from '@file-viewer/core'
-import type { FileViewerCadOptions, FileViewerZoomState } from '@/package/common/type'
+import type { FileViewerCadOptions, FileViewerZoomState } from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,

@@ -1,6 +1,12 @@
 import { defaultMsDocCss, parseMsDocToHtml } from 'msdoc-viewer'
-import { applyPrintPageSize, buildPrintPageStyle, formatCssPixels } from '@file-viewer/core'
-import type { AppWrapper, FileRenderContext, FileViewerZoomState } from '@/package/common/type'
+import {
+  applyPrintPageSize,
+  buildPrintPageStyle,
+  formatCssPixels,
+  type FileRenderContext,
+  type FileViewerRenderedInstance as AppWrapper,
+  type FileViewerZoomState
+} from '@file-viewer/core'
 import {
   createZoomChangeEmitter,
   registerFileViewerZoomProvider,
