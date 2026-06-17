@@ -96,6 +96,33 @@ export interface FileRenderExportAdapter {
   toHtml?: (options: FileRenderExportOptions) => Promise<string> | string;
 }
 
+export interface FileRenderContext {
+  filename?: string;
+  url?: string;
+  streamUrl?: string;
+  options?: FileViewerOptions;
+  registerExportAdapter?: (adapter: FileRenderExportAdapter | null) => void;
+  onProgressiveRender?: () => void;
+}
+
+export type FileRenderHandler<
+  Rendered = unknown,
+  Target extends HTMLElement = HTMLElement,
+> = (
+  buffer: ArrayBuffer,
+  target: Target,
+  type?: string,
+  context?: FileRenderContext
+) => Promise<Rendered>;
+
+export interface FileRenderHandlerComposite<
+  Rendered = unknown,
+  Target extends HTMLElement = HTMLElement,
+> {
+  accepts: Array<string>;
+  handler: FileRenderHandler<Rendered, Target>;
+}
+
 export interface FileViewerTypstOptions {
   compilerWasmUrl?: string;
 }

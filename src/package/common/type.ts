@@ -1,6 +1,9 @@
 import type { App } from 'vue'
 import type {
   FileViewerFileRef,
+  FileRenderContext as CoreFileRenderContext,
+  FileRenderHandler,
+  FileRenderHandlerComposite,
   FileViewerSearchProvider as CoreFileViewerSearchProvider,
   FileViewerZoomProvider as CoreFileViewerZoomProvider
 } from '@file-viewer/core'
@@ -537,22 +540,7 @@ export interface FileRenderExportAdapter {
  * 同目录的贴图、bin 或材质文件。没有这些上下文时，渲染器仍应尽力预览
  * 单文件内容，并在资源缺失时给出明确错误。
  */
-export interface FileRenderContext {
-  filename?: string;
-  url?: string;
-  /**
-   * 渲染器可以直接读取的远端 URL。当前主要给 PDF.js 使用，
-   * 让同源 PDF 不必先整包下载为 Blob，就可以边拉取边建页。
-   */
-  streamUrl?: string;
-  options?: FileViewerOptions;
-  registerExportAdapter?: (adapter: FileRenderExportAdapter | null) => void;
-  /**
-   * 渲染器已经写入可读的渐进式内容，但完整高保真渲染仍在继续。
-   * 主入口收到后可以先露出内容，避免用户长时间只看到 Loading。
-   */
-  onProgressiveRender?: () => void;
-}
+export type FileRenderContext = CoreFileRenderContext;
 
 /**
  * 文件处理逻辑，用于声明具体格式的异步渲染器。
@@ -565,20 +553,9 @@ export interface FileRenderContext {
  * @param type 目标扩展名。部分渲染器会用它选择语言、容错策略或格式提示。
  * @param context 原始文件名、远端 URL 等补充上下文。
  */
-export type FileHandler = (
-  buffer: ArrayBuffer,
-  target: HTMLDivElement,
-  type?: string,
-  context?: FileRenderContext
-) => Promise<Rendered>;
+export type FileHandler = FileRenderHandler<Rendered, HTMLDivElement>;
 
 /**
  * 文件处理器组合。
  */
-export interface FileHandlerComposite {
-
-  // 当前处理器可接受的扩展名列表，必须使用小写。
-  accepts: Array<string>;
-  // 实际执行预览渲染的异步处理器。
-  handler: FileHandler
-}
+export type FileHandlerComposite = FileRenderHandlerComposite<Rendered, HTMLDivElement>;

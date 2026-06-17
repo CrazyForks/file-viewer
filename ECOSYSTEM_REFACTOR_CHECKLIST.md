@@ -91,8 +91,9 @@
   - [x] 操作上下文、beforeOperation / toolbar pre-hook 顺序、取消协议迁入 `@file-viewer/core`。
   - [x] toolbar 默认值、可见性、PDF 默认悬浮位置和 operation availability 迁入 `@file-viewer/core`。
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。
+  - [x] 渲染上下文 `FileRenderContext`、通用 handler 协议迁入 `@file-viewer/core`。
+  - [x] worker ref 管理迁入 `@file-viewer/core`，Vue3 兼容路径改为 re-export。
   - [ ] 打印导出执行链路迁入 `@file-viewer/core`。
-  - [ ] worker ref 迁入 `@file-viewer/core`。
 - [ ] 从 `src/package/use` 抽出搜索、定位、缩放、loading 状态为纯 TS controller。
   - [x] 缩放状态标准化迁入 `@file-viewer/core`。
   - [x] 搜索 options / empty state 标准化迁入 `@file-viewer/core`。
@@ -252,6 +253,7 @@
   - [x] `FileViewerOptions`、source、生命周期、操作、导出适配、渲染器 registry 等 framework-neutral 类型已进入 core。
   - [x] Vue3 公共 source 类型补齐 `buffer`，避免 wrapper hook 类型与 core 漂移。
   - [x] Vue3 公共搜索/缩放 provider 类型改为复用 core 类型。
+  - [x] Vue3 公共 `FileRenderContext` / `FileHandler` 类型改为复用 core 类型。
   - [ ] Vue3 入口仍存在旧类型 re-export 和 Vue 相关 `Rendered` 类型，需要继续拆薄。
 - [x] 将 `src/package/vendors/renders.ts` 改造成 core registry 的适配入口。
 - [ ] 给现有 Vue3 组件增加一个薄 wrapper 层，让它先调用 core registry，逐步降低 `FileViewer.vue` 职责。

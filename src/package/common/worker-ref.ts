@@ -1,26 +1,11 @@
-type WorkerProvider = () => Worker
+export {
+  WorkerRefImpl,
+  refWorker,
+} from '@file-viewer/core'
 
-export interface WorkerRef {
+export type {
+  WorkerProvider,
+  WorkerRef,
+} from '@file-viewer/core'
 
-  worker: Worker | null
-
-  defaults(provider: WorkerProvider): Worker
-}
-
-export default class WorkerRefImpl implements WorkerRef {
-
-  public worker: Worker | null = null
-
-  constructor(worker: Worker | null) {
-    this.worker = worker
-  }
-
-  defaults(provider: WorkerProvider): Worker {
-    return this.worker || provider()
-  }
-}
-
-export function refWorker(_name: string, _module: boolean = false): WorkerRef {
-  // Keep the old extension point while defaulting to bundled inline workers.
-  return new WorkerRefImpl(null)
-}
+export { WorkerRefImpl as default } from '@file-viewer/core'

@@ -61,6 +61,7 @@ export {
   shouldStreamPdfUrl,
 } from './sourceLoading';
 export { createViewer } from './viewer';
+export { WorkerRefImpl, refWorker } from './worker';
 export type {
   BuildFileViewerLifecycleContextInput,
   BuiltFileViewerLifecycleContext,
@@ -71,6 +72,7 @@ export type {
   SerializedFileViewerContext,
 } from './operations';
 export type { CreateViewerOptions } from './viewer';
+export type { WorkerProvider, WorkerRef } from './worker';
 export type {
   FileViewerAiOptions,
   FileViewerArchiveOptions,
@@ -82,9 +84,12 @@ export type {
   FileViewerDocumentChunk,
   FileViewerDocxOptions,
   FileViewerFileRef,
+  FileRenderContext,
   FileRenderExportAdapter,
   FileRenderExportMode,
   FileRenderExportOptions,
+  FileRenderHandler,
+  FileRenderHandlerComposite,
   FileViewerInstance,
   FileViewerLifecycleContext,
   FileViewerLifecycleHooks,
