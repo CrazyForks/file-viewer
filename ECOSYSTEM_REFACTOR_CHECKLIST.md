@@ -269,6 +269,7 @@
 - [ ] 所有 npm 包版本号连续、依赖 core 版本一致、dist 类型声明完整。
   - [x] 新增 `scripts/release-ecosystem-packages.mjs`，统一列出、打包、dry-run 发布和正式发布 core、标准 wrapper 与历史兼容包，并在 pack/publish 前校验 `main`、`module`、`types`、`exports` 和 bin 指向的文件存在。
   - [x] 新增 `pnpm verify:ecosystem-versions`，独立校验 core、标准 wrapper 和历史兼容包的版本、内部 `workspace:^version` 依赖范围、wrapper manifest 对齐关系和标准 wrapper 不依赖历史包名。
+  - [x] 生态发包与 tarball 校验要求所有 core、标准 wrapper 和历史兼容包都包含 `README.md` / `README.en.md`，包括根兼容包 `@flyfish-group/file-viewer3`。
 
 ## Phase 7: 构建产物与公开分发
 

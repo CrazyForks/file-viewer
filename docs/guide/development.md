@@ -29,7 +29,7 @@ pnpm install
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
 | `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
 | `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、wrapper 和真实示例文件 |
-| `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
+| `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、标准 wrapper 不依赖历史包名 |
 | `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口和可导入 ESM 入口 |
@@ -130,7 +130,7 @@ pnpm release:pack
 - 新增格式、示例或 wrapper 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
 - 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 生态 npm 版本和内部 workspace 依赖是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准 wrapper 和历史兼容包不会漂移
-- 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露
+- 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露
 - 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入
 - 本地构建和文档构建是否全部通过
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
@@ -140,7 +140,7 @@ pnpm release:pack
 - wrapper README 是否已经通过 `pnpm wrappers:readme` 和 `pnpm wrappers:verify --source-only`，确认中英文模板、生态矩阵、格式矩阵、官方文档和 Demo 链接与 `ecosystem/wrapper-readme-template.json` 一致
 - 独立 wrapper 仓库是否已经通过 `pnpm wrappers:standalone-smoke`，确认离开 monorepo 后可用 npm 安装本地生态 tarball 并完成构建
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
-- 生态 tarball 是否包含 core、标准 wrapper、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`
+- 生态 tarball 是否包含 core、标准 wrapper、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`、source map 或私有源码
 - 公开成品仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-artifacts`，确认 `artifacts/release-manifest.json`、tarball、README 和 wrapper 仓库索引均与当前生态清单一致
 - 混淆后的 `dist/index.mjs`、`dist/index.umd.js` 是否仍可被业务项目正常导入
 - README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 成品仓库、源码自助开通和 Apache-2.0 许可证说明

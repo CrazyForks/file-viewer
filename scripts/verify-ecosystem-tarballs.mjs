@@ -172,13 +172,10 @@ function assertWebGlobalBundlePacked(entry, files) {
 
 function assertRequiredDocs(entry, files) {
   const packedFiles = new Set(files)
-  for (const requiredFile of ['package.json', 'README.md']) {
+  for (const requiredFile of ['package.json', 'README.md', 'README.en.md']) {
     if (!packedFiles.has(requiredFile)) {
       throw new Error(`${entry.packageName} tarball is missing ${requiredFile}`)
     }
-  }
-  if (entry.packageDir !== '.' && !packedFiles.has('README.en.md')) {
-    throw new Error(`${entry.packageName} tarball is missing README.en.md`)
   }
 }
 

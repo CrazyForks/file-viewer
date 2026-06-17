@@ -90,9 +90,7 @@ async function verifyPackage(entry, options) {
   await assertDirectory(entry.absoluteDir, entry.packageDir)
   await assertFile(join(entry.absoluteDir, 'package.json'), `${entry.packageDir}/package.json`)
   await assertFile(join(entry.absoluteDir, 'README.md'), `${entry.packageDir}/README.md`)
-  if (entry.packageDir !== '.') {
-    await assertFile(join(entry.absoluteDir, 'README.en.md'), `${entry.packageDir}/README.en.md`)
-  }
+  await assertFile(join(entry.absoluteDir, 'README.en.md'), `${entry.packageDir}/README.en.md`)
   if (entry.packageJson.private === true) {
     throw new Error(`${entry.packageName} is private and cannot be released`)
   }
