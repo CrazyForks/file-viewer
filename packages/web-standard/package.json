@@ -52,7 +52,7 @@
   },
   "files": [
     "dist",
-    "scripts",
+    "scripts/copy-assets.mjs",
     "viewer",
     "README.md",
     "README.en.md"
