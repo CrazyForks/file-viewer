@@ -5,6 +5,40 @@ import {
   type ViewerFrameOptions
 } from '@file-viewer/web'
 
+export type {
+  CreateViewerFrameOptions,
+  FileRef,
+  ViewerAiOptions,
+  ViewerArchiveOptions,
+  ViewerCadOptions,
+  ViewerDocxOptions,
+  ViewerDirectFrameHandle,
+  ViewerFrameComponentBridgeOptions,
+  ViewerFrameComponentProps,
+  ViewerFrameContainerComponentProps,
+  ViewerFrameControllerAccessor,
+  ViewerFrameController,
+  ViewerFrameControllerHandle,
+  ViewerFrameEventHandler,
+  ViewerFrameEventPayload,
+  ViewerFrameEventType,
+  ViewerFrameFilePostController,
+  ViewerFrameFilePostControllerOptions,
+  ViewerFrameHostComponentProps,
+  ViewerFrameIframeComponentProps,
+  ViewerFrameOptions,
+  ViewerFrameParamValue,
+  ViewerMountedFrameHandle,
+  ViewerPdfOptions,
+  ViewerRuntimeOptions,
+  ViewerSearchOptions,
+  ViewerThemeMode,
+  ViewerToolbarOptions,
+  ViewerToolbarPosition,
+  ViewerTypstOptions,
+  ViewerWatermarkOptions
+} from '@file-viewer/web'
+
 export type JQueryFileViewerMethod = 'destroy' | 'reload' | 'postFile' | 'update'
 
 export interface JQueryFileViewerOptions extends CreateViewerFrameOptions {

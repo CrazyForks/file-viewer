@@ -34,7 +34,7 @@ pnpm install
 | `pnpm verify:compatibility-api` | 校验历史兼容包的运行门面边界: React 兼容包经由 web 兼容门面接入 iframe 协议，scoped Vue3 根包只保留 core 类型门面、登记过的 alias 和受控公共类型出口，纯 Web 兼容包统一承接 core，`file-viewer3` 保持薄 alias |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
 | `pnpm verify:wrapper-api` | 校验标准 wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法，防止不同框架接入体验漂移 |
-| `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
+| `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数、frame handle 和 frame param 类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
 | `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、wrapper 和真实示例文件 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准 wrapper 仓库元数据和历史包依赖边界 |
