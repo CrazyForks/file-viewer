@@ -2,11 +2,10 @@ import axios from 'axios'
 import type { Ref } from 'vue'
 import {
   FILE_VIEWER_PREVIEW_MESSAGES,
-  getExtension,
   isFileViewerAbortError,
-  normalizeFilename,
   readFileViewerBuffer,
-  shouldStreamPdfUrl,
+  resolveFileViewerRemoteSourcePlan,
+  resolveFileViewerSourceFilename,
   wrapFileViewerFileRef
 } from '@file-viewer/core'
 import type { FileViewerRequestController } from '@file-viewer/core'
@@ -119,7 +118,7 @@ export const useViewerSourceLoading = ({
     sourceUrl?: string,
     source: FileViewerLifecycleContext['source'] = sourceUrl ? 'url' : 'file'
   ) => {
-    filename.value = normalizeFilename(file.name || '')
+    filename.value = resolveFileViewerSourceFilename({ file, fallback: '' })
     const arrayBuffer = await readFileViewerBuffer(file)
     if (!isCurrentRequest(version)) {
       return
@@ -145,18 +144,6 @@ export const useViewerSourceLoading = ({
     setActiveDocumentContext(context)
     notifyLifecycle(context)
     clearLoadStarted(version)
-  }
-
-  const canStreamRemotePdf = (url: string, nextFilename: string) => {
-    if (typeof window === 'undefined') {
-      return false
-    }
-    return shouldStreamPdfUrl({
-      extension: getExtension(nextFilename),
-      pageHref: window.location.href,
-      streaming: getOptions()?.pdf?.streaming,
-      url
-    })
   }
 
   const previewRemotePdfStream = async (url: string, version: number, nextFilename: string) => {
@@ -195,7 +182,7 @@ export const useViewerSourceLoading = ({
 
   const previewLocalFile = async (source: FileRef, version: number) => {
     const file = wrapFileViewerFileRef(source, filename.value || 'preview.bin')
-    filename.value = normalizeFilename(file.name || '')
+    filename.value = resolveFileViewerSourceFilename({ file, fallback: 'preview.bin' })
     markLoadStarted(version)
     notifyLifecycle(buildLifecycleContext({
       phase: 'load-start',
@@ -220,7 +207,12 @@ export const useViewerSourceLoading = ({
   }
 
   const previewRemoteFile = async (url: string, version: number) => {
-    const nextFilename = normalizeFilename(url)
+    const remoteSource = resolveFileViewerRemoteSourcePlan({
+      pageHref: typeof window === 'undefined' ? undefined : window.location.href,
+      streaming: getOptions()?.pdf?.streaming,
+      url
+    })
+    const nextFilename = remoteSource.filename
     filename.value = nextFilename
     markLoadStarted(version)
     notifyLifecycle(buildLifecycleContext({
@@ -231,7 +223,7 @@ export const useViewerSourceLoading = ({
     }))
     startLoading(FILE_VIEWER_PREVIEW_MESSAGES.downloading)
 
-    if (canStreamRemotePdf(url, nextFilename)) {
+    if (remoteSource.streamPdf) {
       await previewRemotePdfStream(url, version, nextFilename)
       return
     }

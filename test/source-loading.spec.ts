@@ -3,6 +3,7 @@ import {
   createFileViewerRequestController,
   isFileViewerAbortError,
   normalizePdfStreamingMode,
+  resolveFileViewerRemoteSourcePlan,
   resolveFileViewerSourceFilename,
   shouldStreamPdfUrl
 } from '../packages/core/src'
@@ -61,6 +62,28 @@ describe('remote source loading helpers', () => {
       pageHref,
       url: '/example/pdf.pdf'
     })).toBe(true)
+  })
+
+  it('builds a framework-neutral remote source loading plan', () => {
+    expect(resolveFileViewerRemoteSourcePlan({
+      pageHref,
+      url: '/example/%E6%8A%A5%E5%91%8A.pdf?token=1'
+    })).toEqual({
+      url: '/example/%E6%8A%A5%E5%91%8A.pdf?token=1',
+      filename: '报告.pdf',
+      extension: 'pdf',
+      streamPdf: true
+    })
+
+    expect(resolveFileViewerRemoteSourcePlan({
+      pageHref,
+      streaming: true,
+      url: 'https://cdn.example.com/files/demo.DOCX?download=1'
+    })).toMatchObject({
+      filename: 'demo.DOCX',
+      extension: 'docx',
+      streamPdf: false
+    })
   })
 
   it('keeps cross-origin PDF URLs on the compatible blob-download path by default', () => {

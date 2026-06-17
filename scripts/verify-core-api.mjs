@@ -14,6 +14,7 @@ const requiredValueExports = [
   'createFileViewerRendererDispatcher',
   'createFileRenderHandlerRegistry',
   'normalizeSource',
+  'resolveFileViewerRemoteSourcePlan',
   'resolveFileViewerSourceFilename',
   'readFileViewerBuffer',
   'readFileViewerDataUrl',

@@ -443,6 +443,25 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
+  const vueSourceLoadingHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerSourceLoading.ts')
+  const vueSourceLoadingHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerSourceLoading.ts`
+  assertImportsFrom(vueSourceLoadingHookSource, '@file-viewer/core', vueSourceLoadingHookLabel)
+  assertTokens(vueSourceLoadingHookSource, [
+    'resolveFileViewerRemoteSourcePlan',
+    'resolveFileViewerSourceFilename'
+  ], vueSourceLoadingHookLabel)
+  for (const forbiddenToken of [
+    'const canStreamRemotePdf',
+    'shouldStreamPdfUrl',
+    'getExtension(nextFilename)',
+    'normalizeFilename(url)'
+  ]) {
+    assert(
+      !vueSourceLoadingHookSource.includes(forbiddenToken),
+      `${vueSourceLoadingHookLabel} must delegate remote source planning to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueDocumentSearchHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useDocumentSearch.ts')
   const vueDocumentSearchHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useDocumentSearch.ts`
   assertImportsFrom(vueDocumentSearchHookSource, '@file-viewer/core', vueDocumentSearchHookLabel)

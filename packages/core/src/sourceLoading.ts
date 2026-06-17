@@ -1,4 +1,5 @@
 import type { FileViewerPdfOptions } from './types';
+import { getExtension, normalizeFilename } from './source';
 
 export const DEFAULT_PDF_RANGE_CHUNK_SIZE = 64 * 1024;
 
@@ -109,4 +110,42 @@ export const shouldStreamPdfUrl = ({
   }
 
   return isSameOriginUrl(url, pageHref);
+};
+
+export interface FileViewerRemoteSourcePlan {
+  readonly url: string;
+  readonly filename: string;
+  readonly extension: string;
+  readonly streamPdf: boolean;
+}
+
+export const resolveFileViewerRemoteSourcePlan = ({
+  filename,
+  fallbackFilename = 'preview.bin',
+  pageHref,
+  streaming,
+  url,
+}: {
+  filename?: string;
+  fallbackFilename?: string;
+  pageHref?: string;
+  streaming?: FileViewerPdfOptions['streaming'];
+  url: string;
+}): FileViewerRemoteSourcePlan => {
+  const nextFilename = normalizeFilename(filename || url, fallbackFilename);
+  const extension = getExtension(nextFilename);
+
+  return {
+    url,
+    filename: nextFilename,
+    extension,
+    streamPdf: pageHref
+      ? shouldStreamPdfUrl({
+        extension,
+        pageHref,
+        streaming,
+        url,
+      })
+      : false,
+  };
 };

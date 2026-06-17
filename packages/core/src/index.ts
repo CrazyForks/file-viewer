@@ -213,9 +213,10 @@ export {
   isFileViewerAbortError,
   isSameOriginUrl,
   normalizePdfStreamingMode,
+  resolveFileViewerRemoteSourcePlan,
   shouldStreamPdfUrl,
 } from './sourceLoading';
-export type { FileViewerRequestController } from './sourceLoading';
+export type { FileViewerRemoteSourcePlan, FileViewerRequestController } from './sourceLoading';
 export { createViewer } from './viewer';
 export {
   WorkerRefImpl,
