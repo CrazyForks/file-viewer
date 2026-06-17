@@ -15,7 +15,9 @@ import {
   executeFileViewerPrintOperation,
   isFileViewerFrameEvent,
   normalizeFileViewerToolbar,
+  postFileViewerLifecycleEvent,
   postFileViewerLocationChange,
+  postFileViewerOperationContextEvent,
   postFileViewerOperationAvailabilityChange,
   postFileViewerMessageToParent,
   postFileViewerSearchChange,
@@ -145,6 +147,67 @@ describe('@file-viewer/core operation helpers', () => {
     const topWindow = {} as Window & { parent: Window };
     topWindow.parent = topWindow;
     expect(postFileViewerMessageToParent(payload, '*', topWindow)).toBe(false);
+  });
+
+  it('posts lifecycle and operation context events through named core helpers', () => {
+    const parent = {
+      postMessage: vi.fn(),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const lifecycleContext = buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'file',
+      file: new File(['demo'], 'demo.pdf'),
+      version: 2,
+      timestamp: 200,
+    });
+    const operationContext = buildFileViewerOperationContext('download', lifecycleContext, 220);
+
+    expect(postFileViewerLifecycleEvent(lifecycleContext, 'https://host.example', child)).toBe(true);
+    expect(postFileViewerOperationContextEvent(
+      'operation-before',
+      operationContext,
+      'https://host.example',
+      child
+    )).toBe(true);
+
+    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
+      type: 'flyfish-viewer:lifecycle',
+      event: 'load-complete',
+      payload: {
+        phase: 'load-complete',
+        type: 'pdf',
+        filename: 'demo.pdf',
+        source: 'file',
+        url: undefined,
+        size: 4,
+        version: 2,
+        timestamp: 200,
+        duration: undefined,
+        reason: undefined,
+        hasFile: true,
+      },
+    }, 'https://host.example');
+    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
+      type: 'flyfish-viewer:operation',
+      event: 'operation-before',
+      payload: {
+        type: 'pdf',
+        filename: 'demo.pdf',
+        source: 'file',
+        url: undefined,
+        size: 4,
+        version: 2,
+        timestamp: 220,
+        duration: undefined,
+        reason: undefined,
+        operation: 'download',
+        label: '下载原始文件',
+        hasFile: true,
+      },
+    }, 'https://host.example');
   });
 
   it('posts operation, search and location changes through named core helpers', () => {

@@ -356,6 +356,35 @@ export const postFileViewerMessageToParent = <Payload>(
   return true;
 };
 
+export const postFileViewerLifecycleEvent = <
+  Context extends FileViewerLifecycleContext,
+>(
+  context: Context,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined
+) => {
+  return postFileViewerMessageToParent(
+    createFileViewerPostMessagePayload('flyfish-viewer:lifecycle', context.phase, context),
+    targetOrigin,
+    targetWindow
+  );
+};
+
+export const postFileViewerOperationContextEvent = <
+  Context extends FileViewerOperationContext,
+>(
+  event: 'operation-before' | 'operation-cancel',
+  context: Context,
+  targetOrigin = '*',
+  targetWindow = typeof window !== 'undefined' ? window : undefined
+) => {
+  return postFileViewerMessageToParent(
+    createFileViewerPostMessagePayload('flyfish-viewer:operation', event, context),
+    targetOrigin,
+    targetWindow
+  );
+};
+
 export const postFileViewerOperationAvailabilityChange = (
   availability: FileViewerOperationAvailability,
   targetOrigin = '*',

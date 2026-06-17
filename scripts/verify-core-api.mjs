@@ -41,6 +41,8 @@ const requiredValueExports = [
   'cloneFileViewerOperationAvailability',
   'resolveVisibleFileViewerToolbar',
   'createFileViewerLifecycleStateController',
+  'postFileViewerLifecycleEvent',
+  'postFileViewerOperationContextEvent',
   'postFileViewerOperationAvailabilityChange',
   'postFileViewerZoomChange',
   'runFileViewerBeforeOperation',

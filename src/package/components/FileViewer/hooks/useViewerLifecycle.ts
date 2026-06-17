@@ -2,8 +2,8 @@ import {
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContext,
   createFileViewerLifecycleStateController,
-  createFileViewerPostMessagePayload,
-  postFileViewerMessageToParent,
+  postFileViewerLifecycleEvent,
+  postFileViewerOperationContextEvent,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook
 } from '@file-viewer/core'
@@ -88,9 +88,7 @@ export const useViewerLifecycle = ({
   const notifyLifecycle = (context: FileViewerLifecycleContext) => {
     emitLifecycle(context.phase, context)
     void runFileViewerLifecycleHook(context, getOptions()?.hooks, handleLifecycleError)
-    postFileViewerMessageToParent(
-      createFileViewerPostMessagePayload('flyfish-viewer:lifecycle', context.phase, context)
-    )
+    postFileViewerLifecycleEvent(context)
   }
 
   const notifyActiveUnloadStart = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
@@ -136,15 +134,11 @@ export const useViewerLifecycle = ({
       options: getOptions(),
       onBefore: nextContext => {
         emitOperationBefore(nextContext)
-        postFileViewerMessageToParent(
-          createFileViewerPostMessagePayload('flyfish-viewer:operation', 'operation-before', nextContext)
-        )
+        postFileViewerOperationContextEvent('operation-before', nextContext)
       },
       onCancel: nextContext => {
         emitOperationCancel(nextContext)
-        postFileViewerMessageToParent(
-          createFileViewerPostMessagePayload('flyfish-viewer:operation', 'operation-cancel', nextContext)
-        )
+        postFileViewerOperationContextEvent('operation-cancel', nextContext)
       },
       onError: handleOperationError
     })

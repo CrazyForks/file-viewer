@@ -612,15 +612,23 @@ async function verifyVue3ScopedCompatibility() {
   assertTokens(vueLifecycleHookSource, [
     'createFileViewerLifecycleStateController',
     'lifecycleState.getLoadStartedAt',
-    'lifecycleState.buildActiveUnloadContext'
+    'lifecycleState.buildActiveUnloadContext',
+    'postFileViewerLifecycleEvent',
+    'postFileViewerOperationContextEvent',
+    'runFileViewerBeforeOperation',
+    'runFileViewerLifecycleHook'
   ], vueLifecycleHookLabel)
   for (const forbiddenToken of [
     'new Map<number, number>()',
-    'let activeDocumentContext'
+    'let activeDocumentContext',
+    'createFileViewerPostMessagePayload',
+    'postFileViewerMessageToParent(',
+    "'flyfish-viewer:lifecycle'",
+    "'flyfish-viewer:operation'"
   ]) {
     assert(
       !vueLifecycleHookSource.includes(forbiddenToken),
-      `${vueLifecycleHookLabel} must keep lifecycle state in @file-viewer/core instead of ${forbiddenToken}`
+      `${vueLifecycleHookLabel} must keep lifecycle state and postMessage payloads in @file-viewer/core instead of ${forbiddenToken}`
     )
   }
 
