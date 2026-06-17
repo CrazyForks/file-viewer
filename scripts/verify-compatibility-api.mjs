@@ -319,6 +319,21 @@ async function verifyVue3ScopedCompatibility() {
       `${entry.packageName} package entry must not re-export unexpected public type ${typeName}`
     )
   }
+
+  const utilityFacadeSource = await readSource(entry, 'src/package/common/util.ts')
+  assertImportsFrom(utilityFacadeSource, '@file-viewer/core', `${entry.packageName} utility facade`)
+  assertTokens(utilityFacadeSource, [
+    'FileViewerReadResult',
+    'readFileViewerBuffer as readBuffer',
+    'readFileViewerDataUrl as readDataURL',
+    'readFileViewerText as readText'
+  ], `${entry.packageName} utility facade`)
+  for (const forbiddenToken of ['new FileReader', 'readAsArrayBuffer', 'readAsDataURL', 'readAsText']) {
+    assert(
+      !utilityFacadeSource.includes(forbiddenToken),
+      `${entry.packageName} utility facade must not keep local browser read implementation ${forbiddenToken}`
+    )
+  }
 }
 
 async function verifyVue3UnscopedCompatibility() {

@@ -112,6 +112,7 @@
   - [x] Vue3 来源加载门面拆到组件 hooks，复用 core source loading / source / state helper，继续削薄主入口。
   - [x] 文件名归一化、扩展名识别和 source 归一化迁入 `@file-viewer/core`。
   - [x] `File | Blob | ArrayBuffer` 输入包装和 ArrayBuffer 读取迁入 `@file-viewer/core`。
+  - [x] DataURL / Text 浏览器读取工具迁入 `@file-viewer/core`，Vue3 兼容路径 `src/package/common/util.ts` 仅保留 re-export。
   - [x] 打印能力矩阵和 `resolvePrintAvailability` 迁入 `@file-viewer/core`。
   - [x] 生命周期上下文构建、生命周期 hook 分发、iframe 安全序列化迁入 `@file-viewer/core`。
   - [x] 操作上下文、beforeOperation / toolbar pre-hook 顺序、取消协议迁入 `@file-viewer/core`。

@@ -178,8 +178,11 @@ export {
   normalizeFilename,
   normalizeSource,
   readFileViewerBuffer,
+  readFileViewerDataUrl,
+  readFileViewerText,
   wrapFileViewerFileRef,
 } from './source';
+export type { FileViewerReadResult } from './source';
 export {
   DEFAULT_FILE_VIEWER_STATE_THEME,
   DEFAULT_FILE_VIEWER_UNSUPPORTED_DESCRIPTION,

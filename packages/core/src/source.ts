@@ -5,6 +5,8 @@ import type {
   NormalizedFileViewerSource,
 } from './types';
 
+export type FileViewerReadResult = string | ArrayBuffer | undefined | null;
+
 export const normalizeFileExtension = (extension: string) => {
   return extension.trim().replace(/^\./, '').toLowerCase();
 };
@@ -114,5 +116,57 @@ export const readFileViewerBuffer = async (file: Blob): Promise<ArrayBuffer> => 
     };
     reader.onerror = error => reject(error);
     reader.readAsArrayBuffer(file);
+  });
+};
+
+const toFileViewerBlob = (source: Blob | ArrayBuffer) => {
+  if (typeof Blob !== 'undefined' && source instanceof Blob) {
+    return source;
+  }
+  if (typeof Blob === 'undefined') {
+    throw new Error('Blob is not available in the current runtime.');
+  }
+  return new Blob([source]);
+};
+
+export const readFileViewerDataUrl = async (source: Blob | ArrayBuffer): Promise<string> => {
+  const blob = toFileViewerBlob(source);
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => {
+      const result = event.target?.result;
+      if (typeof result === 'string') {
+        resolve(result);
+        return;
+      }
+      reject(new Error('Failed to read file as data URL.'));
+    };
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(blob);
+  });
+};
+
+export const readFileViewerText = async (
+  source: Blob | ArrayBuffer,
+  encoding = 'utf-8'
+): Promise<string> => {
+  const blob = toFileViewerBlob(source);
+  if (typeof blob.text === 'function' && encoding.toLowerCase() === 'utf-8') {
+    return blob.text();
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => {
+      const result = event.target?.result;
+      if (typeof result === 'string') {
+        resolve(result);
+        return;
+      }
+      reject(new Error('Failed to read file as text.'));
+    };
+    reader.onerror = error => reject(error);
+    reader.readAsText(blob, encoding);
   });
 };

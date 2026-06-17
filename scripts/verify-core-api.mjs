@@ -14,6 +14,9 @@ const requiredValueExports = [
   'createFileViewerRendererDispatcher',
   'createFileRenderHandlerRegistry',
   'normalizeSource',
+  'readFileViewerBuffer',
+  'readFileViewerDataUrl',
+  'readFileViewerText',
   'sanitizeFileViewerOptions',
   'serializeFileViewerOptions',
   'parseFileViewerOptions',
@@ -39,6 +42,7 @@ const requiredValueExports = [
 
 const requiredTypeExports = [
   'FileViewerOptions',
+  'FileViewerReadResult',
   'FileViewerSource',
   'FileViewerInstance',
   'FileViewerLifecycleContext',
