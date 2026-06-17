@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "organization": "flyfish-dev",
+  "sourceBranch": "v3",
+  "corePackage": {
+    "packageName": "@file-viewer/core",
+    "visibility": "private-source",
+    "sourceRepository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
+    "note": "Core source remains in the private Gitea repository. Public wrapper repositories depend on the published package and generated artifacts only."
+  },
+  "wrappers": [
+    {
+      "id": "vue3",
+      "framework": "Vue 3",
+      "packageName": "@file-viewer/vue3",
+      "packageDir": "packages/vue3-standard",
+      "repository": "file-viewer-vue3",
+      "github": "https://github.com/flyfish-dev/file-viewer-vue3",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue3",
+      "historicalPackages": ["@flyfish-group/file-viewer3", "file-viewer3"]
+    },
+    {
+      "id": "vue2.7",
+      "framework": "Vue 2.7",
+      "packageName": "@file-viewer/vue2.7",
+      "packageDir": "packages/vue27-standard",
+      "repository": "file-viewer-vue2.7",
+      "github": "https://github.com/flyfish-dev/file-viewer-vue2.7",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue2.7",
+      "historicalPackages": ["@flyfish-group/file-viewer"]
+    },
+    {
+      "id": "vue2.6",
+      "framework": "Vue 2.6",
+      "packageName": "@file-viewer/vue2.6",
+      "packageDir": "packages/vue26-standard",
+      "repository": "file-viewer-vue2.6",
+      "github": "https://github.com/flyfish-dev/file-viewer-vue2.6",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue2.6",
+      "historicalPackages": []
+    },
+    {
+      "id": "react",
+      "framework": "React 18/19",
+      "packageName": "@file-viewer/react",
+      "packageDir": "packages/react-standard",
+      "repository": "file-viewer-react",
+      "github": "https://github.com/flyfish-dev/file-viewer-react",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-react",
+      "historicalPackages": ["@flyfish-group/file-viewer-react"]
+    },
+    {
+      "id": "react-legacy",
+      "framework": "React 16.8/17",
+      "packageName": "@file-viewer/react-legacy",
+      "packageDir": "packages/react-legacy-standard",
+      "repository": "file-viewer-react-legacy",
+      "github": "https://github.com/flyfish-dev/file-viewer-react-legacy",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-react-legacy",
+      "historicalPackages": []
+    },
+    {
+      "id": "web",
+      "framework": "Pure Web",
+      "packageName": "@file-viewer/web",
+      "packageDir": "packages/web-standard",
+      "repository": "file-viewer-web",
+      "github": "https://github.com/flyfish-dev/file-viewer-web",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-web",
+      "historicalPackages": ["@flyfish-group/file-viewer-web"]
+    },
+    {
+      "id": "jquery",
+      "framework": "jQuery",
+      "packageName": "@file-viewer/jquery",
+      "packageDir": "packages/jquery-standard",
+      "repository": "file-viewer-jquery",
+      "github": "https://github.com/flyfish-dev/file-viewer-jquery",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-jquery",
+      "historicalPackages": []
+    },
+    {
+      "id": "svelte",
+      "framework": "Svelte",
+      "packageName": "@file-viewer/svelte",
+      "packageDir": "packages/svelte-standard",
+      "repository": "file-viewer-svelte",
+      "github": "https://github.com/flyfish-dev/file-viewer-svelte",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-svelte",
+      "historicalPackages": []
+    }
+  ]
+}

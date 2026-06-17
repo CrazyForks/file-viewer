@@ -207,6 +207,8 @@
 
 ## Phase 5: 公开仓库与 README
 
+- [x] 建立 `ecosystem/wrappers.json` 作为 wrapper npm 包、GitHub/Gitee 仓库和历史兼容包名的单一维护来源。
+- [x] 提供 `scripts/sync-wrapper-repos.mjs`，可把 monorepo 中的 wrapper 包导出为独立公开仓库目录，并自动去除 `workspace:` 依赖。
 - [ ] 为每个 wrapper 创建 GitHub 公开仓库。
 - [ ] 为每个 wrapper 创建 Gitee 镜像仓库。
 - [ ] 每个 wrapper 仓库包含:
