@@ -40,7 +40,7 @@
 | Vue 2.7 wrapper | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.7` | `gitee.com/flyfish-dev/file-viewer-vue2.7` | [ ] 待建 |
 | Vue 2.6 wrapper | `@file-viewer/vue2.6` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-vue2.6` | `gitee.com/flyfish-dev/file-viewer-vue2.6` | [ ] 待建 |
 | React wrapper | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react` | `gitee.com/flyfish-dev/file-viewer-react` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
-| React legacy wrapper | `@file-viewer/react-legacy` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react-legacy` | `gitee.com/flyfish-dev/file-viewer-react-legacy` | [ ] 待建 |
+| React legacy wrapper | `@file-viewer/react-legacy` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-react-legacy` | `gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Pure JS wrapper | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-web` | `gitee.com/flyfish-dev/file-viewer-web` | [~] monorepo 标准别名包已建，独立公开仓库待拆 |
 | jQuery wrapper | `@file-viewer/jquery` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-jquery` | `gitee.com/flyfish-dev/file-viewer-jquery` | [~] monorepo wrapper 包已建，独立公开仓库待拆 |
 | Svelte wrapper | `@file-viewer/svelte` | 无 | 公开 wrapper 仓库 | `github.com/flyfish-dev/file-viewer-svelte` | `gitee.com/flyfish-dev/file-viewer-svelte` | [ ] 待建 |
@@ -191,8 +191,8 @@
   - [ ] 支持 `ref` API、受控 props、事件回调。
   - [x] `@file-viewer/react` 标准包名作为兼容别名接入当前 React wrapper，demo 已切换到标准包导入。
 - [ ] React legacy wrapper:
-  - [ ] 面向 React 16/17。
-  - [ ] 避免新 JSX transform / concurrent-only 依赖。
+  - [x] 面向 React 16.8/17。
+  - [x] 避免新 JSX transform / concurrent-only 依赖，使用 `React.createElement` + `@file-viewer/web` controller 作为薄封装。
 - [ ] Pure JS wrapper:
   - [ ] 支持 `mountViewer(container, options)`。
   - [ ] 支持 script tag / ESM / UMD 或 IIFE 分发。
