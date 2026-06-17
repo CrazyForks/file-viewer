@@ -157,6 +157,7 @@ export {
   postFileViewerMessageToParent,
   postFileViewerSearchChange,
   postFileViewerZoomChange,
+  resolveFileViewerLifecycleFallbackSource,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarPosition,
   resolveVisibleFileViewerToolbar,

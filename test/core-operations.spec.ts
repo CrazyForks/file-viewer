@@ -23,6 +23,7 @@ import {
   postFileViewerMessageToParent,
   postFileViewerSearchChange,
   postFileViewerZoomChange,
+  resolveFileViewerLifecycleFallbackSource,
   resolveFileViewerOperationFilename,
   resolveFileViewerOriginalFilename,
   resolveFileViewerOperationAvailability,
@@ -101,6 +102,17 @@ describe('@file-viewer/core operation helpers', () => {
     expect(controller.getLoadStartedAt(3)).toBeUndefined();
     expect(controller.getActiveDocumentContext()).toBeNull();
     expect(controller.buildActiveUnloadContext('unload-start', null)).toBeNull();
+  });
+
+  it('resolves lifecycle fallback sources without wrapper-specific branching', () => {
+    expect(resolveFileViewerLifecycleFallbackSource({
+      file: new File(['demo'], 'demo.txt'),
+      url: '/ignored.txt',
+    })).toEqual({ source: 'file' });
+    expect(resolveFileViewerLifecycleFallbackSource({
+      url: '/example/demo.pdf',
+    })).toEqual({ source: 'url', sourceUrl: '/example/demo.pdf' });
+    expect(resolveFileViewerLifecycleFallbackSource()).toEqual({ source: 'empty' });
   });
 
   it('serializes postMessage contexts without leaking File objects', () => {

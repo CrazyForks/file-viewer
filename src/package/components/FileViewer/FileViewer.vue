@@ -108,8 +108,8 @@ const {
   getBufferSize: () => currentBuffer.value?.byteLength,
   getCurrentFile: () => currentFile.value,
   getCurrentVersion,
-  getFallbackSource: () => props.file ? 'file' : (props.url ? 'url' : 'empty'),
-  getFallbackSourceUrl: () => props.url,
+  getFallbackFile: () => props.file,
+  getFallbackUrl: () => props.url,
   emitLifecycle: (event, context) => {
     if (event === 'load-start') {
       emit('load-start', context)

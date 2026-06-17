@@ -48,6 +48,7 @@ const requiredValueExports = [
   'postFileViewerZoomChange',
   'runFileViewerBeforeOperation',
   'runFileViewerLifecycleHook',
+  'resolveFileViewerLifecycleFallbackSource',
   'executeFileViewerDownloadOperation',
   'executeFileViewerExportHtmlOperation',
   'executeFileViewerPrintOperation',

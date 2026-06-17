@@ -367,11 +367,13 @@ async function verifyVue3ScopedCompatibility() {
   ], vueFileViewerLabel)
   for (const forbiddenToken of [
     'watch([() => props.file',
-    'onBeforeUnmount(()'
+    'onBeforeUnmount(()',
+    "props.file ? 'file'",
+    "props.url ? 'url'"
   ]) {
     assert(
       !vueFileViewerSource.includes(forbiddenToken),
-      `${vueFileViewerLabel} must delegate preview source watch and unmount cleanup to useViewerPreviewLifecycle instead of using ${forbiddenToken}`
+      `${vueFileViewerLabel} must delegate preview source watch, unmount cleanup and lifecycle source fallback rules to hooks/core instead of using ${forbiddenToken}`
     )
   }
   assert(
@@ -619,6 +621,7 @@ async function verifyVue3ScopedCompatibility() {
     'lifecycleState.buildActiveUnloadContext',
     'postFileViewerLifecycleEvent',
     'postFileViewerOperationContextEvent',
+    'resolveFileViewerLifecycleFallbackSource',
     'runFileViewerBeforeOperation',
     'runFileViewerLifecycleHook'
   ], vueLifecycleHookLabel)
@@ -628,11 +631,13 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerPostMessagePayload',
     'postFileViewerMessageToParent(',
     "'flyfish-viewer:lifecycle'",
-    "'flyfish-viewer:operation'"
+    "'flyfish-viewer:operation'",
+    "props.file ? 'file'",
+    "props.url ? 'url'"
   ]) {
     assert(
       !vueLifecycleHookSource.includes(forbiddenToken),
-      `${vueLifecycleHookLabel} must keep lifecycle state and postMessage payloads in @file-viewer/core instead of ${forbiddenToken}`
+      `${vueLifecycleHookLabel} must keep lifecycle state, source fallback and postMessage payloads in @file-viewer/core instead of ${forbiddenToken}`
     )
   }
 

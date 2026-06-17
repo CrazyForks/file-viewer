@@ -30,8 +30,8 @@ describe('Vue FileViewer lifecycle hook', () => {
       getBufferSize: () => 4096,
       getCurrentFile: () => null,
       getCurrentVersion: () => 3,
-      getFallbackSource: () => 'url',
-      getFallbackSourceUrl: () => '/example/demo.pdf',
+      getFallbackFile: () => undefined,
+      getFallbackUrl: () => '/example/demo.pdf',
       emitLifecycle: (event, context) => {
         lifecycleEvents.push({ event, context })
       },

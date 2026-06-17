@@ -8,6 +8,7 @@ import type {
   FileRenderExportAdapter,
   FileViewerDocumentAnchor,
   FileViewerBeforeOperation,
+  FileViewerFileRef,
   FileViewerLifecycleContext,
   FileViewerLifecycleHooks,
   FileViewerLifecyclePhase,
@@ -53,6 +54,16 @@ export interface BuildFileViewerLifecycleContextInput<
   duration?: number;
   timestamp?: number;
   reason?: FileViewerLifecycleContext['reason'];
+}
+
+export interface ResolveFileViewerLifecycleFallbackSourceInput {
+  file?: FileViewerFileRef | null;
+  url?: string | null;
+}
+
+export interface ResolvedFileViewerLifecycleFallbackSource {
+  source: FileViewerLifecycleContext['source'];
+  sourceUrl?: string;
 }
 
 export type BuiltFileViewerLifecycleContext<
@@ -167,6 +178,21 @@ export const buildFileViewerLifecycleContext = <
     duration: duration ?? (phase === 'load-complete' && startedAt ? now - startedAt : undefined),
     reason,
   };
+};
+
+export const resolveFileViewerLifecycleFallbackSource = ({
+  file,
+  url,
+}: ResolveFileViewerLifecycleFallbackSourceInput = {}): ResolvedFileViewerLifecycleFallbackSource => {
+  if (file) {
+    return { source: 'file' };
+  }
+
+  if (url) {
+    return { source: 'url', sourceUrl: url };
+  }
+
+  return { source: 'empty' };
 };
 
 export const createFileViewerLifecycleStateController = (): FileViewerLifecycleStateController => {
