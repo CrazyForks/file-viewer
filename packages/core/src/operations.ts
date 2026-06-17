@@ -540,6 +540,24 @@ export const resolveVisibleFileViewerToolbar = (
   };
 };
 
+export const hasVisibleFileViewerToolbarActions = (toolbar: FileViewerToolbarOptions) => {
+  return toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom;
+};
+
+export const isFileViewerZoomButtonDisabled = ({
+  toolbarDisabled = false,
+  availability,
+  zoomState,
+  action,
+}: {
+  toolbarDisabled?: boolean;
+  availability: FileViewerOperationAvailability;
+  zoomState: FileViewerZoomState;
+  action: keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>;
+}) => {
+  return toolbarDisabled || !availability.zoom || !zoomState[action];
+};
+
 export const resolveFileViewerToolbarPosition = (
   options: Pick<FileViewerOptions, 'toolbar'> | undefined,
   extension: string

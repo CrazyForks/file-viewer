@@ -14,7 +14,9 @@ import {
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
+  hasVisibleFileViewerToolbarActions,
   isFileViewerFrameEvent,
+  isFileViewerZoomButtonDisabled,
   normalizeFileViewerToolbar,
   postFileViewerLifecycleEvent,
   postFileViewerLocationChange,
@@ -438,6 +440,52 @@ describe('@file-viewer/core operation helpers', () => {
       exportHtml: true,
       zoom: true,
     });
+    expect(hasVisibleFileViewerToolbarActions({
+      download: false,
+      print: false,
+      exportHtml: false,
+      zoom: false,
+    })).toBe(false);
+    expect(hasVisibleFileViewerToolbarActions({
+      download: false,
+      print: false,
+      exportHtml: true,
+      zoom: false,
+    })).toBe(true);
+    expect(isFileViewerZoomButtonDisabled({
+      action: 'canZoomIn',
+      availability,
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: false,
+        canReset: false,
+      },
+    })).toBe(false);
+    expect(isFileViewerZoomButtonDisabled({
+      action: 'canZoomOut',
+      availability,
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: false,
+        canReset: false,
+      },
+    })).toBe(true);
+    expect(isFileViewerZoomButtonDisabled({
+      action: 'canZoomIn',
+      availability,
+      toolbarDisabled: true,
+      zoomState: {
+        scale: 1,
+        label: '100%',
+        canZoomIn: true,
+        canZoomOut: false,
+        canReset: false,
+      },
+    })).toBe(true);
     expect(resolveFileViewerOperationAvailability({
       extension: 'docx',
       source: {

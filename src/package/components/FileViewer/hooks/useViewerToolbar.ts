@@ -1,6 +1,8 @@
 import { computed, watch, type ComputedRef, type Ref, type ShallowRef } from 'vue'
 import {
   createFileViewerOriginalSourceState,
+  hasVisibleFileViewerToolbarActions,
+  isFileViewerZoomButtonDisabled,
   postFileViewerOperationAvailabilityChange,
   postFileViewerZoomChange,
   resolveFileViewerOperationAvailability,
@@ -75,8 +77,7 @@ export const useViewerToolbar = ({
   })
 
   const showToolbar = computed(() => {
-    const toolbar = visibleToolbar.value
-    return toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom
+    return hasVisibleFileViewerToolbarActions(visibleToolbar.value)
   })
 
   const toolbarPosition = computed<FileViewerToolbarPosition>(() => {
@@ -88,7 +89,12 @@ export const useViewerToolbar = ({
   const zoomButtonDisabled = (
     action: keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>
   ) => {
-    return toolbarDisabled.value || !operationAvailability.value.zoom || !zoomState[action]
+    return isFileViewerZoomButtonDisabled({
+      action,
+      availability: operationAvailability.value,
+      toolbarDisabled: toolbarDisabled.value,
+      zoomState
+    })
   }
 
   watch(operationAvailability, availability => {
