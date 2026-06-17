@@ -15,8 +15,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(demoRoot, 'index.html'),
+        jquery: resolve(demoRoot, 'jquery.html'),
         'manual-js': resolve(demoRoot, 'manual-js.html'),
-        'manual-iife': resolve(demoRoot, 'manual-iife.html')
+        'manual-iife': resolve(demoRoot, 'manual-iife.html'),
+        'svelte-action': resolve(demoRoot, 'svelte-action.html')
       }
     }
   }

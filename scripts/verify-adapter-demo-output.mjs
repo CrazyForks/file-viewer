@@ -4,8 +4,10 @@ import { join, resolve } from 'node:path'
 const outputDir = resolve(process.env.ADAPTER_DEMO_OUTPUT_DIR || 'packages/demo/dist')
 const requiredFiles = [
   'index.html',
+  'jquery.html',
   'manual-js.html',
   'manual-iife.html',
+  'svelte-action.html',
   'example/preview.md',
   'example/word.docx',
   'file-viewer/index.html',

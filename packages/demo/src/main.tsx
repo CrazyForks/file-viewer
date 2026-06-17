@@ -47,6 +47,12 @@ function App() {
           <a href="/manual-iife.html" target="_blank" rel="noreferrer">
             Script tag
           </a>
+          <a href="/jquery.html" target="_blank" rel="noreferrer">
+            jQuery
+          </a>
+          <a href="/svelte-action.html" target="_blank" rel="noreferrer">
+            Svelte
+          </a>
         </nav>
       </header>
 

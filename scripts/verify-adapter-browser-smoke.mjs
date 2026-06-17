@@ -152,6 +152,24 @@ const verifyAdapterIndexDemo = async (page, baseUrl, failures) => {
   failures.length = 0
 }
 
+const verifySingleAdapterDemo = async (page, baseUrl, config, failures) => {
+  await page.goto(`${baseUrl}/${config.path}`, {
+    waitUntil: 'domcontentloaded',
+    timeout
+  })
+  await page.waitForFunction(
+    adapter => document.body.getAttribute('data-adapter') === adapter,
+    config.adapter,
+    { timeout }
+  )
+  await assertViewerFrameSrc(page, config.frameSelector, {
+    viewerPath: '/vendor/file-viewer/index.html',
+    fileUrl: '/example/preview.md'
+  })
+  assertNoBrowserFailures(failures, `${config.label} demo emitted browser errors.`)
+  failures.length = 0
+}
+
 const verifyIifeDemo = async (page, baseUrl, failures) => {
   await page.goto(`${baseUrl}/manual-iife.html`, {
     waitUntil: 'domcontentloaded',
@@ -212,13 +230,25 @@ const run = async () => {
 
   try {
     await verifyAdapterIndexDemo(page, serverHandle.url, failures)
+    await verifySingleAdapterDemo(page, serverHandle.url, {
+      adapter: 'jquery',
+      frameSelector: '[data-testid="jquery-viewer-host"] iframe',
+      label: 'jQuery adapter',
+      path: 'jquery.html'
+    }, failures)
+    await verifySingleAdapterDemo(page, serverHandle.url, {
+      adapter: 'svelte-action',
+      frameSelector: '[data-testid="svelte-viewer-host"] iframe',
+      label: 'Svelte action adapter',
+      path: 'svelte-action.html'
+    }, failures)
     await verifyIifeDemo(page, serverHandle.url, failures)
   } finally {
     await browser.close()
     await new Promise(resolveClose => serverHandle.server?.close(resolveClose) ?? resolveClose())
   }
 
-  console.log(`[adapter-browser-smoke] Verified adapter index and script tag IIFE demos at ${serverHandle.url}`)
+  console.log(`[adapter-browser-smoke] Verified React, Web, jQuery, Svelte action, and script tag IIFE demos at ${serverHandle.url}`)
 }
 
 run().catch(error => {
