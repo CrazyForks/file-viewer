@@ -16,6 +16,7 @@ import {
   disposeFileViewerRendererSession,
   normalizeSource,
   removeFileViewerRenderTarget,
+  resetFileViewerRenderSurface,
   renderFileViewerHandler,
   refWorker,
   type FileRenderContext,
@@ -186,11 +187,17 @@ describe('@file-viewer/core worker and render contracts', () => {
   });
 
   it('applies framework-neutral render surface state and disposes the active session', () => {
+    const { document } = parseHTML('<main id="root"><section>rendered</section></main>');
+    const root = document.getElementById('root') as HTMLElement;
     const onError = vi.fn();
     const destroy = vi.fn();
     const session = { destroy };
     const adapter = { print: true };
     const state = createFileViewerRenderSurfaceState<typeof session>();
+    const readiness = {
+      renderedReady: true,
+      progressiveReady: true,
+    };
 
     expect(state.session).toBeNull();
     expect(state.exportAdapter).toBeNull();
@@ -209,6 +216,26 @@ describe('@file-viewer/core worker and render contracts', () => {
 
     applyFileViewerRenderSurfaceState(state, { exportAdapter: null });
     expect(state.exportAdapter).toBeNull();
+
+    applyFileViewerRenderSurfaceState(state, {
+      session,
+      exportAdapter: adapter,
+    });
+    expect(resetFileViewerRenderSurface({
+      surfaceState: state,
+      readinessState: readiness,
+      container: root,
+      disposeOptions: { onError },
+    })).toBe(session);
+    expect(destroy).toHaveBeenCalledTimes(2);
+    expect(onError).not.toHaveBeenCalled();
+    expect(state.session).toBeNull();
+    expect(state.exportAdapter).toBeNull();
+    expect(readiness).toEqual({
+      renderedReady: false,
+      progressiveReady: false,
+    });
+    expect(root.childElementCount).toBe(0);
   });
 
   it('safely disposes renderer sessions and reports teardown errors', async () => {

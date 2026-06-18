@@ -120,6 +120,7 @@
   - [x] 渲染完成与渐进渲染 readiness 状态应用迁入 `@file-viewer/core`，source loading / render surface hook 只做响应式映射。
   - [x] 渲染完成后的 readiness 与 load-complete lifecycle context 构建迁入 `@file-viewer/core`，Vue source loading hook 只写回状态并触发 emit。
   - [x] render surface 的 active session / export adapter 状态应用与 active session 销毁迁入 `@file-viewer/core`，Vue hook 只保留响应式字段映射。
+  - [x] render surface 的 active session 销毁、export adapter 清空、readiness reset 与 DOM surface 清理组合迁入 `@file-viewer/core`。
   - [x] 纯 TS `createViewer` 复用 core render surface state，session / export adapter 生命周期与 wrapper 共用同一套状态语义。
   - [x] FileRef source plan 和预览文件名状态应用迁入 `@file-viewer/core`，Vue hook 不再直接包装 FileRef 或硬编码默认文件名。
   - [x] 远程 source plan 的 runtime page href 解析迁入 `@file-viewer/core`，Vue hook 不再直接访问 `window.location`。

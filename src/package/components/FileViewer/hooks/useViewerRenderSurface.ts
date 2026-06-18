@@ -2,12 +2,11 @@ import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
   applyFileViewerRenderReadinessState,
   applyFileViewerRenderSurfaceState,
-  clearFileViewerRenderSurface,
   createFileViewerRenderTarget,
-  disposeActiveFileViewerRendererSession,
   disposeFileViewerRendererSession,
   getExtension,
   removeFileViewerRenderTarget,
+  resetFileViewerRenderSurface,
   waitForFileViewerNextPaint
 } from '@file-viewer/core'
 import type {
@@ -106,24 +105,21 @@ export const useViewerRenderSurface = ({
     const context = notifyActiveUnloadStart(reason)
 
     try {
-      disposeActiveFileViewerRendererSession(renderSurfaceStateTarget, {
-        onError: nextError => {
-          console.warn('预览内容卸载失败', nextError)
+      resetFileViewerRenderSurface({
+        surfaceState: renderSurfaceStateTarget,
+        readinessState: renderReadinessTarget,
+        container: output.value,
+        disposeOptions: {
+          onError: nextError => {
+            console.warn('预览内容卸载失败', nextError)
+          }
         }
       })
     } finally {
       clearActiveDocumentContext()
-      applyFileViewerRenderSurfaceState(renderSurfaceStateTarget, { exportAdapter: null })
-      applyFileViewerRenderReadinessState(renderReadinessTarget, {
-        renderedReady: false,
-        progressiveReady: false
-      })
       clearDocumentState()
       stopZoomObserver()
       clearZoomProvider()
-
-      const out = output.value
-      clearFileViewerRenderSurface(out)
     }
 
     notifyActiveUnloadComplete(context, reason)

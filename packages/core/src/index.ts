@@ -270,11 +270,13 @@ export {
   disposeFileViewerRendered,
   disposeFileViewerRendererSession,
   removeFileViewerRenderTarget,
+  resetFileViewerRenderSurface,
   renderFileViewerHandler,
 } from './rendererHandler';
 export type {
   FileViewerRenderSurfaceState,
   MutableFileViewerRenderSurfaceState,
+  ResetFileViewerRenderSurfaceInput,
 } from './rendererHandler';
 export {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,

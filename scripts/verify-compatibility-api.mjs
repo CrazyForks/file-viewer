@@ -703,11 +703,10 @@ async function verifyVue3ScopedCompatibility() {
   assertTokens(vueRenderSurfaceHookSource, [
     'applyFileViewerRenderReadinessState',
     'applyFileViewerRenderSurfaceState',
-    'clearFileViewerRenderSurface',
     'createFileViewerRenderTarget',
-    'disposeActiveFileViewerRendererSession',
     'disposeFileViewerRendererSession',
     'removeFileViewerRenderTarget',
+    'resetFileViewerRenderSurface',
     'waitForFileViewerNextPaint'
   ], vueRenderSurfaceHookLabel)
   for (const forbiddenToken of [
@@ -719,6 +718,8 @@ async function verifyVue3ScopedCompatibility() {
     'Promise<void>).catch',
     'while (out.firstChild)',
     'out.removeChild',
+    'clearFileViewerRenderSurface',
+    'disposeActiveFileViewerRendererSession',
     "document.createElement('div')",
     "child.className = 'file-render'",
     'activeRenderSession = session',

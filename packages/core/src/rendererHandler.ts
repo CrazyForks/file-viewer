@@ -3,6 +3,10 @@ import { createFileViewerRendererDispatcher } from './rendererDispatcher';
 import type { FileViewerRendererDispatcher } from './rendererDispatcher';
 import { createRendererRegistry } from './registry';
 import { normalizeFileExtension } from './source';
+import {
+  applyFileViewerRenderReadinessState,
+  type MutableFileViewerRenderReadinessState,
+} from './sourceLoading';
 import type {
   FileRenderExportAdapter,
   FileRenderContext,
@@ -57,6 +61,15 @@ export type MutableFileViewerRenderSurfaceState<
 
 export interface CreateFileViewerRenderTargetOptions {
   className?: string;
+}
+
+export interface ResetFileViewerRenderSurfaceInput<
+  Session extends RendererSession = RendererSession,
+> {
+  surfaceState: MutableFileViewerRenderSurfaceState<Session>;
+  readinessState: MutableFileViewerRenderReadinessState;
+  container?: HTMLElement | null;
+  disposeOptions?: DisposeFileViewerRendererSessionOptions;
 }
 
 export const DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS = 'file-render';
@@ -215,6 +228,24 @@ export const disposeActiveFileViewerRendererSession = <
     target.session = null;
   }
 
+  return session;
+};
+
+export const resetFileViewerRenderSurface = <
+  Session extends RendererSession,
+>({
+  surfaceState,
+  readinessState,
+  container,
+  disposeOptions,
+}: ResetFileViewerRenderSurfaceInput<Session>) => {
+  const session = disposeActiveFileViewerRendererSession(surfaceState, disposeOptions);
+  applyFileViewerRenderSurfaceState(surfaceState, { exportAdapter: null });
+  applyFileViewerRenderReadinessState(readinessState, {
+    renderedReady: false,
+    progressiveReady: false,
+  });
+  clearFileViewerRenderSurface(container);
   return session;
 };
 
