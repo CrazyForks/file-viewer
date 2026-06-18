@@ -478,6 +478,7 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerLoadingController',
     'resolveFileViewerLoadingTheme',
     'runFileViewerLoadingControllerAction',
+    'runFileViewerLoadingExtensionSync',
     'syncFileViewerLoadingControllerState'
   ], vueLoadingHookLabel)
   for (const forbiddenToken of [
@@ -485,7 +486,8 @@ async function verifyVue3ScopedCompatibility() {
     'const syncFromController',
     'const applyLoadingState',
     'target.loading = source.loading',
-    'target.styleVars = source.styleVars'
+    'target.styleVars = source.styleVars',
+    'controller.setExtension'
   ]) {
     assert(
       !vueLoadingHookSource.includes(forbiddenToken),

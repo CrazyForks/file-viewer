@@ -15,6 +15,7 @@ import {
   normalizeFileViewerErrorMessage,
   resolveFileViewerLoadingTheme,
   runFileViewerLoadingControllerAction,
+  runFileViewerLoadingExtensionSync,
   syncFileViewerLoadingControllerState
 } from '../packages/core/src'
 
@@ -143,6 +144,21 @@ describe('@file-viewer/core render state helpers', () => {
       theme: {
         badge: 'X',
         label: 'Excel 表格'
+      }
+    })
+
+    expect(runFileViewerLoadingExtensionSync({
+      target: nextTarget,
+      controller,
+      extension: 'dwg'
+    })).toBe(nextTarget)
+    expect(nextTarget).toMatchObject({
+      theme: {
+        badge: 'CAD',
+        label: 'CAD 图纸'
+      },
+      styleVars: {
+        '--viewer-accent': '#0f766e'
       }
     })
 

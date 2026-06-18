@@ -279,11 +279,13 @@ export {
   createFileViewerLoadingRuntimeState,
   createFileViewerLoadingStyleVars,
   runFileViewerLoadingControllerAction,
+  runFileViewerLoadingExtensionSync,
   resolveFileViewerLoadingTheme,
   syncFileViewerLoadingControllerState,
 } from './loading';
 export type {
   FileViewerLoadingController,
+  RunFileViewerLoadingExtensionSyncInput,
 } from './loading';
 export {
   getFileViewerOptionsSearchParam,

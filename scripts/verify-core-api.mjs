@@ -121,6 +121,7 @@ const requiredValueExports = [
   'applyFileViewerLoadingRuntimeState',
   'syncFileViewerLoadingControllerState',
   'runFileViewerLoadingControllerAction',
+  'runFileViewerLoadingExtensionSync',
   'executeFileViewerDownloadOperation',
   'executeFileViewerExportHtmlOperation',
   'executeFileViewerPrintOperation',
@@ -330,6 +331,7 @@ const requiredTypeExports = [
   'FileViewerWorkerController',
   'FileViewerLoadingRuntimeState',
   'MutableFileViewerLoadingRuntimeState',
+  'RunFileViewerLoadingExtensionSyncInput',
   'MutableFileViewerSearchState',
   'MutableFileViewerZoomState',
   'FileViewerWatermarkStyle'

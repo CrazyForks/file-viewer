@@ -2,6 +2,7 @@ import { computed, reactive, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import {
   createFileViewerLoadingController,
   runFileViewerLoadingControllerAction,
+  runFileViewerLoadingExtensionSync,
   resolveFileViewerLoadingTheme,
   syncFileViewerLoadingControllerState,
   type FileViewerLoadingRuntimeState,
@@ -25,7 +26,11 @@ export const useLoading = (extendSource: MaybeRefOrGetter<string>) => {
   watch(
     () => toValue(extendSource),
     nextExtend => {
-      runFileViewerLoadingControllerAction(state, () => controller.setExtension(nextExtend))
+      runFileViewerLoadingExtensionSync({
+        target: state,
+        controller,
+        extension: nextExtend
+      })
     }
   )
 

@@ -24,6 +24,14 @@ export interface FileViewerLoadingController {
   getState(): FileViewerLoadingRuntimeState;
 }
 
+export interface RunFileViewerLoadingExtensionSyncInput<
+  Target extends MutableFileViewerLoadingRuntimeState = MutableFileViewerLoadingRuntimeState,
+> {
+  target: Target;
+  controller: Pick<FileViewerLoadingController, 'setExtension'>;
+  extension?: string;
+}
+
 export const FALLBACK_FILE_VIEWER_LOADING_THEME: FileViewerLoadingTheme = {
   accent: '#5f6f82',
   soft: 'rgba(95, 111, 130, 0.12)',
@@ -446,6 +454,14 @@ export const runFileViewerLoadingControllerAction = <Target extends MutableFileV
   action: () => FileViewerLoadingRuntimeState
 ) => {
   return applyFileViewerLoadingRuntimeState(target, action());
+};
+
+export const runFileViewerLoadingExtensionSync = <Target extends MutableFileViewerLoadingRuntimeState>({
+  target,
+  controller,
+  extension,
+}: RunFileViewerLoadingExtensionSyncInput<Target>) => {
+  return runFileViewerLoadingControllerAction(target, () => controller.setExtension(extension));
 };
 
 /**
