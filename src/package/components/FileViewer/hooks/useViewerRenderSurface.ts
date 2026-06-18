@@ -1,13 +1,9 @@
 import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
-  applyFileViewerRenderReadinessState,
   applyFileViewerRenderSurfaceState,
-  createFileViewerRenderTarget,
   disposeFileViewerRendererSession,
-  getExtension,
-  removeFileViewerRenderTarget,
   resetFileViewerRenderSurface,
-  waitForFileViewerNextPaint
+  runFileViewerRenderSurfaceMount
 } from '@file-viewer/core'
 import type {
   FileRenderExportAdapter,
@@ -125,10 +121,6 @@ export const useViewerRenderSurface = ({
     notifyActiveUnloadComplete(context, reason)
   }
 
-  const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
-    applyFileViewerRenderSurfaceState(renderSurfaceStateTarget, { exportAdapter: adapter })
-  }
-
   const mountRenderedContent = async (
     buffer: ArrayBuffer,
     file: File,
@@ -136,52 +128,42 @@ export const useViewerRenderSurface = ({
     sourceUrl?: string,
     streamUrl?: string
   ) => {
-    if (!output.value) {
-      await nextTick()
-    }
-
-    const out = output.value
-    if (!out || !isCurrentRequest(version)) {
-      return undefined
-    }
-
-    clearRenderedContent('replace')
-
-    const child = createFileViewerRenderTarget(out)
-    startZoomObserver()
-    await nextTick()
-    await waitForFileViewerNextPaint()
-
-    if (!isCurrentRequest(version)) {
-      removeFileViewerRenderTarget(out, child)
-      return undefined
-    }
-
-    try {
-      const session = await createVueRenderSession(buffer, getExtension(file.name), child, {
-        filename: file.name,
-        url: sourceUrl,
-        streamUrl,
-        options: getOptions(),
+    return await runFileViewerRenderSurfaceMount({
+      buffer,
+      file,
+      version,
+      sourceUrl,
+      streamUrl,
+      getContainer: () => output.value,
+      surfaceState: renderSurfaceStateTarget,
+      readinessState: renderReadinessTarget,
+      isCurrent: isCurrentRequest,
+      clearRenderedContent,
+      waitForContainer: nextTick,
+      disposeSession: destroyRenderSession,
+      onStartZoomObserver: startZoomObserver,
+      onRefreshDocumentIndex: refreshDocumentIndex,
+      onRefreshZoomProvider: refreshZoomProvider,
+      render: async ({
+        buffer: nextBuffer,
+        type,
+        target,
+        filename,
+        sourceUrl: nextSourceUrl,
+        streamUrl: nextStreamUrl,
         registerExportAdapter,
-        onProgressiveRender: () => {
-          if (isCurrentRequest(version)) {
-            applyFileViewerRenderReadinessState(renderReadinessTarget, { progressiveReady: true })
-          }
-        }
-      })
-      if (!isCurrentRequest(version)) {
-        destroyRenderSession(session)
-        removeFileViewerRenderTarget(out, child)
-        return undefined
+        onProgressiveRender
+      }) => {
+        return await createVueRenderSession(nextBuffer, type, target as HTMLDivElement, {
+          filename,
+          url: nextSourceUrl,
+          streamUrl: nextStreamUrl,
+          options: getOptions(),
+          registerExportAdapter,
+          onProgressiveRender
+        })
       }
-      void refreshDocumentIndex()
-      refreshZoomProvider()
-      return session
-    } catch (nextError) {
-      removeFileViewerRenderTarget(out, child)
-      throw nextError
-    }
+    })
   }
 
   return {

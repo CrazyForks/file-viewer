@@ -746,15 +746,16 @@ async function verifyVue3ScopedCompatibility() {
   const vueRenderSurfaceHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRenderSurface.ts`
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)
   assertTokens(vueRenderSurfaceHookSource, [
-    'applyFileViewerRenderReadinessState',
     'applyFileViewerRenderSurfaceState',
-    'createFileViewerRenderTarget',
     'disposeFileViewerRendererSession',
-    'removeFileViewerRenderTarget',
     'resetFileViewerRenderSurface',
-    'waitForFileViewerNextPaint'
+    'runFileViewerRenderSurfaceMount'
   ], vueRenderSurfaceHookLabel)
   for (const forbiddenToken of [
+    'applyFileViewerRenderReadinessState',
+    'createFileViewerRenderTarget',
+    'removeFileViewerRenderTarget',
+    'waitForFileViewerNextPaint',
     'const waitForBrowserPaint',
     'requestAnimationFrame !==',
     'setTimeout(resolve',
@@ -773,7 +774,9 @@ async function verifyVue3ScopedCompatibility() {
     'activeExportAdapter.value = adapter',
     'renderedReady.value = false',
     'progressiveReady.value = false',
-    'progressiveReady.value = true'
+    'progressiveReady.value = true',
+    'refreshZoomProvider()',
+    'void refreshDocumentIndex()'
   ]) {
     assert(
       !vueRenderSurfaceHookSource.includes(forbiddenToken),

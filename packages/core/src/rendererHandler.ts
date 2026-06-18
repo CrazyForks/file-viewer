@@ -1,8 +1,9 @@
 import { DEFAULT_RENDERER_DEFINITIONS } from './formats';
+import { waitForFileViewerNextPaint } from './export';
 import { createFileViewerRendererDispatcher } from './rendererDispatcher';
 import type { FileViewerRendererDispatcher } from './rendererDispatcher';
 import { createRendererRegistry } from './registry';
-import { normalizeFileExtension } from './source';
+import { getExtension, normalizeFileExtension } from './source';
 import {
   applyFileViewerRenderReadinessState,
   type MutableFileViewerRenderReadinessState,
@@ -11,6 +12,7 @@ import type {
   FileRenderExportAdapter,
   FileRenderContext,
   FileRenderHandler,
+  FileViewerLifecycleContext,
   RendererDefinition,
   RendererLoadContext,
   RendererLoader,
@@ -70,6 +72,45 @@ export interface ResetFileViewerRenderSurfaceInput<
   readinessState: MutableFileViewerRenderReadinessState;
   container?: HTMLElement | null;
   disposeOptions?: DisposeFileViewerRendererSessionOptions;
+}
+
+export interface FileViewerRenderSurfaceMountContext<
+  Session extends RendererSession = RendererSession,
+> {
+  buffer: ArrayBuffer;
+  file: File;
+  version: number;
+  type: string;
+  target: HTMLElement;
+  filename: string;
+  sourceUrl?: string;
+  streamUrl?: string;
+  onProgressiveRender: () => void;
+  registerExportAdapter: (adapter: FileRenderExportAdapter | null) => void;
+  surfaceState: MutableFileViewerRenderSurfaceState<Session>;
+  readinessState: MutableFileViewerRenderReadinessState;
+}
+
+export interface RunFileViewerRenderSurfaceMountInput<
+  Session extends RendererSession = RendererSession,
+> {
+  buffer: ArrayBuffer;
+  file: File;
+  version: number;
+  sourceUrl?: string;
+  streamUrl?: string;
+  getContainer: () => HTMLElement | null | undefined;
+  surfaceState: MutableFileViewerRenderSurfaceState<Session>;
+  readinessState: MutableFileViewerRenderReadinessState;
+  isCurrent: (version: number) => boolean;
+  clearRenderedContent: (reason?: FileViewerLifecycleContext['reason']) => void;
+  render: (context: FileViewerRenderSurfaceMountContext<Session>) => Promise<Session | undefined>;
+  waitForContainer?: () => Promise<unknown> | unknown;
+  waitForPaint?: () => Promise<unknown> | unknown;
+  disposeSession?: (session?: Session | null) => void;
+  onStartZoomObserver?: () => void;
+  onRefreshDocumentIndex?: () => Promise<unknown> | unknown;
+  onRefreshZoomProvider?: () => void;
 }
 
 export const DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS = 'file-render';
@@ -247,6 +288,89 @@ export const resetFileViewerRenderSurface = <
   });
   clearFileViewerRenderSurface(container);
   return session;
+};
+
+export const runFileViewerRenderSurfaceMount = async <
+  Session extends RendererSession,
+>({
+  buffer,
+  file,
+  version,
+  sourceUrl,
+  streamUrl,
+  getContainer,
+  surfaceState,
+  readinessState,
+  isCurrent,
+  clearRenderedContent,
+  render,
+  waitForContainer,
+  waitForPaint = waitForFileViewerNextPaint,
+  disposeSession = disposeFileViewerRendererSession,
+  onStartZoomObserver,
+  onRefreshDocumentIndex,
+  onRefreshZoomProvider,
+}: RunFileViewerRenderSurfaceMountInput<Session>): Promise<Session | undefined> => {
+  if (!getContainer()) {
+    await waitForContainer?.();
+  }
+
+  const container = getContainer();
+  if (!container || !isCurrent(version)) {
+    return undefined;
+  }
+
+  clearRenderedContent('replace');
+
+  const target = createFileViewerRenderTarget(container);
+  onStartZoomObserver?.();
+  await waitForContainer?.();
+  await waitForPaint();
+
+  if (!isCurrent(version)) {
+    removeFileViewerRenderTarget(container, target);
+    return undefined;
+  }
+
+  const registerExportAdapter = (adapter: FileRenderExportAdapter | null) => {
+    applyFileViewerRenderSurfaceState(surfaceState, { exportAdapter: adapter });
+  };
+
+  const onProgressiveRender = () => {
+    if (isCurrent(version)) {
+      applyFileViewerRenderReadinessState(readinessState, { progressiveReady: true });
+    }
+  };
+
+  try {
+    const session = await render({
+      buffer,
+      file,
+      version,
+      type: getExtension(file.name),
+      target,
+      filename: file.name,
+      sourceUrl,
+      streamUrl,
+      onProgressiveRender,
+      registerExportAdapter,
+      surfaceState,
+      readinessState,
+    });
+
+    if (!isCurrent(version)) {
+      disposeSession(session);
+      removeFileViewerRenderTarget(container, target);
+      return undefined;
+    }
+
+    void onRefreshDocumentIndex?.();
+    onRefreshZoomProvider?.();
+    return session;
+  } catch (error) {
+    removeFileViewerRenderTarget(container, target);
+    throw error;
+  }
 };
 
 export const buildFileRenderContextFromLoadContext = ({

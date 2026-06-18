@@ -18,6 +18,7 @@ import {
   removeFileViewerRenderTarget,
   resetFileViewerRenderSurface,
   renderFileViewerHandler,
+  runFileViewerRenderSurfaceMount,
   refWorker,
   type FileRenderContext,
   type FileRenderHandler,
@@ -236,6 +237,101 @@ describe('@file-viewer/core worker and render contracts', () => {
       progressiveReady: false,
     });
     expect(root.childElementCount).toBe(0);
+  });
+
+  it('runs framework-neutral render surface mount orchestration', async () => {
+    const { document } = parseHTML('<main id="root"><span>old</span></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const session = { destroy: vi.fn() };
+    const adapter = { exportHtml: true };
+    const state = createFileViewerRenderSurfaceState<typeof session>();
+    const readiness = {
+      renderedReady: false,
+      progressiveReady: false,
+    };
+    const clearRenderedContent = vi.fn(() => clearFileViewerRenderSurface(root));
+    const waitForContainer = vi.fn();
+    const waitForPaint = vi.fn();
+    const startZoomObserver = vi.fn();
+    const refreshDocumentIndex = vi.fn();
+    const refreshZoomProvider = vi.fn();
+    const render = vi.fn(async context => {
+      expect(context.type).toBe('pdf');
+      expect(context.filename).toBe('demo.pdf');
+      expect(context.sourceUrl).toBe('/example/demo.pdf');
+      expect(context.streamUrl).toBe('/stream/demo.pdf');
+      expect(context.target.className).toBe(DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS);
+      context.registerExportAdapter(adapter);
+      context.onProgressiveRender();
+      context.target.appendChild(document.createElement('strong'));
+      return session;
+    });
+
+    const result = await runFileViewerRenderSurfaceMount({
+      buffer: new ArrayBuffer(4),
+      file: new File(['demo'], 'demo.pdf'),
+      version: 1,
+      sourceUrl: '/example/demo.pdf',
+      streamUrl: '/stream/demo.pdf',
+      getContainer: () => root,
+      surfaceState: state,
+      readinessState: readiness,
+      isCurrent: version => version === 1,
+      clearRenderedContent,
+      render,
+      waitForContainer,
+      waitForPaint,
+      onStartZoomObserver: startZoomObserver,
+      onRefreshDocumentIndex: refreshDocumentIndex,
+      onRefreshZoomProvider: refreshZoomProvider,
+    });
+
+    expect(result).toBe(session);
+    expect(clearRenderedContent).toHaveBeenCalledWith('replace');
+    expect(waitForContainer).toHaveBeenCalledTimes(1);
+    expect(waitForPaint).toHaveBeenCalledTimes(1);
+    expect(startZoomObserver).toHaveBeenCalledTimes(1);
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(root.innerHTML).not.toContain('old');
+    expect(root.innerHTML).toContain('file-render');
+    expect(root.innerHTML).toContain('strong');
+    expect(state.exportAdapter).toBe(adapter);
+    expect(readiness.progressiveReady).toBe(true);
+    expect(refreshDocumentIndex).toHaveBeenCalledTimes(1);
+    expect(refreshZoomProvider).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes stale render targets and disposes stale sessions during surface mount', async () => {
+    const { document } = parseHTML('<main id="root"></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const session = { destroy: vi.fn() };
+    const state = createFileViewerRenderSurfaceState<typeof session>();
+    const readiness = {
+      renderedReady: false,
+      progressiveReady: false,
+    };
+    let currentVersion = 1;
+    const render = vi.fn(async context => {
+      context.target.appendChild(document.createElement('strong'));
+      currentVersion = 2;
+      return session;
+    });
+
+    await expect(runFileViewerRenderSurfaceMount({
+      buffer: new ArrayBuffer(4),
+      file: new File(['demo'], 'demo.pdf'),
+      version: 1,
+      getContainer: () => root,
+      surfaceState: state,
+      readinessState: readiness,
+      isCurrent: version => version === currentVersion,
+      clearRenderedContent: () => clearFileViewerRenderSurface(root),
+      render,
+    })).resolves.toBeUndefined();
+
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(session.destroy).toHaveBeenCalledTimes(1);
+    expect(root.innerHTML).not.toContain('file-render');
   });
 
   it('safely disposes renderer sessions and reports teardown errors', async () => {

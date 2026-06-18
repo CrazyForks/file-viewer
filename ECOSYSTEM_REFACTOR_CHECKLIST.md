@@ -216,6 +216,7 @@
   - [x] 渲染目标节点创建、容器清空和 stale 节点移除迁入 `@file-viewer/core`，Vue surface hook 不再手写 DOM 清理规则。
   - [x] 渲染挂载前 paint 调度与无 `requestAnimationFrame` 兜底迁入 `@file-viewer/core`，Vue surface hook 直接复用 core helper。
   - [x] renderer session 安全销毁和同步/异步 teardown 错误分发迁入 `@file-viewer/core`，Vue surface hook 只提供错误记录回调。
+  - [x] render surface 的容器等待、旧内容清理、目标节点创建、stale 清理、progressive readiness、export adapter 和索引/缩放刷新编排迁入 `@file-viewer/core`。
   - [x] Vue3 `FileViewer` 旧 catch-all `util.ts` 删除，渲染桥接收口到 `rendererBridge.ts`，只暴露 session 化入口并由兼容门禁防回流。
 - [ ] 为每条现有预览链路建立 core renderer plugin:
   - [ ] Office Word/DOCX/DOC/DOT/RTF/ODT

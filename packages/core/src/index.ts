@@ -273,12 +273,15 @@ export {
   disposeFileViewerRendererSession,
   removeFileViewerRenderTarget,
   resetFileViewerRenderSurface,
+  runFileViewerRenderSurfaceMount,
   renderFileViewerHandler,
 } from './rendererHandler';
 export type {
   FileViewerRenderSurfaceState,
+  FileViewerRenderSurfaceMountContext,
   MutableFileViewerRenderSurfaceState,
   ResetFileViewerRenderSurfaceInput,
+  RunFileViewerRenderSurfaceMountInput,
 } from './rendererHandler';
 export {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
