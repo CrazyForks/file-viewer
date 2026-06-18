@@ -550,6 +550,31 @@ function assertCoreViewerLifecycleSourceState(viewerSource) {
   }
 }
 
+function assertCoreViewerRequestScope(viewerSource) {
+  for (const token of [
+    'createFileViewerRequestScope',
+    'requestScope.getCurrentVersion()',
+    'requestScope.requestController.createVersion()'
+  ]) {
+    assert(
+      viewerSource.includes(token),
+      `createViewer must reuse core request scope via ${token}`
+    )
+  }
+
+  for (const forbiddenToken of [
+    'let version = 0',
+    'version += 1',
+    'requestController.version',
+    'createFileViewerRequestController()'
+  ]) {
+    assert(
+      !viewerSource.includes(forbiddenToken),
+      `createViewer must not keep duplicate request version state: ${forbiddenToken}`
+    )
+  }
+}
+
 function collectBareImportSpecifiers(source) {
   const imports = new Set()
   const patterns = [
@@ -610,6 +635,7 @@ assertCoreInstanceContract(typesSource)
 assertCoreViewerSurfaceState(viewerSource)
 assertCoreViewerOperationSourceState(viewerSource)
 assertCoreViewerLifecycleSourceState(viewerSource)
+assertCoreViewerRequestScope(viewerSource)
 await assertCoreSourceBoundary(sourceFiles)
 
 console.log(

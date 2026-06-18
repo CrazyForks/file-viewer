@@ -96,6 +96,7 @@
   - [x] 渲染 surface 的销毁、清空、挂载和导出适配器 action 编排迁入 core，Vue hook 只保留 ref target 和 Vue renderer bridge。
   - [x] 来源加载的本地/远程预览、刷新、取消、reset 和错误上报 action 编排迁入 core，Vue hook 只保留 ref target、axios 下载适配和生命周期回调注入。
   - [x] 请求版本 scope facade 迁入 core，Vue3 入口直接使用 `createFileViewerRequestScope`，旧 `useViewerRequestScope` hook 被删除并由兼容性守卫禁止回流。
+  - [x] 纯 TS `createViewer` 复用 core request scope，不再维护本地 `version` 计数，core API 守卫禁止请求版本状态回流。
   - [x] 工具栏 source/能力矩阵/浮动位置/事件同步/缩放按钮 guard 迁入 core controller action handlers，Vue hook 只保留 computed/watch 响应式桥接。
   - [x] 文档搜索 controller 与搜索/定位/AI 文本切片 actions 的组合关系迁入 core，Vue hook 只保留 ref target、`nextTick` 和事件回调注入。
   - [x] 删除 Vue3 旧 `useDocumentSearch` 运行门面，兼容性守卫改为禁止恢复该门面，文档搜索状态只能经由 core controller 组合进入 FileViewer hook。

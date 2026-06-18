@@ -161,10 +161,10 @@ describe('@file-viewer/core registry', () => {
       registry,
       options: {
         hooks: {
-          onLoadStart: context => events.push(`${context.phase}:${context.type}`),
-          onLoadComplete: context => events.push(`${context.phase}:${context.filename}`),
-          onUnloadStart: context => events.push(`${context.phase}:${context.reason}`),
-          onUnloadComplete: context => events.push(`${context.phase}:${context.reason}`),
+          onLoadStart: context => events.push(`${context.phase}:${context.version}:${context.type}`),
+          onLoadComplete: context => events.push(`${context.phase}:${context.version}:${context.filename}`),
+          onUnloadStart: context => events.push(`${context.phase}:${context.version}:${context.reason}`),
+          onUnloadComplete: context => events.push(`${context.phase}:${context.version}:${context.reason}`),
         },
       },
     });
@@ -186,10 +186,10 @@ describe('@file-viewer/core registry', () => {
 
     expect(container.dataset.destroyed).toBe('true');
     expect(events).toEqual([
-      'load-start:fixture',
-      'load-complete:demo.fixture',
-      'unload-start:component-unmount',
-      'unload-complete:component-unmount',
+      'load-start:1:fixture',
+      'load-complete:1:demo.fixture',
+      'unload-start:1:component-unmount',
+      'unload-complete:1:component-unmount',
     ]);
   });
 

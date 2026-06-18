@@ -34,6 +34,7 @@ import {
   applyFileViewerRenderSurfaceState,
   createFileViewerRenderSurfaceState,
 } from './rendererHandler';
+import { createFileViewerRequestScope } from './sourceLoading';
 import { normalizeSource } from './source';
 import { buildFileViewerWatermarkInlineStyle } from './watermark';
 import type {
@@ -90,7 +91,7 @@ export const createViewer = (
   let options = createOptions.options || {};
   let currentSource: NormalizedFileViewerSource | null = null;
   const renderSurfaceState = createFileViewerRenderSurfaceState<RendererSession>();
-  let version = 0;
+  const requestScope = createFileViewerRequestScope();
   let anchors: FileViewerDocumentAnchor[] = [];
 
   const buildCurrentLifecycleContext = () => {
@@ -98,7 +99,7 @@ export const createViewer = (
     return buildFileViewerLifecycleContextFromNormalizedSource({
       phase: 'load-complete',
       source,
-      version,
+      version: requestScope.getCurrentVersion(),
       timestamp: Date.now(),
     });
   };
@@ -147,6 +148,7 @@ export const createViewer = (
     }
     const source = currentSource;
     const startedAt = Date.now();
+    const version = requestScope.getCurrentVersion();
     await emitLifecycle(options, 'unload-start', source, version, startedAt, reason);
     await renderSurfaceState.session?.destroy?.();
     currentSource = null;
@@ -167,7 +169,7 @@ export const createViewer = (
 
       const normalized = normalizeSource(source);
       currentSource = normalized;
-      version += 1;
+      const version = requestScope.requestController.createVersion();
 
       const renderer = registry.getByExtension(normalized.extension);
       const startedAt = Date.now();
