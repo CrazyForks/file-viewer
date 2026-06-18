@@ -124,6 +124,7 @@
   - [x] source loading 的错误日志记录、错误文案解析和 showError 分发编排迁入 `@file-viewer/core`，Vue hook 不再维护本地错误展示顺序。
   - [x] source loading 的文件名写入、load-start 标记、lifecycle emit 与 loading 启动编排迁入 `@file-viewer/core`。
   - [x] source loading 的 load-start 清理与只停止当前请求 loading 的收尾编排迁入 `@file-viewer/core`。
+  - [x] preview source 变化刷新与组件卸载 cancel/reset/stop zoom 顺序迁入 `@file-viewer/core`，Vue preview lifecycle hook 只绑定 watch / onBeforeUnmount。
   - [x] 本地文件预览的 FileRef 解析、load-start、读取渲染、错误回调和收尾清理编排迁入 `@file-viewer/core`。
   - [x] 渲染完成与渐进渲染 readiness 状态应用迁入 `@file-viewer/core`，source loading / render surface hook 只做响应式映射。
   - [x] 渲染完成后的 readiness 与 load-complete lifecycle context 构建迁入 `@file-viewer/core`，Vue source loading hook 只写回状态并触发 emit。

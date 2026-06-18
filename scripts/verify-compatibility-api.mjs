@@ -418,6 +418,27 @@ async function verifyVue3ScopedCompatibility() {
     `${vueFileViewerLabel} must only use approved runtime core report helpers and keep runtime core controllers inside component hooks`
   )
 
+  const vuePreviewLifecycleHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerPreviewLifecycle.ts')
+  const vuePreviewLifecycleHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerPreviewLifecycle.ts`
+  assertImportsFrom(vuePreviewLifecycleHookSource, '@file-viewer/core', vuePreviewLifecycleHookLabel)
+  assertTokens(vuePreviewLifecycleHookSource, [
+    'runFileViewerPreviewSourceChange',
+    'runFileViewerPreviewComponentUnmount',
+    'watch([getFile, getUrl]',
+    'onBeforeUnmount(() =>'
+  ], vuePreviewLifecycleHookLabel)
+  for (const forbiddenToken of [
+    'void refreshPreview()',
+    "cancelPreview('component-unmount')",
+    'resetLoading()',
+    'stopZoomObserver()'
+  ]) {
+    assert(
+      !vuePreviewLifecycleHookSource.includes(forbiddenToken),
+      `${vuePreviewLifecycleHookLabel} must delegate preview source refresh and unmount cleanup order to @file-viewer/core instead of ${forbiddenToken}`
+    )
+  }
+
   const vueRequestScopeHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerRequestScope.ts')
   const vueRequestScopeHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerRequestScope.ts`
   assertImportsFrom(vueRequestScopeHookSource, '@file-viewer/core', vueRequestScopeHookLabel)

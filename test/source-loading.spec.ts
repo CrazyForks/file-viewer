@@ -41,7 +41,9 @@ import {
   reportFileViewerMissingRemoteData,
   reportFileViewerPreviewLoadError,
   runFileViewerLocalFilePreview,
+  runFileViewerPreviewComponentUnmount,
   runFileViewerPreviewRequest,
+  runFileViewerPreviewSourceChange,
   runFileViewerRemoteFilePreview,
   runFileViewerReadAndRenderFile,
   runFileViewerStreamingPdfPreview,
@@ -295,6 +297,35 @@ describe('remote source loading helpers', () => {
       sourceUrl: null,
       progressiveReady: false
     })
+  })
+
+  it('runs preview source changes and component unmount cleanup in core order', async () => {
+    const events: string[] = []
+
+    await runFileViewerPreviewSourceChange({
+      onRefreshPreview: async () => {
+        events.push('refresh')
+      }
+    })
+    const unmount = runFileViewerPreviewComponentUnmount({
+      onCancelPreview: reason => {
+        events.push(`cancel:${reason}`)
+      },
+      onResetLoading: () => {
+        events.push('reset-loading')
+      },
+      onStopZoomObserver: () => {
+        events.push('stop-zoom')
+      }
+    })
+
+    expect(unmount).toEqual({ reason: 'component-unmount' })
+    expect(events).toEqual([
+      'refresh',
+      'cancel:component-unmount',
+      'reset-loading',
+      'stop-zoom'
+    ])
   })
 
   it('routes preview refresh requests through shared core request orchestration', async () => {

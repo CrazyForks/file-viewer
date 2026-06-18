@@ -1,5 +1,9 @@
 import { onBeforeUnmount, watch } from 'vue'
-import type { FileViewerLifecycleContext } from '@file-viewer/core'
+import {
+  runFileViewerPreviewComponentUnmount,
+  runFileViewerPreviewSourceChange,
+  type FileViewerLifecycleContext
+} from '@file-viewer/core'
 
 interface UseViewerPreviewLifecycleOptions {
   getFile: () => unknown;
@@ -25,12 +29,16 @@ export const useViewerPreviewLifecycle = ({
   stopZoomObserver
 }: UseViewerPreviewLifecycleOptions) => {
   watch([getFile, getUrl], () => {
-    void refreshPreview()
+    void runFileViewerPreviewSourceChange({
+      onRefreshPreview: refreshPreview
+    })
   }, { immediate: true })
 
   onBeforeUnmount(() => {
-    cancelPreview('component-unmount')
-    resetLoading()
-    stopZoomObserver()
+    runFileViewerPreviewComponentUnmount({
+      onCancelPreview: cancelPreview,
+      onResetLoading: resetLoading,
+      onStopZoomObserver: stopZoomObserver
+    })
   })
 }

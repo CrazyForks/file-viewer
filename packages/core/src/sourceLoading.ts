@@ -543,6 +543,21 @@ export interface CancelFileViewerPreviewRequestInput {
   onClearError?: () => void;
 }
 
+export interface RunFileViewerPreviewSourceChangeInput {
+  onRefreshPreview?: () => Promise<unknown> | unknown;
+}
+
+export interface RunFileViewerPreviewComponentUnmountInput {
+  reason?: FileViewerLifecycleContext['reason'];
+  onCancelPreview?: (reason: FileViewerLifecycleContext['reason']) => void;
+  onResetLoading?: () => void;
+  onStopZoomObserver?: () => void;
+}
+
+export interface FileViewerPreviewComponentUnmountState {
+  reason: FileViewerLifecycleContext['reason'];
+}
+
 export interface FinalizeFileViewerPreviewLoadStateInput {
   version: number;
   isCurrent: (version: number) => boolean;
@@ -729,6 +744,27 @@ export const cancelFileViewerPreviewRequest = ({
     onClearRenderedContent,
     onClearError,
   });
+};
+
+export const runFileViewerPreviewSourceChange = ({
+  onRefreshPreview,
+}: RunFileViewerPreviewSourceChangeInput = {}) => {
+  return onRefreshPreview?.();
+};
+
+export const runFileViewerPreviewComponentUnmount = ({
+  reason = 'component-unmount',
+  onCancelPreview,
+  onResetLoading,
+  onStopZoomObserver,
+}: RunFileViewerPreviewComponentUnmountInput = {}): FileViewerPreviewComponentUnmountState => {
+  onCancelPreview?.(reason);
+  onResetLoading?.();
+  onStopZoomObserver?.();
+
+  return {
+    reason,
+  };
 };
 
 export const applyFileViewerEmptyPreviewState = <Target extends MutableFileViewerPreviewState>(
