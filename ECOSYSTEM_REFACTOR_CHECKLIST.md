@@ -57,8 +57,11 @@
   - [x] 新增 `ecosystem/smoke-matrix.json`，覆盖 23 条 renderer pipeline、Phase 0 要求的格式族、真实示例文件和 8 个 wrapper 基础入口。
   - [x] 新增 `pnpm verify:smoke-matrix`，反查 core renderer 定义、wrapper manifest 和 `public/example` 样本，避免 smoke 清单漂移。
   - [x] `pnpm verify:format-support` 作为支持矩阵防回退门禁，保证文档宣传数量和 core 实际注册数量一致。
-- [ ] 为 wrapper 迁移准备对比用例: Vue3 当前组件、iframe 当前组件、React 当前适配层、纯 JS 当前适配层。
-- [ ] 明确“体验完全相同”的证据: DOM 快照、关键截图、事件回调、能力按钮显隐、options 行为、打印/导出结果。
+- [x] 为 wrapper 迁移准备对比用例: Vue3 当前组件、iframe 当前组件、React 当前适配层、纯 JS 当前适配层。
+  - [x] 新增 `ecosystem/experience-baseline.json`，固定 Vue3 当前组件、文档比对页、iframe runtime、历史 React 适配层、历史纯 JS 适配层和 script tag IIFE 的基线体验用例。
+- [x] 明确“体验完全相同”的证据: DOM 快照、关键截图、事件回调、能力按钮显隐、options 行为、打印/导出结果。
+  - [x] 新增 `pnpm verify:experience-baseline`，校验体验基线清单中的 surface、entry files、特性组、事件/按钮/视觉/打印导出证据、验证脚本和 smoke-matrix 关联关系。
+  - [x] `pnpm verify:migration-gates` 已串联体验基线校验，避免后续 wrapper 拆分时只保留格式覆盖而丢失交互与操作体验要求。
 
 ## Phase 1: 设计纯 TypeScript core 边界
 

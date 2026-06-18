@@ -36,6 +36,7 @@ pnpm install
 | `pnpm verify:wrapper-api` | 校验标准 wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法，防止不同框架接入体验漂移 |
 | `pnpm verify:wrapper-options` | 校验标准 wrapper 统一复用 `@file-viewer/web` 的参数、frame handle 和 frame param 类型出口，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等运行时选项 |
 | `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、wrapper 和真实示例文件 |
+| `pnpm verify:experience-baseline` | 校验 `ecosystem/experience-baseline.json` 中的 Vue3 当前组件、比对页、iframe、历史 React、历史纯 JS 和 script 标签 IIFE 基线体验证据 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准 wrapper 仓库元数据和历史包依赖边界 |
 | `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
@@ -79,6 +80,7 @@ pnpm release:ecosystem:list
 pnpm verify:branch-roles
 pnpm verify:core-api
 pnpm verify:format-support
+pnpm verify:experience-baseline
 pnpm verify:ecosystem-versions
 pnpm wrappers:readme
 pnpm wrappers:verify --source-only
@@ -138,8 +140,9 @@ pnpm release:pack
 - README 和文档站是否同时写清 Vue3 / Vue2 / React / 纯 JS 包名、版本和接入方式
 - 文档站中的支持格式、iframe 协议和 Demo 截图是否最新
 - `file` / `url` 的行为说明是否与运行逻辑一致
-- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、分支职责/源码边界、core API 与纯 TS 边界、wrapper 源包校验、wrapper 运行 API 与参数面一致性、兼容包运行/类型门面、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
+- 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、体验基线证据、分支职责/源码边界、core API 与纯 TS 边界、wrapper 源包校验、wrapper 运行 API 与参数面一致性、兼容包运行/类型门面、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
 - 新增格式、示例或 wrapper 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
+- 修改主入口、文档比对、iframe、历史 React / 纯 JS 适配层或 script tag 接入时，`ecosystem/experience-baseline.json` 是否同步补充对应页面、特性组、事件/按钮/打印导出/视觉证据和验证脚本
 - 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准 wrapper 和历史兼容包不会漂移，且标准 wrapper 仍指向对应 GitHub 公开仓库
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露

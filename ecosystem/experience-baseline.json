@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "description": "Vue 3 baseline experience contract used while the viewer is being split into a pure TypeScript core and public framework wrappers.",
+  "baseline": {
+    "sourceBranch": "v3",
+    "rootPackage": "@flyfish-group/file-viewer3",
+    "versionSource": "package.json",
+    "formatMatrixSource": "packages/core/src/formats.ts",
+    "wrapperManifestSource": "ecosystem/wrappers.json",
+    "smokeMatrixSource": "ecosystem/smoke-matrix.json"
+  },
+  "requiredScripts": [
+    "verify:demo-browser-smoke",
+    "verify:adapter-browser-smoke",
+    "verify:browser-smoke",
+    "verify:smoke-matrix",
+    "verify:wrapper-api",
+    "verify:wrapper-options"
+  ],
+  "featureGroups": [
+    {
+      "id": "source-loading",
+      "evidence": ["url-source", "file-source", "buffer-source", "stale-request-guard", "loading-state"]
+    },
+    {
+      "id": "options",
+      "evidence": ["options-behavior", "theme", "toolbar", "watermark", "search", "ai", "pdf", "docx", "typst", "archive", "cad"]
+    },
+    {
+      "id": "toolbar-operations",
+      "evidence": ["download", "print", "export-html", "watermark-toggle", "capability-state", "capability-visibility", "before-operation"]
+    },
+    {
+      "id": "lifecycle-events",
+      "evidence": ["event-callback", "load-start", "load-complete", "unload-start", "unload-complete", "iframe-post-message"]
+    },
+    {
+      "id": "document-navigation",
+      "evidence": ["anchors", "current-location", "scroll-to-line", "search-next-previous", "highlight"]
+    },
+    {
+      "id": "layout-visual",
+      "evidence": ["dom-snapshot", "visual-screenshot", "paper-layout", "fit-to-view", "dark-mode-readability"]
+    },
+    {
+      "id": "print-export",
+      "evidence": ["print-output", "export-output", "document-only-content", "page-size"]
+    },
+    {
+      "id": "wrapper-contract",
+      "evidence": ["shared-core-version", "shared-options", "shared-events", "shared-controller-handle", "standalone-package"]
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "vue3-current-component",
+      "label": "Vue 3 baseline component",
+      "kind": "baseline-component",
+      "packageName": "@flyfish-group/file-viewer3",
+      "entryFiles": [
+        "src/package/components/FileViewer/FileViewer.vue",
+        "src/package/index.ts",
+        "src/main.ts"
+      ],
+      "smokeScripts": ["verify:demo-browser-smoke"],
+      "preserves": ["source-loading", "options", "toolbar-operations", "lifecycle-events", "document-navigation", "layout-visual", "print-export"]
+    },
+    {
+      "id": "compare-page",
+      "label": "Document compare page",
+      "kind": "baseline-page",
+      "packageName": "@flyfish-group/file-viewer3",
+      "entryFiles": [
+        "src/compare/CompareApp.vue",
+        "src/compare/main.ts",
+        "src/compare/useSynchronizedScroll.ts"
+      ],
+      "smokeScripts": ["verify:demo-browser-smoke"],
+      "preserves": ["source-loading", "document-navigation", "layout-visual"]
+    },
+    {
+      "id": "iframe-runtime",
+      "label": "Shared iframe runtime",
+      "kind": "iframe",
+      "packageName": "@file-viewer/web",
+      "entryFiles": [
+        "packages/web-standard/src/index.ts",
+        "packages/web-standard/src/global.ts",
+        "packages/web-standard/viewer/index.html"
+      ],
+      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
+    },
+    {
+      "id": "react-current-adapter",
+      "label": "Historical React adapter",
+      "kind": "current-adapter",
+      "wrapperId": "react",
+      "packageName": "@flyfish-group/file-viewer-react",
+      "entryFiles": ["packages/react/src/index.tsx", "packages/demo/src/main.tsx"],
+      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
+    },
+    {
+      "id": "pure-js-current-adapter",
+      "label": "Historical pure JS adapter",
+      "kind": "current-adapter",
+      "wrapperId": "web",
+      "packageName": "@flyfish-group/file-viewer-web",
+      "entryFiles": ["packages/web/src/index.ts", "packages/demo/manual-js.html"],
+      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
+    },
+    {
+      "id": "script-tag-iife",
+      "label": "Script tag IIFE entry",
+      "kind": "script-tag",
+      "wrapperId": "web",
+      "packageName": "@file-viewer/web",
+      "entryFiles": ["packages/web-standard/src/global.ts", "packages/demo/manual-iife.html"],
+      "smokeScripts": ["verify:adapter-browser-smoke"],
+      "preserves": ["source-loading", "options", "wrapper-contract"]
+    }
+  ],
+  "cases": [
+    {
+      "id": "vue3-demo-markdown",
+      "surface": "vue3-current-component",
+      "smokeCaseId": "markdown-md",
+      "sample": "markdown.md",
+      "scripts": ["verify:demo-browser-smoke"],
+      "features": ["source-loading", "options", "document-navigation", "layout-visual"],
+      "assertions": ["load-complete", "dark-mode-readable", "search", "dom-snapshot", "visual-screenshot"]
+    },
+    {
+      "id": "vue3-demo-pdf-operations",
+      "surface": "vue3-current-component",
+      "smokeCaseId": "pdf-document",
+      "sample": "pdf.pdf",
+      "scripts": ["verify:demo-browser-smoke"],
+      "features": ["toolbar-operations", "document-navigation", "print-export", "layout-visual"],
+      "assertions": ["page-navigation", "outline-or-thumbnails", "search", "zoom", "print-capability", "export-output"]
+    },
+    {
+      "id": "vue3-demo-docx-print",
+      "surface": "vue3-current-component",
+      "smokeCaseId": "word-openxml-docx",
+      "sample": "word.docx",
+      "scripts": ["verify:demo-browser-smoke"],
+      "features": ["print-export", "layout-visual", "document-navigation"],
+      "assertions": ["paper-layout", "page-size", "document-only-content", "print-output", "export-output"]
+    },
+    {
+      "id": "compare-page-sync-and-search",
+      "surface": "compare-page",
+      "smokeCaseId": "pdf-document",
+      "sample": "pdf.pdf",
+      "scripts": ["verify:demo-browser-smoke"],
+      "features": ["source-loading", "document-navigation", "layout-visual"],
+      "assertions": ["dual-panel", "synchronized-scroll", "shortcut-search", "line-location"]
+    },
+    {
+      "id": "iframe-runtime-docx",
+      "surface": "iframe-runtime",
+      "smokeCaseId": "word-openxml-docx",
+      "sample": "word.docx",
+      "scripts": ["verify:adapter-browser-smoke"],
+      "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
+      "assertions": ["iframe-src", "post-file", "load-complete", "lifecycle-events"]
+    },
+    {
+      "id": "react-current-adapter-docx",
+      "surface": "react-current-adapter",
+      "wrapperId": "react",
+      "sample": "word.docx",
+      "scripts": ["verify:adapter-browser-smoke"],
+      "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
+      "assertions": ["iframe-src", "shared-controller-handle", "load-complete"]
+    },
+    {
+      "id": "pure-js-current-adapter-docx",
+      "surface": "pure-js-current-adapter",
+      "wrapperId": "web",
+      "sample": "word.docx",
+      "scripts": ["verify:adapter-browser-smoke"],
+      "features": ["source-loading", "options", "lifecycle-events", "wrapper-contract"],
+      "assertions": ["iframe-src", "post-file", "load-complete"]
+    },
+    {
+      "id": "script-tag-iife-markdown",
+      "surface": "script-tag-iife",
+      "wrapperId": "web",
+      "sample": "preview.md",
+      "scripts": ["verify:adapter-browser-smoke"],
+      "features": ["source-loading", "options", "wrapper-contract"],
+      "assertions": ["global-api", "mount-viewer", "iframe-src", "load-complete"]
+    }
+  ],
+  "requiredEvidence": [
+    "dom-snapshot",
+    "visual-screenshot",
+    "event-callback",
+    "capability-state",
+    "options-behavior",
+    "print-output",
+    "export-output"
+  ]
+}
