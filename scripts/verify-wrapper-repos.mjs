@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 import ts from 'typescript'
+import { allowedEntryFormats, entryFormatLabels } from './lib/wrapper-entry-formats.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -41,15 +42,6 @@ const historicalPackageNames = new Set(
 )
 const currentSourceBranch = runGit(['branch', '--show-current'])
 const currentSourceCommit = runGit(['rev-parse', '--short', 'HEAD'])
-const allowedEntryFormats = new Set([
-  'esm',
-  'types',
-  'iife',
-  'viewer-assets',
-  'copy-assets-cli',
-  'svelte-component'
-])
-
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'))
 }
@@ -159,26 +151,6 @@ function verifyNoHistoricalPackageDependency(packageJson, label) {
       }
     }
   }
-}
-
-function entryFormatLabels(locale) {
-  return locale === 'zh'
-    ? {
-        esm: 'ESM',
-        types: '类型声明',
-        iife: 'script 标签 IIFE',
-        'viewer-assets': '内置 viewer 静态产物',
-        'copy-assets-cli': '复制静态资源 CLI',
-        'svelte-component': 'Svelte 组件'
-      }
-    : {
-        esm: 'ESM',
-        types: 'type declarations',
-        iife: 'script tag IIFE',
-        'viewer-assets': 'bundled viewer assets',
-        'copy-assets-cli': 'asset copy CLI',
-        'svelte-component': 'Svelte component'
-      }
 }
 
 function verifyWrapperEntryFormats(wrapper, packageJson, label) {

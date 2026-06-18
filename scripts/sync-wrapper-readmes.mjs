@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import vm from 'node:vm'
 import ts from 'typescript'
+import { formatEntryFormats } from './lib/wrapper-entry-formats.mjs'
 
 const sourceRoot = process.cwd()
 const wrapperManifest = JSON.parse(await readFile(join(sourceRoot, 'ecosystem', 'wrappers.json'), 'utf8'))
@@ -77,33 +78,6 @@ function capabilities(definition, locale) {
   ].filter(Boolean).join(', ')
 }
 
-function entryFormatLabels(locale) {
-  return locale === 'zh'
-    ? {
-        esm: 'ESM',
-        types: '类型声明',
-        iife: 'script 标签 IIFE',
-        'viewer-assets': '内置 viewer 静态产物',
-        'copy-assets-cli': '复制静态资源 CLI',
-        'svelte-component': 'Svelte 组件'
-      }
-    : {
-        esm: 'ESM',
-        types: 'type declarations',
-        iife: 'script tag IIFE',
-        'viewer-assets': 'bundled viewer assets',
-        'copy-assets-cli': 'asset copy CLI',
-        'svelte-component': 'Svelte component'
-      }
-}
-
-function entryFormats(wrapper, locale) {
-  const labels = entryFormatLabels(locale)
-  return (wrapper.entryFormats || [])
-    .map(format => labels[format] || format)
-    .join(', ')
-}
-
 function wrapperRows(locale) {
   return wrapperManifest.wrappers.map(wrapper => {
     const historical = wrapper.historicalPackages.length
@@ -112,7 +86,7 @@ function wrapperRows(locale) {
     return [
       wrapper.framework,
       `\`${wrapper.packageName}\``,
-      entryFormats(wrapper, locale),
+      formatEntryFormats(wrapper.entryFormats, locale),
       `[${wrapper.repository}](${wrapper.github})`,
       `[${wrapper.repository}](${wrapper.gitee})`,
       historical

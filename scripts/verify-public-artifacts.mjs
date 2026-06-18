@@ -7,6 +7,7 @@ import {
   assertFile,
   assertPublicArtifactOnlyRepo
 } from './lib/public-artifacts.mjs'
+import { entryFormatLabels } from './lib/wrapper-entry-formats.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -127,6 +128,7 @@ async function assertReadmes(repoDir) {
   const readmeEn = await readText(join(repoDir, 'README.en.md'))
   for (const [locale, content] of [['zh', readme], ['en', readmeEn]]) {
     const template = readmeTemplate.locales[locale]
+    const entryLabels = entryFormatLabels(locale)
     assertIncludes(content, wrapperManifest.corePackage.packageName, 'public README')
     assertIncludes(content, readmeTemplate.markers.publicGenerated.start, 'public README')
     assertIncludes(content, readmeTemplate.markers.publicGenerated.end, 'public README')
@@ -144,6 +146,12 @@ async function assertReadmes(repoDir) {
       assertIncludes(content, wrapper.packageName, 'public README')
       assertIncludes(content, wrapper.github, 'public README')
       assertIncludes(content, wrapper.gitee, 'public README')
+      for (const format of wrapper.entryFormats || []) {
+        assertIncludes(content, entryLabels[format] || format, 'public README')
+      }
+      for (const historicalPackage of wrapper.historicalPackages || []) {
+        assertIncludes(content, historicalPackage, 'public README')
+      }
     }
   }
 }

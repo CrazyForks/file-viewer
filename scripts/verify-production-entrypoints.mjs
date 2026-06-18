@@ -8,20 +8,13 @@ import {
   collectPackageEntrypoints,
   loadEcosystemReleaseContext
 } from './lib/ecosystem-packages.mjs'
+import { allowedEntryFormats } from './lib/wrapper-entry-formats.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
 const { entries, wrapperManifest } = await loadEcosystemReleaseContext(sourceRoot)
 
 const importableExtensions = new Set(['.js', '.mjs'])
-const allowedEntryFormats = new Set([
-  'esm',
-  'types',
-  'iife',
-  'viewer-assets',
-  'copy-assets-cli',
-  'svelte-component'
-])
 const webGlobalPackages = new Set([
   '@flyfish-group/file-viewer-web',
   '@file-viewer/web'

@@ -3,6 +3,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
 import { readCoreRendererDefinitions, summarizeRendererSupport } from './lib/format-support.mjs'
+import { entryFormatLabels } from './lib/wrapper-entry-formats.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -72,13 +73,17 @@ function assertGeneratedBlock(content, label) {
   assert(endIndex > startIndex, `${label} must include ${publicMarkers.end} after the start marker`)
 }
 
-function assertWrapperMatrix(content, label, noAliasLabel) {
+function assertWrapperMatrix(content, label, locale, noAliasLabel) {
+  const labels = entryFormatLabels(locale)
   for (const wrapper of wrapperManifest.wrappers) {
     assertIncludes(content, wrapper.framework || wrapper.label, label)
     assertIncludes(content, wrapper.packageName, label)
     assertIncludes(content, wrapper.repository, label)
     assertIncludes(content, wrapper.github, label)
     assertIncludes(content, wrapper.gitee, label)
+    for (const format of wrapper.entryFormats || []) {
+      assertIncludes(content, labels[format] || format, label)
+    }
     if (wrapper.historicalPackages.length) {
       for (const historicalPackage of wrapper.historicalPackages) {
         assertIncludes(content, historicalPackage, label)
@@ -110,7 +115,7 @@ for (const config of localeReadmes) {
   for (const term of readmeTemplate.requiredTerms) {
     assertIncludes(content, term, label)
   }
-  assertWrapperMatrix(content, label, config.noAliasLabel)
+  assertWrapperMatrix(content, label, config.locale, config.noAliasLabel)
 }
 
 console.log(

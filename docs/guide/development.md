@@ -30,7 +30,7 @@ pnpm install
 | `pnpm verify:branch-roles` | 校验 `origin` 私有 Gitea 源码边界、main/v2/v3 分支职责、core 私有策略、wrapper 公开仓库和公开成品仓库策略 |
 | `pnpm verify:core-api` | 校验 `@file-viewer/core` 入口、实例方法、framework-neutral 类型、ESM/声明产物元数据和纯 TS 源码边界 |
 | `pnpm verify:format-support` | 校验 core 格式矩阵保持 194 个扩展名、23 条预览链路、无重复扩展名归属，并确认 README / 文档站 / wrapper README 口径一致 |
-| `pnpm verify:ecosystem-readmes` | 校验根 README / README.en.md 的公开生态索引、官方文档/Demo、GitHub/Gitee wrapper 仓库、历史兼容包、core 私有边界和格式数量口径 |
+| `pnpm verify:ecosystem-readmes` | 校验根 README / README.en.md 的公开生态索引、官方文档/Demo、GitHub/Gitee wrapper 仓库、入口格式、历史兼容包、core 私有边界和格式数量口径 |
 | `pnpm verify:compatibility-api` | 校验历史兼容包的运行门面边界: React 兼容包经由 web 兼容门面接入 iframe 协议，scoped Vue3 根包只保留 core 类型门面、登记过的 alias 和受控公共类型出口，纯 Web 兼容包统一承接 core，`file-viewer3` 保持薄 alias |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
 | `pnpm verify:wrapper-api` | 校验标准 wrapper 的运行入口、组件/插件/action/helper 导出和 controller 方法，防止不同框架接入体验漂移 |
@@ -39,7 +39,7 @@ pnpm install
 | `pnpm verify:experience-baseline` | 校验 `ecosystem/experience-baseline.json` 中的 Vue3 当前组件、比对页、iframe、历史 React、历史纯 JS 和 script 标签 IIFE 基线体验证据 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准 wrapper 仓库元数据和历史包依赖边界 |
-| `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
+| `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引、入口格式、历史兼容包和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口、可导入 ESM 入口，以及 wrapper manifest 声明的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口 |
 | `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、分支职责、wrapper 源包、wrapper 运行 API、wrapper 参数面、兼容包 API/README、生态版本和 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
@@ -145,6 +145,7 @@ pnpm release:pack
 - 修改主入口、文档比对、iframe、历史 React / 纯 JS 适配层或 script tag 接入时，`ecosystem/experience-baseline.json` 是否同步补充对应页面、特性组、事件/按钮/打印导出/视觉证据和验证脚本
 - 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准 wrapper 和历史兼容包不会漂移，且标准 wrapper 仍指向对应 GitHub 公开仓库
+- 根 README 与公开成品仓库 README 是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-artifacts`，确认 wrapper 入口格式、GitHub/Gitee 仓库和历史兼容包口径没有漂移
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露
 - 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入，并确认 wrapper manifest 的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口与 package 字段、实际文件一致
 - 本地构建和文档构建是否全部通过
