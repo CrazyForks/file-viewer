@@ -4,6 +4,12 @@ export type FileViewerWatermarkStyle = Record<string, string> & {
   backgroundImage: string;
 };
 
+export interface FileViewerWatermarkPresentationState {
+  normalizedWatermark: FileViewerWatermarkOptions | null;
+  watermarkStyle: FileViewerWatermarkStyle | undefined;
+  watermarkInlineStyle: string;
+}
+
 const escapeXml = (value: string) => value
   .replace(/&/g, '&amp;')
   .replace(/"/g, '&quot;')
@@ -89,4 +95,21 @@ export const buildFileViewerWatermarkInlineStyle = (
   return backgroundImage
     ? `position:absolute;inset:0;pointer-events:none;background-image:${backgroundImage};background-repeat:repeat;z-index:20;`
     : '';
+};
+
+export const resolveFileViewerWatermarkPresentationState = (
+  watermark?: boolean | FileViewerWatermarkOptions
+): FileViewerWatermarkPresentationState => {
+  const normalizedWatermark = normalizeFileViewerWatermark(watermark);
+  const backgroundImage = normalizedWatermark
+    ? encodeSvgDataUrl(buildFileViewerWatermarkSvg(normalizedWatermark))
+    : '';
+
+  return {
+    normalizedWatermark,
+    watermarkStyle: backgroundImage ? { backgroundImage } : undefined,
+    watermarkInlineStyle: backgroundImage
+      ? `position:absolute;inset:0;pointer-events:none;background-image:${backgroundImage};background-repeat:repeat;z-index:20;`
+      : '',
+  };
 };

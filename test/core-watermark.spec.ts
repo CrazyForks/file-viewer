@@ -4,6 +4,7 @@ import {
   buildFileViewerWatermarkInlineStyle,
   buildFileViewerWatermarkStyle,
   normalizeFileViewerWatermark,
+  resolveFileViewerWatermarkPresentationState,
 } from '../packages/core/src';
 
 describe('@file-viewer/core watermark helpers', () => {
@@ -29,5 +30,15 @@ describe('@file-viewer/core watermark helpers', () => {
     });
     expect(buildFileViewerWatermarkStyle(undefined)).toBeUndefined();
     expect(buildFileViewerWatermarkInlineStyle(watermark)).toContain(`background-image:${backgroundImage}`);
+
+    const presentation = resolveFileViewerWatermarkPresentationState(watermark);
+    expect(presentation.normalizedWatermark).toMatchObject(watermark);
+    expect(presentation.watermarkStyle).toEqual({ backgroundImage });
+    expect(presentation.watermarkInlineStyle).toBe(buildFileViewerWatermarkInlineStyle(watermark));
+    expect(resolveFileViewerWatermarkPresentationState(false)).toEqual({
+      normalizedWatermark: null,
+      watermarkStyle: undefined,
+      watermarkInlineStyle: '',
+    });
   });
 });

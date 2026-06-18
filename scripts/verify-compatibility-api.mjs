@@ -520,11 +520,15 @@ async function verifyVue3ScopedCompatibility() {
   const vueWatermarkHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerWatermark.ts`
   assertImportsFrom(vueWatermarkHookSource, '@file-viewer/core', vueWatermarkHookLabel)
   assertTokens(vueWatermarkHookSource, [
-    'normalizeFileViewerWatermark',
-    'buildFileViewerWatermarkStyle',
-    'buildFileViewerWatermarkInlineStyle'
+    'resolveFileViewerWatermarkPresentationState',
+    'normalizedWatermark',
+    'watermarkStyle',
+    'watermarkInlineStyle'
   ], vueWatermarkHookLabel)
   for (const forbiddenToken of [
+    'normalizeFileViewerWatermark',
+    'buildFileViewerWatermarkStyle',
+    'buildFileViewerWatermarkInlineStyle',
     'buildFileViewerWatermarkBackgroundImage',
     'const backgroundImage =',
     'return {\n      backgroundImage\n    }'

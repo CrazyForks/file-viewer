@@ -379,8 +379,10 @@ export {
   buildFileViewerWatermarkStyle,
   buildFileViewerWatermarkSvg,
   normalizeFileViewerWatermark,
+  resolveFileViewerWatermarkPresentationState,
 } from './watermark';
 export type {
+  FileViewerWatermarkPresentationState,
   FileViewerWatermarkStyle,
 } from './watermark';
 export {

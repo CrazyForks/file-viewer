@@ -172,6 +172,7 @@ const requiredValueExports = [
   'createFileViewerZoomChangeEmitter',
   'createFileViewerZoomController',
   'buildFileViewerWatermarkStyle',
+  'resolveFileViewerWatermarkPresentationState',
   'createFileViewerWorkerController',
   'resolveFileViewerRendererAssets',
   'DEFAULT_RENDERER_DEFINITIONS',
@@ -334,6 +335,7 @@ const requiredTypeExports = [
   'RunFileViewerLoadingExtensionSyncInput',
   'MutableFileViewerSearchState',
   'MutableFileViewerZoomState',
+  'FileViewerWatermarkPresentationState',
   'FileViewerWatermarkStyle'
 ]
 

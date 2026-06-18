@@ -1,23 +1,16 @@
 import { computed } from 'vue'
 import type { FileViewerWatermarkOptions } from '@file-viewer/core'
 import {
-  buildFileViewerWatermarkInlineStyle,
-  buildFileViewerWatermarkStyle,
-  normalizeFileViewerWatermark
+  resolveFileViewerWatermarkPresentationState
 } from '@file-viewer/core'
 
 export const useViewerWatermark = (
   getWatermark: () => boolean | FileViewerWatermarkOptions | undefined
 ) => {
-  const normalizedWatermark = computed(() => normalizeFileViewerWatermark(getWatermark()))
-
-  const watermarkStyle = computed(() => {
-    return buildFileViewerWatermarkStyle(normalizedWatermark.value || undefined)
-  })
-
-  const watermarkInlineStyle = computed(() => {
-    return buildFileViewerWatermarkInlineStyle(normalizedWatermark.value || undefined)
-  })
+  const watermarkState = computed(() => resolveFileViewerWatermarkPresentationState(getWatermark()))
+  const normalizedWatermark = computed(() => watermarkState.value.normalizedWatermark)
+  const watermarkStyle = computed(() => watermarkState.value.watermarkStyle)
+  const watermarkInlineStyle = computed(() => watermarkState.value.watermarkInlineStyle)
 
   return {
     normalizedWatermark,
