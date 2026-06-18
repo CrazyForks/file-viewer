@@ -1,10 +1,9 @@
 import {
   buildFileViewerLifecycleContext,
-  buildFileViewerOperationContext,
+  buildFileViewerOperationContextFromLifecycleState,
   createFileViewerLifecycleStateController,
   postFileViewerLifecycleEvent,
   postFileViewerOperationContextEvent,
-  resolveFileViewerLifecycleFallbackSource,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook
 } from '@file-viewer/core'
@@ -119,18 +118,16 @@ export const useViewerLifecycle = ({
   }
 
   const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {
-    const fallbackSource = resolveFileViewerLifecycleFallbackSource({
-      file: getFallbackFile(),
-      url: getFallbackUrl()
-    })
-    const base = lifecycleState.getActiveDocumentContext() || buildLifecycleContext({
-      phase: 'load-complete',
+    return buildFileViewerOperationContextFromLifecycleState({
+      operation,
+      lifecycleState,
       version: getCurrentVersion(),
-      source: fallbackSource.source,
-      file: getCurrentFile(),
-      sourceUrl: fallbackSource.sourceUrl
+      filename: getFilename(),
+      bufferSize: getBufferSize(),
+      currentFile: getCurrentFile(),
+      fallbackFile: getFallbackFile(),
+      fallbackUrl: getFallbackUrl()
     })
-    return buildFileViewerOperationContext(operation, base)
   }
 
   const runBeforeOperation = async (operation: FileViewerOperationType) => {

@@ -153,6 +153,7 @@ export {
   buildFileViewerLifecycleContext,
   buildFileViewerLifecycleContextFromNormalizedSource,
   buildFileViewerOperationContext,
+  buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
   createFileViewerPostMessagePayload,
@@ -180,6 +181,7 @@ export {
   serializeFileViewerContext,
 } from './operations';
 export type {
+  BuildFileViewerOperationContextFromLifecycleStateInput,
   FileViewerToolbarState,
   BuildFileViewerLifecycleContextFromNormalizedSourceInput,
   ResolveFileViewerToolbarStateInput,

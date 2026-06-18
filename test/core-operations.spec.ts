@@ -7,6 +7,7 @@ import {
   buildFileViewerLifecycleContext,
   buildFileViewerLifecycleContextFromNormalizedSource,
   buildFileViewerOperationContext,
+  buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleStateController,
   createFileViewerOriginalSourceState,
@@ -63,6 +64,15 @@ describe('@file-viewer/core operation helpers', () => {
       timestamp: 1240,
       duration: 240,
     });
+
+    expect(buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'url',
+      url: '/docs/zero.pdf',
+      version: 7,
+      startedAt: 0,
+      timestamp: 240,
+    }).duration).toBe(240);
 
     expect(buildFileViewerOperationContext('print', context, 1300)).toMatchObject({
       operation: 'print',
@@ -132,6 +142,57 @@ describe('@file-viewer/core operation helpers', () => {
     expect(controller.getLoadStartedAt(3)).toBeUndefined();
     expect(controller.getActiveDocumentContext()).toBeNull();
     expect(controller.buildActiveUnloadContext('unload-start', null)).toBeNull();
+  });
+
+  it('builds operation contexts from lifecycle state without wrapper fallback logic', () => {
+    const controller = createFileViewerLifecycleStateController();
+    const activeContext = buildFileViewerLifecycleContext({
+      phase: 'load-complete',
+      source: 'file',
+      filename: 'active.pdf',
+      version: 5,
+      timestamp: 320,
+    });
+
+    controller.setActiveDocumentContext(activeContext);
+    expect(buildFileViewerOperationContextFromLifecycleState({
+      operation: 'download',
+      lifecycleState: controller,
+      version: 5,
+      fallbackUrl: '/ignored.docx',
+      timestamp: 360,
+    })).toMatchObject({
+      operation: 'download',
+      source: 'file',
+      filename: 'active.pdf',
+      version: 5,
+      timestamp: 360,
+    });
+
+    controller.clearActiveDocumentContext();
+    controller.markLoadStarted(8, 100);
+
+    expect(buildFileViewerOperationContextFromLifecycleState({
+      operation: 'print',
+      lifecycleState: controller,
+      version: 8,
+      filename: 'fallback.docx',
+      bufferSize: 512,
+      fallbackUrl: '/docs/fallback.docx',
+      lifecycleTimestamp: 150,
+      timestamp: 170,
+    })).toMatchObject({
+      operation: 'print',
+      label: '打印完整渲染内容',
+      type: 'docx',
+      filename: 'fallback.docx',
+      source: 'url',
+      url: '/docs/fallback.docx',
+      size: 512,
+      version: 8,
+      timestamp: 170,
+      duration: 50,
+    });
   });
 
   it('resolves lifecycle fallback sources without wrapper-specific branching', () => {

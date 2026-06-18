@@ -170,6 +170,19 @@ export interface FileViewerLifecycleStateController {
   ): FileViewerLifecycleContext | null;
 }
 
+export interface BuildFileViewerOperationContextFromLifecycleStateInput {
+  operation: FileViewerOperationType;
+  lifecycleState: Pick<FileViewerLifecycleStateController, 'getActiveDocumentContext' | 'getLoadStartedAt'>;
+  version: number;
+  filename?: string;
+  bufferSize?: number;
+  currentFile?: File | null;
+  fallbackFile?: FileViewerFileRef | null;
+  fallbackUrl?: string | null;
+  timestamp?: number;
+  lifecycleTimestamp?: number;
+}
+
 export const buildFileViewerLifecycleContext = <
   Source extends string = FileViewerSourceKind,
 >({
@@ -199,7 +212,7 @@ export const buildFileViewerLifecycleContext = <
     size: size ?? file?.size ?? bufferSize,
     version,
     timestamp: now,
-    duration: duration ?? (phase === 'load-complete' && startedAt ? now - startedAt : undefined),
+    duration: duration ?? (phase === 'load-complete' && typeof startedAt === 'number' ? now - startedAt : undefined),
     reason,
   };
 };
@@ -296,6 +309,38 @@ export const buildFileViewerOperationContext = <
     label: FILE_VIEWER_OPERATION_LABELS[operation],
     timestamp,
   };
+};
+
+export const buildFileViewerOperationContextFromLifecycleState = ({
+  operation,
+  lifecycleState,
+  version,
+  filename,
+  bufferSize,
+  currentFile,
+  fallbackFile,
+  fallbackUrl,
+  timestamp,
+  lifecycleTimestamp,
+}: BuildFileViewerOperationContextFromLifecycleStateInput): FileViewerOperationContext => {
+  const activeContext = lifecycleState.getActiveDocumentContext();
+  const fallbackSource = resolveFileViewerLifecycleFallbackSource({
+    file: fallbackFile,
+    url: fallbackUrl,
+  });
+  const baseContext = activeContext || buildFileViewerLifecycleContext({
+    phase: 'load-complete',
+    version,
+    source: fallbackSource.source,
+    file: currentFile,
+    filename,
+    url: fallbackSource.sourceUrl,
+    bufferSize,
+    startedAt: lifecycleState.getLoadStartedAt(version),
+    timestamp: lifecycleTimestamp,
+  });
+
+  return buildFileViewerOperationContext(operation, baseContext, timestamp);
 };
 
 export const getFileViewerLifecycleHookName = (phase: FileViewerLifecyclePhase) => {

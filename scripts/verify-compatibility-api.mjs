@@ -727,12 +727,12 @@ async function verifyVue3ScopedCompatibility() {
   const vueLifecycleHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerLifecycle.ts`
   assertImportsFrom(vueLifecycleHookSource, '@file-viewer/core', vueLifecycleHookLabel)
   assertTokens(vueLifecycleHookSource, [
+    'buildFileViewerOperationContextFromLifecycleState',
     'createFileViewerLifecycleStateController',
     'lifecycleState.getLoadStartedAt',
     'lifecycleState.buildActiveUnloadContext',
     'postFileViewerLifecycleEvent',
     'postFileViewerOperationContextEvent',
-    'resolveFileViewerLifecycleFallbackSource',
     'runFileViewerBeforeOperation',
     'runFileViewerLifecycleHook'
   ], vueLifecycleHookLabel)
@@ -741,6 +741,8 @@ async function verifyVue3ScopedCompatibility() {
     'let activeDocumentContext',
     'createFileViewerPostMessagePayload',
     'postFileViewerMessageToParent(',
+    'resolveFileViewerLifecycleFallbackSource',
+    'buildFileViewerOperationContext(',
     "'flyfish-viewer:lifecycle'",
     "'flyfish-viewer:operation'",
     "props.file ? 'file'",
