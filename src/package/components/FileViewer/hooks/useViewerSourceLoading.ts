@@ -11,6 +11,7 @@ import {
   commitFileViewerRemoteDownloadState,
   createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
+  finalizeFileViewerPreviewLoadState,
   isFileViewerAbortError,
   resolveFileViewerFileRefSourcePlan,
   resolveFileViewerPreviewRequestReason,
@@ -162,12 +163,6 @@ export const useViewerSourceLoading = ({
     return requestController.isCurrent(version)
   }
 
-  const finishLoading = (version: number) => {
-    if (isCurrentRequest(version)) {
-      stopLoading()
-    }
-  }
-
   const readAndRenderFile = async (
     file: File,
     version: number,
@@ -239,8 +234,12 @@ export const useViewerSourceLoading = ({
       console.error(nextError)
       showError(formatErrorMessage('加载 PDF 流式预览异常', nextError))
     } finally {
-      clearLoadStarted(version)
-      finishLoading(version)
+      finalizeFileViewerPreviewLoadState({
+        version,
+        isCurrent: isCurrentRequest,
+        onClearLoadStarted: clearLoadStarted,
+        onStopLoading: stopLoading
+      })
     }
   }
 
@@ -273,8 +272,12 @@ export const useViewerSourceLoading = ({
       console.error(nextError)
       showError(formatErrorMessage('读取文件异常', nextError))
     } finally {
-      clearLoadStarted(version)
-      finishLoading(version)
+      finalizeFileViewerPreviewLoadState({
+        version,
+        isCurrent: isCurrentRequest,
+        onClearLoadStarted: clearLoadStarted,
+        onStopLoading: stopLoading
+      })
     }
   }
 
@@ -335,8 +338,12 @@ export const useViewerSourceLoading = ({
       showError(formatErrorMessage('加载文件异常', nextError))
     } finally {
       requestController.clearAbortController(controller)
-      clearLoadStarted(version)
-      finishLoading(version)
+      finalizeFileViewerPreviewLoadState({
+        version,
+        isCurrent: isCurrentRequest,
+        onClearLoadStarted: clearLoadStarted,
+        onStopLoading: stopLoading
+      })
     }
   }
 

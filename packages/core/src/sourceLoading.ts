@@ -171,6 +171,13 @@ export interface CommitFileViewerRenderCompleteStateInput<Session = unknown> {
   onClearLoadStarted?: (version: number) => void;
 }
 
+export interface FinalizeFileViewerPreviewLoadStateInput {
+  version: number;
+  isCurrent: (version: number) => boolean;
+  onClearLoadStarted?: (version: number) => void;
+  onStopLoading?: () => void;
+}
+
 export const createFileViewerRequestController = (): FileViewerRequestController => {
   let version = 0;
   let activeAbortController: AbortController | null = null;
@@ -381,6 +388,18 @@ export const commitFileViewerRenderCompleteState = <Session = unknown>({
   onLifecycle?.(completeState.lifecycleContext);
   onClearLoadStarted?.(version);
   return completeState;
+};
+
+export const finalizeFileViewerPreviewLoadState = ({
+  version,
+  isCurrent,
+  onClearLoadStarted,
+  onStopLoading,
+}: FinalizeFileViewerPreviewLoadStateInput) => {
+  onClearLoadStarted?.(version);
+  if (isCurrent(version)) {
+    onStopLoading?.();
+  }
 };
 
 export const resolveFileViewerLoadStartMessage = (

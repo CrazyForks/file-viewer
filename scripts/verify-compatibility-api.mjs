@@ -494,6 +494,7 @@ async function verifyVue3ScopedCompatibility() {
     'commitFileViewerRemoteDownloadState',
     'createFileViewerReadPreviewState',
     'createFileViewerStreamingPdfPlaceholderFile',
+    'finalizeFileViewerPreviewLoadState',
     'resolveFileViewerFileRefSourcePlan',
     'resolveFileViewerPreviewRequestReason',
     'resolveFileViewerRemoteSourcePlan',
@@ -541,6 +542,9 @@ async function verifyVue3ScopedCompatibility() {
     'setLoadingMessage(FILE_VIEWER_PREVIEW_MESSAGES.reading)',
     'if (!data) {',
     'source: data',
+    'clearLoadStarted(version)',
+    'finishLoading(version)',
+    'const finishLoading',
     "phase: 'load-start'",
     "phase: 'load-complete'",
     'renderedReady: true'

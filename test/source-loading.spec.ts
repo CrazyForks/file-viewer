@@ -21,6 +21,7 @@ import {
   createFileViewerRenderCompleteState,
   createFileViewerStreamingPdfPlaceholderFile,
   createFileViewerRequestController,
+  finalizeFileViewerPreviewLoadState,
   hasFileViewerPreviewSource,
   isFileViewerAbortError,
   normalizeFileViewerSourceUrl,
@@ -482,6 +483,37 @@ describe('remote source loading helpers', () => {
       source: 'file',
       version: 12
     })
+  })
+
+  it('finalizes preview load state without stopping newer requests', () => {
+    const events: string[] = []
+    finalizeFileViewerPreviewLoadState({
+      version: 12,
+      isCurrent: version => version === 12,
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stop')
+      }
+    })
+
+    finalizeFileViewerPreviewLoadState({
+      version: 13,
+      isCurrent: version => version === 12,
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      },
+      onStopLoading: () => {
+        events.push('stale-stop')
+      }
+    })
+
+    expect(events).toEqual([
+      'clear:12',
+      'stop',
+      'clear:13'
+    ])
   })
 
   it('defaults PDF streaming to same-origin URLs', () => {
