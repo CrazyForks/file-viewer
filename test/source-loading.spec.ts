@@ -9,6 +9,7 @@ import {
   applyFileViewerReadPreviewState,
   applyFileViewerRenderReadinessState,
   applyFileViewerPreviewRequestResetState,
+  commitFileViewerLoadStartState,
   commitFileViewerRenderCompleteState,
   createFileViewerEmptyPreviewState,
   createFileViewerLoadStartState,
@@ -260,6 +261,50 @@ describe('remote source loading helpers', () => {
         version: 9,
         timestamp: 140
       }
+    })
+  })
+
+  it('commits load-start state in the shared core order', () => {
+    const events: string[] = []
+    const filenameTarget = { filename: 'old.pdf' }
+    const file = new File(['demo'], 'start.pdf')
+
+    const loadStart = commitFileViewerLoadStartState({
+      version: 11,
+      filename: '/example/start.pdf?token=1',
+      filenameTarget,
+      buildState: () => {
+        events.push('build')
+        return createFileViewerLoadStartState({
+          version: 11,
+          source: 'file',
+          file,
+          timestamp: 200
+        })
+      },
+      onMarkLoadStarted: version => {
+        events.push(`mark:${version}:${filenameTarget.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}:${context.filename}`)
+      },
+      onStartLoading: message => {
+        events.push(`loading:${message}`)
+      }
+    })
+
+    expect(events).toEqual([
+      'mark:11:start.pdf',
+      'build',
+      'lifecycle:load-start:start.pdf',
+      `loading:${FILE_VIEWER_PREVIEW_MESSAGES.reading}`
+    ])
+    expect(filenameTarget.filename).toBe('start.pdf')
+    expect(loadStart.lifecycleContext).toMatchObject({
+      phase: 'load-start',
+      filename: 'start.pdf',
+      source: 'file',
+      version: 11
     })
   })
 

@@ -3,10 +3,10 @@ import type { Ref } from 'vue'
 import {
   FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerEmptyPreviewState,
-  applyFileViewerPreviewFilenameState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
   applyFileViewerPreviewRequestResetState,
+  commitFileViewerLoadStartState,
   commitFileViewerRenderCompleteState,
   createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
@@ -247,15 +247,19 @@ export const useViewerSourceLoading = ({
       currentFilename: filename.value
     })
     const { file } = localSource
-    applyFileViewerPreviewFilenameState(previewStateTarget, localSource.filename)
-    markLoadStarted(version)
-    const loadStartState = buildLoadStartState({
+    commitFileViewerLoadStartState({
       version,
-      source: 'file',
-      file
+      filename: localSource.filename,
+      filenameTarget: previewStateTarget,
+      buildState: () => buildLoadStartState({
+        version,
+        source: 'file',
+        file
+      }),
+      onMarkLoadStarted: markLoadStarted,
+      onLifecycle: notifyLifecycle,
+      onStartLoading: startLoading
     })
-    notifyLifecycle(loadStartState.lifecycleContext)
-    startLoading(loadStartState.loadingMessage)
 
     try {
       await readAndRenderFile(file, version, undefined, 'file')
@@ -278,15 +282,19 @@ export const useViewerSourceLoading = ({
       url
     })
     const nextFilename = remoteSource.filename
-    applyFileViewerPreviewFilenameState(previewStateTarget, nextFilename)
-    markLoadStarted(version)
-    const loadStartState = buildLoadStartState({
+    commitFileViewerLoadStartState({
       version,
-      source: 'url',
-      sourceUrl: url
+      filename: nextFilename,
+      filenameTarget: previewStateTarget,
+      buildState: () => buildLoadStartState({
+        version,
+        source: 'url',
+        sourceUrl: url
+      }),
+      onMarkLoadStarted: markLoadStarted,
+      onLifecycle: notifyLifecycle,
+      onStartLoading: startLoading
     })
-    notifyLifecycle(loadStartState.lifecycleContext)
-    startLoading(loadStartState.loadingMessage)
 
     if (remoteSource.streamPdf) {
       await previewRemotePdfStream(url, version, nextFilename)

@@ -484,12 +484,12 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueSourceLoadingHookSource, '@file-viewer/core', vueSourceLoadingHookLabel)
   assertTokens(vueSourceLoadingHookSource, [
     'applyFileViewerEmptyPreviewState',
-    'applyFileViewerPreviewFilenameState',
     'applyFileViewerPreviewSourceUrlState',
     'applyFileViewerReadPreviewState',
     'applyFileViewerPreviewRequestResetState',
     'buildLoadStartState',
     'buildRenderCompleteState',
+    'commitFileViewerLoadStartState',
     'commitFileViewerRenderCompleteState',
     'createFileViewerReadPreviewState',
     'createFileViewerStreamingPdfPlaceholderFile',
@@ -529,7 +529,11 @@ async function verifyVue3ScopedCompatibility() {
     'currentSourceUrl.value = normalizeFileViewerSourceUrl',
     'currentSourceUrl.value = url',
     'renderedReady.value = true',
+    'applyFileViewerPreviewFilenameState',
     'applyFileViewerRenderReadinessState',
+    'const loadStartState = buildLoadStartState',
+    'notifyLifecycle(loadStartState.lifecycleContext)',
+    'startLoading(loadStartState.loadingMessage)',
     "phase: 'load-start'",
     "phase: 'load-complete'",
     'renderedReady: true'

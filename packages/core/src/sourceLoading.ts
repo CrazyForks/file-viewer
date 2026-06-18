@@ -116,6 +116,17 @@ export interface CreateFileViewerLoadStartStateInput {
   timestamp?: number;
 }
 
+export interface CommitFileViewerLoadStartStateInput {
+  version: number;
+  filename?: string;
+  fallbackFilename?: string;
+  filenameTarget?: MutableFileViewerPreviewFilenameState;
+  buildState: () => FileViewerLoadStartState;
+  onMarkLoadStarted?: (version: number) => void;
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+  onStartLoading?: (message: string) => void;
+}
+
 export interface FileViewerRenderCompleteState {
   readiness: FileViewerRenderReadinessState;
   lifecycleContext: FileViewerLifecycleContext;
@@ -335,6 +346,26 @@ export const resolveFileViewerLoadStartMessage = (
   return source === 'url'
     ? FILE_VIEWER_PREVIEW_MESSAGES.downloading
     : FILE_VIEWER_PREVIEW_MESSAGES.reading;
+};
+
+export const commitFileViewerLoadStartState = ({
+  version,
+  filename,
+  fallbackFilename,
+  filenameTarget,
+  buildState,
+  onMarkLoadStarted,
+  onLifecycle,
+  onStartLoading,
+}: CommitFileViewerLoadStartStateInput) => {
+  if (filenameTarget) {
+    applyFileViewerPreviewFilenameState(filenameTarget, filename, fallbackFilename);
+  }
+  onMarkLoadStarted?.(version);
+  const loadStartState = buildState();
+  onLifecycle?.(loadStartState.lifecycleContext);
+  onStartLoading?.(loadStartState.loadingMessage);
+  return loadStartState;
 };
 
 export const createFileViewerLoadStartState = ({
