@@ -11,14 +11,23 @@ import {
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
-const { entries } = await loadEcosystemReleaseContext(sourceRoot)
+const { entries, wrapperManifest } = await loadEcosystemReleaseContext(sourceRoot)
 
 const importableExtensions = new Set(['.js', '.mjs'])
+const allowedEntryFormats = new Set([
+  'esm',
+  'types',
+  'iife',
+  'viewer-assets',
+  'copy-assets-cli',
+  'svelte-component'
+])
 const webGlobalPackages = new Set([
   '@flyfish-group/file-viewer-web',
   '@file-viewer/web'
 ])
 const webGlobalBundle = 'dist/flyfish-file-viewer-web.iife.js'
+const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
 
 async function assertFile(path, label = path) {
   if (!existsSync(path)) {
@@ -99,21 +108,34 @@ async function assertWebGlobalEntrypoint(entry) {
   if (!webGlobalPackages.has(entry.packageName)) {
     return false
   }
-  const bundlePath = join(entry.absoluteDir, webGlobalBundle)
-  await assertFile(bundlePath, `${entry.packageName} ${webGlobalBundle}`)
-  const context = { window: {} }
-  vm.runInNewContext(await readFile(bundlePath, 'utf8'), context, {
-    filename: `${entry.packageName}/${webGlobalBundle}`
-  })
-  const globalApi = context.window.FlyfishFileViewerWeb || context.FlyfishFileViewerWeb
-  for (const exportName of [
-    'mountViewerFrame',
-    'mountViewer',
-    'buildViewerSrc',
-    'createViewerFrameFilePostController'
-  ]) {
-    if (typeof globalApi?.[exportName] !== 'function') {
-      throw new Error(`${entry.packageName} browser global bundle is missing ${exportName}`)
+  if (!entry.packageJson.unpkg || !entry.packageJson.jsdelivr) {
+    throw new Error(`${entry.packageName} browser global package must declare both unpkg and jsdelivr bundle fields`)
+  }
+
+  const bundleEntrypoints = new Set([
+    entry.packageJson.unpkg,
+    entry.packageJson.jsdelivr,
+    `./${webGlobalBundle}`
+  ])
+  for (const bundleEntrypoint of bundleEntrypoints) {
+    const normalizedEntrypoint = normalizeEntrypoint(bundleEntrypoint)
+    const bundlePath = join(entry.absoluteDir, normalizedEntrypoint)
+    await assertFile(bundlePath, `${entry.packageName} ${bundleEntrypoint}`)
+
+    const context = { window: {} }
+    vm.runInNewContext(await readFile(bundlePath, 'utf8'), context, {
+      filename: `${entry.packageName}/${normalizedEntrypoint}`
+    })
+    const globalApi = context.window.FlyfishFileViewerWeb || context.FlyfishFileViewerWeb
+    for (const exportName of [
+      'mountViewerFrame',
+      'mountViewer',
+      'buildViewerSrc',
+      'createViewerFrameFilePostController'
+    ]) {
+      if (typeof globalApi?.[exportName] !== 'function') {
+        throw new Error(`${entry.packageName} browser global bundle ${bundleEntrypoint} is missing ${exportName}`)
+      }
     }
   }
   return true
@@ -127,9 +149,76 @@ async function assertRootVue3StaticEntrypoints(entry) {
   await assertDirectory(join(entry.absoluteDir, 'dist', 'components'), `${entry.packageName} dist/components/`)
 }
 
+async function assertEntrypointFieldFile(entry, fieldName, value) {
+  if (typeof value !== 'string') {
+    throw new Error(`${entry.packageName} entry format requires ${fieldName}`)
+  }
+  await assertFile(
+    join(entry.absoluteDir, normalizeEntrypoint(value)),
+    `${entry.packageName} ${fieldName} ${value}`
+  )
+}
+
+async function assertWrapperEntryFormats(entry) {
+  const wrapper = wrappersByPackageName.get(entry.packageName)
+  if (!wrapper) {
+    return 0
+  }
+  if (!Array.isArray(wrapper.entryFormats) || !wrapper.entryFormats.length) {
+    throw new Error(`${entry.packageName} wrapper manifest must declare entryFormats`)
+  }
+  for (const format of wrapper.entryFormats) {
+    if (!allowedEntryFormats.has(format)) {
+      throw new Error(`${entry.packageName} wrapper manifest has unsupported entry format: ${format}`)
+    }
+  }
+
+  if (wrapper.entryFormats.includes('esm')) {
+    await assertEntrypointFieldFile(entry, 'module', entry.packageJson.module)
+    await assertEntrypointFieldFile(entry, 'exports["."].import', entry.packageJson.exports?.['.']?.import)
+  }
+
+  if (wrapper.entryFormats.includes('types')) {
+    await assertEntrypointFieldFile(entry, 'types', entry.packageJson.types)
+    await assertEntrypointFieldFile(entry, 'exports["."].types', entry.packageJson.exports?.['.']?.types)
+  }
+
+  if (wrapper.entryFormats.includes('iife')) {
+    await assertEntrypointFieldFile(entry, 'unpkg', entry.packageJson.unpkg)
+    await assertEntrypointFieldFile(entry, 'jsdelivr', entry.packageJson.jsdelivr)
+    await assertWebGlobalEntrypoint(entry)
+  }
+
+  if (wrapper.entryFormats.includes('viewer-assets')) {
+    if (!entry.packageJson.exports?.['./viewer/*']) {
+      throw new Error(`${entry.packageName} declares viewer-assets but package.json is missing exports["./viewer/*"]`)
+    }
+    if (!entry.packageJson.files?.includes('viewer')) {
+      throw new Error(`${entry.packageName} declares viewer-assets but package.json files does not include viewer`)
+    }
+    await assertViewerStaticEntrypoints(entry)
+  }
+
+  if (wrapper.entryFormats.includes('copy-assets-cli')) {
+    await assertEntrypointFieldFile(
+      entry,
+      'bin.file-viewer-copy-assets',
+      entry.packageJson.bin?.['file-viewer-copy-assets']
+    )
+  }
+
+  if (wrapper.entryFormats.includes('svelte-component')) {
+    await assertEntrypointFieldFile(entry, 'svelte', entry.packageJson.svelte)
+    await assertEntrypointFieldFile(entry, 'exports["."].svelte', entry.packageJson.exports?.['.']?.svelte)
+  }
+
+  return wrapper.entryFormats.length
+}
+
 let checkedEntrypointCount = 0
 let importedEntrypointCount = 0
 let checkedGlobalBundleCount = 0
+let checkedWrapperEntryFormatCount = 0
 
 for (const entry of entries) {
   await assertPackageEntrypoints(entry)
@@ -145,9 +234,10 @@ for (const entry of entries) {
   if (await assertWebGlobalEntrypoint(entry)) {
     checkedGlobalBundleCount += 1
   }
+  checkedWrapperEntryFormatCount += await assertWrapperEntryFormats(entry)
   await assertRootVue3StaticEntrypoints(entry)
 }
 
 console.log(
-  `[production-entrypoints] Verified ${entries.length} packages, ${checkedEntrypointCount} declared entrypoint files, ${importedEntrypointCount} importable ESM production entrypoints, and ${checkedGlobalBundleCount} browser global bundles.`
+  `[production-entrypoints] Verified ${entries.length} packages, ${checkedEntrypointCount} declared entrypoint files, ${importedEntrypointCount} importable ESM production entrypoints, ${checkedGlobalBundleCount} browser global bundles, and ${checkedWrapperEntryFormatCount} wrapper entry format claims.`
 )

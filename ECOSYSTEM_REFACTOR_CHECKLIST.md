@@ -451,6 +451,7 @@
   - [x] Adapter demo 构建会输出并校验 `/manual-js.html` 与 `/manual-iife.html`，覆盖手写 iframe 和普通 script 标签接入的静态产物完整性。
   - [x] 新增可复现的 Playwright 浏览器 smoke 脚本，覆盖 adapter demo 首页的 React/Pure Web wrapper iframe、Vue3 wrapper 页面、jQuery wrapper 页面、Svelte action 页面、手写 iframe + Blob postMessage 页面和 script tag IIFE 页面。
   - [x] `ecosystem/wrappers.json` 新增 `entryFormats`，README、独立 wrapper manifest、公开成品 release manifest 和 wrapper 校验统一锁定 ESM、类型声明、Web IIFE、viewer 静态资源、复制 CLI、Svelte 组件等入口口径。
+  - [x] `pnpm verify:production-entrypoints` 已复用 `entryFormats`，校验 ESM、类型声明、IIFE、viewer assets、复制 CLI 和 Svelte 组件声明与 package 字段、实际文件一致，并按 unpkg/jsdelivr 路径执行 Web IIFE 全局 API。
   - [ ] 独立 CJS / UMD / script tag 浏览器烟测仍需继续补齐到完整自动化。
 - [ ] 浏览器 smoke 验证主 Demo、文档比对、iframe、script tag、React、Vue、jQuery、Svelte 示例。
   - [x] 新增 `pnpm verify:demo-browser-smoke`，在构建后的 `dist/` 上真实打开主 Demo 和 `/compare.html`，验证轻量文档渲染、文档比对双栏组件挂载和快捷键搜索浮层。

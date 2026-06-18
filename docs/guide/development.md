@@ -40,7 +40,7 @@ pnpm install
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入私有/未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准 wrapper 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准 wrapper 仓库元数据和历史包依赖边界 |
 | `pnpm verify:public-artifacts` | 校验公开成品仓库的 release manifest、tarball、README、wrapper 仓库索引和源码边界 |
-| `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口和可导入 ESM 入口 |
+| `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 静态入口、可导入 ESM 入口，以及 wrapper manifest 声明的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口 |
 | `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、分支职责、wrapper 源包、wrapper 运行 API、wrapper 参数面、兼容包 API/README、生态版本和 npm manifest 校验 |
 | `pnpm deploy:cloudflare` | 构建 Demo、校验多入口产物，并通过 Wrangler Direct Upload 发布到 Cloudflare Pages |
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
@@ -146,7 +146,7 @@ pnpm release:pack
 - 每个 wrapper 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
 - 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准 wrapper 和历史兼容包不会漂移，且标准 wrapper 仍指向对应 GitHub 公开仓库
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免私有 core 源码、未声明源码、工作区目录、source map、构建配置和本地元数据泄露
-- 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入
+- 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入，并确认 wrapper manifest 的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口与 package 字段、实际文件一致
 - 本地构建和文档构建是否全部通过
 - 主 Demo、文档比对页和 adapter Demo 是否已经通过 `pnpm verify:browser-smoke`，确认轻量文档实际渲染、左右比对组件挂载、`Ctrl/Command+F` 搜索浮层、React/Web/Vue3/jQuery/Svelte wrapper、手写 iframe 和 script tag IIFE 行为正常
 - React / 纯 JS 适配层 Demo 是否在开发服务和 build preview 中都能显示内容
