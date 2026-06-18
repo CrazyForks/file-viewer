@@ -662,36 +662,10 @@ async function verifyVue3ScopedCompatibility() {
     )
   }
 
-  const vueDocumentSearchHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useDocumentSearch.ts')
-  const vueDocumentSearchHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useDocumentSearch.ts`
-  assertImportsFrom(vueDocumentSearchHookSource, '@file-viewer/core', vueDocumentSearchHookLabel)
-  assertTokens(vueDocumentSearchHookSource, [
-    'createFileViewerDomSearchController',
-    'createFileViewerDomSearchControllerActionHandlers',
-    'actions.destroy()'
-  ], vueDocumentSearchHookLabel)
-  for (const forbiddenToken of [
-    'observeFileViewerDomSearchController',
-    'runFileViewerDomSearchControllerAction',
-    'destroyFileViewerDomSearchController',
-    'controller.refreshAnchors()',
-    'controller.search(query)',
-    'controller.next()',
-    'controller.previous()',
-    'controller.clear()',
-    'applyFileViewerSearchState',
-    'const syncFromController',
-    'anchors.value = controller.anchors',
-    'controller.destroy()',
-    'const applySearchState',
-    'target.query = nextState.query',
-    'target.matches = nextState.matches'
-  ]) {
-    assert(
-      !vueDocumentSearchHookSource.includes(forbiddenToken),
-      `${vueDocumentSearchHookLabel} must delegate search state application to @file-viewer/core instead of ${forbiddenToken}`
-    )
-  }
+  assert(
+    !existsSync(join(entry.absoluteDir, 'src/package/components/FileViewer/hooks/useDocumentSearch.ts')),
+    `${entry.packageName} must keep document search composition in useViewerDocumentFeatures via @file-viewer/core instead of restoring the old useDocumentSearch hook`
+  )
 
   const vueDocumentFeaturesHookSource = await readSource(entry, 'src/package/components/FileViewer/hooks/useViewerDocumentFeatures.ts')
   const vueDocumentFeaturesHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerDocumentFeatures.ts`
