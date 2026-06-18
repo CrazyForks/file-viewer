@@ -4,8 +4,10 @@ import {
   applyFileViewerSearchState,
   applyFileViewerZoomState,
   buildFileViewerDocumentTextChunks,
+  clearFileViewerZoomControllerProvider,
   collectFileViewerDocumentAnchors,
   cloneFileViewerSearchState,
+  createFileViewerZoomChangeState,
   createFileViewerDocumentChangeSnapshot,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
@@ -19,10 +21,14 @@ import {
   isFileViewerScrollableElement,
   normalizeFileViewerAiOptions,
   normalizeFileViewerSearchOptions,
+  observeFileViewerZoomController,
   registerFileViewerSearchProvider,
   registerFileViewerZoomProvider,
+  refreshFileViewerZoomControllerProvider,
   resolveFileViewerLocationChangeAnchor,
   resolveFileViewerScrollContainer,
+  runFileViewerZoomControllerAction,
+  syncFileViewerZoomControllerState,
   unregisterFileViewerSearchProvider,
   unregisterFileViewerZoomProvider,
   type FileViewerDocumentAnchor,
@@ -418,19 +424,26 @@ describe('@file-viewer/core document helpers', () => {
     });
 
     expect(controller.hasProvider()).toBe(true);
+    expect(syncFileViewerZoomControllerState(stateTarget, controller)).toBe(stateTarget);
     expect(controller.state).toMatchObject({
       scale: 1,
       label: '100%',
       canZoomIn: true,
     });
+    expect(createFileViewerZoomChangeState(stateTarget)).toEqual(controller.getState());
 
-    await expect(controller.zoomIn()).resolves.toMatchObject({ scale: 1.25, label: '125%' });
+    await expect(runFileViewerZoomControllerAction(stateTarget, () => controller.zoomIn()))
+      .resolves.toMatchObject({ scale: 1.25, label: '125%' });
     expect(beforeOperations).toEqual(['zoom-in']);
     expect(controller.state.canReset).toBe(true);
+    expect(stateTarget).toMatchObject({ scale: 1.25, label: '125%' });
 
     scale = 1.5;
     emit();
     expect(controller.state).toMatchObject({ scale: 1.5, label: '150%' });
+    expect(refreshFileViewerZoomControllerProvider(stateTarget, controller)).toBe(zoomProvider);
+    expect(stateTarget).toMatchObject({ scale: 1.5, label: '150%' });
+    expect(observeFileViewerZoomController(stateTarget, controller)).toBe(stateTarget);
 
     await expect(controller.zoomOut()).resolves.toMatchObject({ scale: 1.5 });
     expect(beforeOperations).toEqual(['zoom-in', 'zoom-out']);
@@ -438,9 +451,10 @@ describe('@file-viewer/core document helpers', () => {
     allowZoomOut = true;
     await expect(controller.zoomOut()).resolves.toMatchObject({ scale: 0.75, label: '75%' });
 
-    controller.clearProvider();
+    clearFileViewerZoomControllerProvider(stateTarget, controller);
     expect(controller.provider).toBeNull();
     expect(controller.getState()).toEqual(createFileViewerZoomState());
+    expect(stateTarget).toEqual(createFileViewerZoomState());
 
     controller.destroy();
     unregisterFileViewerZoomProvider(zoomHost);

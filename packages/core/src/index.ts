@@ -57,11 +57,19 @@ export type {
 } from './documentEvents';
 export {
   applyFileViewerZoomState,
+  clearFileViewerZoomControllerProvider,
   createFileViewerZoomChangeEmitter,
+  createFileViewerZoomChangeState,
   cloneFileViewerZoomState,
   createFileViewerZoomController,
+  destroyFileViewerZoomController,
+  observeFileViewerZoomController,
+  refreshFileViewerZoomControllerProvider,
+  runFileViewerZoomControllerAction,
+  syncFileViewerZoomControllerState,
 } from './documentZoom';
 export type {
+  FileViewerZoomController,
   MutableFileViewerZoomState,
 } from './documentZoom';
 export {

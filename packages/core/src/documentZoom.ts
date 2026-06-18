@@ -19,6 +19,20 @@ export interface CreateFileViewerZoomControllerOptions {
 
 export type MutableFileViewerZoomState = FileViewerZoomState;
 
+export interface FileViewerZoomController {
+  readonly provider: FileViewerZoomProvider | null;
+  readonly state: FileViewerZoomState;
+  hasProvider(): boolean;
+  refreshProvider(): FileViewerZoomProvider | null;
+  observe(): void;
+  clearProvider(): void;
+  getState(): FileViewerZoomState;
+  zoomIn(): Promise<FileViewerZoomState>;
+  zoomOut(): Promise<FileViewerZoomState>;
+  resetZoom(): Promise<FileViewerZoomState>;
+  destroy(): void;
+}
+
 export const cloneFileViewerZoomState = (state: FileViewerZoomState): FileViewerZoomState => ({
   scale: state.scale,
   label: state.label,
@@ -45,6 +59,61 @@ export const applyFileViewerZoomState = <Target extends MutableFileViewerZoomSta
   return target;
 };
 
+export const createFileViewerZoomChangeState = (
+  state: FileViewerZoomState
+): FileViewerZoomState => {
+  return cloneFileViewerZoomState(state);
+};
+
+export const syncFileViewerZoomControllerState = <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  controller: Pick<FileViewerZoomController, 'state'>
+) => {
+  return applyFileViewerZoomState(target, controller.state);
+};
+
+export const refreshFileViewerZoomControllerProvider = <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  controller: Pick<FileViewerZoomController, 'refreshProvider' | 'state'>
+) => {
+  const provider = controller.refreshProvider();
+  syncFileViewerZoomControllerState(target, controller);
+  return provider;
+};
+
+export const observeFileViewerZoomController = <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  controller: Pick<FileViewerZoomController, 'observe' | 'state'>
+) => {
+  controller.observe();
+  return syncFileViewerZoomControllerState(target, controller);
+};
+
+export const clearFileViewerZoomControllerProvider = <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  controller: Pick<FileViewerZoomController, 'clearProvider' | 'state'>
+) => {
+  controller.clearProvider();
+  return syncFileViewerZoomControllerState(target, controller);
+};
+
+export const destroyFileViewerZoomController = <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  controller: Pick<FileViewerZoomController, 'destroy' | 'state'>
+) => {
+  controller.destroy();
+  return syncFileViewerZoomControllerState(target, controller);
+};
+
+export const runFileViewerZoomControllerAction = async <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  action: () => Promise<FileViewerZoomState>
+) => {
+  const nextState = await action();
+  applyFileViewerZoomState(target, nextState);
+  return createFileViewerZoomChangeState(target);
+};
+
 export const createFileViewerZoomChangeEmitter = () => {
   const listeners = new Set<() => void>();
   return {
@@ -69,7 +138,7 @@ export const createFileViewerZoomController = ({
   root,
   enabled,
   beforeZoom,
-}: CreateFileViewerZoomControllerOptions) => {
+}: CreateFileViewerZoomControllerOptions): FileViewerZoomController => {
   let provider: FileViewerZoomProvider | null = null;
   let unsubscribe: (() => void) | null = null;
   let observer: MutationObserver | null = null;

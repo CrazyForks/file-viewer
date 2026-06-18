@@ -1,11 +1,14 @@
 import { reactive, type Ref } from 'vue'
 import {
-  applyFileViewerZoomState,
-  cloneFileViewerZoomState,
+  clearFileViewerZoomControllerProvider,
+  createFileViewerZoomChangeState,
   createFileViewerZoomController,
   createFileViewerZoomState,
+  destroyFileViewerZoomController,
+  observeFileViewerZoomController,
+  refreshFileViewerZoomControllerProvider,
+  runFileViewerZoomControllerAction,
   type FileViewerOperationType,
-  type FileViewerZoomProvider
 } from '@file-viewer/core'
 
 interface UseFileViewerZoomOptions {
@@ -32,49 +35,25 @@ export const useViewerZoom = ({
     beforeZoom: operation => runBeforeOperation(operation)
   })
 
-  const syncFromController = (nextProvider: FileViewerZoomProvider | null = controller.provider) => {
-    applyFileViewerZoomState(state, controller.state)
-    return nextProvider
-  }
-
   return {
     zoomState: state,
     hasZoomProvider: () => {
-      const nextProvider = controller.refreshProvider()
-      syncFromController(nextProvider)
+      const nextProvider = refreshFileViewerZoomControllerProvider(state, controller)
       return !!nextProvider
     },
-    refreshZoomProvider: () => {
-      const nextProvider = controller.refreshProvider()
-      return syncFromController(nextProvider)
-    },
+    refreshZoomProvider: () => refreshFileViewerZoomControllerProvider(state, controller),
     startZoomObserver: () => {
-      controller.observe()
-      syncFromController()
+      observeFileViewerZoomController(state, controller)
     },
     stopZoomObserver: () => {
-      controller.destroy()
-      syncFromController(null)
+      destroyFileViewerZoomController(state, controller)
     },
     clearZoomProvider: () => {
-      controller.clearProvider()
-      syncFromController(null)
+      clearFileViewerZoomControllerProvider(state, controller)
     },
-    getZoomState: () => cloneFileViewerZoomState(state),
-    zoomIn: async () => {
-      const nextState = await controller.zoomIn()
-      applyFileViewerZoomState(state, nextState)
-      return cloneFileViewerZoomState(state)
-    },
-    zoomOut: async () => {
-      const nextState = await controller.zoomOut()
-      applyFileViewerZoomState(state, nextState)
-      return cloneFileViewerZoomState(state)
-    },
-    resetZoom: async () => {
-      const nextState = await controller.resetZoom()
-      applyFileViewerZoomState(state, nextState)
-      return cloneFileViewerZoomState(state)
-    }
+    getZoomState: () => createFileViewerZoomChangeState(state),
+    zoomIn: () => runFileViewerZoomControllerAction(state, () => controller.zoomIn()),
+    zoomOut: () => runFileViewerZoomControllerAction(state, () => controller.zoomOut()),
+    resetZoom: () => runFileViewerZoomControllerAction(state, () => controller.resetZoom())
   }
 }
