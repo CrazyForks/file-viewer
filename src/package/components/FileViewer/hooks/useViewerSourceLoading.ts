@@ -2,11 +2,11 @@ import axios from 'axios'
 import type { Ref } from 'vue'
 import {
   FILE_VIEWER_PREVIEW_MESSAGES,
-  applyFileViewerEmptyPreviewState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
-  applyFileViewerPreviewRequestResetState,
+  commitFileViewerEmptyPreviewResetState,
   commitFileViewerLoadStartState,
+  commitFileViewerPreviewRequestStartState,
   commitFileViewerRenderCompleteState,
   createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
@@ -148,11 +148,13 @@ export const useViewerSourceLoading = ({
   }
 
   const createRequestVersion = (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    const version = requestController.createVersion()
-    clearRenderedContent(reason)
-    applyFileViewerPreviewRequestResetState(previewStateTarget)
-    clearError()
-    return version
+    return commitFileViewerPreviewRequestStartState({
+      reason,
+      requestController,
+      previewTarget: previewStateTarget,
+      onClearRenderedContent: clearRenderedContent,
+      onClearError: clearError
+    })
   }
 
   const isCurrentRequest = (version: number) => {
@@ -340,9 +342,11 @@ export const useViewerSourceLoading = ({
   }
 
   const resetViewer = () => {
-    applyFileViewerEmptyPreviewState(previewStateTarget)
-    clearRenderedContent()
-    resetLoading()
+    commitFileViewerEmptyPreviewResetState({
+      previewTarget: previewStateTarget,
+      onClearRenderedContent: clearRenderedContent,
+      onResetLoading: resetLoading
+    })
   }
 
   const refreshPreview = async () => {

@@ -33,6 +33,14 @@ export interface ResolveFileViewerPreviewRequestReasonInput {
   url?: string | null;
 }
 
+export interface CommitFileViewerPreviewRequestStartStateInput {
+  reason?: FileViewerLifecycleContext['reason'];
+  requestController: Pick<FileViewerRequestController, 'createVersion'>;
+  previewTarget: MutableFileViewerPreviewRequestState;
+  onClearRenderedContent?: (reason?: FileViewerLifecycleContext['reason']) => void;
+  onClearError?: () => void;
+}
+
 export interface FileViewerEmptyPreviewState {
   filename: '';
   file: null;
@@ -57,6 +65,14 @@ export interface MutableFileViewerPreviewRequestState {
 export interface MutableFileViewerPreviewState extends MutableFileViewerPreviewRequestState {
   filename: string;
   renderedReady: boolean;
+}
+
+export interface CommitFileViewerEmptyPreviewResetStateInput {
+  previewTarget: MutableFileViewerPreviewState;
+  state?: FileViewerEmptyPreviewState;
+  reason?: FileViewerLifecycleContext['reason'];
+  onClearRenderedContent?: (reason?: FileViewerLifecycleContext['reason']) => void;
+  onResetLoading?: () => void;
 }
 
 export interface FileViewerReadPreviewState {
@@ -258,6 +274,20 @@ export const applyFileViewerPreviewRequestResetState = <Target extends MutableFi
   return target;
 };
 
+export const commitFileViewerPreviewRequestStartState = ({
+  reason = 'replace',
+  requestController,
+  previewTarget,
+  onClearRenderedContent,
+  onClearError,
+}: CommitFileViewerPreviewRequestStartStateInput) => {
+  const version = requestController.createVersion();
+  onClearRenderedContent?.(reason);
+  applyFileViewerPreviewRequestResetState(previewTarget);
+  onClearError?.();
+  return version;
+};
+
 export const applyFileViewerEmptyPreviewState = <Target extends MutableFileViewerPreviewState>(
   target: Target,
   state: FileViewerEmptyPreviewState = createFileViewerEmptyPreviewState()
@@ -266,6 +296,19 @@ export const applyFileViewerEmptyPreviewState = <Target extends MutableFileViewe
   target.renderedReady = state.renderedReady;
   applyFileViewerPreviewRequestResetState(target, state);
   return target;
+};
+
+export const commitFileViewerEmptyPreviewResetState = ({
+  previewTarget,
+  state,
+  reason,
+  onClearRenderedContent,
+  onResetLoading,
+}: CommitFileViewerEmptyPreviewResetStateInput) => {
+  applyFileViewerEmptyPreviewState(previewTarget, state);
+  onClearRenderedContent?.(reason);
+  onResetLoading?.();
+  return previewTarget;
 };
 
 export const createFileViewerReadPreviewState = ({

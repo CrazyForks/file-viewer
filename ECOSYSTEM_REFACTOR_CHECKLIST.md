@@ -115,6 +115,7 @@
   - [x] Vue3 来源加载门面拆到组件 hooks，复用 core source loading / source / state helper，继续削薄主入口。
   - [x] source loading 的 refresh reason、sourceUrl 归一化和空预览状态快照迁入 `@file-viewer/core`，Vue hook 只写回响应式状态。
   - [x] source loading 的请求重置状态应用迁入 `@file-viewer/core`，Vue hook 只提供响应式字段映射。
+  - [x] source loading 的请求开始版本创建、旧内容清理、预览重置、错误清理和空预览 reset 编排迁入 `@file-viewer/core`。
   - [x] source loading 的已读取文件状态和流式 sourceUrl 状态应用迁入 `@file-viewer/core`，Vue hook 不再手写 source 字段归一化。
   - [x] source loading 的 load-start lifecycle context 与默认 loading 文案迁入 `@file-viewer/core`，Vue hook 不再手写开始加载上下文。
   - [x] source loading 的文件名写入、load-start 标记、lifecycle emit 与 loading 启动编排迁入 `@file-viewer/core`。

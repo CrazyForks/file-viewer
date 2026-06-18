@@ -9,7 +9,9 @@ import {
   applyFileViewerReadPreviewState,
   applyFileViewerRenderReadinessState,
   applyFileViewerPreviewRequestResetState,
+  commitFileViewerEmptyPreviewResetState,
   commitFileViewerLoadStartState,
+  commitFileViewerPreviewRequestStartState,
   commitFileViewerRenderCompleteState,
   createFileViewerEmptyPreviewState,
   createFileViewerLoadStartState,
@@ -132,6 +134,78 @@ describe('remote source loading helpers', () => {
 
     expect(applyFileViewerEmptyPreviewState(previewTarget)).toBe(previewTarget)
     expect(previewTarget).toEqual({
+      filename: '',
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      renderedReady: false,
+      progressiveReady: false
+    })
+  })
+
+  it('commits preview request start state in the shared core order', () => {
+    const controller = createFileViewerRequestController()
+    const file = new File(['demo'], 'demo.txt')
+    const target = {
+      file,
+      buffer: new ArrayBuffer(4),
+      sourceUrl: '/example/demo.txt',
+      progressiveReady: true
+    }
+    const events: string[] = []
+
+    const version = commitFileViewerPreviewRequestStartState({
+      reason: 'reset',
+      requestController: controller,
+      previewTarget: target,
+      onClearRenderedContent: reason => {
+        events.push(`clear:${reason}:${controller.version}:${target.file?.name ?? 'none'}`)
+      },
+      onClearError: () => {
+        events.push(`error:${target.file ? 'dirty' : 'reset'}`)
+      }
+    })
+
+    expect(version).toBe(1)
+    expect(events).toEqual([
+      'clear:reset:1:demo.txt',
+      'error:reset'
+    ])
+    expect(target).toEqual({
+      file: null,
+      buffer: null,
+      sourceUrl: null,
+      progressiveReady: false
+    })
+  })
+
+  it('commits empty preview reset state in the shared core order', () => {
+    const target = {
+      filename: 'demo.txt',
+      file: new File(['demo'], 'demo.txt'),
+      buffer: new ArrayBuffer(4),
+      sourceUrl: '/example/demo.txt',
+      renderedReady: true,
+      progressiveReady: true
+    }
+    const events: string[] = []
+
+    const nextTarget = commitFileViewerEmptyPreviewResetState({
+      previewTarget: target,
+      onClearRenderedContent: () => {
+        events.push(`clear:${target.filename}:${target.renderedReady}`)
+      },
+      onResetLoading: () => {
+        events.push(`loading:${target.file ? 'dirty' : 'reset'}`)
+      }
+    })
+
+    expect(nextTarget).toBe(target)
+    expect(events).toEqual([
+      'clear::false',
+      'loading:reset'
+    ])
+    expect(target).toEqual({
       filename: '',
       file: null,
       buffer: null,
