@@ -79,6 +79,7 @@ export {
   createFileViewerZoomChangeState,
   cloneFileViewerZoomState,
   createFileViewerZoomController,
+  createFileViewerZoomControllerActionHandlers,
   destroyFileViewerZoomController,
   observeFileViewerZoomController,
   refreshFileViewerZoomControllerProvider,
@@ -87,6 +88,7 @@ export {
 } from './documentZoom';
 export type {
   FileViewerZoomController,
+  FileViewerZoomControllerActionHandlers,
   MutableFileViewerZoomState,
 } from './documentZoom';
 export {

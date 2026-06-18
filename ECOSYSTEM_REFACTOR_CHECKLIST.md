@@ -204,6 +204,7 @@
   - [x] 缩放 runtime state 应用迁入 `@file-viewer/core`，core controller 与 Vue zoom hook 共用同一套字段归一化。
   - [x] 缩放 provider 发现、订阅、MutationObserver 和 beforeZoom 编排迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] 缩放 controller 的 provider 刷新、观察、清理、销毁和动作后快照同步迁入 `@file-viewer/core`，Vue zoom hook 不再直接应用或克隆缩放状态。
+  - [x] 缩放 controller action facade 迁入 `@file-viewer/core`，Vue zoom hook 只创建响应式 state 并展开 core actions。
   - [x] loading 主题矩阵、运行态状态机和错误/消息切换迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] loading controller 的动作执行与响应式状态同步迁入 `@file-viewer/core`，Vue loading hook 不再直接应用 runtime state。
   - [x] loading 扩展名变化同步迁入 `@file-viewer/core`，Vue loading hook 不再直接调用 controller 状态机方法。

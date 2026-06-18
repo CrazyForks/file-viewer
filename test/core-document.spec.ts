@@ -15,6 +15,7 @@ import {
   createFileViewerDomSearchControllerActionHandlers,
   createFileViewerSearchChangeState,
   createFileViewerZoomController,
+  createFileViewerZoomControllerActionHandlers,
   createFileViewerZoomState,
   destroyFileViewerDomSearchController,
   dispatchFileViewerLocationChange,
@@ -711,5 +712,61 @@ describe('@file-viewer/core document helpers', () => {
 
     controller.destroy();
     unregisterFileViewerZoomProvider(zoomHost);
+  });
+
+  it('creates zoom action facades for wrapper state targets', async () => {
+    const { document } = parseHTML('<main id="root"><section id="zoom" data-viewer-zoom-provider="docx"></section></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const zoomHost = document.getElementById('zoom') as HTMLElement;
+    let scale = 1;
+    const getState = () => createFileViewerZoomState({
+      scale,
+      label: `${Math.round(scale * 100)}%`,
+      canZoomIn: scale < 2,
+      canZoomOut: scale > 0.5,
+      canReset: scale !== 1,
+    });
+    const zoomProvider: FileViewerZoomProvider = {
+      zoomIn: () => {
+        scale = 1.25;
+        return getState();
+      },
+      zoomOut: () => {
+        scale = 0.75;
+        return getState();
+      },
+      resetZoom: () => {
+        scale = 1;
+        return getState();
+      },
+      getState,
+    };
+    const stateTarget = createFileViewerZoomState();
+    const controller = createFileViewerZoomController({ root: () => root });
+    const actions = createFileViewerZoomControllerActionHandlers(stateTarget, controller);
+
+    try {
+      registerFileViewerZoomProvider(zoomHost, zoomProvider);
+
+      expect(actions.hasZoomProvider()).toBe(true);
+      expect(stateTarget).toMatchObject({ scale: 1, label: '100%' });
+      expect(actions.getZoomState()).toEqual(stateTarget);
+
+      await expect(actions.zoomIn()).resolves.toMatchObject({ scale: 1.25, label: '125%' });
+      expect(stateTarget).toMatchObject({ scale: 1.25, label: '125%' });
+
+      await expect(actions.zoomOut()).resolves.toMatchObject({ scale: 0.75, label: '75%' });
+      expect(stateTarget).toMatchObject({ scale: 0.75, label: '75%' });
+
+      await expect(actions.resetZoom()).resolves.toMatchObject({ scale: 1, label: '100%' });
+      expect(actions.refreshZoomProvider()).toBe(zoomProvider);
+      expect(actions.startZoomObserver()).toBe(stateTarget);
+      expect(actions.clearZoomProvider()).toBe(stateTarget);
+      expect(controller.provider).toBeNull();
+      expect(actions.stopZoomObserver()).toBe(stateTarget);
+    } finally {
+      controller.destroy();
+      unregisterFileViewerZoomProvider(zoomHost);
+    }
   });
 });

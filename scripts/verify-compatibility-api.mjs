@@ -725,14 +725,20 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueZoomHookSource, '@file-viewer/core', vueZoomHookLabel)
   assertTokens(vueZoomHookSource, [
     'createFileViewerZoomController',
+    'createFileViewerZoomControllerActionHandlers',
+    '...actions'
+  ], vueZoomHookLabel)
+  for (const forbiddenToken of [
     'createFileViewerZoomChangeState',
     'refreshFileViewerZoomControllerProvider',
     'observeFileViewerZoomController',
     'clearFileViewerZoomControllerProvider',
     'destroyFileViewerZoomController',
-    'runFileViewerZoomControllerAction'
-  ], vueZoomHookLabel)
-  for (const forbiddenToken of [
+    'runFileViewerZoomControllerAction',
+    'controller.zoomIn()',
+    'controller.zoomOut()',
+    'controller.resetZoom()',
+    'const nextProvider =',
     'applyFileViewerZoomState',
     'cloneFileViewerZoomState',
     'controller.destroy()',

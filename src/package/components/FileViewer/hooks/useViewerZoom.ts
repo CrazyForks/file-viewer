@@ -1,13 +1,8 @@
 import { reactive, type Ref } from 'vue'
 import {
-  clearFileViewerZoomControllerProvider,
-  createFileViewerZoomChangeState,
   createFileViewerZoomController,
+  createFileViewerZoomControllerActionHandlers,
   createFileViewerZoomState,
-  destroyFileViewerZoomController,
-  observeFileViewerZoomController,
-  refreshFileViewerZoomControllerProvider,
-  runFileViewerZoomControllerAction,
   type FileViewerOperationType,
 } from '@file-viewer/core'
 
@@ -34,26 +29,10 @@ export const useViewerZoom = ({
     enabled,
     beforeZoom: operation => runBeforeOperation(operation)
   })
+  const actions = createFileViewerZoomControllerActionHandlers(state, controller)
 
   return {
     zoomState: state,
-    hasZoomProvider: () => {
-      const nextProvider = refreshFileViewerZoomControllerProvider(state, controller)
-      return !!nextProvider
-    },
-    refreshZoomProvider: () => refreshFileViewerZoomControllerProvider(state, controller),
-    startZoomObserver: () => {
-      observeFileViewerZoomController(state, controller)
-    },
-    stopZoomObserver: () => {
-      destroyFileViewerZoomController(state, controller)
-    },
-    clearZoomProvider: () => {
-      clearFileViewerZoomControllerProvider(state, controller)
-    },
-    getZoomState: () => createFileViewerZoomChangeState(state),
-    zoomIn: () => runFileViewerZoomControllerAction(state, () => controller.zoomIn()),
-    zoomOut: () => runFileViewerZoomControllerAction(state, () => controller.zoomOut()),
-    resetZoom: () => runFileViewerZoomControllerAction(state, () => controller.resetZoom())
+    ...actions
   }
 }

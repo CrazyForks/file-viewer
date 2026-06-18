@@ -33,6 +33,18 @@ export interface FileViewerZoomController {
   destroy(): void;
 }
 
+export interface FileViewerZoomControllerActionHandlers {
+  hasZoomProvider(): boolean;
+  refreshZoomProvider(): FileViewerZoomProvider | null;
+  startZoomObserver(): FileViewerZoomState;
+  stopZoomObserver(): FileViewerZoomState;
+  clearZoomProvider(): FileViewerZoomState;
+  getZoomState(): FileViewerZoomState;
+  zoomIn(): Promise<FileViewerZoomState>;
+  zoomOut(): Promise<FileViewerZoomState>;
+  resetZoom(): Promise<FileViewerZoomState>;
+}
+
 export const cloneFileViewerZoomState = (state: FileViewerZoomState): FileViewerZoomState => ({
   scale: state.scale,
   label: state.label,
@@ -112,6 +124,42 @@ export const runFileViewerZoomControllerAction = async <Target extends MutableFi
   const nextState = await action();
   applyFileViewerZoomState(target, nextState);
   return createFileViewerZoomChangeState(target);
+};
+
+export const createFileViewerZoomControllerActionHandlers = <Target extends MutableFileViewerZoomState>(
+  target: Target,
+  controller: FileViewerZoomController
+): FileViewerZoomControllerActionHandlers => {
+  return {
+    hasZoomProvider() {
+      const nextProvider = refreshFileViewerZoomControllerProvider(target, controller);
+      return !!nextProvider;
+    },
+    refreshZoomProvider() {
+      return refreshFileViewerZoomControllerProvider(target, controller);
+    },
+    startZoomObserver() {
+      return observeFileViewerZoomController(target, controller);
+    },
+    stopZoomObserver() {
+      return destroyFileViewerZoomController(target, controller);
+    },
+    clearZoomProvider() {
+      return clearFileViewerZoomControllerProvider(target, controller);
+    },
+    getZoomState() {
+      return createFileViewerZoomChangeState(target);
+    },
+    zoomIn() {
+      return runFileViewerZoomControllerAction(target, () => controller.zoomIn());
+    },
+    zoomOut() {
+      return runFileViewerZoomControllerAction(target, () => controller.zoomOut());
+    },
+    resetZoom() {
+      return runFileViewerZoomControllerAction(target, () => controller.resetZoom());
+    },
+  };
 };
 
 export const createFileViewerZoomChangeEmitter = () => {
