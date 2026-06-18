@@ -10,6 +10,7 @@ import {
   createFileViewerZoomChangeState,
   createFileViewerDocumentChangeSnapshot,
   createFileViewerDocumentFeatureActions,
+  createFileViewerDocumentFeatureControllerActionHandlers,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
   createFileViewerDomSearchControllerActionHandlers,
@@ -349,6 +350,99 @@ describe('@file-viewer/core document helpers', () => {
       }),
     ]);
     expect(calls).toEqual(['observe', 'refresh', 'search:PDF', 'next']);
+  });
+
+  it('creates document feature controller action handlers with DOM search state targets', async () => {
+    const { document } = parseHTML(`
+      <main id="root" style="overflow-y:auto">
+        <p data-viewer-anchor-id="line-1" data-viewer-line="1">Alpha PDF content.</p>
+        <p data-viewer-anchor-id="line-2" data-viewer-line="2">Beta PDF content.</p>
+      </main>
+    `);
+    const root = document.getElementById('root') as HTMLElement;
+    const lines = Array.from(root.querySelectorAll<HTMLElement>('[data-viewer-anchor-id]'));
+    const secondLine = root.querySelector('[data-viewer-line="2"]') as HTMLElement;
+    const scrollIntoView = vi.fn();
+    const emitted: string[] = [];
+    const target = {
+      anchors: { value: [] as FileViewerDocumentAnchor[] },
+      state: createEmptyFileViewerSearchState(),
+    };
+
+    Object.defineProperty(root, 'scrollTop', { configurable: true, writable: true, value: 20 });
+    Object.defineProperty(root, 'scrollLeft', { configurable: true, writable: true, value: 0 });
+    setScrollMetrics(root, { clientHeight: 80, scrollHeight: 240 });
+    setRect(root, { top: 0, left: 0, width: 360, height: 80 });
+    lines.forEach((line, index) => {
+      setRect(line, { top: 12 + (index * 32), left: 16, width: 280, height: 24 });
+    });
+    Object.defineProperty(secondLine, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    const actions = createFileViewerDocumentFeatureControllerActionHandlers({
+      root: () => root,
+      searchTarget: target,
+      searchOptions: () => true,
+      waitForDomUpdate: () => Promise.resolve(),
+      getAiOptions: () => ({ chunkSize: 120 }),
+      onSearchChange: state => {
+        emitted.push(`search:${state.query}:${state.total}:${state.currentIndex}`);
+      },
+      onLocationChange: nextAnchor => {
+        emitted.push(`location:${nextAnchor?.line ?? 'none'}`);
+      },
+    });
+
+    await expect(actions.refreshDocumentIndex()).resolves.toHaveLength(2);
+    expect(target.anchors.value.map(item => item.line)).toEqual([1, 2]);
+
+    await expect(actions.searchDocument('PDF')).resolves.toMatchObject({
+      query: 'PDF',
+      total: 2,
+      currentIndex: 0,
+    });
+    expect(target.state).toMatchObject({
+      query: 'PDF',
+      total: 2,
+      currentIndex: 0,
+    });
+
+    await expect(actions.nextSearchResult()).resolves.toMatchObject({
+      query: 'PDF',
+      total: 2,
+      currentIndex: 1,
+    });
+    await expect(actions.scrollToLine(2)).resolves.toBe(true);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center', inline: 'nearest' });
+    expect(actions.getDocumentTextChunks()).toEqual([
+      expect.objectContaining({
+        id: 'line-1-chunk-1',
+        text: 'Alpha PDF content.',
+        startLine: 1,
+      }),
+      expect.objectContaining({
+        id: 'line-2-chunk-1',
+        text: 'Beta PDF content.',
+        startLine: 2,
+      }),
+    ]);
+
+    expect(actions.destroyDocumentFeatures()).toBe(target.state);
+    expect(target.state).toMatchObject({
+      total: 0,
+      currentIndex: -1,
+      current: null,
+      matches: [],
+    });
+    expect(emitted).toEqual([
+      'location:1',
+      'search:PDF:2:0',
+      'location:1',
+      'search:PDF:2:1',
+      'location:1',
+    ]);
   });
 
   it('builds AI-friendly document text chunks with overlap and limits', () => {

@@ -4,7 +4,12 @@ import {
   resolveFileViewerScrollContainer,
   scrollToFileViewerDocumentAnchor,
 } from './documentDom';
-import { cloneFileViewerSearchState } from './documentSearch';
+import {
+  cloneFileViewerSearchState,
+  createFileViewerDomSearchController,
+  createFileViewerDomSearchControllerActionHandlers,
+  type FileViewerDomSearchControllerStateTarget,
+} from './documentSearch';
 import {
   postFileViewerLocationChange,
   postFileViewerSearchChange,
@@ -13,6 +18,7 @@ import type {
   FileViewerAiOptions,
   FileViewerDocumentAnchor,
   FileViewerDocumentChunk,
+  FileViewerSearchOptions,
   FileViewerSearchState,
 } from './types';
 
@@ -81,6 +87,18 @@ export interface FileViewerDocumentFeatureActions {
   getDocumentTextChunks(): FileViewerDocumentChunk[];
 }
 
+export interface CreateFileViewerDocumentFeatureControllerActionHandlersInput
+  extends Omit<CreateFileViewerDocumentFeatureActionsInput, 'searchController'> {
+  searchTarget: FileViewerDomSearchControllerStateTarget;
+  searchOptions?: () => boolean | FileViewerSearchOptions | undefined;
+  waitForDomUpdate?: () => Promise<void> | void;
+  preferredScrollContainer?: () => HTMLElement | null | undefined;
+}
+
+export interface FileViewerDocumentFeatureControllerActionHandlers extends FileViewerDocumentFeatureActions {
+  destroyDocumentFeatures(): FileViewerSearchState;
+}
+
 export const createFileViewerSearchChangeState = (
   state: FileViewerSearchState
 ): FileViewerSearchState => {
@@ -102,6 +120,52 @@ export const createFileViewerDocumentChangeSnapshot = ({
   return {
     searchState: createFileViewerSearchChangeState(searchState),
     locationAnchor: resolveFileViewerLocationChangeAnchor({ root, anchors }),
+  };
+};
+
+export const createFileViewerDocumentFeatureControllerActionHandlers = ({
+  root,
+  searchTarget,
+  searchOptions,
+  waitForDomUpdate,
+  preferredScrollContainer,
+  getAiOptions,
+  onSearchChange,
+  onLocationChange,
+  targetOrigin,
+  targetWindow,
+}: CreateFileViewerDocumentFeatureControllerActionHandlersInput): FileViewerDocumentFeatureControllerActionHandlers => {
+  let documentActions: FileViewerDocumentFeatureActions | null = null;
+  const searchController = createFileViewerDomSearchController({
+    root,
+    options: searchOptions,
+    waitForDomUpdate,
+    preferredScrollContainer: () => preferredScrollContainer?.() ?? documentActions?.getScrollContainer() ?? null,
+  });
+  const searchActions = createFileViewerDomSearchControllerActionHandlers(searchTarget, searchController);
+
+  documentActions = createFileViewerDocumentFeatureActions({
+    root,
+    searchController: {
+      getAnchors: () => searchTarget.anchors.value,
+      getSearchState: () => searchTarget.state,
+      observe: searchActions.observe,
+      refreshAnchors: searchActions.refreshAnchors,
+      search: searchActions.search,
+      clear: searchActions.clear,
+      next: searchActions.next,
+      previous: searchActions.previous,
+    },
+    getAiOptions,
+    onSearchChange,
+    onLocationChange,
+    targetOrigin,
+    targetWindow,
+  });
+
+  return {
+    ...documentActions,
+    destroyDocumentFeatures: searchActions.destroy,
   };
 };
 

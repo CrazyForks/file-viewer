@@ -1,14 +1,13 @@
-import type { Ref } from 'vue'
+import { nextTick, onBeforeUnmount, reactive, shallowRef, type Ref } from 'vue'
 import type {
   FileViewerDocumentAnchor,
-  FileViewerDocumentFeatureActions,
   FileViewerOptions,
   FileViewerSearchState
 } from '@file-viewer/core'
 import {
-  createFileViewerDocumentFeatureActions
+  createEmptyFileViewerSearchState,
+  createFileViewerDocumentFeatureControllerActionHandlers
 } from '@file-viewer/core'
-import { useDocumentSearch } from './useDocumentSearch'
 
 interface UseViewerDocumentFeaturesOptions {
   output: Ref<HTMLDivElement | null>;
@@ -29,39 +28,29 @@ export const useViewerDocumentFeatures = ({
   emitSearchChange,
   emitLocationChange
 }: UseViewerDocumentFeaturesOptions) => {
-  let documentActions: FileViewerDocumentFeatureActions | null = null
-
-  const getScrollContainer = () => {
-    return documentActions?.getScrollContainer() ?? null
-  }
-
-  const documentSearch = useDocumentSearch(
-    output,
-    () => getOptions()?.search,
-    getScrollContainer
-  )
-
-  documentActions = createFileViewerDocumentFeatureActions({
+  const anchors = shallowRef<FileViewerDocumentAnchor[]>([])
+  const state = reactive<FileViewerSearchState>(createEmptyFileViewerSearchState())
+  const documentActions = createFileViewerDocumentFeatureControllerActionHandlers({
     root: () => output.value,
-    searchController: {
-      getAnchors: () => documentSearch.anchors.value,
-      getSearchState: () => documentSearch.state,
-      observe: documentSearch.observe,
-      refreshAnchors: documentSearch.refreshAnchors,
-      search: documentSearch.search,
-      clear: documentSearch.clear,
-      next: documentSearch.next,
-      previous: documentSearch.previous
+    searchTarget: {
+      anchors,
+      state
     },
+    searchOptions: () => getOptions()?.search,
+    waitForDomUpdate: () => nextTick(),
     getAiOptions: () => getOptions()?.ai,
     onSearchChange: emitSearchChange,
     onLocationChange: emitLocationChange
   })
 
+  onBeforeUnmount(() => {
+    documentActions.destroyDocumentFeatures()
+  })
+
   return {
     refreshDocumentIndex: documentActions.refreshDocumentIndex,
     clearDocumentState: documentActions.clearDocumentState,
-    getScrollContainer,
+    getScrollContainer: documentActions.getScrollContainer,
     searchDocument: documentActions.searchDocument,
     clearDocumentSearch: documentActions.clearDocumentSearch,
     nextSearchResult: documentActions.nextSearchResult,

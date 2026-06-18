@@ -56,6 +56,7 @@ export type {
 } from './documentSearch';
 export {
   createFileViewerDocumentFeatureActions,
+  createFileViewerDocumentFeatureControllerActionHandlers,
   createFileViewerDocumentChangeSnapshot,
   createFileViewerSearchChangeState,
   dispatchFileViewerLocationChange,
@@ -68,8 +69,10 @@ export type {
   DispatchFileViewerSearchChangeInput,
   FileViewerDocumentChangeSnapshot,
   FileViewerDocumentFeatureActions,
+  FileViewerDocumentFeatureControllerActionHandlers,
   FileViewerDocumentFeatureSearchController,
   CreateFileViewerDocumentFeatureActionsInput,
+  CreateFileViewerDocumentFeatureControllerActionHandlersInput,
   ResolveFileViewerLocationChangeAnchorInput,
 } from './documentEvents';
 export {

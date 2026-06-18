@@ -96,6 +96,7 @@
   - [x] 渲染 surface 的销毁、清空、挂载和导出适配器 action 编排迁入 core，Vue hook 只保留 ref target 和 Vue renderer bridge。
   - [x] 来源加载的本地/远程预览、刷新、取消、reset 和错误上报 action 编排迁入 core，Vue hook 只保留 ref target、axios 下载适配和生命周期回调注入。
   - [x] 工具栏 source/能力矩阵/浮动位置/事件同步/缩放按钮 guard 迁入 core controller action handlers，Vue hook 只保留 computed/watch 响应式桥接。
+  - [x] 文档搜索 controller 与搜索/定位/AI 文本切片 actions 的组合关系迁入 core，Vue hook 只保留 ref target、`nextTick` 和事件回调注入。
 - [x] 定义错误、loading、空状态、unsupported 状态的 core 级呈现协议。
   - [x] `@file-viewer/core` 提供 `FileViewerStateDescriptor` / `FileViewerStateTheme`，覆盖 loading、ready、empty、unsupported、error。
   - [x] 下载、流式 PDF、常规解析的默认进度文案迁入 core，Vue3 入口复用同一常量。
