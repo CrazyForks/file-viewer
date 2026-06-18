@@ -10,6 +10,7 @@ import {
   buildFileViewerOperationContextFromLifecycleState,
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleActions,
+  createFileViewerToolbarActions,
   createFileViewerOperationActionHandlers,
   createFileViewerLifecycleStateController,
   createFileViewerOriginalSourceState,
@@ -722,6 +723,64 @@ describe('@file-viewer/core operation helpers', () => {
       event: 'zoom-change',
       payload: zoomState,
     }, 'https://host.example');
+  });
+
+  it('creates toolbar actions that reuse notification dispatch and zoom guard rules', () => {
+    const events: string[] = [];
+    const parent = {
+      postMessage: vi.fn((payload: unknown) => {
+        events.push(`post:${(payload as { event: string }).event}`);
+      }),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const availability = {
+      download: true,
+      print: false,
+      exportHtml: true,
+      zoom: true,
+      zoomIn: true,
+      zoomOut: false,
+      zoomReset: true,
+    };
+    let toolbarDisabled = false;
+    const zoomState = {
+      scale: 1,
+      label: '100%',
+      canZoomIn: true,
+      canZoomOut: false,
+      canReset: true,
+    };
+    const actions = createFileViewerToolbarActions({
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      getOperationAvailability: () => availability,
+      getToolbarDisabled: () => toolbarDisabled,
+      getZoomState: () => zoomState,
+      onOperationAvailabilityChange: payload => {
+        events.push(`emit:availability:${payload.zoomOut}`);
+      },
+      onZoomChange: payload => {
+        events.push(`emit:zoom:${payload.label}`);
+      },
+    });
+
+    expect(actions.isZoomButtonDisabled('canZoomIn')).toBe(false);
+    expect(actions.isZoomButtonDisabled('canZoomOut')).toBe(true);
+    toolbarDisabled = true;
+    expect(actions.isZoomButtonDisabled('canZoomIn')).toBe(true);
+
+    expect(actions.notifyOperationAvailabilityChange()).toBe(true);
+    expect(actions.notifyZoomChange()).toBe(true);
+
+    expect(events).toEqual([
+      'emit:availability:false',
+      'post:operation-availability-change',
+      'emit:zoom:100%',
+      'post:zoom-change',
+    ]);
+    expect(parent.postMessage).toHaveBeenCalledTimes(2);
   });
 
   it('guards iframe postMessage events through the core protocol', () => {

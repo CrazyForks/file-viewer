@@ -160,6 +160,7 @@
   - [x] Vue3 工具栏与能力状态门面拆到组件 hooks，复用 core operation availability / toolbar position / postMessage 协议。
   - [x] 工具栏 operation availability 与 zoom-change 的 iframe postMessage helper 迁入 `@file-viewer/core`，Vue hook 不再拼接 operation payload。
   - [x] 工具栏 operation availability 与 zoom-change 的 emit / postMessage 编排迁入 `@file-viewer/core`，Vue hook 不再直接克隆 payload 或调用 post helper。
+  - [x] 工具栏 operation availability / zoom-change 通知和 zoom 按钮禁用 action facade 迁入 `@file-viewer/core`，Vue hook 只保留 computed/watch 外壳。
   - [x] 工具栏原始文件来源判断与 source state 构建迁入 `@file-viewer/core`，Vue hook 只传递 buffer / file / url 值。
   - [x] 工具栏可见动作判断与缩放按钮禁用规则迁入 `@file-viewer/core`，Vue hook 只做响应式映射。
   - [x] 工具栏能力、可见动作、位置与禁用状态组合迁入 `@file-viewer/core`，Vue hook 只映射 toolbar state。

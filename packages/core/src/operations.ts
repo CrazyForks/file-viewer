@@ -216,6 +216,24 @@ export interface DispatchFileViewerZoomChangeInput {
   targetWindow?: Window;
 }
 
+export type FileViewerZoomButtonAction = keyof Pick<FileViewerZoomState, 'canZoomIn' | 'canZoomOut' | 'canReset'>;
+
+export interface CreateFileViewerToolbarActionsInput {
+  getOperationAvailability: () => FileViewerOperationAvailability;
+  getToolbarDisabled?: () => boolean;
+  getZoomState: () => FileViewerZoomState;
+  onOperationAvailabilityChange?: (availability: FileViewerOperationAvailability) => void;
+  onZoomChange?: (state: FileViewerZoomState) => void;
+  targetOrigin?: string;
+  targetWindow?: Window;
+}
+
+export interface FileViewerToolbarActions {
+  notifyOperationAvailabilityChange(availability?: FileViewerOperationAvailability): boolean;
+  notifyZoomChange(state?: FileViewerZoomState): boolean;
+  isZoomButtonDisabled(action: FileViewerZoomButtonAction): boolean;
+}
+
 export interface FileViewerLifecycleStateController {
   markLoadStarted(version: number, timestamp?: number): void;
   clearLoadStarted(version: number): void;
@@ -765,6 +783,43 @@ export const dispatchFileViewerZoomChange = ({
 }: DispatchFileViewerZoomChangeInput) => {
   onChange?.(state);
   return postFileViewerZoomChange(state, targetOrigin, targetWindow);
+};
+
+export const createFileViewerToolbarActions = ({
+  getOperationAvailability,
+  getToolbarDisabled = () => false,
+  getZoomState,
+  onOperationAvailabilityChange,
+  onZoomChange,
+  targetOrigin,
+  targetWindow,
+}: CreateFileViewerToolbarActionsInput): FileViewerToolbarActions => {
+  return {
+    notifyOperationAvailabilityChange(availability = getOperationAvailability()) {
+      return dispatchFileViewerOperationAvailabilityChange({
+        availability,
+        onChange: onOperationAvailabilityChange,
+        targetOrigin,
+        targetWindow,
+      });
+    },
+    notifyZoomChange(state = getZoomState()) {
+      return dispatchFileViewerZoomChange({
+        state,
+        onChange: onZoomChange,
+        targetOrigin,
+        targetWindow,
+      });
+    },
+    isZoomButtonDisabled(action) {
+      return isFileViewerZoomButtonDisabled({
+        action,
+        availability: getOperationAvailability(),
+        toolbarDisabled: getToolbarDisabled(),
+        zoomState: getZoomState(),
+      });
+    },
+  };
 };
 
 export const postFileViewerSearchChange = (
