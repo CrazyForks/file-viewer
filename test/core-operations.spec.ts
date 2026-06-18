@@ -12,6 +12,7 @@ import {
   cloneFileViewerOperationAvailability,
   createFileViewerLifecycleActions,
   createFileViewerToolbarActions,
+  createFileViewerToolbarZoomSyncSnapshot,
   createFileViewerOperationActionHandlers,
   createFileViewerLifecycleStateController,
   createFileViewerOriginalSourceState,
@@ -55,6 +56,8 @@ import {
   runFileViewerActiveUnloadStart,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
+  runFileViewerToolbarAvailabilitySync,
+  runFileViewerToolbarZoomSync,
   type FileViewerLifecycleComponentEmit,
   type FileViewerOperationType,
 } from '../packages/core/src';
@@ -844,6 +847,58 @@ describe('@file-viewer/core operation helpers', () => {
       'post:zoom-change',
     ]);
     expect(parent.postMessage).toHaveBeenCalledTimes(2);
+  });
+
+  it('runs toolbar sync notifications and keeps zoom sync snapshot fields stable', () => {
+    const events: string[] = [];
+    const availability = {
+      download: true,
+      print: false,
+      exportHtml: true,
+      zoom: true,
+      zoomIn: true,
+      zoomOut: true,
+      zoomReset: false,
+    };
+    const zoomState = {
+      scale: 1.25,
+      label: '125%',
+      canZoomIn: true,
+      canZoomOut: true,
+      canReset: true,
+      minScale: 0.25,
+      maxScale: 4,
+    };
+    const toolbarActions = {
+      notifyOperationAvailabilityChange(nextAvailability = availability) {
+        events.push(`availability:${nextAvailability.zoomReset}`);
+        return true;
+      },
+      notifyZoomChange(nextState = zoomState) {
+        events.push(`zoom:${nextState.label}`);
+        return true;
+      },
+    };
+
+    expect(createFileViewerToolbarZoomSyncSnapshot(zoomState)).toEqual([
+      1.25,
+      '125%',
+      true,
+      true,
+      true,
+    ]);
+    expect(runFileViewerToolbarAvailabilitySync({
+      toolbarActions,
+      availability,
+    })).toBe(true);
+    expect(runFileViewerToolbarZoomSync({
+      toolbarActions,
+      state: zoomState,
+    })).toBe(true);
+    expect(events).toEqual([
+      'availability:false',
+      'zoom:125%',
+    ]);
   });
 
   it('guards iframe postMessage events through the core protocol', () => {

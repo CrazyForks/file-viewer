@@ -2,7 +2,10 @@ import { computed, watch, type ComputedRef, type Ref, type ShallowRef } from 'vu
 import {
   createFileViewerOriginalSourceState,
   createFileViewerToolbarActions,
-  resolveFileViewerToolbarState
+  createFileViewerToolbarZoomSyncSnapshot,
+  resolveFileViewerToolbarState,
+  runFileViewerToolbarAvailabilitySync,
+  runFileViewerToolbarZoomSync
 } from '@file-viewer/core'
 import type {
   FileRenderExportAdapter,
@@ -91,19 +94,18 @@ export const useViewerToolbar = ({
   }
 
   watch(operationAvailability, availability => {
-    toolbarActions.notifyOperationAvailabilityChange(availability)
+    runFileViewerToolbarAvailabilitySync({
+      toolbarActions,
+      availability
+    })
   }, { immediate: true })
 
   watch(
-    () => [
-      zoomState.scale,
-      zoomState.label,
-      zoomState.canZoomIn,
-      zoomState.canZoomOut,
-      zoomState.canReset
-    ] as const,
+    () => createFileViewerToolbarZoomSyncSnapshot(zoomState),
     () => {
-      toolbarActions.notifyZoomChange()
+      runFileViewerToolbarZoomSync({
+        toolbarActions
+      })
     },
     { immediate: true }
   )

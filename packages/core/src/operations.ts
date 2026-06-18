@@ -280,6 +280,24 @@ export interface FileViewerToolbarActions {
   isZoomButtonDisabled(action: FileViewerZoomButtonAction): boolean;
 }
 
+export type FileViewerToolbarZoomSyncSnapshot = readonly [
+  scale: FileViewerZoomState['scale'],
+  label: FileViewerZoomState['label'],
+  canZoomIn: FileViewerZoomState['canZoomIn'],
+  canZoomOut: FileViewerZoomState['canZoomOut'],
+  canReset: FileViewerZoomState['canReset'],
+];
+
+export interface RunFileViewerToolbarAvailabilitySyncInput {
+  toolbarActions: Pick<FileViewerToolbarActions, 'notifyOperationAvailabilityChange'>;
+  availability?: FileViewerOperationAvailability;
+}
+
+export interface RunFileViewerToolbarZoomSyncInput {
+  toolbarActions: Pick<FileViewerToolbarActions, 'notifyZoomChange'>;
+  state?: FileViewerZoomState;
+}
+
 export interface FileViewerLifecycleStateController {
   markLoadStarted(version: number, timestamp?: number): void;
   clearLoadStarted(version: number): void;
@@ -935,6 +953,30 @@ export const createFileViewerToolbarActions = ({
       });
     },
   };
+};
+
+export const createFileViewerToolbarZoomSyncSnapshot = (
+  state: FileViewerZoomState
+): FileViewerToolbarZoomSyncSnapshot => [
+  state.scale,
+  state.label,
+  state.canZoomIn,
+  state.canZoomOut,
+  state.canReset,
+];
+
+export const runFileViewerToolbarAvailabilitySync = ({
+  toolbarActions,
+  availability,
+}: RunFileViewerToolbarAvailabilitySyncInput) => {
+  return toolbarActions.notifyOperationAvailabilityChange(availability);
+};
+
+export const runFileViewerToolbarZoomSync = ({
+  toolbarActions,
+  state,
+}: RunFileViewerToolbarZoomSyncInput) => {
+  return toolbarActions.notifyZoomChange(state);
 };
 
 export const postFileViewerSearchChange = (

@@ -207,6 +207,7 @@ export {
   createFileViewerLifecycleActions,
   createFileViewerLifecycleStateController,
   createFileViewerToolbarActions,
+  createFileViewerToolbarZoomSyncSnapshot,
   createFileViewerPostMessagePayload,
   createFileViewerRawPostMessagePayload,
   DEFAULT_FILE_VIEWER_LIFECYCLE_HOOK_ERROR_LOGGER,
@@ -242,6 +243,8 @@ export {
   runFileViewerActiveUnloadStart,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
+  runFileViewerToolbarAvailabilitySync,
+  runFileViewerToolbarZoomSync,
   serializeFileViewerContext,
 } from './operations';
 export type {
@@ -255,6 +258,7 @@ export type {
   FileViewerLifecycleActions,
   FileViewerLifecycleComponentEmit,
   FileViewerToolbarActions,
+  FileViewerToolbarZoomSyncSnapshot,
   FileViewerZoomButtonAction,
   FileViewerToolbarState,
   CreateFileViewerToolbarActionsInput,
@@ -263,6 +267,8 @@ export type {
   ResolveFileViewerToolbarStateInput,
   RunFileViewerActiveUnloadCompleteInput,
   RunFileViewerActiveUnloadStartInput,
+  RunFileViewerToolbarAvailabilitySyncInput,
+  RunFileViewerToolbarZoomSyncInput,
 } from './operations';
 export {
   FALLBACK_FILE_VIEWER_LOADING_THEME,

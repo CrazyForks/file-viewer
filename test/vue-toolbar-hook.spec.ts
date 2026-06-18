@@ -79,6 +79,13 @@ describe('Vue FileViewer toolbar hook', () => {
     expect(availabilityEvents[0]).toMatchObject(toolbar?.operationAvailability.value || {})
     expect(zoomEvents[0]).toMatchObject({ label: '100%' })
 
+    const zoomEventCount = zoomEvents.length
+    zoomState.minScale = 0.5
+    zoomState.maxScale = 5
+    await nextTick()
+
+    expect(zoomEvents).toHaveLength(zoomEventCount)
+
     error.value = 'render failed'
     await nextTick()
 

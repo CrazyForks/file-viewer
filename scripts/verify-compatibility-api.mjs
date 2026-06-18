@@ -740,7 +740,10 @@ async function verifyVue3ScopedCompatibility() {
   assertTokens(vueToolbarHookSource, [
     'createFileViewerOriginalSourceState',
     'createFileViewerToolbarActions',
+    'createFileViewerToolbarZoomSyncSnapshot',
     'resolveFileViewerToolbarState',
+    'runFileViewerToolbarAvailabilitySync',
+    'runFileViewerToolbarZoomSync'
   ], vueToolbarHookLabel)
   for (const forbiddenToken of [
     'dispatchFileViewerOperationAvailabilityChange',
@@ -764,7 +767,14 @@ async function verifyVue3ScopedCompatibility() {
     'postFileViewerZoomChange',
     'emitOperationAvailabilityChange(payload)',
     'postFileViewerOperationAvailabilityChange(payload)',
-    'postFileViewerZoomChange(state)'
+    'postFileViewerZoomChange(state)',
+    'toolbarActions.notifyOperationAvailabilityChange(availability)',
+    'toolbarActions.notifyZoomChange()',
+    'zoomState.scale',
+    'zoomState.label',
+    'zoomState.canZoomIn',
+    'zoomState.canZoomOut',
+    'zoomState.canReset'
   ]) {
     assert(
       !vueToolbarHookSource.includes(forbiddenToken),

@@ -170,6 +170,7 @@
   - [x] 工具栏原始文件来源判断与 source state 构建迁入 `@file-viewer/core`，Vue hook 只传递 buffer / file / url 值。
   - [x] 工具栏可见动作判断与缩放按钮禁用规则迁入 `@file-viewer/core`，Vue hook 只做响应式映射。
   - [x] 工具栏能力、可见动作、位置与禁用状态组合迁入 `@file-viewer/core`，Vue hook 只映射 toolbar state。
+  - [x] 工具栏 operation availability / zoom 同步通知和缩放快照字段选择迁入 `@file-viewer/core`，Vue hook 只保留 watch 绑定。
   - [x] 水印背景样式对象构建迁入 `@file-viewer/core`，Vue hook 只做响应式映射并复用同一导出/打印水印协议。
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。
   - [x] 文档搜索与定位变更的 emit / postMessage 编排迁入 `@file-viewer/core`，Vue document features hook 不再直接发送 frame 事件。
