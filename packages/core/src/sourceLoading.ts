@@ -7,6 +7,7 @@ import {
   buildFileViewerLifecycleContext,
   type FileViewerLifecycleStateController,
 } from './operations';
+import { FILE_VIEWER_PREVIEW_MESSAGES } from './state';
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   getExtension,
@@ -98,6 +99,22 @@ export type FileViewerRenderReadinessState = Pick<
 >;
 
 export type MutableFileViewerRenderReadinessState = FileViewerRenderReadinessState;
+
+export interface FileViewerLoadStartState {
+  loadingMessage: string;
+  lifecycleContext: FileViewerLifecycleContext;
+}
+
+export interface CreateFileViewerLoadStartStateInput {
+  version: number;
+  source: FileViewerLifecycleContext['source'];
+  filename?: string;
+  file?: File | null;
+  sourceUrl?: string | null;
+  bufferSize?: number;
+  loadingMessage?: string;
+  timestamp?: number;
+}
 
 export interface FileViewerRenderCompleteState {
   readiness: FileViewerRenderReadinessState;
@@ -280,6 +297,39 @@ export const applyFileViewerRenderReadinessState = <Target extends MutableFileVi
     target.progressiveReady = state.progressiveReady;
   }
   return target;
+};
+
+export const resolveFileViewerLoadStartMessage = (
+  source: FileViewerLifecycleContext['source']
+) => {
+  return source === 'url'
+    ? FILE_VIEWER_PREVIEW_MESSAGES.downloading
+    : FILE_VIEWER_PREVIEW_MESSAGES.reading;
+};
+
+export const createFileViewerLoadStartState = ({
+  version,
+  source,
+  filename,
+  file,
+  sourceUrl,
+  bufferSize,
+  loadingMessage,
+  timestamp,
+}: CreateFileViewerLoadStartStateInput): FileViewerLoadStartState => {
+  return {
+    loadingMessage: loadingMessage || resolveFileViewerLoadStartMessage(source),
+    lifecycleContext: buildFileViewerLifecycleContext({
+      phase: 'load-start',
+      version,
+      source,
+      file,
+      filename,
+      url: normalizeFileViewerSourceUrl(sourceUrl) || undefined,
+      bufferSize,
+      timestamp,
+    }),
+  };
 };
 
 export const createFileViewerRenderCompleteState = ({

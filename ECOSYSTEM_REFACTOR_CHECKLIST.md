@@ -116,6 +116,7 @@
   - [x] source loading 的 refresh reason、sourceUrl 归一化和空预览状态快照迁入 `@file-viewer/core`，Vue hook 只写回响应式状态。
   - [x] source loading 的请求重置状态应用迁入 `@file-viewer/core`，Vue hook 只提供响应式字段映射。
   - [x] source loading 的已读取文件状态和流式 sourceUrl 状态应用迁入 `@file-viewer/core`，Vue hook 不再手写 source 字段归一化。
+  - [x] source loading 的 load-start lifecycle context 与默认 loading 文案迁入 `@file-viewer/core`，Vue hook 不再手写开始加载上下文。
   - [x] 渲染完成与渐进渲染 readiness 状态应用迁入 `@file-viewer/core`，source loading / render surface hook 只做响应式映射。
   - [x] 渲染完成后的 readiness 与 load-complete lifecycle context 构建迁入 `@file-viewer/core`，Vue source loading hook 只写回状态并触发 emit。
   - [x] render surface 的 active session / export adapter 状态应用与 active session 销毁迁入 `@file-viewer/core`，Vue hook 只保留响应式字段映射。

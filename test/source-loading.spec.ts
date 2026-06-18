@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_FILE_VIEWER_SOURCE_FILENAME,
   DEFAULT_FILE_VIEWER_STREAMING_PDF_FILENAME,
+  FILE_VIEWER_PREVIEW_MESSAGES,
   applyFileViewerEmptyPreviewState,
   applyFileViewerPreviewFilenameState,
   applyFileViewerPreviewSourceUrlState,
@@ -9,6 +10,7 @@ import {
   applyFileViewerRenderReadinessState,
   applyFileViewerPreviewRequestResetState,
   createFileViewerEmptyPreviewState,
+  createFileViewerLoadStartState,
   createFileViewerReadPreviewState,
   createFileViewerPreviewRequestResetState,
   createFileViewerRenderCompleteState,
@@ -19,6 +21,7 @@ import {
   normalizeFileViewerSourceUrl,
   normalizePdfStreamingMode,
   resolveFileViewerFileRefSourcePlan,
+  resolveFileViewerLoadStartMessage,
   resolveFileViewerPreviewRequestReason,
   resolveFileViewerRemoteSourcePlan,
   resolveFileViewerRuntimePageHref,
@@ -211,6 +214,51 @@ describe('remote source loading helpers', () => {
     expect(target).toEqual({
       renderedReady: false,
       progressiveReady: true
+    })
+  })
+
+  it('creates load-start lifecycle state and default loading messages in core', () => {
+    const file = new File(['demo'], '合同.docx')
+
+    expect(resolveFileViewerLoadStartMessage('file')).toBe(FILE_VIEWER_PREVIEW_MESSAGES.reading)
+    expect(resolveFileViewerLoadStartMessage('url')).toBe(FILE_VIEWER_PREVIEW_MESSAGES.downloading)
+
+    expect(createFileViewerLoadStartState({
+      version: 8,
+      source: 'file',
+      file,
+      timestamp: 120
+    })).toMatchObject({
+      loadingMessage: FILE_VIEWER_PREVIEW_MESSAGES.reading,
+      lifecycleContext: {
+        phase: 'load-start',
+        type: 'docx',
+        filename: '合同.docx',
+        source: 'file',
+        size: file.size,
+        version: 8,
+        timestamp: 120
+      }
+    })
+
+    expect(createFileViewerLoadStartState({
+      version: 9,
+      source: 'url',
+      filename: 'stream.pdf',
+      sourceUrl: '',
+      loadingMessage: '自定义加载文案',
+      timestamp: 140
+    })).toMatchObject({
+      loadingMessage: '自定义加载文案',
+      lifecycleContext: {
+        phase: 'load-start',
+        type: 'pdf',
+        filename: 'stream.pdf',
+        source: 'url',
+        url: undefined,
+        version: 9,
+        timestamp: 140
+      }
     })
   })
 

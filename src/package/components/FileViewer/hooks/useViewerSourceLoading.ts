@@ -21,6 +21,7 @@ import type { FileViewerRequestController } from '@file-viewer/core'
 import type {
   FileViewerFileRef as FileRef,
   FileViewerLifecycleContext,
+  FileViewerLoadStartState,
   FileViewerOptions,
   FileViewerRenderCompleteState
 } from '@file-viewer/core'
@@ -47,13 +48,12 @@ interface UseViewerSourceLoadingOptions {
   ) => Promise<FileViewerVueRenderSession | undefined>;
   destroyRenderSession: (session?: FileViewerVueRenderSession | null) => void;
   setActiveRenderSession: (session: FileViewerVueRenderSession | null) => void;
-  buildLifecycleContext: (input: {
-    phase: FileViewerLifecycleContext['phase'];
+  buildLoadStartState: (input: {
     version: number;
     source: FileViewerLifecycleContext['source'];
     file?: File | null;
-    sourceUrl?: string;
-  }) => FileViewerLifecycleContext;
+    sourceUrl?: string | null;
+  }) => FileViewerLoadStartState;
   buildRenderCompleteState: (input: {
     version: number;
     source: FileViewerLifecycleContext['source'];
@@ -94,7 +94,7 @@ export const useViewerSourceLoading = ({
   mountRenderedContent,
   destroyRenderSession,
   setActiveRenderSession,
-  buildLifecycleContext,
+  buildLoadStartState,
   buildRenderCompleteState,
   notifyLifecycle,
   setActiveDocumentContext,
@@ -241,13 +241,13 @@ export const useViewerSourceLoading = ({
     const { file } = localSource
     applyFileViewerPreviewFilenameState(previewStateTarget, localSource.filename)
     markLoadStarted(version)
-    notifyLifecycle(buildLifecycleContext({
-      phase: 'load-start',
+    const loadStartState = buildLoadStartState({
       version,
       source: 'file',
       file
-    }))
-    startLoading(FILE_VIEWER_PREVIEW_MESSAGES.reading)
+    })
+    notifyLifecycle(loadStartState.lifecycleContext)
+    startLoading(loadStartState.loadingMessage)
 
     try {
       await readAndRenderFile(file, version, undefined, 'file')
@@ -272,13 +272,13 @@ export const useViewerSourceLoading = ({
     const nextFilename = remoteSource.filename
     applyFileViewerPreviewFilenameState(previewStateTarget, nextFilename)
     markLoadStarted(version)
-    notifyLifecycle(buildLifecycleContext({
-      phase: 'load-start',
+    const loadStartState = buildLoadStartState({
       version,
       source: 'url',
       sourceUrl: url
-    }))
-    startLoading(FILE_VIEWER_PREVIEW_MESSAGES.downloading)
+    })
+    notifyLifecycle(loadStartState.lifecycleContext)
+    startLoading(loadStartState.loadingMessage)
 
     if (remoteSource.streamPdf) {
       await previewRemotePdfStream(url, version, nextFilename)

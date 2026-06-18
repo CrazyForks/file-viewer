@@ -95,12 +95,12 @@ const {
 const {
   markLoadStarted,
   clearLoadStarted,
-  buildLifecycleContext,
   notifyLifecycle,
   notifyActiveUnloadStart,
   notifyActiveUnloadComplete,
   setActiveDocumentContext,
   clearActiveDocumentContext,
+  buildLoadStartState,
   buildRenderCompleteState,
   runBeforeOperation
 } = useViewerLifecycle({
@@ -214,7 +214,7 @@ const {
   mountRenderedContent,
   destroyRenderSession,
   setActiveRenderSession,
-  buildLifecycleContext,
+  buildLoadStartState,
   buildRenderCompleteState,
   notifyLifecycle,
   setActiveDocumentContext,

@@ -2,6 +2,7 @@ import {
   buildFileViewerLifecycleContext,
   buildFileViewerOperationContextFromLifecycleState,
   createFileViewerLifecycleStateController,
+  createFileViewerLoadStartState,
   createFileViewerRenderCompleteState,
   postFileViewerLifecycleEvent,
   postFileViewerOperationContextEvent,
@@ -11,6 +12,7 @@ import {
 import type {
   FileViewerFileRef,
   FileViewerLifecycleContext,
+  FileViewerLoadStartState,
   FileViewerLifecyclePhase,
   FileViewerOperationContext,
   FileViewerOperationType,
@@ -25,6 +27,13 @@ interface BuildViewerLifecycleContextInput {
   file?: File | null;
   sourceUrl?: string;
   reason?: FileViewerLifecycleContext['reason'];
+}
+
+interface BuildViewerLoadStartStateInput {
+  version: number;
+  source: FileViewerLifecycleContext['source'];
+  file?: File | null;
+  sourceUrl?: string | null;
 }
 
 interface BuildViewerRenderCompleteStateInput {
@@ -139,6 +148,22 @@ export const useViewerLifecycle = ({
     })
   }
 
+  const buildLoadStartState = ({
+    version,
+    source,
+    file,
+    sourceUrl
+  }: BuildViewerLoadStartStateInput): FileViewerLoadStartState => {
+    return createFileViewerLoadStartState({
+      version,
+      source,
+      file,
+      sourceUrl,
+      filename: getFilename(),
+      bufferSize: getBufferSize()
+    })
+  }
+
   const buildRenderCompleteState = ({
     version,
     source,
@@ -183,6 +208,7 @@ export const useViewerLifecycle = ({
     setActiveDocumentContext: lifecycleState.setActiveDocumentContext,
     clearActiveDocumentContext: lifecycleState.clearActiveDocumentContext,
     buildOperationContext,
+    buildLoadStartState,
     buildRenderCompleteState,
     runBeforeOperation
   }

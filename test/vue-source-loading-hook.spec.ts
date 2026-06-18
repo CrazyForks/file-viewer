@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import {
   FILE_VIEWER_PREVIEW_MESSAGES,
-  buildFileViewerLifecycleContext,
+  createFileViewerLoadStartState,
   createFileViewerRenderCompleteState,
   createFileViewerRequestController
 } from '../packages/core/src'
@@ -42,11 +42,13 @@ describe('Vue FileViewer source loading hook', () => {
       mountRenderedContent,
       destroyRenderSession: vi.fn(),
       setActiveRenderSession,
-      buildLifecycleContext: input => buildFileViewerLifecycleContext({
+      buildLoadStartState: input => createFileViewerLoadStartState({
         ...input,
         filename: filename.value,
         bufferSize: currentBuffer.value?.byteLength,
-        startedAt: startedAt.get(input.version)
+        loadingMessage: input.source === 'url'
+          ? FILE_VIEWER_PREVIEW_MESSAGES.downloading
+          : FILE_VIEWER_PREVIEW_MESSAGES.reading
       }),
       buildRenderCompleteState: input => createFileViewerRenderCompleteState({
         ...input,
