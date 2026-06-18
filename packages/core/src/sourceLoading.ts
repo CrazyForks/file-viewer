@@ -133,6 +133,17 @@ export interface CreateFileViewerRenderCompleteStateInput {
   lifecycleState?: Pick<FileViewerLifecycleStateController, 'getLoadStartedAt'>;
 }
 
+export interface CommitFileViewerRenderCompleteStateInput<Session = unknown> {
+  version: number;
+  session?: Session | null;
+  buildState: () => FileViewerRenderCompleteState;
+  readinessTarget: MutableFileViewerRenderReadinessState;
+  onSession?: (session: Session | null) => void;
+  onActiveDocumentContext?: (context: FileViewerLifecycleContext) => void;
+  onLifecycle?: (context: FileViewerLifecycleContext) => void;
+  onClearLoadStarted?: (version: number) => void;
+}
+
 export const createFileViewerRequestController = (): FileViewerRequestController => {
   let version = 0;
   let activeAbortController: AbortController | null = null;
@@ -297,6 +308,25 @@ export const applyFileViewerRenderReadinessState = <Target extends MutableFileVi
     target.progressiveReady = state.progressiveReady;
   }
   return target;
+};
+
+export const commitFileViewerRenderCompleteState = <Session = unknown>({
+  version,
+  session,
+  buildState,
+  readinessTarget,
+  onSession,
+  onActiveDocumentContext,
+  onLifecycle,
+  onClearLoadStarted,
+}: CommitFileViewerRenderCompleteStateInput<Session>) => {
+  onSession?.(session ?? null);
+  const completeState = buildState();
+  applyFileViewerRenderReadinessState(readinessTarget, completeState.readiness);
+  onActiveDocumentContext?.(completeState.lifecycleContext);
+  onLifecycle?.(completeState.lifecycleContext);
+  onClearLoadStarted?.(version);
+  return completeState;
 };
 
 export const resolveFileViewerLoadStartMessage = (

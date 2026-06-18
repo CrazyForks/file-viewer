@@ -6,8 +6,8 @@ import {
   applyFileViewerPreviewFilenameState,
   applyFileViewerPreviewSourceUrlState,
   applyFileViewerReadPreviewState,
-  applyFileViewerRenderReadinessState,
   applyFileViewerPreviewRequestResetState,
+  commitFileViewerRenderCompleteState,
   createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
   isFileViewerAbortError,
@@ -187,17 +187,21 @@ export const useViewerSourceLoading = ({
       destroyRenderSession(session)
       return
     }
-    setActiveRenderSession(session || null)
-    const completeState = buildRenderCompleteState({
+    commitFileViewerRenderCompleteState({
       version,
-      source,
-      file,
-      sourceUrl
+      session,
+      readinessTarget: previewStateTarget,
+      buildState: () => buildRenderCompleteState({
+        version,
+        source,
+        file,
+        sourceUrl
+      }),
+      onSession: setActiveRenderSession,
+      onActiveDocumentContext: setActiveDocumentContext,
+      onLifecycle: notifyLifecycle,
+      onClearLoadStarted: clearLoadStarted
     })
-    applyFileViewerRenderReadinessState(previewStateTarget, completeState.readiness)
-    setActiveDocumentContext(completeState.lifecycleContext)
-    notifyLifecycle(completeState.lifecycleContext)
-    clearLoadStarted(version)
   }
 
   const previewRemotePdfStream = async (url: string, version: number, nextFilename: string) => {
@@ -211,16 +215,20 @@ export const useViewerSourceLoading = ({
         destroyRenderSession(session)
         return
       }
-      setActiveRenderSession(session || null)
-      const completeState = buildRenderCompleteState({
+      commitFileViewerRenderCompleteState({
         version,
-        source: 'url',
-        sourceUrl: url
+        session,
+        readinessTarget: previewStateTarget,
+        buildState: () => buildRenderCompleteState({
+          version,
+          source: 'url',
+          sourceUrl: url
+        }),
+        onSession: setActiveRenderSession,
+        onActiveDocumentContext: setActiveDocumentContext,
+        onLifecycle: notifyLifecycle,
+        onClearLoadStarted: clearLoadStarted
       })
-      applyFileViewerRenderReadinessState(previewStateTarget, completeState.readiness)
-      setActiveDocumentContext(completeState.lifecycleContext)
-      notifyLifecycle(completeState.lifecycleContext)
-      clearLoadStarted(version)
     } catch (nextError) {
       if (!isCurrentRequest(version)) {
         return

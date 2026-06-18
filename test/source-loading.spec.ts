@@ -9,6 +9,7 @@ import {
   applyFileViewerReadPreviewState,
   applyFileViewerRenderReadinessState,
   applyFileViewerPreviewRequestResetState,
+  commitFileViewerRenderCompleteState,
   createFileViewerEmptyPreviewState,
   createFileViewerLoadStartState,
   createFileViewerReadPreviewState,
@@ -304,6 +305,62 @@ describe('remote source loading helpers', () => {
       url: undefined,
       size: 0,
       duration: 25
+    })
+  })
+
+  it('commits render complete state in the shared core order', () => {
+    const events: string[] = []
+    const file = new File(['demo'], 'complete.pdf')
+    const session = { id: 'session-1' }
+    const readiness = {
+      renderedReady: false,
+      progressiveReady: true
+    }
+
+    const complete = commitFileViewerRenderCompleteState({
+      version: 12,
+      session,
+      readinessTarget: readiness,
+      buildState: () => {
+        events.push('build')
+        return createFileViewerRenderCompleteState({
+          version: 12,
+          source: 'file',
+          file,
+          bufferSize: 4,
+          timestamp: 260
+        })
+      },
+      onSession: nextSession => {
+        events.push(nextSession === session ? 'session:set' : 'session:miss')
+      },
+      onActiveDocumentContext: context => {
+        events.push(`active:${context.phase}:${context.filename}`)
+      },
+      onLifecycle: context => {
+        events.push(`lifecycle:${context.phase}`)
+      },
+      onClearLoadStarted: version => {
+        events.push(`clear:${version}`)
+      }
+    })
+
+    expect(events).toEqual([
+      'session:set',
+      'build',
+      'active:load-complete:complete.pdf',
+      'lifecycle:load-complete',
+      'clear:12'
+    ])
+    expect(readiness).toEqual({
+      renderedReady: true,
+      progressiveReady: false
+    })
+    expect(complete.lifecycleContext).toMatchObject({
+      phase: 'load-complete',
+      filename: 'complete.pdf',
+      source: 'file',
+      version: 12
     })
   })
 
