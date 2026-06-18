@@ -194,6 +194,13 @@ export {
   setFileViewerOptionsSearchParam,
 } from './options';
 export {
+  resolveFileViewerPresentationState,
+} from './presentation';
+export type {
+  FileViewerPresentationState,
+  ResolveFileViewerPresentationStateInput,
+} from './presentation';
+export {
   createFileViewerRendererDispatcher,
 } from './rendererDispatcher';
 export {

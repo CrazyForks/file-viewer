@@ -2,10 +2,7 @@ import { computed, type ComputedRef, type Ref } from 'vue'
 import {
   createFileViewerErrorState,
   formatFileViewerErrorMessage,
-  getExtension,
-  normalizeFileViewerTheme,
-  normalizeFileViewerToolbar,
-  resolveFileViewerSourceFilename,
+  resolveFileViewerPresentationState,
   type FileViewerStateTheme
 } from '@file-viewer/core'
 import type {
@@ -38,14 +35,16 @@ export const useViewerPresentation = ({
   getUrl,
   getOptions
 }: UseViewerPresentationOptions) => {
-  const displayFilename = computed(() => resolveFileViewerSourceFilename({
+  const presentationState = computed(() => resolveFileViewerPresentationState({
     filename: filename.value,
     file: getFile(),
-    url: getUrl()
+    url: getUrl(),
+    options: getOptions()
   }))
-  const currentExtend = computed(() => getExtension(displayFilename.value))
-  const normalizedToolbar = computed(() => normalizeFileViewerToolbar(getOptions()))
-  const viewerTheme = computed(() => normalizeFileViewerTheme(getOptions()?.theme))
+  const displayFilename = computed(() => presentationState.value.displayFilename)
+  const currentExtend = computed(() => presentationState.value.extension)
+  const normalizedToolbar = computed(() => presentationState.value.toolbar)
+  const viewerTheme = computed(() => presentationState.value.theme)
 
   return {
     displayFilename,

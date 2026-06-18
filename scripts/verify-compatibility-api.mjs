@@ -440,18 +440,20 @@ async function verifyVue3ScopedCompatibility() {
   const vuePresentationHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerPresentation.ts`
   assertImportsFrom(vuePresentationHookSource, '@file-viewer/core', vuePresentationHookLabel)
   assertTokens(vuePresentationHookSource, [
-    'resolveFileViewerSourceFilename',
-    'normalizeFileViewerTheme',
-    'normalizeFileViewerToolbar'
+    'resolveFileViewerPresentationState'
   ], vuePresentationHookLabel)
   for (const forbiddenToken of [
     'const getSourceFilename',
+    'resolveFileViewerSourceFilename',
+    'normalizeFileViewerTheme',
+    'normalizeFileViewerToolbar',
+    'getExtension(displayFilename.value)',
     "theme === 'light'",
     "theme === 'dark'"
   ]) {
     assert(
       !vuePresentationHookSource.includes(forbiddenToken),
-      `${vuePresentationHookLabel} must delegate source filename and theme normalization to @file-viewer/core instead of ${forbiddenToken}`
+      `${vuePresentationHookLabel} must delegate presentation state derivation to @file-viewer/core instead of ${forbiddenToken}`
     )
   }
 
