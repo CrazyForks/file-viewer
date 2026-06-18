@@ -570,13 +570,17 @@ async function verifyVue3ScopedCompatibility() {
     'resolveFileViewerScrollContainer',
     'createFileViewerSearchChangeState',
     'resolveFileViewerLocationChangeAnchor',
-    'postFileViewerSearchChange',
-    'postFileViewerLocationChange',
+    'dispatchFileViewerSearchChange',
+    'dispatchFileViewerLocationChange',
     'buildFileViewerDocumentTextChunks'
   ], vueDocumentFeaturesHookLabel)
   for (const forbiddenToken of [
     'createFileViewerRawPostMessagePayload',
     'postFileViewerMessageToParent',
+    'postFileViewerSearchChange',
+    'postFileViewerLocationChange',
+    'emitSearchChange(state)',
+    'emitLocationChange(anchor)',
     'const postViewerPayload',
     'const cloneSearchState',
     'cloneFileViewerSearchState',

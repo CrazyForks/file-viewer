@@ -8,8 +8,8 @@ import type {
 import {
   buildFileViewerDocumentTextChunks,
   createFileViewerSearchChangeState,
-  postFileViewerLocationChange,
-  postFileViewerSearchChange,
+  dispatchFileViewerLocationChange,
+  dispatchFileViewerSearchChange,
   resolveFileViewerLocationChangeAnchor,
   resolveFileViewerScrollContainer,
   scrollToFileViewerDocumentAnchor
@@ -49,8 +49,10 @@ export const useViewerDocumentFeatures = ({
 
   const notifySearchChange = () => {
     const state = getSearchState()
-    emitSearchChange(state)
-    postFileViewerSearchChange(state)
+    dispatchFileViewerSearchChange({
+      state,
+      onChange: emitSearchChange
+    })
     return state
   }
 
@@ -59,8 +61,10 @@ export const useViewerDocumentFeatures = ({
       root: output.value,
       anchors: documentSearch.anchors.value
     })
-    emitLocationChange(anchor)
-    postFileViewerLocationChange(anchor)
+    dispatchFileViewerLocationChange({
+      anchor,
+      onChange: emitLocationChange
+    })
     return anchor
   }
 

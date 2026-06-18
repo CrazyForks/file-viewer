@@ -15,6 +15,8 @@ import {
   createFileViewerZoomController,
   createFileViewerZoomState,
   destroyFileViewerDomSearchController,
+  dispatchFileViewerLocationChange,
+  dispatchFileViewerSearchChange,
   findFileViewerSearchProvider,
   findFileViewerZoomProvider,
   getCurrentFileViewerDocumentAnchor,
@@ -148,6 +150,93 @@ describe('@file-viewer/core document helpers', () => {
     expect(target.current).not.toBe(source.current);
     expect(target.current?.anchor).not.toBe(source.current.anchor);
     expect(target.matches[0]).not.toBe(source.matches[0]);
+  });
+
+  it('dispatches document search and location notifications in wrapper event order', () => {
+    const events: string[] = [];
+    const parent = {
+      postMessage: vi.fn((payload: unknown) => {
+        events.push(`post:${(payload as { event: string }).event}`);
+      }),
+    };
+    const child = {
+      parent,
+    } as unknown as Window;
+    const source = createEmptyFileViewerSearchState('PDF');
+    const currentAnchor = anchor('intro', 'PDF intro', 2);
+    source.total = 1;
+    source.currentIndex = 0;
+    source.current = {
+      id: 'match-1',
+      index: 0,
+      text: 'PDF',
+      anchor: currentAnchor,
+      line: 2,
+    };
+    source.matches = [source.current];
+    const locationAnchor = anchor('chapter-1', 'Chapter 1', 4);
+    let emittedSearchState: typeof source | null = null;
+    let emittedLocationAnchor: FileViewerDocumentAnchor | null | undefined;
+
+    expect(dispatchFileViewerSearchChange({
+      state: source,
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      onChange: state => {
+        events.push('emit:search-change');
+        emittedSearchState = state;
+        state.query = 'mutated';
+      },
+    })).toBe(true);
+    expect(dispatchFileViewerLocationChange({
+      anchor: locationAnchor,
+      targetOrigin: 'https://host.example',
+      targetWindow: child,
+      onChange: nextAnchor => {
+        events.push('emit:location-change');
+        emittedLocationAnchor = nextAnchor;
+      },
+    })).toBe(true);
+
+    expect(events).toEqual([
+      'emit:search-change',
+      'post:search-change',
+      'emit:location-change',
+      'post:location-change',
+    ]);
+    expect(emittedSearchState).not.toBe(source);
+    expect(emittedSearchState?.current).not.toBe(source.current);
+    expect(emittedSearchState?.current?.anchor).not.toBe(source.current.anchor);
+    expect(source.query).toBe('PDF');
+    expect(emittedLocationAnchor).toBe(locationAnchor);
+    expect(parent.postMessage).toHaveBeenNthCalledWith(1, {
+      type: 'flyfish-viewer:search',
+      event: 'search-change',
+      payload: {
+        query: 'mutated',
+        total: 1,
+        currentIndex: 0,
+        current: {
+          id: 'match-1',
+          index: 0,
+          text: 'PDF',
+          anchor: currentAnchor,
+          line: 2,
+        },
+        matches: [{
+          id: 'match-1',
+          index: 0,
+          text: 'PDF',
+          anchor: currentAnchor,
+          line: 2,
+        }],
+      },
+    }, 'https://host.example');
+    expect(parent.postMessage).toHaveBeenNthCalledWith(2, {
+      type: 'flyfish-viewer:location',
+      event: 'location-change',
+      payload: locationAnchor,
+    }, 'https://host.example');
   });
 
   it('builds AI-friendly document text chunks with overlap and limits', () => {

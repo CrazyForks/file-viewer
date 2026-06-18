@@ -149,6 +149,7 @@
   - [x] 工具栏能力、可见动作、位置与禁用状态组合迁入 `@file-viewer/core`，Vue hook 只映射 toolbar state。
   - [x] 水印背景样式对象构建迁入 `@file-viewer/core`，Vue hook 只做响应式映射并复用同一导出/打印水印协议。
   - [x] 搜索 provider、缩放 provider、文档锚点/文本切片协议补齐到 `@file-viewer/core`。
+  - [x] 文档搜索与定位变更的 emit / postMessage 编排迁入 `@file-viewer/core`，Vue document features hook 不再直接发送 frame 事件。
   - [x] 渲染上下文 `FileRenderContext`、通用 handler 协议迁入 `@file-viewer/core`。
   - [x] worker ref 管理迁入 `@file-viewer/core`，Vue3 兼容路径改为 re-export。
   - [x] `pnpm verify:compatibility-api` 锁定 Vue3 旧 `src/package/common` 运行时文件删除状态，禁止回流本地实现逻辑。

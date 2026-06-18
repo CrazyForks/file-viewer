@@ -55,10 +55,14 @@ export type {
 export {
   createFileViewerDocumentChangeSnapshot,
   createFileViewerSearchChangeState,
+  dispatchFileViewerLocationChange,
+  dispatchFileViewerSearchChange,
   resolveFileViewerLocationChangeAnchor,
 } from './documentEvents';
 export type {
   CreateFileViewerDocumentChangeSnapshotInput,
+  DispatchFileViewerLocationChangeInput,
+  DispatchFileViewerSearchChangeInput,
   FileViewerDocumentChangeSnapshot,
   ResolveFileViewerLocationChangeAnchorInput,
 } from './documentEvents';
