@@ -530,6 +530,33 @@ export interface FileViewerRemoteSourcePlan {
   readonly streamPdf: boolean;
 }
 
+export interface CommitFileViewerRemoteDownloadStateInput {
+  version: number;
+  data?: FileViewerFileRef | null;
+  currentFilename?: string;
+  fallbackFilename?: string;
+  isCurrent: (version: number) => boolean;
+  onMissingData?: () => void;
+  onSetLoadingMessage?: (message: string) => void;
+}
+
+export type FileViewerRemoteDownloadState =
+  | {
+    readonly stale: true;
+    readonly missing: false;
+    readonly source: null;
+  }
+  | {
+    readonly stale: false;
+    readonly missing: true;
+    readonly source: null;
+  }
+  | {
+    readonly stale: false;
+    readonly missing: false;
+    readonly source: FileViewerFileRefSourcePlan;
+  };
+
 export interface FileViewerLocationLike {
   href?: string | null;
 }
@@ -569,6 +596,45 @@ export const resolveFileViewerRemoteSourcePlan = ({
         url,
       })
       : false,
+  };
+};
+
+export const commitFileViewerRemoteDownloadState = ({
+  version,
+  data,
+  currentFilename,
+  fallbackFilename,
+  isCurrent,
+  onMissingData,
+  onSetLoadingMessage,
+}: CommitFileViewerRemoteDownloadStateInput): FileViewerRemoteDownloadState => {
+  if (!isCurrent(version)) {
+    return {
+      stale: true,
+      missing: false,
+      source: null,
+    };
+  }
+
+  if (!data) {
+    onMissingData?.();
+    return {
+      stale: false,
+      missing: true,
+      source: null,
+    };
+  }
+
+  onSetLoadingMessage?.(FILE_VIEWER_PREVIEW_MESSAGES.reading);
+
+  return {
+    stale: false,
+    missing: false,
+    source: resolveFileViewerFileRefSourcePlan({
+      source: data,
+      currentFilename,
+      fallbackFilename,
+    }),
   };
 };
 

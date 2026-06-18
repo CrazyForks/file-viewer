@@ -491,6 +491,7 @@ async function verifyVue3ScopedCompatibility() {
     'commitFileViewerLoadStartState',
     'commitFileViewerPreviewRequestStartState',
     'commitFileViewerRenderCompleteState',
+    'commitFileViewerRemoteDownloadState',
     'createFileViewerReadPreviewState',
     'createFileViewerStreamingPdfPlaceholderFile',
     'resolveFileViewerFileRefSourcePlan',
@@ -537,6 +538,9 @@ async function verifyVue3ScopedCompatibility() {
     'const loadStartState = buildLoadStartState',
     'notifyLifecycle(loadStartState.lifecycleContext)',
     'startLoading(loadStartState.loadingMessage)',
+    'setLoadingMessage(FILE_VIEWER_PREVIEW_MESSAGES.reading)',
+    'if (!data) {',
+    'source: data',
     "phase: 'load-start'",
     "phase: 'load-complete'",
     'renderedReady: true'

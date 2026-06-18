@@ -13,6 +13,7 @@ import {
   commitFileViewerLoadStartState,
   commitFileViewerPreviewRequestStartState,
   commitFileViewerRenderCompleteState,
+  commitFileViewerRemoteDownloadState,
   createFileViewerEmptyPreviewState,
   createFileViewerLoadStartState,
   createFileViewerReadPreviewState,
@@ -515,6 +516,67 @@ describe('remote source loading helpers', () => {
       extension: 'docx',
       streamPdf: false
     })
+  })
+
+  it('commits remote download results without framework-specific request code', () => {
+    const messages: string[] = []
+    const missing = commitFileViewerRemoteDownloadState({
+      version: 2,
+      data: null,
+      currentFilename: 'missing.docx',
+      isCurrent: version => version === 2,
+      onMissingData: () => {
+        messages.push('missing')
+      },
+      onSetLoadingMessage: message => {
+        messages.push(message)
+      }
+    })
+
+    expect(missing).toEqual({
+      stale: false,
+      missing: true,
+      source: null
+    })
+    expect(messages).toEqual(['missing'])
+
+    const stale = commitFileViewerRemoteDownloadState({
+      version: 3,
+      data: new Blob(['demo'], { type: 'text/plain' }),
+      currentFilename: 'stale.txt',
+      isCurrent: version => version === 4,
+      onMissingData: () => {
+        messages.push('stale-missing')
+      },
+      onSetLoadingMessage: message => {
+        messages.push(`stale:${message}`)
+      }
+    })
+
+    expect(stale).toEqual({
+      stale: true,
+      missing: false,
+      source: null
+    })
+
+    const ready = commitFileViewerRemoteDownloadState({
+      version: 4,
+      data: new Blob(['demo'], { type: 'text/plain' }),
+      currentFilename: '/remote/%E5%90%88%E5%90%8C.txt?token=1',
+      isCurrent: version => version === 4,
+      onSetLoadingMessage: message => {
+        messages.push(message)
+      }
+    })
+
+    expect(ready.stale).toBe(false)
+    expect(ready.missing).toBe(false)
+    expect(ready.source?.filename).toBe('合同.txt')
+    expect(ready.source?.file.name).toBe('合同.txt')
+    expect(messages).toEqual([
+      'missing',
+      FILE_VIEWER_PREVIEW_MESSAGES.reading
+    ])
   })
 
   it('keeps source fallback filenames and streaming PDF placeholders in core', () => {

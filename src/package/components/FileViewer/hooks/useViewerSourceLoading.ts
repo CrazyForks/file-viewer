@@ -8,6 +8,7 @@ import {
   commitFileViewerLoadStartState,
   commitFileViewerPreviewRequestStartState,
   commitFileViewerRenderCompleteState,
+  commitFileViewerRemoteDownloadState,
   createFileViewerReadPreviewState,
   createFileViewerStreamingPdfPlaceholderFile,
   isFileViewerAbortError,
@@ -313,21 +314,19 @@ export const useViewerSourceLoading = ({
         signal: controller?.signal
       })
 
-      if (!isCurrentRequest(version)) {
-        return
-      }
-
-      if (!data) {
-        showError('文件下载失败')
-        return
-      }
-
-      setLoadingMessage(FILE_VIEWER_PREVIEW_MESSAGES.reading)
-      const downloadedSource = resolveFileViewerFileRefSourcePlan({
-        source: data,
-        currentFilename: nextFilename
+      const downloadState = commitFileViewerRemoteDownloadState({
+        version,
+        data,
+        currentFilename: nextFilename,
+        isCurrent: isCurrentRequest,
+        onMissingData: () => showError('文件下载失败'),
+        onSetLoadingMessage: setLoadingMessage
       })
-      await readAndRenderFile(downloadedSource.file, version, url, 'url')
+      if (downloadState.stale || downloadState.missing) {
+        return
+      }
+
+      await readAndRenderFile(downloadState.source.file, version, url, 'url')
     } catch (nextError) {
       if (!isCurrentRequest(version) || isFileViewerAbortError(nextError)) {
         return

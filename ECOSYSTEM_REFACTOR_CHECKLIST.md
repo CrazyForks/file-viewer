@@ -128,6 +128,7 @@
   - [x] FileRef source plan 和预览文件名状态应用迁入 `@file-viewer/core`，Vue hook 不再直接包装 FileRef 或硬编码默认文件名。
   - [x] 远程 source plan 的 runtime page href 解析迁入 `@file-viewer/core`，Vue hook 不再直接访问 `window.location`。
   - [x] 远程 URL 加载计划（文件名、扩展名、PDF 流式开关）迁入 `@file-viewer/core`，wrapper 只负责网络请求和挂载。
+  - [x] 远程文件下载后的过期请求判断、空响应处理、读取文案切换和 Blob source plan 包装迁入 `@file-viewer/core`。
   - [x] 源文件默认 fallback 名称与 PDF 流式占位文件创建迁入 `@file-viewer/core`，Vue source loading 不再硬编码 `preview.*` 默认值。
   - [x] 文件名归一化、扩展名识别和 source 归一化迁入 `@file-viewer/core`。
   - [x] `File | Blob | ArrayBuffer` 输入包装和 ArrayBuffer 读取迁入 `@file-viewer/core`。
