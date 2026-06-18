@@ -4,12 +4,15 @@ import {
   createFileViewerLifecycleStateController,
   createFileViewerLoadStartState,
   createFileViewerRenderCompleteState,
+  emitFileViewerComponentLifecycleEvent,
+  resolveFileViewerBeforeOperationErrorMessage,
 } from '@file-viewer/core'
 import type {
+  FileViewerErrorMessageFormatter,
   FileViewerFileRef,
   FileViewerLifecycleContext,
+  FileViewerLifecycleComponentEmit,
   FileViewerLoadStartState,
-  FileViewerLifecyclePhase,
   FileViewerOperationContext,
   FileViewerOperationType,
   FileViewerOptions,
@@ -38,11 +41,13 @@ interface UseViewerLifecycleOptions {
   getCurrentVersion: () => number;
   getFallbackFile: () => FileViewerFileRef | undefined;
   getFallbackUrl: () => string | undefined;
-  emitLifecycle: (event: FileViewerLifecyclePhase, context: FileViewerLifecycleContext) => void;
+  emitLifecycle: FileViewerLifecycleComponentEmit;
   emitOperationBefore: (context: FileViewerOperationContext) => void;
   emitOperationCancel: (context: FileViewerOperationContext) => void;
+  formatErrorMessage: FileViewerErrorMessageFormatter;
   handleLifecycleError: (error: unknown, context: FileViewerLifecycleContext) => void;
-  handleOperationError: (error: unknown, context: FileViewerOperationContext) => void;
+  handleOperationError?: (error: unknown, context: FileViewerOperationContext) => void;
+  onOperationErrorMessage?: (message: string, context: FileViewerOperationContext) => void;
 }
 
 /**
@@ -62,8 +67,10 @@ export const useViewerLifecycle = ({
   emitLifecycle,
   emitOperationBefore,
   emitOperationCancel,
+  formatErrorMessage,
   handleLifecycleError,
-  handleOperationError
+  handleOperationError,
+  onOperationErrorMessage
 }: UseViewerLifecycleOptions) => {
   const lifecycleState = createFileViewerLifecycleStateController()
 
@@ -73,11 +80,22 @@ export const useViewerLifecycle = ({
   const lifecycleActions = createFileViewerLifecycleActions({
     lifecycleState,
     getOptions,
-    onLifecycleChange: emitLifecycle,
+    onLifecycleChange: (_event, context) => {
+      emitFileViewerComponentLifecycleEvent(emitLifecycle, context)
+    },
     onLifecycleError: handleLifecycleError,
     onOperationBefore: emitOperationBefore,
     onOperationCancel: emitOperationCancel,
-    onOperationError: handleOperationError
+    onOperationError: (error, context) => {
+      handleOperationError?.(error, context)
+      onOperationErrorMessage?.(
+        resolveFileViewerBeforeOperationErrorMessage({
+          error,
+          formatErrorMessage
+        }),
+        context
+      )
+    }
   })
 
   const buildOperationContext = (operation: FileViewerOperationType): FileViewerOperationContext => {

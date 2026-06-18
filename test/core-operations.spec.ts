@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { parseHTML } from 'linkedom';
 import {
+  FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX,
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
@@ -21,6 +22,7 @@ import {
   dispatchFileViewerOperationContextEvent,
   dispatchFileViewerOperationAvailabilityChange,
   dispatchFileViewerZoomChange,
+  emitFileViewerComponentLifecycleEvent,
   executeFileViewerDownloadOperation,
   executeFileViewerExportHtmlOperation,
   executeFileViewerPrintOperation,
@@ -35,6 +37,7 @@ import {
   postFileViewerMessageToParent,
   postFileViewerSearchChange,
   postFileViewerZoomChange,
+  resolveFileViewerBeforeOperationErrorMessage,
   resolveFileViewerLifecycleFallbackSource,
   resolveFileViewerOperationActionErrorMessage,
   resolveFileViewerOperationFilename,
@@ -48,6 +51,7 @@ import {
   runFileViewerActiveUnloadStart,
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
+  type FileViewerLifecycleComponentEmit,
   type FileViewerOperationType,
 } from '../packages/core/src';
 
@@ -209,6 +213,32 @@ describe('@file-viewer/core operation helpers', () => {
     });
     expect(onLifecycle).toHaveBeenCalledTimes(2);
     expect(onLifecycle).toHaveBeenLastCalledWith(completed.unloadContext);
+  });
+
+  it('dispatches component lifecycle emits and formats beforeOperation errors through core', () => {
+    const emitted: string[] = [];
+    const emit = ((event: string, context: { filename: string }) => {
+      emitted.push(`${event}:${context.filename}`);
+    }) as FileViewerLifecycleComponentEmit;
+    const context = buildFileViewerLifecycleContext({
+      phase: 'load-start',
+      source: 'url',
+      filename: 'contract.pdf',
+      version: 11,
+    });
+
+    emitFileViewerComponentLifecycleEvent(emit, context);
+
+    expect(emitted).toEqual(['load-start:contract.pdf']);
+    expect(resolveFileViewerBeforeOperationErrorMessage({
+      error: new Error('denied'),
+      formatErrorMessage: (prefix, error) => `${prefix}:${error instanceof Error ? error.message : String(error)}`,
+    })).toBe(`${FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX}:denied`);
+    expect(resolveFileViewerBeforeOperationErrorMessage({
+      error: 'offline',
+      prefix: '权限校验失败',
+      formatErrorMessage: (prefix, error) => `${prefix}:${String(error)}`,
+    })).toBe('权限校验失败:offline');
   });
 
   it('builds operation contexts from lifecycle state without wrapper fallback logic', () => {

@@ -1,6 +1,8 @@
 import { normalizeFileExtension } from './source';
 import type { FileViewerRenderStateKind, FileViewerStateDescriptor, FileViewerStateTheme } from './types';
 
+export type FileViewerErrorMessageFormatter = (prefix: string, error: unknown) => string;
+
 export const FILE_VIEWER_PREVIEW_MESSAGES = Object.freeze({
   downloading: '正在下载文件资源...',
   streamingPdf: '正在建立 PDF 流式预览...',
@@ -110,7 +112,7 @@ export const normalizeFileViewerErrorMessage = (error: unknown) => {
   return String(error);
 };
 
-export const formatFileViewerErrorMessage = (prefix: string, error: unknown) => {
+export const formatFileViewerErrorMessage: FileViewerErrorMessageFormatter = (prefix, error) => {
   return `${prefix}：${normalizeFileViewerErrorMessage(error)}`;
 };
 

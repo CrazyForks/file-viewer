@@ -111,26 +111,17 @@ const {
   getCurrentVersion,
   getFallbackFile: () => props.file,
   getFallbackUrl: () => props.url,
-  emitLifecycle: (event, context) => {
-    if (event === 'load-start') {
-      emit('load-start', context)
-    } else if (event === 'load-complete') {
-      emit('load-complete', context)
-    } else if (event === 'unload-start') {
-      emit('unload-start', context)
-    } else {
-      emit('unload-complete', context)
-    }
-  },
+  emitLifecycle: emit,
   emitOperationBefore: context => emit('operation-before', context),
   emitOperationCancel: context => emit('operation-cancel', context),
+  formatErrorMessage,
   handleLifecycleError: (nextError, context) => {
     console.error(`FileViewer ${context.phase} hook failed`, nextError)
   },
   handleOperationError: (nextError) => {
     console.error(nextError)
-    showError(formatErrorMessage('操作前置校验失败', nextError))
-  }
+  },
+  onOperationErrorMessage: showError
 })
 
 const {

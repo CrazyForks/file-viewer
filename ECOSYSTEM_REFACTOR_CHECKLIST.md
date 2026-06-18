@@ -148,6 +148,7 @@
   - [x] Vue3 生命周期与 beforeOperation 门面拆到组件 hooks，复用 core context / hook / postMessage 协议，继续降低主入口职责。
   - [x] 生命周期与 operation-before / operation-cancel 的 iframe postMessage helper 迁入 `@file-viewer/core`，Vue lifecycle hook 不再拼接 payload。
   - [x] 生命周期与 operation-before / operation-cancel 的 emit / hook / postMessage 编排迁入 `@file-viewer/core`，Vue lifecycle hook 不再直接发送 frame 事件。
+  - [x] 生命周期 phase 到组件 emit 的映射、beforeOperation 失败默认前缀与错误消息格式化协议迁入 `@file-viewer/core`，Vue 入口不再维护本地分发 if/else 或硬编码文案。
   - [x] 生命周期 active context 与 load-start 时间状态迁入 `@file-viewer/core` controller，Vue hook 只做 emit / postMessage 适配。
   - [x] 生命周期 active unload-start / unload-complete 上下文构建与通知编排迁入 `@file-viewer/core`，Vue hook 不再直接拼卸载事件。
   - [x] 生命周期 lifecycle dispatch、active unload 和 beforeOperation action facade 迁入 `@file-viewer/core`，Vue hook 只组合上下文构建和响应式 getter。

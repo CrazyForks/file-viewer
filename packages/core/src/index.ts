@@ -196,6 +196,7 @@ export {
 } from './capabilities';
 export {
   FILE_VIEWER_LIFECYCLE_HOOKS,
+  FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX,
   FILE_VIEWER_OPERATION_LABELS,
   buildFileViewerLifecycleContext,
   buildFileViewerLifecycleContextFromNormalizedSource,
@@ -211,6 +212,7 @@ export {
   dispatchFileViewerOperationContextEvent,
   dispatchFileViewerOperationAvailabilityChange,
   dispatchFileViewerZoomChange,
+  emitFileViewerComponentLifecycleEvent,
   getFileViewerBeforeOperationHooks,
   getFileViewerLifecycleHookName,
   hasVisibleFileViewerToolbarActions,
@@ -225,6 +227,7 @@ export {
   postFileViewerSearchChange,
   postFileViewerZoomChange,
   resolveFileViewerLifecycleFallbackSource,
+  resolveFileViewerBeforeOperationErrorMessage,
   resolveFileViewerOperationAvailability,
   resolveFileViewerToolbarState,
   resolveFileViewerToolbarPosition,
@@ -244,11 +247,13 @@ export type {
   DispatchFileViewerZoomChangeInput,
   FileViewerActiveUnloadState,
   FileViewerLifecycleActions,
+  FileViewerLifecycleComponentEmit,
   FileViewerToolbarActions,
   FileViewerZoomButtonAction,
   FileViewerToolbarState,
   CreateFileViewerToolbarActionsInput,
   BuildFileViewerLifecycleContextFromNormalizedSourceInput,
+  ResolveFileViewerBeforeOperationErrorMessageInput,
   ResolveFileViewerToolbarStateInput,
   RunFileViewerActiveUnloadCompleteInput,
   RunFileViewerActiveUnloadStartInput,
@@ -343,6 +348,9 @@ export {
   createFileViewerUnsupportedState,
   formatFileViewerErrorMessage,
   normalizeFileViewerErrorMessage,
+} from './state';
+export type {
+  FileViewerErrorMessageFormatter,
 } from './state';
 export {
   buildFileViewerWatermarkBackgroundImage,

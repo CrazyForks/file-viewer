@@ -1,5 +1,6 @@
 import { resolvePrintAvailability } from './capabilities';
 import { getExtension, normalizeFilename } from './source';
+import type { FileViewerErrorMessageFormatter } from './state';
 import {
   hasFileViewerOriginalSource,
   type FileViewerOriginalSourceState,
@@ -39,6 +40,15 @@ export const FILE_VIEWER_OPERATION_LABELS = {
   'zoom-out': '缩小预览',
   'zoom-reset': '还原预览比例',
 } as const satisfies Record<FileViewerOperationType, string>;
+
+export const FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX = '操作前置校验失败';
+
+export interface FileViewerLifecycleComponentEmit {
+  (event: 'load-start', context: FileViewerLifecycleContext): void;
+  (event: 'load-complete', context: FileViewerLifecycleContext): void;
+  (event: 'unload-start', context: FileViewerLifecycleContext): void;
+  (event: 'unload-complete', context: FileViewerLifecycleContext): void;
+}
 
 export interface BuildFileViewerLifecycleContextInput<
   Source extends string = FileViewerSourceKind,
@@ -153,6 +163,12 @@ export interface RunFileViewerBeforeOperationInput<
   onBefore?: (context: Context) => void;
   onCancel?: (context: Context) => void;
   onError?: (error: unknown, context: Context) => void;
+}
+
+export interface ResolveFileViewerBeforeOperationErrorMessageInput {
+  error: unknown;
+  formatErrorMessage: FileViewerErrorMessageFormatter;
+  prefix?: string;
 }
 
 export interface CreateFileViewerLifecycleActionsInput<
@@ -439,6 +455,33 @@ export const buildFileViewerOperationContextFromLifecycleState = ({
   });
 
   return buildFileViewerOperationContext(operation, baseContext, timestamp);
+};
+
+export const emitFileViewerComponentLifecycleEvent = (
+  emit: FileViewerLifecycleComponentEmit,
+  context: FileViewerLifecycleContext
+) => {
+  if (context.phase === 'load-start') {
+    emit('load-start', context);
+    return;
+  }
+  if (context.phase === 'load-complete') {
+    emit('load-complete', context);
+    return;
+  }
+  if (context.phase === 'unload-start') {
+    emit('unload-start', context);
+    return;
+  }
+  emit('unload-complete', context);
+};
+
+export const resolveFileViewerBeforeOperationErrorMessage = ({
+  error,
+  formatErrorMessage,
+  prefix = FILE_VIEWER_BEFORE_OPERATION_ERROR_PREFIX,
+}: ResolveFileViewerBeforeOperationErrorMessageInput) => {
+  return formatErrorMessage(prefix, error);
 };
 
 export const runFileViewerActiveUnloadStart = ({

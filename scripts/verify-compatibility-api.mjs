@@ -378,11 +378,17 @@ async function verifyVue3ScopedCompatibility() {
   const vueFileViewerLabel = `${entry.packageName} src/package/components/FileViewer/FileViewer.vue`
   assertTokens(vueFileViewerSource, [
     'useViewerPreviewLifecycle',
-    'useViewerRequestScope'
+    'useViewerRequestScope',
+    'emitLifecycle: emit',
+    'onOperationErrorMessage: showError'
   ], vueFileViewerLabel)
   for (const forbiddenToken of [
     'watch([() => props.file',
     'onBeforeUnmount(()',
+    "if (event === 'load-start')",
+    "if (event === 'load-complete')",
+    "if (event === 'unload-start')",
+    '操作前置校验失败',
     "props.file ? 'file'",
     "props.url ? 'url'"
   ]) {
@@ -851,8 +857,13 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerRenderCompleteState',
     'createFileViewerLifecycleActions',
     'createFileViewerLifecycleStateController',
+    'emitFileViewerComponentLifecycleEvent',
+    'resolveFileViewerBeforeOperationErrorMessage',
+    'formatErrorMessage',
+    'onOperationErrorMessage',
   ], vueLifecycleHookLabel)
   for (const forbiddenToken of [
+    '操作前置校验失败',
     'new Map<number, number>()',
     'let activeDocumentContext',
     'lifecycleState.buildActiveUnloadContext',

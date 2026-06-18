@@ -5,6 +5,7 @@ import {
   waitForFileViewerPrintWindowReady,
 } from './export';
 import { DEFAULT_FILE_VIEWER_SOURCE_FILENAME } from './source';
+import type { FileViewerErrorMessageFormatter } from './state';
 import type {
   FileRenderExportAdapter,
   FileViewerDownloadOptions,
@@ -67,7 +68,7 @@ export interface FileViewerOperationActionErrorContext {
   error: unknown;
 }
 
-export type FileViewerOperationActionErrorFormatter = (prefix: string, error: unknown) => string;
+export type FileViewerOperationActionErrorFormatter = FileViewerErrorMessageFormatter;
 
 export type FileViewerOperationActionErrorPrefixes = Partial<Record<FileViewerFileOperationType, string>>;
 

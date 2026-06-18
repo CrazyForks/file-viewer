@@ -18,6 +18,8 @@ describe('Vue FileViewer lifecycle hook', () => {
 
     const lifecycleEvents: Array<{ event: FileViewerLifecyclePhase; context: FileViewerLifecycleContext }> = []
     const operationEvents: Array<{ event: string; context: FileViewerOperationContext }> = []
+    const operationErrorMessages: string[] = []
+    const handleOperationError = vi.fn()
     const options: FileViewerOptions = {
       beforeOperation: context => {
         operationEvents.push({ event: `guard:${context.operation}`, context })
@@ -41,8 +43,12 @@ describe('Vue FileViewer lifecycle hook', () => {
       emitOperationCancel: context => {
         operationEvents.push({ event: `cancel:${context.operation}`, context })
       },
+      formatErrorMessage: (prefix, error) => `${prefix}:${error instanceof Error ? error.message : String(error)}`,
       handleLifecycleError: vi.fn(),
-      handleOperationError: vi.fn()
+      handleOperationError,
+      onOperationErrorMessage: message => {
+        operationErrorMessages.push(message)
+      }
     })
 
     lifecycle.markLoadStarted(3, 1000)
@@ -67,6 +73,13 @@ describe('Vue FileViewer lifecycle hook', () => {
       'guard:download',
       'cancel:download'
     ])
+
+    options.beforeOperation = () => {
+      throw new Error('denied')
+    }
+    await expect(lifecycle.runBeforeOperation('print')).resolves.toBe(false)
+    expect(handleOperationError).toHaveBeenCalledTimes(1)
+    expect(operationErrorMessages).toEqual(['操作前置校验失败:denied'])
 
     const unloadContext = lifecycle.notifyActiveUnloadStart('replace')
     lifecycle.clearActiveDocumentContext()
