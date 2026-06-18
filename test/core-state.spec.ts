@@ -13,7 +13,9 @@ import {
   createFileViewerUnsupportedState,
   formatFileViewerErrorMessage,
   normalizeFileViewerErrorMessage,
-  resolveFileViewerLoadingTheme
+  resolveFileViewerLoadingTheme,
+  runFileViewerLoadingControllerAction,
+  syncFileViewerLoadingControllerState
 } from '../packages/core/src'
 
 describe('@file-viewer/core render state helpers', () => {
@@ -123,6 +125,27 @@ describe('@file-viewer/core render state helpers', () => {
 
     const source = controller.startLoading('再次加载')
     const target = createFileViewerLoadingRuntimeState('pdf')
+    expect(syncFileViewerLoadingControllerState(target, controller)).toBe(target)
+    expect(target).toMatchObject({
+      loading: true,
+      message: '再次加载',
+      theme: {
+        badge: 'X',
+        label: 'Excel 表格'
+      }
+    })
+
+    const nextTarget = createFileViewerLoadingRuntimeState('pdf')
+    expect(runFileViewerLoadingControllerAction(nextTarget, () => source)).toBe(nextTarget)
+    expect(nextTarget).toMatchObject({
+      loading: true,
+      message: '再次加载',
+      theme: {
+        badge: 'X',
+        label: 'Excel 表格'
+      }
+    })
+
     expect(applyFileViewerLoadingRuntimeState(target, source)).toBe(target)
     expect(target).toMatchObject({
       loading: true,

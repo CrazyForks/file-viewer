@@ -212,7 +212,12 @@ export {
   createFileViewerLoadingController,
   createFileViewerLoadingRuntimeState,
   createFileViewerLoadingStyleVars,
+  runFileViewerLoadingControllerAction,
   resolveFileViewerLoadingTheme,
+  syncFileViewerLoadingControllerState,
+} from './loading';
+export type {
+  FileViewerLoadingController,
 } from './loading';
 export {
   getFileViewerOptionsSearchParam,

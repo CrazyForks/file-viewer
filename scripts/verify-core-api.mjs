@@ -75,6 +75,8 @@ const requiredValueExports = [
   'runFileViewerLifecycleHook',
   'resolveFileViewerLifecycleFallbackSource',
   'applyFileViewerLoadingRuntimeState',
+  'syncFileViewerLoadingControllerState',
+  'runFileViewerLoadingControllerAction',
   'executeFileViewerDownloadOperation',
   'executeFileViewerExportHtmlOperation',
   'executeFileViewerPrintOperation',

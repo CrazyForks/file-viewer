@@ -12,6 +12,18 @@ export interface FileViewerLoadingRuntimeState {
 
 export type MutableFileViewerLoadingRuntimeState = FileViewerLoadingRuntimeState;
 
+export interface FileViewerLoadingController {
+  readonly state: FileViewerLoadingRuntimeState;
+  setExtension(nextExtend?: string): FileViewerLoadingRuntimeState;
+  startLoading(nextMessage: string): FileViewerLoadingRuntimeState;
+  setLoadingMessage(nextMessage: string): FileViewerLoadingRuntimeState;
+  stopLoading(): FileViewerLoadingRuntimeState;
+  showError(nextMessage: string): FileViewerLoadingRuntimeState;
+  clearError(): FileViewerLoadingRuntimeState;
+  resetLoading(): FileViewerLoadingRuntimeState;
+  getState(): FileViewerLoadingRuntimeState;
+}
+
 export const FALLBACK_FILE_VIEWER_LOADING_THEME: FileViewerLoadingTheme = {
   accent: '#5f6f82',
   soft: 'rgba(95, 111, 130, 0.12)',
@@ -421,11 +433,26 @@ export const applyFileViewerLoadingRuntimeState = <Target extends MutableFileVie
   return target;
 };
 
+export const syncFileViewerLoadingControllerState = <Target extends MutableFileViewerLoadingRuntimeState>(
+  target: Target,
+  controller: Pick<FileViewerLoadingController, 'getState'>,
+  source = controller.getState()
+) => {
+  return applyFileViewerLoadingRuntimeState(target, source);
+};
+
+export const runFileViewerLoadingControllerAction = <Target extends MutableFileViewerLoadingRuntimeState>(
+  target: Target,
+  action: () => FileViewerLoadingRuntimeState
+) => {
+  return applyFileViewerLoadingRuntimeState(target, action());
+};
+
 /**
  * 统一管理加载、错误、文案和主题色。
  * wrapper 只负责把这个运行态映射到各自框架的响应式系统。
  */
-export const createFileViewerLoadingController = (extend = '') => {
+export const createFileViewerLoadingController = (extend = ''): FileViewerLoadingController => {
   const state = createFileViewerLoadingRuntimeState(extend);
 
   const updateTheme = (nextExtend: string) => {

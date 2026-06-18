@@ -175,6 +175,7 @@
   - [x] 缩放 provider 发现、订阅、MutationObserver 和 beforeZoom 编排迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
   - [x] 缩放 controller 的 provider 刷新、观察、清理、销毁和动作后快照同步迁入 `@file-viewer/core`，Vue zoom hook 不再直接应用或克隆缩放状态。
   - [x] loading 主题矩阵、运行态状态机和错误/消息切换迁入 pure TS controller，Vue hook 仅保留响应式状态同步。
+  - [x] loading controller 的动作执行与响应式状态同步迁入 `@file-viewer/core`，Vue loading hook 不再直接应用 runtime state。
   - [x] XLSX worker 消息分发、事件注册和销毁控制迁入 `@file-viewer/core`，Vue hook 仅保留 loading ref 与组件卸载生命周期。
   - [x] 删除旧 `src/package/use` 源码层，FileViewer loading/search/zoom 与 XLSX worker 生命周期门面均移动到拥有者同级目录。
   - [x] 搜索 options / empty state 标准化迁入 `@file-viewer/core`。
