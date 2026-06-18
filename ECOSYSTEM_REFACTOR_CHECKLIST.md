@@ -62,6 +62,8 @@
 - [x] 明确“体验完全相同”的证据: DOM 快照、关键截图、事件回调、能力按钮显隐、options 行为、打印/导出结果。
   - [x] 新增 `pnpm verify:experience-baseline`，校验体验基线清单中的 surface、entry files、特性组、事件/按钮/视觉/打印导出证据、验证脚本和 smoke-matrix 关联关系。
   - [x] `pnpm verify:migration-gates` 已串联体验基线校验，避免后续 wrapper 拆分时只保留格式覆盖而丢失交互与操作体验要求。
+- [x] 固化 checklist 覆盖范围，确保目标包名、仓库、分支职责、源码策略和完成审计项不会与 manifest 漂移。
+  - [x] 新增 `pnpm verify:ecosystem-checklist`，从 `ecosystem/wrappers.json`、`ecosystem/branch-roles.json` 和 core 格式定义反查 checklist 覆盖 8 个 wrapper、13 个 npm 包、3 条分支职责、23 条预览链路和 194 个扩展名。
 
 ## Phase 1: 设计纯 TypeScript core 边界
 
@@ -283,10 +285,13 @@
 - [ ] 在 Gitea 私有仓库继续使用 `origin`。
 - [ ] 将 `main` 改造为仅维护 core 核心底座代码。
   - [x] 新增 `ecosystem/branch-roles.json`，机器可读声明 `main` 的 core-only 私有源码职责。
+  - [x] 分支职责 manifest 锁定 core 可见性策略为 `private-source`，`main` 源码策略为 `private-core-source-only`。
 - [ ] 将 `v2` 定义为 Vue 2.7 wrapper 分支。
   - [x] `ecosystem/branch-roles.json` 绑定 `v2 -> @file-viewer/vue2.7` 和 `@flyfish-group/file-viewer` 兼容包。
 - [ ] 将 `v3` 定义为 Vue 3 wrapper 分支。
   - [x] `ecosystem/branch-roles.json` 绑定 `v3 -> @file-viewer/vue3`、`@flyfish-group/file-viewer3` 和 `file-viewer3` 兼容包。
+  - [x] 分支 role 机器值固定为 `core`、`vue2.7-wrapper`、`vue3-wrapper`，供发布和公开仓库同步脚本复用。
+  - [x] `v2` / `v3` wrapper 分支源码策略统一为 `wrapper-source-exported-publicly`。
 - [ ] 给 `main`、`v2`、`v3` 写入分支职责 README 和发布流程说明。
   - [x] 新增根目录 `BRANCHES.md`，写明 core 私有源码、Vue2.7/Vue3 wrapper 线、公开 wrapper 仓库和公开成品仓库边界。
   - [x] 新增 `pnpm verify:branch-roles`，校验 `origin` Gitea 私有远端、branch role manifest、core visibility、wrapper GitHub/Gitee 组织和公开产物仓库 artifacts-only 策略。
@@ -355,6 +360,7 @@
 - [x] 提供 `scripts/verify-wrapper-repos.mjs`，校验 wrapper 源目录和独立导出仓库的包名、npm 入口元数据、中英文 README、格式矩阵、Demo/文档链接、License、manifest、GitHub/Gitee 元数据、当前 HEAD freshness、`workspace:` 依赖、monorepo-only 脚本路径、历史兼容包依赖和私有 workspace 泄露。
 - [x] 提供 `scripts/publish-wrapper-repos.mjs`，可把独立 wrapper 导出目录初始化为 Git 仓库，配置 GitHub/Gitee 远端，并在提交/推送前强制执行导出仓库 freshness、依赖边界和元数据预检。
 - [x] `scripts/sync-public-artifacts.mjs` 接入统一 ecosystem npm release manifest，公开产物仓库会同步标准 wrapper tarball、仓库矩阵，并记录重复兼容 tarball 的省略策略。
+- [x] 公开成品仓库策略在 `ecosystem/branch-roles.json` 中锁定为 `artifacts-only`，由 `pnpm verify:branch-roles` / `pnpm verify:public-artifacts` 共同校验源码边界。
 - [x] 根 README / README.en.md 接入同一份 wrapper manifest，公开产物仓库同步时会自动写明标准 npm 包、GitHub/Gitee wrapper 仓库、core 源码私有边界和当前格式数量。
   - [x] 新增 `pnpm verify:ecosystem-readmes`，源码侧校验根 README / README.en.md 的公开生态索引，确保公开成品仓库同步前已包含标准包、历史兼容包、GitHub/Gitee wrapper 仓库、官方文档/Demo、源码自助开通入口和 core 私有边界。
 - [ ] 为每个 wrapper 创建 GitHub 公开仓库。
