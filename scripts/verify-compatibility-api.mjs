@@ -612,14 +612,17 @@ async function verifyVue3ScopedCompatibility() {
   const vueDocumentFeaturesHookLabel = `${entry.packageName} src/package/components/FileViewer/hooks/useViewerDocumentFeatures.ts`
   assertImportsFrom(vueDocumentFeaturesHookSource, '@file-viewer/core', vueDocumentFeaturesHookLabel)
   assertTokens(vueDocumentFeaturesHookSource, [
+    'createFileViewerDocumentFeatureActions',
+    'FileViewerDocumentFeatureActions'
+  ], vueDocumentFeaturesHookLabel)
+  for (const forbiddenToken of [
     'resolveFileViewerScrollContainer',
     'createFileViewerSearchChangeState',
     'resolveFileViewerLocationChangeAnchor',
     'dispatchFileViewerSearchChange',
     'dispatchFileViewerLocationChange',
-    'buildFileViewerDocumentTextChunks'
-  ], vueDocumentFeaturesHookLabel)
-  for (const forbiddenToken of [
+    'buildFileViewerDocumentTextChunks',
+    'scrollToFileViewerDocumentAnchor',
     'createFileViewerRawPostMessagePayload',
     'postFileViewerMessageToParent',
     'postFileViewerSearchChange',

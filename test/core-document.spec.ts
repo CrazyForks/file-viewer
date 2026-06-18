@@ -9,6 +9,7 @@ import {
   cloneFileViewerSearchState,
   createFileViewerZoomChangeState,
   createFileViewerDocumentChangeSnapshot,
+  createFileViewerDocumentFeatureActions,
   createEmptyFileViewerSearchState,
   createFileViewerDomSearchController,
   createFileViewerSearchChangeState,
@@ -237,6 +238,115 @@ describe('@file-viewer/core document helpers', () => {
       event: 'location-change',
       payload: locationAnchor,
     }, 'https://host.example');
+  });
+
+  it('creates framework-neutral document feature actions for wrappers', async () => {
+    const { document } = parseHTML(`
+      <main id="root" style="overflow-y:auto">
+        <p data-viewer-anchor-id="a1" data-viewer-line="1">First PDF line</p>
+        <p data-viewer-anchor-id="a2" data-viewer-line="2">Second PDF line</p>
+      </main>
+    `);
+    const root = document.getElementById('root') as HTMLElement;
+    const secondLine = root.querySelector('[data-viewer-line="2"]') as HTMLElement;
+    const scrollIntoView = vi.fn();
+    const calls: string[] = [];
+    const emitted: string[] = [];
+    let anchors: FileViewerDocumentAnchor[] = [];
+    const searchState = createEmptyFileViewerSearchState();
+
+    Object.defineProperty(root, 'scrollTop', { configurable: true, writable: true, value: 65 });
+    Object.defineProperty(root, 'scrollLeft', { configurable: true, writable: true, value: 0 });
+    setScrollMetrics(root, { clientHeight: 100, scrollHeight: 360 });
+    Object.defineProperty(secondLine, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    const actions = createFileViewerDocumentFeatureActions({
+      root: () => root,
+      searchController: {
+        getAnchors: () => anchors,
+        getSearchState: () => searchState,
+        observe: () => {
+          calls.push('observe');
+        },
+        refreshAnchors: async () => {
+          calls.push('refresh');
+          anchors = [
+            anchor('a1', 'First PDF line', 1),
+            { ...anchor('a2', 'Second PDF line', 2), top: 95 },
+          ];
+          return anchors;
+        },
+        search: async query => {
+          calls.push(`search:${query}`);
+          searchState.query = query;
+          searchState.total = 1;
+          searchState.currentIndex = 0;
+          searchState.current = {
+            id: 'match-a2',
+            index: 0,
+            text: query,
+            anchor: anchors[1],
+            line: 2,
+          };
+          searchState.matches = [searchState.current];
+        },
+        clear: async () => {
+          calls.push('clear');
+          searchState.query = '';
+          searchState.total = 0;
+          searchState.currentIndex = -1;
+          searchState.current = null;
+          searchState.matches = [];
+        },
+        next: async () => {
+          calls.push('next');
+        },
+        previous: async () => {
+          calls.push('previous');
+        },
+      },
+      getAiOptions: () => ({ chunkSize: 200 }),
+      onSearchChange: state => {
+        emitted.push(`search:${state.query}:${state.total}`);
+      },
+      onLocationChange: nextAnchor => {
+        emitted.push(`location:${nextAnchor?.line ?? 'none'}`);
+      },
+    });
+
+    await expect(actions.collectDocumentAnchors()).resolves.toHaveLength(2);
+    expect(emitted).toEqual(['location:2']);
+
+    await expect(actions.searchDocument('PDF')).resolves.toMatchObject({
+      query: 'PDF',
+      total: 1,
+      currentIndex: 0,
+    });
+    expect(emitted).toEqual(['location:2', 'search:PDF:1']);
+
+    await expect(actions.nextSearchResult()).resolves.toMatchObject({ query: 'PDF' });
+    expect(emitted).toEqual(['location:2', 'search:PDF:1', 'location:2', 'search:PDF:1']);
+
+    await expect(actions.scrollToLine(2)).resolves.toBe(true);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center', inline: 'nearest' });
+    expect(emitted[emitted.length - 1]).toBe('location:2');
+
+    expect(actions.getDocumentTextChunks()).toEqual([
+      expect.objectContaining({
+        id: 'a1-chunk-1',
+        text: 'First PDF line',
+        startLine: 1,
+      }),
+      expect.objectContaining({
+        id: 'a2-chunk-1',
+        text: 'Second PDF line',
+        startLine: 2,
+      }),
+    ]);
+    expect(calls).toEqual(['observe', 'refresh', 'search:PDF', 'next']);
   });
 
   it('builds AI-friendly document text chunks with overlap and limits', () => {

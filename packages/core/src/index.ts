@@ -53,6 +53,7 @@ export type {
   MutableFileViewerSearchState,
 } from './documentSearch';
 export {
+  createFileViewerDocumentFeatureActions,
   createFileViewerDocumentChangeSnapshot,
   createFileViewerSearchChangeState,
   dispatchFileViewerLocationChange,
@@ -64,6 +65,9 @@ export type {
   DispatchFileViewerLocationChangeInput,
   DispatchFileViewerSearchChangeInput,
   FileViewerDocumentChangeSnapshot,
+  FileViewerDocumentFeatureActions,
+  FileViewerDocumentFeatureSearchController,
+  CreateFileViewerDocumentFeatureActionsInput,
   ResolveFileViewerLocationChangeAnchorInput,
 } from './documentEvents';
 export {

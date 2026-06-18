@@ -1,18 +1,12 @@
 import type { Ref } from 'vue'
 import type {
   FileViewerDocumentAnchor,
-  FileViewerDocumentChunk,
+  FileViewerDocumentFeatureActions,
   FileViewerOptions,
   FileViewerSearchState
 } from '@file-viewer/core'
 import {
-  buildFileViewerDocumentTextChunks,
-  createFileViewerSearchChangeState,
-  dispatchFileViewerLocationChange,
-  dispatchFileViewerSearchChange,
-  resolveFileViewerLocationChangeAnchor,
-  resolveFileViewerScrollContainer,
-  scrollToFileViewerDocumentAnchor
+  createFileViewerDocumentFeatureActions
 } from '@file-viewer/core'
 import { useDocumentSearch } from './useDocumentSearch'
 
@@ -35,8 +29,10 @@ export const useViewerDocumentFeatures = ({
   emitSearchChange,
   emitLocationChange
 }: UseViewerDocumentFeaturesOptions) => {
+  let documentActions: FileViewerDocumentFeatureActions | null = null
+
   const getScrollContainer = () => {
-    return resolveFileViewerScrollContainer(output.value)
+    return documentActions?.getScrollContainer() ?? null
   }
 
   const documentSearch = useDocumentSearch(
@@ -45,101 +41,35 @@ export const useViewerDocumentFeatures = ({
     getScrollContainer
   )
 
-  const getSearchState = () => createFileViewerSearchChangeState(documentSearch.state)
-
-  const notifySearchChange = () => {
-    const state = getSearchState()
-    dispatchFileViewerSearchChange({
-      state,
-      onChange: emitSearchChange
-    })
-    return state
-  }
-
-  const notifyLocationChange = () => {
-    const anchor = resolveFileViewerLocationChangeAnchor({
-      root: output.value,
-      anchors: documentSearch.anchors.value
-    })
-    dispatchFileViewerLocationChange({
-      anchor,
-      onChange: emitLocationChange
-    })
-    return anchor
-  }
-
-  const refreshDocumentIndex = async () => {
-    documentSearch.observe()
-    await documentSearch.refreshAnchors()
-    notifyLocationChange()
-    return documentSearch.anchors.value
-  }
-
-  const searchDocument = async (query: string) => {
-    await documentSearch.search(query)
-    return notifySearchChange()
-  }
-
-  const clearDocumentSearch = async () => {
-    await documentSearch.clear()
-    return notifySearchChange()
-  }
-
-  const clearDocumentState = () => {
-    void documentSearch.clear()
-  }
-
-  const nextSearchResult = async () => {
-    await documentSearch.next()
-    notifyLocationChange()
-    return notifySearchChange()
-  }
-
-  const previousSearchResult = async () => {
-    await documentSearch.previous()
-    notifyLocationChange()
-    return notifySearchChange()
-  }
-
-  const collectDocumentAnchors = async () => {
-    await refreshDocumentIndex()
-    return documentSearch.anchors.value
-  }
-
-  const scrollToAnchor = async (anchor: FileViewerDocumentAnchor | string) => {
-    if (!documentSearch.anchors.value.length) {
-      await refreshDocumentIndex()
-    }
-    const result = scrollToFileViewerDocumentAnchor(output.value, anchor)
-    notifyLocationChange()
-    return result
-  }
-
-  const scrollToLine = async (line: number) => {
-    if (!documentSearch.anchors.value.length) {
-      await refreshDocumentIndex()
-    }
-    const result = scrollToFileViewerDocumentAnchor(output.value, line)
-    notifyLocationChange()
-    return result
-  }
-
-  const getDocumentTextChunks = (): FileViewerDocumentChunk[] => {
-    return buildFileViewerDocumentTextChunks(documentSearch.anchors.value, getOptions()?.ai)
-  }
+  documentActions = createFileViewerDocumentFeatureActions({
+    root: () => output.value,
+    searchController: {
+      getAnchors: () => documentSearch.anchors.value,
+      getSearchState: () => documentSearch.state,
+      observe: documentSearch.observe,
+      refreshAnchors: documentSearch.refreshAnchors,
+      search: documentSearch.search,
+      clear: documentSearch.clear,
+      next: documentSearch.next,
+      previous: documentSearch.previous
+    },
+    getAiOptions: () => getOptions()?.ai,
+    onSearchChange: emitSearchChange,
+    onLocationChange: emitLocationChange
+  })
 
   return {
-    refreshDocumentIndex,
-    clearDocumentState,
+    refreshDocumentIndex: documentActions.refreshDocumentIndex,
+    clearDocumentState: documentActions.clearDocumentState,
     getScrollContainer,
-    searchDocument,
-    clearDocumentSearch,
-    nextSearchResult,
-    previousSearchResult,
-    getSearchState,
-    collectDocumentAnchors,
-    scrollToAnchor,
-    scrollToLine,
-    getDocumentTextChunks
+    searchDocument: documentActions.searchDocument,
+    clearDocumentSearch: documentActions.clearDocumentSearch,
+    nextSearchResult: documentActions.nextSearchResult,
+    previousSearchResult: documentActions.previousSearchResult,
+    getSearchState: documentActions.getSearchState,
+    collectDocumentAnchors: documentActions.collectDocumentAnchors,
+    scrollToAnchor: documentActions.scrollToAnchor,
+    scrollToLine: documentActions.scrollToLine,
+    getDocumentTextChunks: documentActions.getDocumentTextChunks
   }
 }
