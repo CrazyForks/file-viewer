@@ -5,19 +5,17 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
   type CSSProperties,
   type IframeHTMLAttributes,
   type SyntheticEvent
 } from 'react'
 import {
   buildViewerSrc,
-  createViewerFrameFilePostController,
-  isViewerFrameEvent,
+  createViewerDirectFrameController,
+  createViewerDirectFrameHandle,
   type ViewerDirectFrameHandle,
-  type ViewerFrameFilePostController,
   type ViewerFrameComponentProps,
-  type ViewerFrameEventPayload,
+  type ViewerDirectFrameController,
   type ViewerFrameOptions
 } from '@file-viewer/web'
 
@@ -28,6 +26,9 @@ export type {
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerDocxOptions,
+  ViewerDirectFrameController,
+  ViewerDirectFrameControllerAccessor,
+  ViewerDirectFrameControllerOptions,
   ViewerDirectFrameHandle,
   ViewerFrameComponentBridgeOptions,
   ViewerFrameComponentProps,
@@ -68,10 +69,6 @@ const defaultStyle: CSSProperties = {
   display: 'block'
 }
 
-const isReactViewerFrameEvent = (value: unknown): value is ViewerFrameEventPayload => {
-  return isViewerFrameEvent(value)
-}
-
 const buildReactViewerSrc = (options: ViewerFrameOptions) => {
   return buildViewerSrc(options)
 }
@@ -95,7 +92,6 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
   } = props
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
-  const [frameReady, setFrameReady] = useState(false)
 
   const frameOptions = useMemo<ViewerFrameOptions>(() => ({
     viewerUrl,
@@ -111,68 +107,52 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
 
   const src = useMemo(() => buildReactViewerSrc(frameOptions), [frameOptions])
   const frameOptionsRef = useRef<ViewerFrameOptions>(frameOptions)
+  const srcRef = useRef(src)
+  const onViewerEventRef = useRef(onViewerEvent)
   frameOptionsRef.current = frameOptions
-  const filePostControllerRef = useRef<ViewerFrameFilePostController | null>(null)
-  if (!filePostControllerRef.current) {
-    filePostControllerRef.current = createViewerFrameFilePostController({
+  srcRef.current = src
+  onViewerEventRef.current = onViewerEvent
+
+  const directFrameControllerRef = useRef<ViewerDirectFrameController | null>(null)
+  if (!directFrameControllerRef.current) {
+    directFrameControllerRef.current = createViewerDirectFrameController({
       getFrame: () => iframeRef.current,
-      getOptions: () => frameOptionsRef.current
+      getOptions: () => frameOptionsRef.current,
+      getSrc: () => srcRef.current,
+      getOnEvent: () => onViewerEventRef.current
     })
   }
-  const filePostController = filePostControllerRef.current
+  const directFrameController = directFrameControllerRef.current
 
-  const postFile = useCallback(() => {
-    return filePostController.postNow()
-  }, [filePostController])
-
-  const reload = useCallback(() => {
-    if (iframeRef.current) {
-      iframeRef.current.src = src
-    }
-  }, [src])
-
-  useImperativeHandle(forwardedRef, () => ({
-    get iframe() {
-      return iframeRef.current
-    },
-    postFile,
-    reload
-  }), [postFile, reload])
+  useImperativeHandle(forwardedRef, () => createViewerDirectFrameHandle(
+    () => iframeRef.current,
+    () => directFrameController
+  ), [directFrameController])
 
   useEffect(() => {
-    filePostController.reset()
-    setFrameReady(false)
-  }, [filePostController, src])
+    directFrameController.resetForSrcChange()
+  }, [directFrameController, src])
 
   useEffect(() => {
-    if (frameReady) {
-      filePostController.schedule()
-    }
-  }, [frameReady, filePostController, frameOptions])
+    directFrameController.syncOptions()
+  }, [directFrameController, frameOptions])
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.source !== iframeRef.current?.contentWindow) {
-        return
-      }
-      if (!isReactViewerFrameEvent(event.data)) {
-        return
-      }
-      filePostController.handleFrameEvent(event.data)
-      onViewerEvent?.(event.data, event)
+      directFrameController.handleMessage(event)
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [filePostController, onViewerEvent])
+  }, [directFrameController])
 
   useEffect(() => {
-    return () => filePostController.cancel()
-  }, [filePostController])
+    return () => directFrameController.destroy()
+  }, [directFrameController])
 
   const handleLoad = useCallback((event: SyntheticEvent<HTMLIFrameElement>) => {
-    setFrameReady(true)
+    directFrameController.handleLoad()
     onLoad?.(event)
-  }, [onLoad])
+  }, [directFrameController, onLoad])
 
   return (
     <iframe

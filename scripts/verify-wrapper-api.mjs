@@ -41,6 +41,8 @@ const sharedFrameComponentTypes = [
 
 const webHelperExports = [
   'buildViewerSrc',
+  'createViewerDirectFrameController',
+  'createViewerDirectFrameHandle',
   'createViewerFrame',
   'createViewerFrameControllerHandle',
   'createViewerFrameFilePostController',
@@ -186,14 +188,29 @@ function verifyReactWrapper(source, label) {
     'forwardRef',
     'useImperativeHandle',
     'buildViewerSrc',
-    'createViewerFrameFilePostController',
-    'postFile',
-    'reload',
+    'createViewerDirectFrameController',
+    'createViewerDirectFrameHandle',
+    'resetForSrcChange',
+    'syncOptions',
+    'handleLoad',
+    'handleMessage',
     'onViewerEvent',
     'ViewerFrameOptions',
+    'ViewerDirectFrameController',
     ...sharedFrameComponentTypes,
     'ViewerDirectFrameHandle'
   ], label)
+  for (const forbiddenToken of [
+    'createViewerFrameFilePostController',
+    'isViewerFrameEvent',
+    'setFrameReady',
+    'frameReady'
+  ]) {
+    assert(
+      !source.includes(forbiddenToken),
+      `${label} must delegate direct iframe lifecycle to @file-viewer/web instead of ${forbiddenToken}`
+    )
+  }
   assert(/export\s+default\s+FileViewer/.test(source), `${label} must default-export FileViewer`)
 }
 

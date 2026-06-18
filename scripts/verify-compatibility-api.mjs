@@ -15,6 +15,8 @@ const webFacadeExports = [
   'DEFAULT_VIEWER_URL',
   'VIEWER_FRAME_CACHE_KEY',
   'buildViewerSrc',
+  'createViewerDirectFrameController',
+  'createViewerDirectFrameHandle',
   'createViewerFrame',
   'createViewerFrameControllerHandle',
   'createViewerFrameFilePostController',
@@ -267,15 +269,28 @@ async function verifyReactCompatibility() {
     'forwardRef',
     'useImperativeHandle',
     'buildViewerSrc',
-    'createViewerFrameFilePostController',
-    'isViewerFrameEvent',
+    'createViewerDirectFrameController',
+    'createViewerDirectFrameHandle',
+    'resetForSrcChange',
+    'syncOptions',
+    'handleLoad',
+    'handleMessage',
     'ViewerFrameOptions',
     'ViewerFrameComponentProps',
-    'ViewerFrameFilePostController',
-    'postFile',
-    'reload',
+    'ViewerDirectFrameController',
     'onViewerEvent'
   ], entry.packageName)
+  for (const forbiddenToken of [
+    'createViewerFrameFilePostController',
+    'isViewerFrameEvent',
+    'setFrameReady',
+    'frameReady'
+  ]) {
+    assert(
+      !source.includes(forbiddenToken),
+      `${entry.packageName} must delegate direct iframe lifecycle to @flyfish-group/file-viewer-web instead of ${forbiddenToken}`
+    )
+  }
   assert(
     /export\s+type\s*{[\s\S]*ViewerRuntimeOptions[\s\S]*}\s+from\s+['"]@flyfish-group\/file-viewer-web['"]/.test(source),
     `${entry.packageName} must re-export shared option types from @flyfish-group/file-viewer-web`

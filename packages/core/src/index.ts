@@ -92,6 +92,8 @@ export {
   appendFileViewerFrameSearchParam,
   buildFileViewerFrameSrc,
   canUseFileViewerDom,
+  createFileViewerDirectFrameController,
+  createFileViewerDirectFrameHandle,
   createFileViewerFrameControllerHandle,
   createFileViewerFrame,
   createFileViewerFrameFilePostController,
@@ -443,6 +445,9 @@ export type {
 export type {
   BuildFileViewerFrameSrcOptions,
   CreateFileViewerFrameOptions,
+  FileViewerDirectFrameController,
+  FileViewerDirectFrameControllerAccessor,
+  FileViewerDirectFrameControllerOptions,
   FileViewerDirectFrameHandle,
   FileViewerFrameControllerHandle,
   FileViewerFrameController,

@@ -304,6 +304,7 @@
   - [x] wrapper 共享 mounted/controller handle 工厂，Vue2.6 / Vue2.7 / Vue3 / React legacy / Svelte 的公开实例方法默认值和销毁语义由 core/web 统一维护。
   - [x] React 标准 wrapper 的 iframe 文件投递控制器改为经由 `@file-viewer/web` 门面获取，标准 wrapper 不再直接 import `@file-viewer/core`。
   - [x] React 历史兼容包改为经由 `@flyfish-group/file-viewer-web` 门面获取 iframe 协议能力，不再直接 import `@file-viewer/core`。
+  - [x] React 标准 wrapper 与历史 React 兼容包的 direct iframe load/message/retry/reload 状态机迁入 `@file-viewer/core`，由 `@file-viewer/web` 统一透出。
   - [x] 新增 `pnpm verify:compatibility-api`，校验历史兼容包运行门面边界，防止 React 兼容包绕过 web 门面、scoped Vue3 兼容包重新声明 core 类型契约、`file-viewer3` 非 scoped alias 携带重复源码或纯 Web 兼容包丢失 core 门面导出。
   - [x] `pnpm verify:compatibility-api` 已对 scoped Vue3 根包的 `src/package/common/type.ts` 建立全量 alias 白名单，禁止兼容层重新出现 `export interface`、运行时 import、Vue import 或未登记类型别名。
   - [x] `pnpm verify:compatibility-api` 已锁定 scoped Vue3 根入口的公共类型出口，确保 `docx`、CAD、搜索 provider、导出上下文等完整参数类型只从 `./common/type` 兼容门面透出。

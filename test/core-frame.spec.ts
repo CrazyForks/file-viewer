@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildFileViewerFrameSrc,
+  createFileViewerDirectFrameController,
   createFileViewerFrame,
   createFileViewerFrameFilePostController,
   mountFileViewerFrame,
@@ -240,6 +241,75 @@ describe('@file-viewer/core iframe frame helpers', () => {
     controller.schedule()
     expect(postFile).not.toHaveBeenCalled()
     expect(setTimeout).not.toHaveBeenCalled()
+  })
+
+  it('centralizes direct iframe lifecycle for framework wrappers', () => {
+    const firstFile = new Blob(['first'])
+    const secondFile = new Blob(['second'])
+    const contentWindow = {
+      postMessage: vi.fn()
+    }
+    const frame = {
+      contentWindow,
+      src: '/viewer/old.html'
+    } as unknown as HTMLIFrameElement
+    const onEvent = vi.fn()
+    let options = {
+      file: firstFile,
+      targetOrigin: 'https://viewer.example'
+    }
+    let src = '/viewer/index.html?name=first.txt'
+
+    const controller = createFileViewerDirectFrameController({
+      getFrame: () => frame,
+      getOptions: () => options,
+      getSrc: () => src,
+      getOnEvent: () => onEvent
+    })
+
+    expect(controller.ready).toBe(false)
+    controller.syncOptions()
+    expect(contentWindow.postMessage).not.toHaveBeenCalled()
+
+    controller.handleLoad()
+    expect(controller.ready).toBe(true)
+    expect(contentWindow.postMessage).toHaveBeenCalledWith(firstFile, 'https://viewer.example')
+
+    const lifecycleEvent = {
+      data: {
+        type: 'flyfish-viewer:lifecycle',
+        event: 'load-start',
+        payload: null
+      },
+      source: contentWindow
+    } as unknown as MessageEvent
+    expect(controller.handleMessage(lifecycleEvent)).toBe(true)
+    expect(onEvent).toHaveBeenCalledWith(lifecycleEvent.data, lifecycleEvent)
+
+    contentWindow.postMessage.mockClear()
+    options = {
+      file: secondFile,
+      targetOrigin: 'https://viewer.example'
+    }
+    controller.syncOptions()
+    expect(contentWindow.postMessage).toHaveBeenCalledWith(secondFile, 'https://viewer.example')
+
+    controller.resetForSrcChange()
+    expect(controller.ready).toBe(false)
+    contentWindow.postMessage.mockClear()
+    controller.syncOptions()
+    expect(contentWindow.postMessage).not.toHaveBeenCalled()
+
+    src = '/viewer/index.html?name=second.txt'
+    controller.reload()
+    expect(frame.src).toBe('/viewer/index.html?name=second.txt')
+    expect(controller.handleMessage({
+      data: lifecycleEvent.data,
+      source: {}
+    } as MessageEvent)).toBe(false)
+
+    controller.destroy()
+    expect(controller.ready).toBe(false)
   })
 
   it('creates, syncs and mounts iframe frames through the core DOM controller', () => {

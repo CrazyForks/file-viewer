@@ -194,6 +194,39 @@ export interface FileViewerFrameFilePostController {
   cancel(): void;
 }
 
+export interface FileViewerDirectFrameControllerOptions {
+  /**
+   * Return the iframe managed by a framework wrapper.
+   */
+  getFrame: () => HTMLIFrameElement | null | undefined;
+  /**
+   * Return the latest iframe protocol options.
+   */
+  getOptions: () => FileViewerFrameOptions;
+  /**
+   * Return the latest iframe src computed by the wrapper.
+   */
+  getSrc: () => string;
+  /**
+   * Optional event callback getter for wrappers that keep callbacks outside
+   * frame options to avoid rebuilding URLs for callback-only updates.
+   */
+  getOnEvent?: () => FileViewerFrameOptions['onEvent'] | undefined;
+}
+
+export interface FileViewerDirectFrameController {
+  readonly ready: boolean;
+  postFile(): boolean;
+  reload(): void;
+  resetForSrcChange(): void;
+  syncOptions(): void;
+  handleLoad(): void;
+  handleMessage(event: MessageEvent): boolean;
+  destroy(): void;
+}
+
+export type FileViewerDirectFrameControllerAccessor = () => FileViewerDirectFrameController | null | undefined;
+
 export interface CreateFileViewerFrameOptions extends BuildFileViewerFrameSrcOptions {
   /**
    * iframe load 后是否立即尝试投递本地文件。默认开启。
@@ -526,6 +559,61 @@ export const createFileViewerFrameFilePostController = (
   };
 };
 
+export const createFileViewerDirectFrameController = ({
+  getFrame,
+  getOptions,
+  getSrc,
+  getOnEvent,
+}: FileViewerDirectFrameControllerOptions): FileViewerDirectFrameController => {
+  const filePostController = createFileViewerFrameFilePostController({
+    getFrame,
+    getOptions,
+  });
+  let frameReady = false;
+
+  const getEventHandler = () => getOnEvent?.() || getOptions().onEvent;
+
+  return {
+    get ready() {
+      return frameReady;
+    },
+    postFile() {
+      return filePostController.postNow();
+    },
+    reload() {
+      const frame = getFrame();
+      if (frame) {
+        frame.src = getSrc();
+      }
+    },
+    resetForSrcChange() {
+      frameReady = false;
+      filePostController.reset();
+    },
+    syncOptions() {
+      if (frameReady) {
+        filePostController.schedule();
+      }
+    },
+    handleLoad() {
+      frameReady = true;
+      filePostController.schedule();
+    },
+    handleMessage(event: MessageEvent) {
+      if (event.source !== getFrame()?.contentWindow || !isSerializableFileViewerFrameEvent(event.data)) {
+        return false;
+      }
+      filePostController.handleFrameEvent(event.data);
+      getEventHandler()?.(event.data, event);
+      return true;
+    },
+    destroy() {
+      frameReady = false;
+      filePostController.cancel();
+    },
+  };
+};
+
 export const syncFileViewerFrame = (
   frame: HTMLIFrameElement | null | undefined,
   options: BuildFileViewerFrameSrcOptions
@@ -539,6 +627,21 @@ export const syncFileViewerFrame = (
   }
   return nextSrc;
 };
+
+export const createFileViewerDirectFrameHandle = (
+  getFrame: () => HTMLIFrameElement | null | undefined,
+  getController: FileViewerDirectFrameControllerAccessor
+): FileViewerDirectFrameHandle => ({
+  get iframe() {
+    return getFrame() ?? null;
+  },
+  postFile() {
+    return getController()?.postFile() ?? false;
+  },
+  reload() {
+    getController()?.reload();
+  },
+});
 
 export const createFileViewerMountedFrameHandle = (
   getController: FileViewerFrameControllerAccessor,

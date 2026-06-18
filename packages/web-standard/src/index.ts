@@ -2,6 +2,8 @@ import {
   DEFAULT_FILE_VIEWER_PUBLIC_DIR,
   DEFAULT_FILE_VIEWER_URL,
   buildFileViewerFrameSrc,
+  createFileViewerDirectFrameController,
+  createFileViewerDirectFrameHandle,
   createFileViewerFrameControllerHandle,
   createFileViewerFrame as createCoreFileViewerFrame,
   createFileViewerFrameFilePostController,
@@ -22,6 +24,9 @@ import type {
   FileViewerAiOptions,
   FileViewerArchiveOptions,
   FileViewerDocxOptions,
+  FileViewerDirectFrameController as CoreFileViewerDirectFrameController,
+  FileViewerDirectFrameControllerAccessor,
+  FileViewerDirectFrameControllerOptions as CoreFileViewerDirectFrameControllerOptions,
   FileViewerDirectFrameHandle as CoreFileViewerDirectFrameHandle,
   FileViewerFrameControllerHandle as CoreFileViewerFrameControllerHandle,
   FileViewerFrameController as CoreFileViewerFrameController,
@@ -104,6 +109,12 @@ export interface ViewerFrameFilePostController extends CoreFileViewerFrameFilePo
 
 export interface ViewerFrameFilePostControllerOptions extends CoreFileViewerFrameFilePostControllerOptions {}
 
+export interface ViewerDirectFrameControllerOptions extends CoreFileViewerDirectFrameControllerOptions {}
+
+export interface ViewerDirectFrameController extends CoreFileViewerDirectFrameController {}
+
+export type ViewerDirectFrameControllerAccessor = FileViewerDirectFrameControllerAccessor
+
 export interface ViewerDirectFrameHandle extends CoreFileViewerDirectFrameHandle {}
 
 export interface ViewerMountedFrameHandle extends CoreFileViewerMountedFrameHandle {}
@@ -168,6 +179,10 @@ export const syncViewerFrame = (
 export const createViewerFrame = (options: CreateViewerFrameOptions = {}) => {
   return createCoreFileViewerFrame(withViewerFrameDefaults(options))
 }
+
+export const createViewerDirectFrameController = createFileViewerDirectFrameController
+
+export const createViewerDirectFrameHandle = createFileViewerDirectFrameHandle
 
 export const createViewerMountedFrameHandle = createFileViewerMountedFrameHandle
 
