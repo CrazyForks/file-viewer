@@ -765,6 +765,8 @@ async function verifyVue3ScopedCompatibility() {
   assertImportsFrom(vueRenderSurfaceHookSource, '@file-viewer/core', vueRenderSurfaceHookLabel)
   assertTokens(vueRenderSurfaceHookSource, [
     'applyFileViewerRenderSurfaceState',
+    'createFileViewerRenderReadinessTarget',
+    'createFileViewerRenderSurfaceStateTarget',
     'disposeFileViewerRendererSession',
     'runFileViewerRenderSurfaceClear',
     'runFileViewerRenderSurfaceMount'
@@ -774,6 +776,14 @@ async function verifyVue3ScopedCompatibility() {
     'createFileViewerRenderTarget',
     'removeFileViewerRenderTarget',
     'resetFileViewerRenderSurface',
+    'get renderedReady(): boolean',
+    'set renderedReady(value: boolean)',
+    'get progressiveReady(): boolean',
+    'set progressiveReady(value: boolean)',
+    'get session(): FileViewerVueRenderSession | null',
+    'set session(value: FileViewerVueRenderSession | null)',
+    'get exportAdapter(): FileRenderExportAdapter | null',
+    'set exportAdapter(value: FileRenderExportAdapter | null)',
     'waitForFileViewerNextPaint',
     'const context = notifyActiveUnloadStart',
     'notifyActiveUnloadComplete(context, reason)',

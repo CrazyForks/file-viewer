@@ -8,7 +8,9 @@ import {
   createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
+  createFileViewerRenderReadinessTarget,
   createFileViewerRenderSurfaceState,
+  createFileViewerRenderSurfaceStateTarget,
   createFileViewerRenderTarget,
   createFileViewerRendererDispatcher,
   disposeActiveFileViewerRendererSession,
@@ -234,6 +236,78 @@ describe('@file-viewer/core worker and render contracts', () => {
     expect(state.session).toBeNull();
     expect(state.exportAdapter).toBeNull();
     expect(readiness).toEqual({
+      renderedReady: false,
+      progressiveReady: false,
+    });
+    expect(root.childElementCount).toBe(0);
+  });
+
+  it('creates render surface targets from framework accessors', () => {
+    const { document } = parseHTML('<main id="root"><section>rendered</section></main>');
+    const root = document.getElementById('root') as HTMLElement;
+    const destroy = vi.fn();
+    const session = { destroy };
+    const adapter = { exportHtml: true };
+    const stateBacking: {
+      session: typeof session | null;
+      exportAdapter: typeof adapter | null;
+    } = {
+      session: null,
+      exportAdapter: null,
+    };
+    const readinessBacking = {
+      renderedReady: true,
+      progressiveReady: true,
+    };
+    const state = createFileViewerRenderSurfaceStateTarget<typeof session>({
+      session: {
+        get: () => stateBacking.session,
+        set: value => {
+          stateBacking.session = value;
+        },
+      },
+      exportAdapter: {
+        get: () => stateBacking.exportAdapter,
+        set: value => {
+          stateBacking.exportAdapter = value as typeof adapter | null;
+        },
+      },
+    });
+    const readiness = createFileViewerRenderReadinessTarget({
+      renderedReady: {
+        get: () => readinessBacking.renderedReady,
+        set: value => {
+          readinessBacking.renderedReady = value;
+        },
+      },
+      progressiveReady: {
+        get: () => readinessBacking.progressiveReady,
+        set: value => {
+          readinessBacking.progressiveReady = value;
+        },
+      },
+    });
+
+    expect(applyFileViewerRenderSurfaceState(state, {
+      session,
+      exportAdapter: adapter,
+    })).toBe(state);
+    expect(stateBacking).toEqual({
+      session,
+      exportAdapter: adapter,
+    });
+
+    expect(resetFileViewerRenderSurface({
+      surfaceState: state,
+      readinessState: readiness,
+      container: root,
+    })).toBe(session);
+    expect(destroy).toHaveBeenCalledTimes(1);
+    expect(stateBacking).toEqual({
+      session: null,
+      exportAdapter: null,
+    });
+    expect(readinessBacking).toEqual({
       renderedReady: false,
       progressiveReady: false,
     });

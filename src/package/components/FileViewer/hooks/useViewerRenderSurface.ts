@@ -1,6 +1,8 @@
 import { nextTick, ref, shallowRef, type Ref } from 'vue'
 import {
   applyFileViewerRenderSurfaceState,
+  createFileViewerRenderReadinessTarget,
+  createFileViewerRenderSurfaceStateTarget,
   disposeFileViewerRendererSession,
   runFileViewerRenderSurfaceClear,
   runFileViewerRenderSurfaceMount
@@ -55,35 +57,35 @@ export const useViewerRenderSurface = ({
   const activeExportAdapter = shallowRef<FileRenderExportAdapter | null>(null)
   const renderedReady = ref(false)
   const progressiveReady = ref(false)
-  const renderReadinessTarget = {
-    get renderedReady(): boolean {
-      return renderedReady.value
+  const renderReadinessTarget = createFileViewerRenderReadinessTarget({
+    renderedReady: {
+      get: () => renderedReady.value,
+      set: value => {
+        renderedReady.value = value
+      }
     },
-    set renderedReady(value: boolean) {
-      renderedReady.value = value
-    },
-    get progressiveReady(): boolean {
-      return progressiveReady.value
-    },
-    set progressiveReady(value: boolean) {
-      progressiveReady.value = value
+    progressiveReady: {
+      get: () => progressiveReady.value,
+      set: value => {
+        progressiveReady.value = value
+      }
     }
-  }
+  })
   let activeRenderSession: FileViewerVueRenderSession | null = null
-  const renderSurfaceStateTarget = {
-    get session(): FileViewerVueRenderSession | null {
-      return activeRenderSession
+  const renderSurfaceStateTarget = createFileViewerRenderSurfaceStateTarget<FileViewerVueRenderSession>({
+    session: {
+      get: () => activeRenderSession,
+      set: value => {
+        activeRenderSession = value
+      }
     },
-    set session(value: FileViewerVueRenderSession | null) {
-      activeRenderSession = value
-    },
-    get exportAdapter(): FileRenderExportAdapter | null {
-      return activeExportAdapter.value
-    },
-    set exportAdapter(value: FileRenderExportAdapter | null) {
-      activeExportAdapter.value = value
+    exportAdapter: {
+      get: () => activeExportAdapter.value,
+      set: value => {
+        activeExportAdapter.value = value
+      }
     }
-  }
+  })
 
   const destroyRenderSession = (session?: FileViewerVueRenderSession | null) => {
     disposeFileViewerRendererSession(session, {

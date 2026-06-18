@@ -6,6 +6,7 @@ import { createRendererRegistry } from './registry';
 import { getExtension, normalizeFileExtension } from './source';
 import {
   applyFileViewerRenderReadinessState,
+  type FileViewerMutableAccessor,
   type MutableFileViewerRenderReadinessState,
 } from './sourceLoading';
 import type {
@@ -60,6 +61,18 @@ export interface FileViewerRenderSurfaceState<
 export type MutableFileViewerRenderSurfaceState<
   Session extends RendererSession = RendererSession,
 > = FileViewerRenderSurfaceState<Session>;
+
+export interface CreateFileViewerRenderReadinessTargetInput {
+  renderedReady: FileViewerMutableAccessor<boolean>;
+  progressiveReady: FileViewerMutableAccessor<boolean>;
+}
+
+export interface CreateFileViewerRenderSurfaceStateTargetInput<
+  Session extends RendererSession = RendererSession,
+> {
+  session: FileViewerMutableAccessor<Session | null>;
+  exportAdapter: FileViewerMutableAccessor<FileRenderExportAdapter | null>;
+}
 
 export interface CreateFileViewerRenderTargetOptions {
   className?: string;
@@ -188,6 +201,48 @@ export const createFileViewerRenderSurfaceState = <
   session: null,
   exportAdapter: null,
 });
+
+export const createFileViewerRenderReadinessTarget = ({
+  renderedReady,
+  progressiveReady,
+}: CreateFileViewerRenderReadinessTargetInput): MutableFileViewerRenderReadinessState => {
+  return {
+    get renderedReady() {
+      return renderedReady.get();
+    },
+    set renderedReady(value) {
+      renderedReady.set(value);
+    },
+    get progressiveReady() {
+      return progressiveReady.get();
+    },
+    set progressiveReady(value) {
+      progressiveReady.set(value);
+    },
+  };
+};
+
+export const createFileViewerRenderSurfaceStateTarget = <
+  Session extends RendererSession = RendererSession,
+>({
+  session,
+  exportAdapter,
+}: CreateFileViewerRenderSurfaceStateTargetInput<Session>): MutableFileViewerRenderSurfaceState<Session> => {
+  return {
+    get session() {
+      return session.get();
+    },
+    set session(value) {
+      session.set(value);
+    },
+    get exportAdapter() {
+      return exportAdapter.get();
+    },
+    set exportAdapter(value) {
+      exportAdapter.set(value);
+    },
+  };
+};
 
 export const applyFileViewerRenderSurfaceState = <
   Session extends RendererSession,

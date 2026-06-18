@@ -281,7 +281,9 @@ export {
   createFileRenderHandlerRendererSession,
   createFileRenderHandlerRegistry,
   createFileRenderHandlerLoader,
+  createFileViewerRenderReadinessTarget,
   createFileViewerRenderSurfaceState,
+  createFileViewerRenderSurfaceStateTarget,
   createFileViewerRenderTarget,
   DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS,
   disposeActiveFileViewerRendererSession,
@@ -294,6 +296,8 @@ export {
   renderFileViewerHandler,
 } from './rendererHandler';
 export type {
+  CreateFileViewerRenderReadinessTargetInput,
+  CreateFileViewerRenderSurfaceStateTargetInput,
   FileViewerRenderSurfaceClearState,
   FileViewerRenderSurfaceState,
   FileViewerRenderSurfaceMountContext,

@@ -128,6 +128,7 @@
   - [x] 读取文件 buffer、写入 read preview state、挂载渲染、过期 session 清理和 render-complete 提交的主链路迁入 `@file-viewer/core`。
   - [x] 渲染完成后的 session 提交、readiness 写入、active document context、lifecycle emit 与 load-start 清理编排迁入 `@file-viewer/core`。
   - [x] render surface 的 active session / export adapter 状态应用与 active session 销毁迁入 `@file-viewer/core`，Vue hook 只保留响应式字段映射。
+  - [x] render surface 的 readiness / surface mutable target getter/setter 适配迁入 `@file-viewer/core`，Vue hook 只传响应式字段 accessor。
   - [x] render surface 的 active session 销毁、export adapter 清空、readiness reset 与 DOM surface 清理组合迁入 `@file-viewer/core`。
   - [x] 纯 TS `createViewer` 复用 core render surface state，session / export adapter 生命周期与 wrapper 共用同一套状态语义。
   - [x] FileRef source plan 和预览文件名状态应用迁入 `@file-viewer/core`，Vue hook 不再直接包装 FileRef 或硬编码默认文件名。
