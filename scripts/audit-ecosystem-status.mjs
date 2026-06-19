@@ -98,11 +98,25 @@ function okLabel(ok) {
   return ok ? 'ok' : 'missing'
 }
 
-const sourceBranch = run('git', ['branch', '--show-current']).stdout
+function syncLabel(left, right) {
+  if (!left.ok || !right.ok) {
+    return 'missing'
+  }
+  return left.hash === right.hash ? 'ok' : 'stale'
+}
+
+const localBranch = run('git', ['branch', '--show-current']).stdout
+const sourceBranch = branchRoles.currentSourceBranch || localBranch
 const sourceHead = run('git', ['rev-parse', 'HEAD']).stdout
 const sourceRemoteHead = lsRemoteHead(branchRoles.sourceRemote.url, sourceBranch)
+const sourceHeadInSync = sourceRemoteHead.ok && sourceHead === sourceRemoteHead.hash
+const branchRows = branchRoles.branches.map(branch => ({
+  ...branch,
+  remote: lsRemoteHead(branchRoles.sourceRemote.url, branch.name)
+}))
 const publicGithubHead = lsRemoteHead(branchRoles.publicMainRepository.github, 'main')
 const publicGiteeHead = lsRemoteHead(branchRoles.publicMainRepository.gitee, 'main')
+const publicMainInSync = publicGithubHead.ok && publicGiteeHead.ok && publicGithubHead.hash === publicGiteeHead.hash
 const release = ghRelease(`v${rootPackage.version}`)
 
 const remoteTargets = [
@@ -138,8 +152,16 @@ const npmRows = entries.map(entry => ({
 
 const failures = [
   !sourceRemoteHead.ok && `source remote ${branchRoles.sourceRemote.url} missing ${sourceBranch}`,
+  sourceRemoteHead.ok &&
+    !sourceHeadInSync &&
+    `local HEAD ${sourceHead.slice(0, 12)} does not match source ${sourceBranch} ${sourceRemoteHead.hash.slice(0, 12)}`,
+  ...branchRows.map(row => !row.remote.ok && `source remote missing branch ${row.name}`),
   !publicGithubHead.ok && 'open-source main GitHub repository missing main',
   !publicGiteeHead.ok && 'open-source main Gitee repository missing main',
+  publicGithubHead.ok &&
+    publicGiteeHead.ok &&
+    !publicMainInSync &&
+    `open-source main Gitee repository ${publicGiteeHead.hash.slice(0, 12)} differs from GitHub ${publicGithubHead.hash.slice(0, 12)}`,
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
   ...remoteRows.flatMap(row => [
     !row.github.ok && `${row.id} GitHub repository missing`,
@@ -162,13 +184,26 @@ console.log(`Workspace: \`${sourceRoot}\``)
 console.log(`Version target: \`${rootPackage.version}\`\n`)
 
 console.log(`## Aggregate Source\n`)
-console.log(`- Branch: \`${sourceBranch}\``)
+console.log(`- Local checkout branch: \`${localBranch}\``)
+console.log(`- Source branch: \`${sourceBranch}\``)
 console.log(`- Local HEAD: ${formatHash(sourceHead)}`)
-console.log(`- Remote \`${branchRoles.sourceRemote.name}/${sourceBranch}\`: ${formatHash(sourceRemoteHead.hash)} (${okLabel(sourceRemoteHead.ok)})\n`)
+console.log(
+  `- Remote \`${branchRoles.sourceRemote.name}/${sourceBranch}\`: ${formatHash(sourceRemoteHead.hash)} (${sourceHeadInSync ? 'ok' : okLabel(sourceRemoteHead.ok)})\n`
+)
+
+console.log(`## Source Branch Roles\n`)
+console.log(`| branch | role | package | remote |`)
+console.log(`| --- | --- | --- | --- |`)
+for (const row of branchRows) {
+  console.log(
+    `| \`${row.name}\` | ${row.role} | \`${row.packageName}\` | ${formatHash(row.remote.hash)} (${okLabel(row.remote.ok)}) |`
+  )
+}
+console.log()
 
 console.log(`## Open-Source Main Repository\n`)
 console.log(`- GitHub main: ${formatHash(publicGithubHead.hash)} (${okLabel(publicGithubHead.ok)})`)
-console.log(`- Gitee main: ${formatHash(publicGiteeHead.hash)} (${okLabel(publicGiteeHead.ok)})`)
+console.log(`- Gitee main: ${formatHash(publicGiteeHead.hash)} (${syncLabel(publicGithubHead, publicGiteeHead)})`)
 console.log(`- GitHub Release: \`${release.tag}\` (${okLabel(release.ok)}, assets: ${release.assetCount}${release.url ? `, ${release.url}` : ''})\n`)
 
 console.log(`## Core And Component Repositories\n`)

@@ -1,3 +1,5 @@
+import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,7 +10,7 @@ const args = process.argv.slice(2)
 
 const dryRun = args.includes('--dry-run') || process.env.FILE_VIEWER_GITEE_CREATE_DRY_RUN === '1'
 const force = args.includes('--force')
-const token =
+const explicitToken =
   process.env.FILE_VIEWER_GITEE_TOKEN ||
   process.env.GITEE_TOKEN ||
   process.env.GITEE_ACCESS_TOKEN ||
@@ -31,6 +33,48 @@ function readArg(name, fallback) {
 }
 
 const apiBase = readArg('--api-base', process.env.GITEE_API_BASE || 'https://gitee.com/api/v5')
+const tokenFile = readArg('--token-file', process.env.FILE_VIEWER_GITEE_TOKEN_FILE || '')
+const useGitCredentialToken =
+  args.includes('--use-git-credential') ||
+  process.env.FILE_VIEWER_GITEE_USE_GIT_CREDENTIAL === '1'
+
+function readTokenFile(path) {
+  if (!path) {
+    return ''
+  }
+
+  return readFileSync(resolve(path), 'utf8').trim()
+}
+
+function readGiteeCredentialToken() {
+  const result = spawnSync('git', ['credential', 'fill'], {
+    cwd: sourceRoot,
+    input: 'protocol=https\nhost=gitee.com\n\n',
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe']
+  })
+
+  if (result.status !== 0) {
+    return ''
+  }
+
+  const passwordLine = result.stdout
+    .split('\n')
+    .find(line => line.startsWith('password='))
+
+  return passwordLine?.slice('password='.length).trim() || ''
+}
+
+const tokenFromFile = !explicitToken ? readTokenFile(tokenFile) : ''
+const credentialToken = !explicitToken && !tokenFromFile && useGitCredentialToken ? readGiteeCredentialToken() : ''
+const token = explicitToken || tokenFromFile || credentialToken
+const tokenSource = explicitToken
+  ? 'environment'
+  : tokenFromFile
+    ? 'token-file'
+    : credentialToken
+      ? 'git-credential'
+      : 'missing'
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'))
@@ -59,7 +103,9 @@ function targetHomepage(target) {
 
 async function giteeRequest(method, path, body = undefined) {
   if (!token) {
-    throw new Error('Missing Gitee token. Set FILE_VIEWER_GITEE_TOKEN, GITEE_TOKEN, or GITEE_ACCESS_TOKEN.')
+    throw new Error(
+      'Missing Gitee token. Set FILE_VIEWER_GITEE_TOKEN, GITEE_TOKEN, GITEE_ACCESS_TOKEN, FILE_VIEWER_GITEE_TOKEN_FILE, or pass --use-git-credential when the stored gitee.com password is an API token.'
+    )
   }
 
   const url = new URL(path, `${apiBase.replace(/\/+$/, '')}/`)
@@ -100,6 +146,16 @@ async function giteeRequest(method, path, body = undefined) {
   }
 }
 
+function authHint(response) {
+  if (response.status !== 401) {
+    return ''
+  }
+  if (tokenSource === 'git-credential') {
+    return ' The stored gitee.com git credential was used as the API token and was rejected; store a Gitee API access token in FILE_VIEWER_GITEE_TOKEN_FILE or an environment variable instead.'
+  }
+  return ' Check that the Gitee API token is valid and has organization repository permissions.'
+}
+
 async function repoExists(owner, repo) {
   if (!token) {
     return false
@@ -111,7 +167,9 @@ async function repoExists(owner, repo) {
   if (response.status === 404) {
     return false
   }
-  throw new Error(`Failed to check Gitee repository ${owner}/${repo}: HTTP ${response.status} ${JSON.stringify(response.payload)}`)
+  throw new Error(
+    `Failed to check Gitee repository ${owner}/${repo}: HTTP ${response.status} ${JSON.stringify(response.payload)}${authHint(response)}`
+  )
 }
 
 async function createRepo(target) {
@@ -152,7 +210,9 @@ async function createRepo(target) {
     }
   }
 
-  throw new Error(`Failed to create Gitee repository ${owner}/${repo}: HTTP ${response.status} ${JSON.stringify(response.payload)}`)
+  throw new Error(
+    `Failed to create Gitee repository ${owner}/${repo}: HTTP ${response.status} ${JSON.stringify(response.payload)}${authHint(response)}`
+  )
 }
 
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
@@ -191,7 +251,9 @@ if (!targets.length) {
 }
 
 if (!dryRun && !token) {
-  throw new Error('Missing Gitee token. Set FILE_VIEWER_GITEE_TOKEN, GITEE_TOKEN, or GITEE_ACCESS_TOKEN.')
+  throw new Error(
+    'Missing Gitee token. Set FILE_VIEWER_GITEE_TOKEN, GITEE_TOKEN, GITEE_ACCESS_TOKEN, FILE_VIEWER_GITEE_TOKEN_FILE, or pass --use-git-credential when the stored gitee.com password is an API token.'
+  )
 }
 
 const results = new Map()
