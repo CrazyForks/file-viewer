@@ -149,7 +149,15 @@ if (mode === 'pack') {
 
 if (mode === 'publish') {
   for (const entry of entries) {
-    const publishArgs = ['-C', entry.packageDir, 'publish', '--access', 'public', '--no-git-checks']
+    const publishArgs = [
+      '-C',
+      entry.packageDir,
+      'publish',
+      '--access',
+      'public',
+      '--no-git-checks',
+      '--ignore-scripts'
+    ]
     if (dryRun) {
       publishArgs.push('--dry-run')
     }
