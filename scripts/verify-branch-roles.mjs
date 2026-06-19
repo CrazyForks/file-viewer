@@ -8,6 +8,7 @@ const sourceRoot = resolve(scriptDir, '..')
 
 const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
 const wrapperManifest = await readJson(join(sourceRoot, 'ecosystem', 'wrappers.json'))
+const rootPackage = await readJson(join(sourceRoot, 'package.json'))
 
 function assert(condition, message) {
   if (!condition) {
@@ -74,11 +75,11 @@ assert(rolesByName.has('v3'), 'branch roles must include v3')
 assert(rolesByName.has(currentBranch), `current branch ${currentBranch} must be declared in branch roles`)
 
 const mainRole = rolesByName.get('main')
-assert(mainRole.role === 'core', 'main branch role must be core')
-assert(mainRole.packageName === wrapperManifest.corePackage.packageName, 'main branch package must be @file-viewer/core')
+assert(mainRole.role === 'private-aggregate-workspace', 'main branch role must be private-aggregate-workspace')
+assert(mainRole.packageName === rootPackage.name, `main branch package must be ${rootPackage.name}`)
 assert(
-  mainRole.sourcePolicy === 'core-source-exported-publicly',
-  'main branch source policy must export core source publicly'
+  mainRole.sourcePolicy === 'private-complete-original-workspace',
+  'main branch source policy must keep the complete original workspace private'
 )
 
 const wrappersById = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.id, wrapper]))

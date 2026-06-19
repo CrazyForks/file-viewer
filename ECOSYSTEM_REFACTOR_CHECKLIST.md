@@ -9,14 +9,16 @@
 - 当前 core 包: `@file-viewer/core@2.0.0`
 - 当前 core package policy: `single-framework-neutral-core-with-headless-browser-renderers`
 - 当前 renderer implementation status: `framework-neutral-core-renderers-migrated`
-- 当前 core boundary status: `single-core-renderers-migrated-pending-branch-cutover`
+- 当前 core boundary status: `single-core-renderers-migrated-private-main-remains-original-aggregate`
 - 当前 core browser renderer ids: `audio`, `video`, `markdown`, `code`, `image`, `umd`, `geo`, `open-document`, `ofd`, `pdf`, `email`, `eda`, `cad`, `typst`, `office-presentation`, `epub`, `model`, `drawing`, `data-asset`, `archive`, `office-word-openxml`, `office-word-binary`, `spreadsheet-openxml`
 - 当前支持矩阵: 23 条预览链路、194 个扩展名
 - 当前源码远端: `origin -> https://git.flyfish.dev/flyfish-group/file-viewer.git`
 - 当前源码远端可见性: `private`
+- 私有原始仓库主分支: `main -> complete-original-aggregate-workspace`
 - 公开组织: `flyfish-dev`
 - 开源总仓库: `https://github.com/flyfish-dev/file-viewer` / `https://gitee.com/flyfish-dev/file-viewer`
 - 开源总仓库策略: `public-open-source-main-repository`
+- 开源总仓库定位: `source-and-artifact-aggregate-distribution-not-private-original-repository`
 - core source visibility policy: `public-source`
 - 标准包命名: `@file-viewer/*`
 
@@ -46,15 +48,15 @@
 
 ## 分支与目录验收
 
-- [ ] `main` 分支成为 core 主线，只承载 framework-neutral 底座和共享协议，branch role 为 `core`，包名为 `@file-viewer/core`，source policy 为 `core-source-exported-publicly`。
+- [ ] 私有 Gitea `main` 分支保持完整原始聚合仓，只承载完整 monorepo、发布自动化、apps、docs、packages、兼容 alias、内部集成历史和优先支持上下文，branch role 为 `private-aggregate-workspace`，包名为 `@flyfish-group/file-viewer-workspace`，source policy 为 `private-complete-original-workspace`。
 - [ ] 原 `main` 分支转为 `v2`，用于 Vue2.7 标准组件兼容包线，branch role 为 `vue2.7-component`，包名为 `@file-viewer/vue2.7`，source policy 为 `component-source-exported-publicly`。
 - [ ] 新 `v3` 分支用于 Vue3 标准组件包线，branch role 为 `vue3-component`，包名为 `@file-viewer/vue3`，source policy 为 `component-source-exported-publicly`。
 - [x] 当前 `v3` 分支的 Vue3 标准组件代码迁移到 `packages/components/vue3` 独立包。
 - [x] 正式在线 Demo 已迁移到 `apps/viewer-demo`，组件接入示例保留在 `apps/component-demo`，`packages/` 下只保留 core、标准组件包和兼容 alias。
-- [ ] 当前 `v3` 分支提升为新的 `main` 基线，并在远端完成分支角色切换。
+- [ ] 当前完整原始聚合仓内容同步到私有 Gitea `main`，并在远端确认 `main` 不被替换为 core-only 分支。
 - [ ] 新的 Vue3 标准组件包线提交到新的 `v3` 分支，并保持 `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` 三个发布入口一致。
-- [x] 分支切换预演已标准化为 `pnpm branch:cutover:prepare` / `pnpm branch:cutover:verify`，会生成 `.release/branch-cutover/main-core`、`.release/branch-cutover/v2-vue2.7-component`、`.release/branch-cutover/v3-vue3-component` 供正式替换远端分支前审计。
-- [x] 分支切换执行已标准化为 `pnpm branch:cutover:apply`，默认 dry-run，显式 `-- --push` 时先推 `workspace/pre-branch-cutover-*` 备份分支，再用 `--force-with-lease` 替换私有 Gitea `main` / `v2` / `v3`。
+- [x] 分支整理预演已标准化为 `pnpm branch:cutover:prepare` / `pnpm branch:cutover:verify`，会生成 `.release/branch-cutover/v2-vue2.7-component`、`.release/branch-cutover/v3-vue3-component` 供正式更新远端分支前审计；私有 `main` 保持当前完整原始仓库，不生成 core-only 快照。
+- [x] 分支整理执行已标准化为 `pnpm branch:cutover:apply`，默认 dry-run，显式 `-- --push` 时先备份现有远端 `main` / `v2` / `v3` 到 `workspace/pre-branch-cutover-*/*`，再把当前完整原始仓库推到私有 `main`，并用 `--force-with-lease` 更新 `v2` / `v3` 组件分支。
 - [x] `packages/components/vue3`、`packages/components/vue2.7`、`packages/components/vue2.6`、`packages/components/react`、`packages/components/react-legacy`、`packages/components/web`、`packages/components/jquery`、`packages/components/svelte` 都只保留对应生态组件职责，不依赖其他标准组件包。
 - [x] `packages/compat/vue2.7`、`packages/compat/vue3-scoped`、`packages/compat/vue3-unscoped`、`packages/compat/web`、`packages/compat/react` 与根包只作为历史兼容别名或历史发布入口，不承载新的业务实现。
 - [x] core 与标准组件包的类型边界在 CI 中通过 `pnpm verify:core-api`、`pnpm verify:wrapper-api`、`pnpm verify:wrapper-options` 固化。
@@ -72,7 +74,7 @@
 
 | 能力 | 标准 npm 包名 | 兼容/历史 npm 包名 | 代码归属 | GitHub | Gitee | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
-| Core | `@file-viewer/core` | 无 | `packages/core` / `main` | `https://github.com/flyfish-dev/file-viewer-core` | `https://gitee.com/flyfish-dev/file-viewer-core` | [ ] 待最终切主线与独立仓同步 |
+| Core | `@file-viewer/core` | 无 | `packages/core` / `file-viewer-core` | `https://github.com/flyfish-dev/file-viewer-core` | `https://gitee.com/flyfish-dev/file-viewer-core` | [~] GitHub 已发布，Gitee 待完成；私有 main 保留完整原始仓 |
 | Vue 3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | `packages/components/vue3` / `v3` | `https://github.com/flyfish-dev/file-viewer-vue3` | `https://gitee.com/flyfish-dev/file-viewer-vue3` | [~] GitHub 已发布，Gitee / 分支切换待完成 |
 | Vue 2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | `packages/components/vue2.7` / `v2` | `https://github.com/flyfish-dev/file-viewer-vue2.7` | `https://gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] GitHub 已发布，Gitee / v2 分支待完成 |
 | Vue 2.6 | `@file-viewer/vue2.6` | 无 | `packages/components/vue2.6` | `https://github.com/flyfish-dev/file-viewer-vue2.6` | `https://gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] GitHub 已发布，Gitee 待完成 |
@@ -81,7 +83,7 @@
 | Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/components/web` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] GitHub 已发布，Gitee 待完成 |
 | jQuery | `@file-viewer/jquery` | 无 | `packages/components/jquery` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] GitHub 已发布，Gitee 待完成 |
 | Svelte | `@file-viewer/svelte` | 无 | `packages/components/svelte` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] GitHub 已发布，Gitee 待完成 |
-| Open-source main repository | 开源源码 + 主分发入口 | 当前 `flyfish-dev/file-viewer` | 开源总仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [x] v2.0.0 已刷新，GitHub/Gitee 内容一致 |
+| Open-source main repository | 开源源码 + 主分发入口 | 当前 `flyfish-dev/file-viewer` | 开源总仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [~] GitHub 已刷新；Gitee 因远端配额阻塞，待 GC / 扩容后同步 |
 
 ## npm 发布包清单
 
@@ -105,7 +107,7 @@
 - [x] 建立 `@file-viewer/core` framework-neutral TypeScript 底座。
 - [x] 将格式矩阵、资产路径、操作 API、生命周期 hooks、beforeOperation、搜索、定位、缩放、打印、导出、水印、主题和 loading 状态的底层契约沉淀到 core 类型与 API。
 - [x] 移除 core 中的旧独立页面协议、事件桥、二进制投递和来源校验类型。
-- [ ] 完成 `main` 分支只包含 core 核心底座源码的切换审计。
+- [ ] 完成私有 `main` 分支保持完整原始聚合仓、`@file-viewer/core` 通过独立公开仓和开源总仓库分发的切换审计。
 - [x] 移除 `temporary-v3-renderer-host-until-core-renderer-migration` 过渡策略。
 - [x] 撤回 core 中偏 Web 的 `mountViewer` 下沉，改为各标准组件包自带本地 controller。
 - [x] 将旧 v3 拆出的 `createViewer`、renderer registry、异步 loader、DOM provider registry、print layout 和浏览器资源解析合并回 `@file-viewer/core` 的 browser/renderers 分层。
@@ -125,10 +127,10 @@
 
 ## Phase 3: 当前仓库分支职责重排
 
-- [ ] 私有 Gitea `main` 分支提升为 pure TypeScript core 主线。
+- [ ] 私有 Gitea `main` 分支保持 complete original aggregate workspace，并同步当前完整原始仓库最新内容。
 - [ ] 旧 `main` 分支迁移为 `v2`，对应 Vue2.7 标准组件包。
-- [ ] 当前 `v3` 基线提升为新的 core `main` 前，完成源码、产物、文档和发布记录审计。
-- [x] 远端分支替换前可以使用 `.release/branch-cutover/` 快照核对 `main` / `v2` / `v3` 的包名、README、license、manifest、历史兼容包和 workspace 依赖边界。
+- [ ] 当前完整原始聚合仓同步到私有 `main` 前，完成源码、产物、文档和发布记录审计。
+- [x] 远端分支更新前可以使用 `.release/branch-cutover/` 快照核对 `v2` / `v3` 的包名、README、license、manifest、历史兼容包和 workspace 依赖边界；`main` 以完整当前工作区为准。
 - [x] 远端分支替换执行脚本已具备 dry-run、备份分支、远端 URL 校验、工作区 clean 校验和 `--force-with-lease` 防误覆盖机制。
 - [ ] `ecosystem/branch-roles.json`、`ecosystem/wrappers.json`、`README.md`、`README.en.md` 与实际远端分支一致。
 
@@ -258,7 +260,7 @@
 
 ## 完成审计标准
 
-- [ ] 当前私有 Gitea 仓库作为完整聚合仓，`main` 分支以 core 为主线，并保留统一发布自动化。
+- [ ] 当前私有 Gitea 仓库作为完整原始聚合仓，`main` 分支保留完整 monorepo 和统一发布自动化，不代表开源总仓库，也不缩减为 core-only。
 - [ ] `v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包。
 - [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [ ] 所有 `@file-viewer/*` npm 包均发布成功。

@@ -113,7 +113,8 @@ pnpm release:ecosystem:pack
 
 | 技术栈 | 分支 | npm 包 | 注册方式 |
 | --- | --- | --- | --- |
-| Core | `main` | `@file-viewer/core` | framework-neutral 预览能力、能力矩阵、事件和操作 API |
+| 私有原始聚合仓 | `main` | `@flyfish-group/file-viewer-workspace` | 完整 monorepo、apps、docs、core、标准组件包、兼容包、发布自动化和内部集成历史 |
+| Core | `packages/core` / `file-viewer-core` | `@file-viewer/core` | framework-neutral 预览能力、能力矩阵、事件和操作 API |
 | Vue3 | `v3` | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` / `file-viewer3` | `createApp(App).use(FileViewer)` |
 | Vue2.7 | `v2` | `@file-viewer/vue2.7@2.0.0` / `@flyfish-group/file-viewer` | 兼容 Vue2.7 插件式注册 |
 | Vue2.6 标准组件包 | 当前仓库子工程 | `@file-viewer/vue2.6@2.0.0` | 兼容 Vue2.6 插件式注册 |
@@ -123,7 +124,7 @@ pnpm release:ecosystem:pack
 | jQuery | 当前仓库子工程 | `@file-viewer/jquery@2.0.0` | `$(el).fileViewer(options)` |
 | Svelte | 当前仓库子工程 | `@file-viewer/svelte@2.0.0` | Svelte component package |
 
-分支职责以 `ecosystem/branch-roles.json`、仓库根目录 `BRANCHES.md` 和 `ECOSYSTEM_REFACTOR_CHECKLIST.md` 为准: `main` 只承载 core 基座，`v2` 对应 Vue 2.7 集成线，`v3` 对应独立 Vue 3 标准组件包线。迁移完成后，当前 Vue3 旧代码必须收敛到 `packages/components/vue3` 独立包，原 `v3` 分支提升为 `main` 的 core 基线，原 `main` 变为 `v2`，新的 Vue3 包线提交到新的 `v3` 分支。标准组件包、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且 组件入口使用最新 core native engine。
+分支职责以 `ecosystem/branch-roles.json`、仓库根目录 `BRANCHES.md` 和 `ECOSYSTEM_REFACTOR_CHECKLIST.md` 为准: 私有 Gitea 的 `main` 是完整原始聚合仓，保留完整 monorepo、统一发布自动化和内部集成历史，不缩减为 core-only，也不等同于 GitHub 开源总仓库；`v2` 对应 Vue 2.7 标准组件包线，`v3` 对应 Vue 3 标准组件包线。`@file-viewer/core` 的源码通过 `packages/core`、独立公开仓 `flyfish-dev/file-viewer-core` 和开源总仓库分发。标准组件包、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且组件入口使用最新 core native engine。
 
 ## 主要产物位置
 

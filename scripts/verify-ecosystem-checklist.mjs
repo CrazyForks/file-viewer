@@ -97,7 +97,7 @@ for (const branch of branchRoles.branches) {
 }
 
 for (const requiredAuditItem of [
-  '当前私有 Gitea 仓库作为完整聚合仓',
+  '当前私有 Gitea 仓库作为完整原始聚合仓',
   '`v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包',
   '所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库',
   '所有 `@file-viewer/*` npm 包均发布成功',

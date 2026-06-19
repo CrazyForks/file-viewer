@@ -155,6 +155,8 @@ const remoteRefs = run('git', ['ls-remote', '--heads', remoteName], { capture: t
 const backupBranch = sanitizeBranchSegment(
   backupBranchArg || defaultBackupBranch(rootPackage.version, sourceCommit)
 )
+const mainRemoteHead = readRemoteHead(remoteRefs, 'main')
+const mainTree = run('git', ['rev-parse', 'HEAD^{tree}'], { capture: true })
 const targets = summary.targets.map(target => ({
   ...target,
   currentRemoteHead: readRemoteHead(remoteRefs, target.branch)
@@ -170,6 +172,9 @@ try {
   console.log(pushEnabled ? 'Branch cutover push plan:' : 'Branch cutover dry-run plan:')
   console.log(`Remote: ${remoteName} -> ${remoteUrl}`)
   console.log(`Backup branch: ${skipBackup ? '(skipped)' : backupBranch}`)
+  console.log(
+    `main\tprivate-aggregate-workspace\t${rootPackage.name}\told=${mainRemoteHead || '(new)'}\tnew=${sourceCommit}\ttree=${mainTree}`
+  )
   for (const target of materializedTargets) {
     console.log(
       `${target.branch}\t${target.role}\t${target.packageName}\told=${target.currentRemoteHead || '(new)'}\tnew=${target.commit}\ttree=${target.tree}`
@@ -180,9 +185,23 @@ try {
     console.log('')
     console.log('Dry run only. Re-run with --push to update remote branches.')
   } else {
+    run('git', ['fetch', remoteName, `+refs/heads/*:refs/remotes/${remoteName}/*`])
     if (!skipBackup) {
-      run('git', ['push', remoteName, `HEAD:refs/heads/${backupBranch}`])
+      for (const [branch, head] of [
+        ['main', mainRemoteHead],
+        ...materializedTargets.map(target => [target.branch, target.currentRemoteHead])
+      ]) {
+        if (head) {
+          run('git', ['push', remoteName, `${head}:refs/heads/${backupBranch}/${branch}`])
+        }
+      }
     }
+    const mainPushArgs = []
+    if (mainRemoteHead) {
+      mainPushArgs.push(`--force-with-lease=refs/heads/main:${mainRemoteHead}`)
+    }
+    mainPushArgs.push(remoteName, 'HEAD:refs/heads/main')
+    run('git', mainPushArgs)
     for (const target of materializedTargets) {
       const pushArgs = []
       if (target.currentRemoteHead) {

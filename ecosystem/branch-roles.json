@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "currentSourceBranch": "v3",
+  "currentSourceBranch": "main",
   "targetBranchModel": {
-    "main": "core",
+    "main": "private-aggregate-workspace",
     "v2": "vue2.7-component",
     "v3": "vue3-component"
   },
@@ -21,10 +21,10 @@
   "branches": [
     {
       "name": "main",
-      "role": "core",
-      "packageName": "@file-viewer/core",
-      "sourcePolicy": "core-source-exported-publicly",
-      "description": "Maintains the pure TypeScript core foundation, renderer registry, shared protocols, types, capability model, worker/asset contracts, and the public @file-viewer/core source package."
+      "role": "private-aggregate-workspace",
+      "packageName": "@flyfish-group/file-viewer-workspace",
+      "sourcePolicy": "private-complete-original-workspace",
+      "description": "Maintains the complete private original aggregate workspace, release automation, apps, docs, packages, compatibility aliases, ecosystem export scripts, and internal integration history. It is not the public open-source aggregate repository and is not reduced to @file-viewer/core."
     },
     {
       "name": "v2",

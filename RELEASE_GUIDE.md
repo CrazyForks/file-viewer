@@ -77,7 +77,7 @@ git remote -v
 
 ## 发布前检查
 
-当前过渡期仍从 `v3` 分支生成线上 Demo、文档站、npm 包和开源总仓库。完成分支切换后，`main` 会成为 core 主线，Vue3 标准组件进入新的 `v3` 分支，Vue2 线进入 `v2` 分支。
+私有 Gitea 的 `main` 是完整原始聚合仓，承载完整 monorepo、统一发布自动化和内部集成历史；它不缩减为 core-only，也不等同于 GitHub 开源总仓库。若本机仍处在分支整理过渡期，可从当前聚合工作分支生成线上 Demo、文档站、npm 包和开源总仓库；完成分支整理后，以私有 `main` 为完整原始仓的发布基线，`v3` / `v2` 可作为 Vue3 / Vue2.7 标准组件分支快照；core 源码通过 `packages/core`、独立 `flyfish-dev/file-viewer-core` 和开源总仓库分发。
 
 ```bash
 cd /Users/wangyu/IdeaProjects/file-viewer3
@@ -123,7 +123,7 @@ pnpm docs:build
 
 ## 分支切换预演
 
-当前分支角色切换必须先生成本地快照，再人工核对。不要直接把聚合仓 `v3` 推成 GitHub/Gitee 开源总仓库，也不要跳过预演去重写私有 Gitea 的 `main` / `v2` / `v3`。
+当前分支角色整理必须先生成本地快照，再人工核对。不要直接把私有聚合仓推成 GitHub/Gitee 开源总仓库，也不要跳过预演去更新私有 Gitea 的 `main` / `v2` / `v3`。
 
 ```bash
 cd /Users/wangyu/IdeaProjects/file-viewer3
@@ -136,11 +136,10 @@ pnpm branch:cutover:apply
 
 | 目录 | 目标分支 | 目标职责 |
 | --- | --- | --- |
-| `main-core` | `main` | `@file-viewer/core` pure TypeScript core 主线 |
 | `v2-vue2.7-component` | `v2` | `@file-viewer/vue2.7` 和 `@flyfish-group/file-viewer` Vue 2.7 组件线 |
 | `v3-vue3-component` | `v3` | `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` Vue 3 组件线 |
 
-每个目录都必须包含 `package.json`、`README.md`、`README.en.md`、`LICENSE`、`BRANCH_ROLE.md` 和 `branch-cutover-manifest.json`，并且不能包含 `node_modules/`、`dist/` 或 `workspace:` 依赖范围。确认这些快照之后，才进入远端分支替换和 npm 发布。
+每个组件快照目录都必须包含 `package.json`、`README.md`、`README.en.md`、`LICENSE`、`BRANCH_ROLE.md` 和 `branch-cutover-manifest.json`，并且不能包含 `node_modules/`、`dist/` 或 `workspace:` 依赖范围。私有 `main` 不生成 core-only 快照，而是保持当前完整原始仓库内容。确认这些快照之后，才进入远端分支更新和 npm 发布。
 
 `pnpm branch:cutover:apply` 默认只输出推送计划，不会修改远端。确认计划无误后，维护者再显式执行:
 
@@ -148,7 +147,7 @@ pnpm branch:cutover:apply
 pnpm branch:cutover:apply -- --push
 ```
 
-脚本会先把当前聚合仓 HEAD 推到 `workspace/pre-branch-cutover-*` 备份分支，再用 `--force-with-lease` 替换私有 Gitea 的 `main` / `v2` / `v3`。如果远端分支在预演后被他人更新，`--force-with-lease` 会拒绝覆盖，需要重新生成快照。
+脚本会先把现有远端 `main` / `v2` / `v3` 的 HEAD 备份到 `workspace/pre-branch-cutover-*/*`，再把当前完整原始仓库推到私有 Gitea `main`，并用组件快照更新 `v2` / `v3`。所有目标更新都使用 `--force-with-lease`；如果远端分支在预演后被他人更新，脚本会拒绝覆盖，需要重新生成快照。
 
 ## npm 发布
 
@@ -301,7 +300,7 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 | 私有聚合仓 v3 | `git ls-remote --heads origin v3` | Gitea 有最新 v3 |
 | GitHub 默认分支 | `gh repo view flyfish-dev/file-viewer --json defaultBranchRef` | `main` |
 | GitHub 开源总仓库 | `https://github.com/flyfish-dev/file-viewer` | README、apps、packages、docs、demo、docs-dist、example、artifacts 均存在 |
-| Gitee 开源总仓库 | `https://gitee.com/flyfish-dev/file-viewer` | 与 GitHub 主仓内容一致 |
+| Gitee 开源总仓库 | `https://gitee.com/flyfish-dev/file-viewer` | 国内镜像目标；如远端配额阻塞，以 GitHub 开源总仓库和 release 为准 |
 | npm | `pnpm release:ecosystem:list` + `npm view` | 所有标准包和兼容包版本一致 |
 | Demo | `https://viewer.flyfish.dev` | 页面可打开，样例可预览 |
 | 文档站 | `https://doc.flyfish.dev` | 页面可打开，导航和样式正常 |

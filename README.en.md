@@ -23,9 +23,9 @@ The viewer does not require a backend conversion service. It is designed for OA 
 
 ## Current Packages
 
-| Stack | Package | Version | Recommended branch | Notes |
+| Stack | Package | Version | Source entry | Notes |
 | --- | --- | --- | --- | --- |
-| Core | `@file-viewer/core` | `2.0.0` | `main` | Framework-neutral format matrix, preview capabilities, events, and operation APIs |
+| Core | `@file-viewer/core` | `2.0.0` | `packages/core` / `file-viewer-core` | Framework-neutral format matrix, preview capabilities, events, and operation APIs. Private Gitea `main` remains the complete original aggregate workspace. |
 | Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Native Vue 3 component package now maintained from the independent `packages/components/vue3` package line |
 | Vue 2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Native Vue 2 package with the same format coverage and API semantics |
 | React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | component package | Native React component backed by the shared core |
@@ -85,7 +85,7 @@ The unscoped `file-viewer3` historical alias remains part of the npm release flo
 
 This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.
 
-Core foundation package: `@file-viewer/core`. Core source is public: https://github.com/flyfish-dev/file-viewer-core and https://gitee.com/flyfish-dev/file-viewer-core. The open-source main repository provides runnable main demo source, core, standard component packages, compatibility aliases, documentation source, build artifacts, examples, and release tarballs; the private Gitea aggregate remains available for unified automation, integration history, sponsorship, and priority support.
+Core foundation package: `@file-viewer/core`. Core source is public: https://github.com/flyfish-dev/file-viewer-core and https://gitee.com/flyfish-dev/file-viewer-core. The open-source aggregate repository provides runnable main demo source, core, standard component packages, compatibility aliases, documentation source, build artifacts, examples, and release tarballs; private Gitea `main` is the complete original aggregate workspace for unified automation, integration history, sponsorship, and priority support, and is not the same as the GitHub open-source aggregate.
 
 | Framework | Standard npm package | Entrypoints | GitHub | Gitee | Historical aliases |
 | --- | --- | --- | --- | --- | --- |

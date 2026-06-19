@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "organization": "flyfish-dev",
-  "sourceBranch": "v3",
+  "sourceBranch": "main",
   "corePackage": {
     "packageName": "@file-viewer/core",
     "visibility": "public-source",

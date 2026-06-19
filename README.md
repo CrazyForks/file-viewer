@@ -24,9 +24,9 @@
 
 ## 当前发布版本
 
-| 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
+| 技术栈 | npm 包 | 最新版本 | 源码入口 | 说明 |
 | --- | --- | --- | --- | --- |
-| Core | `@file-viewer/core` | `2.0.0` | `main` | 框架无关的格式矩阵、预览能力、事件和操作 API |
+| Core | `@file-viewer/core` | `2.0.0` | `packages/core` / `file-viewer-core` | 框架无关的格式矩阵、预览能力、事件和操作 API；私有 `main` 仍是完整原始聚合仓 |
 | Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Vue3 原生组件包，代码已迁移到 `packages/components/vue3` 独立包线 |
 | Vue2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Vue2 原生组件包，格式能力与 Vue3 保持一致 |
 | React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | 标准组件包 | React 原生组件，复用共享 core native engine |
@@ -74,7 +74,7 @@ GitHub Release 会同步提供完整下载项:
 
 下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。
 
-核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。开源总仓库提供可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例文件和 release tarball；私有 Gitea 完整聚合仓用于统一自动化、内部集成历史、打赏支持和优先技术支持。
+核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。开源总仓库提供可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例文件和 release tarball；私有 Gitea `main` 是完整原始聚合仓，用于统一自动化、内部集成历史、打赏支持和优先技术支持，不等同于 GitHub 开源总仓库。
 
 | 框架 | 标准 npm 包 | 入口格式 | GitHub | Gitee | 兼容历史包 |
 | --- | --- | --- | --- | --- | --- |
@@ -325,7 +325,7 @@ Vue3 和 Vue2 发包时分别在对应分支执行同一套发布链路:
 | --- | --- | --- |
 | Vue3 | `v3` | `@flyfish-group/file-viewer3` |
 | Vue2.7 | `v2` | `@flyfish-group/file-viewer` |
-| Core | `v3` | `@file-viewer/core` |
+| Core | `packages/core` / `file-viewer-core` | `@file-viewer/core` |
 | React | 当前仓库子工程 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` |
 | 纯 JS | 当前仓库子工程 | `@file-viewer/web` / `@flyfish-group/file-viewer-web` |
 | 其他组件包 | 当前仓库子工程 | `@file-viewer/vue2.7` / `@file-viewer/vue2.6` / `@file-viewer/react-legacy` / `@file-viewer/jquery` / `@file-viewer/svelte` |

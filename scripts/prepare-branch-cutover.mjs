@@ -85,18 +85,6 @@ const sourceCommit = run('git', ['rev-parse', '--short', 'HEAD'], { capture: tru
 
 const cutoverTargets = [
   {
-    branch: 'main',
-    role: 'core',
-    sourceDir: join(exportRoot, wrappers.corePackage.repository),
-    packageName: wrappers.corePackage.packageName,
-    repository: wrappers.corePackage.repository,
-    publicRepositories: {
-      github: wrappers.corePackage.github,
-      gitee: wrappers.corePackage.gitee
-    },
-    compatibilityPackages: []
-  },
-  {
     branch: 'v2',
     role: 'vue2.7-component',
     sourceDir: join(exportRoot, vue27.repository),
@@ -200,7 +188,6 @@ if (!verifyOnly) {
   await removePath(outputRoot)
   await mkdir(exportRoot, { recursive: true })
   run('node', ['scripts/sync-wrapper-readmes.mjs'])
-  run('node', ['scripts/sync-core-repo.mjs', '--out-dir', exportRoot])
   run('node', ['scripts/sync-wrapper-repos.mjs', '--out-dir', exportRoot, '--id=vue2.7'])
   run('node', ['scripts/sync-wrapper-repos.mjs', '--out-dir', exportRoot, '--id=vue3'])
   for (const target of cutoverTargets) {
@@ -213,6 +200,13 @@ if (!verifyOnly) {
     sourceBranch,
     sourceCommit,
     aggregateRemote: branchRoles.sourceRemote.url,
+    mainBranch: {
+      branch: 'main',
+      role: 'private-aggregate-workspace',
+      packageName: rootPackage.name,
+      sourceCommit,
+      note: 'Private Gitea main remains the complete original aggregate workspace and is not generated as a core-only snapshot.'
+    },
     targets: cutoverTargets.map(target => ({
       branch: target.branch,
       role: target.role,
