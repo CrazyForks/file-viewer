@@ -84,6 +84,7 @@
     "release:ecosystem:publish:preflight": "node scripts/release-ecosystem-packages.mjs --publish --preflight",
     "release:ecosystem:publish:dry-run": "pnpm release:ecosystem:build && pnpm verify:ecosystem-versions && node scripts/release-ecosystem-packages.mjs --publish --dry-run",
     "release:ecosystem:publish": "pnpm release:ecosystem:publish:preflight && pnpm release:ecosystem:build && pnpm verify:ecosystem-versions && node scripts/release-ecosystem-packages.mjs --publish",
+    "release:channels:preflight": "node scripts/preflight-release-channels.mjs",
     "release:public": "node scripts/sync-public-main.mjs",
     "core:export": "node scripts/sync-core-repo.mjs",
     "components:readme": "node scripts/sync-wrapper-readmes.mjs",

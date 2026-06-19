@@ -149,6 +149,20 @@ pnpm branch:cutover:apply -- --push
 
 脚本会先把现有远端 `main` / `v2` / `v3` 的 HEAD 备份到 `workspace/pre-branch-cutover-*/*`，再把当前完整原始仓库推到私有 Gitea `main`，并用组件快照更新 `v2` / `v3`。所有目标更新都使用 `--force-with-lease`；如果远端分支在预演后被他人更新，脚本会拒绝覆盖，需要重新生成快照。
 
+## 全渠道发布前置检查
+
+正式发布 npm、Gitee 组件分仓、开源总仓和 release 前，先跑聚合 preflight:
+
+```bash
+pnpm release:channels:preflight
+```
+
+这一步不会构建或发布，只验证分支角色、生态 checklist、README 覆盖、npm 发布元数据、开源总仓安全边界、npm 登录态和 Gitee API token。当前机器缺少交互式 npm 登录或 Gitee token 时会快速失败，先补凭据再继续上线。只做本地结构检查时可以跳过外部凭据:
+
+```bash
+pnpm release:channels:preflight -- --skip-external
+```
+
 ## npm 发布
 
 所有标准包和历史兼容包使用统一生态发布脚本:
@@ -310,6 +324,7 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 | GitHub 默认分支 | `gh repo view flyfish-dev/file-viewer --json defaultBranchRef` | `main` |
 | GitHub 开源总仓库 | `https://github.com/flyfish-dev/file-viewer` | README、apps、packages、docs、demo、docs-dist、example、artifacts 均存在 |
 | Gitee 开源总仓库 | `https://gitee.com/flyfish-dev/file-viewer` | 国内镜像目标；如远端配额阻塞，以 GitHub 开源总仓库和 release 为准 |
+| 发布前门禁 | `pnpm release:channels:preflight` | 本地结构、npm 登录态、Gitee token、公开仓边界全部通过 |
 | npm | `pnpm release:ecosystem:list` + `npm view` | 所有标准包和兼容包版本一致 |
 | Demo | `https://viewer.flyfish.dev` | 页面可打开，样例可预览 |
 | 文档站 | `https://doc.flyfish.dev` | 页面可打开，导航和样式正常 |
