@@ -8,7 +8,7 @@
 </p>
 
 <div class="doc-link-row">
-  <a href="https://doc.flyfish.dev" target="_blank" rel="noreferrer">官方文档</a>
+  <a href="https://doc.flyfish-viewer.app" target="_blank" rel="noreferrer">官方文档</a>
   <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
   <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 开源总仓库</a>
   <a href="https://gitee.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">Gitee 开源总仓库</a>

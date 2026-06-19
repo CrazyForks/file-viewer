@@ -71,7 +71,7 @@ const wrapperReadmeConfigs = [
       'getDocumentTextChunks()',
       'file-viewer-copy-assets',
       '按需异步',
-      'https://doc.flyfish.dev/',
+      'https://doc.flyfish-viewer.app/',
       'https://viewer.flyfish.dev/',
       'Apache-2.0'
     ]
@@ -96,7 +96,7 @@ const wrapperReadmeConfigs = [
       'getDocumentTextChunks()',
       'file-viewer-copy-assets',
       'lazy-loaded',
-      'https://doc.flyfish.dev/',
+      'https://doc.flyfish-viewer.app/',
       'https://viewer.flyfish.dev/',
       'Apache-2.0'
     ]

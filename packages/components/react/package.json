@@ -24,7 +24,7 @@
     "url": "git+https://github.com/flyfish-dev/file-viewer-react.git",
     "directory": "packages/components/react"
   },
-  "homepage": "https://doc.flyfish.dev/",
+  "homepage": "https://doc.flyfish-viewer.app/",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer-react/issues"
   },

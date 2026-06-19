@@ -366,9 +366,12 @@ async function writePublicRootPackage(repoDir) {
     private: true,
     type: 'module',
     packageManager: packageJson.packageManager,
-    description: 'Flyfish File Viewer open source demo, core, standard component packages, compatibility aliases, and documentation.',
+    description: 'Flyfish File Viewer open source official site, demo, core, standard component packages, compatibility aliases, and documentation.',
     scripts: {
       dev: 'pnpm --filter @flyfish-group/file-viewer-demo dev',
+      'site:dev': 'pnpm --filter @flyfish-group/file-viewer-site dev',
+      'site:build': 'pnpm --filter @flyfish-group/file-viewer-site build',
+      'site:preview': 'pnpm --filter @flyfish-group/file-viewer-site preview',
       build: 'pnpm build:components && pnpm build:demo',
       'build:demo': 'pnpm --filter @flyfish-group/file-viewer-demo build',
       'build:component-demo': 'pnpm --filter @flyfish-group/file-viewer-component-demo build',

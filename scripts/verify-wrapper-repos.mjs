@@ -444,7 +444,7 @@ async function verifyCoreReadmePair(dir, label) {
     assertIncludes(readme, corePackage.packageName, readmeLabel)
     assertIncludes(readme, corePackage.github, readmeLabel)
     assertIncludes(readme, corePackage.gitee, readmeLabel)
-    assertIncludes(readme, 'https://doc.flyfish.dev/', readmeLabel)
+    assertIncludes(readme, 'https://doc.flyfish-viewer.app/', readmeLabel)
     assertIncludes(readme, 'https://viewer.flyfish.dev/', readmeLabel)
     assertIncludes(readme, 'createViewer', readmeLabel)
     assertIncludes(readme, 'headless', readmeLabel)

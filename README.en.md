@@ -13,7 +13,8 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - npm for Vue 2.7: [@flyfish-group/file-viewer](https://www.npmjs.com/package/@flyfish-group/file-viewer)
 - npm for React: [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react)
 - npm for vanilla JavaScript: [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)
-- Official documentation: [doc.flyfish.dev](https://doc.flyfish.dev)
+- Official website: [file-viewer.app](https://file-viewer.app)
+- Official documentation: [doc.flyfish-viewer.app](https://doc.flyfish-viewer.app) (primary; `doc.flyfish.dev` remains available as a secondary domain)
 - Online demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - Document comparison demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
 - Release downloads: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
@@ -98,7 +99,7 @@ Core foundation package: `@file-viewer/core`. Core source is public: https://git
 | jQuery | `@file-viewer/jquery` | ESM, type declarations | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | none |
 | Svelte | `@file-viewer/svelte` | Svelte component, ESM, type declarations | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | none |
 
-The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.flyfish.dev/guide/formats
+The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.flyfish-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
 ![Flyfish Viewer demo](docs/_images/demo-main.png)

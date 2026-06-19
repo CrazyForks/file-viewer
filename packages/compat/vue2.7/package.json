@@ -25,7 +25,7 @@
     "url": "git+https://github.com/flyfish-dev/file-viewer.git",
     "directory": "packages/compat/vue2.7"
   },
-  "homepage": "https://doc.flyfish.dev/",
+  "homepage": "https://doc.flyfish-viewer.app/",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },

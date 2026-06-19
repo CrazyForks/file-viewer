@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
-  "description": "Flyfish File Viewer monorepo: core, standard component packages, compatibility aliases, demo, and documentation",
+  "description": "Flyfish File Viewer monorepo: official site, core, standard component packages, compatibility aliases, demo, and documentation",
   "keywords": [
     "file-viewer",
     "vue3",
@@ -18,7 +18,7 @@
     "type": "git",
     "url": "git+https://github.com/flyfish-dev/file-viewer.git"
   },
-  "homepage": "https://github.com/flyfish-dev/file-viewer",
+  "homepage": "https://file-viewer.app",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer/issues"
   },
@@ -43,6 +43,10 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "docs:deploy:cloudflare": "pnpm docs:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-docs CLOUDFLARE_PAGES_OUTPUT_DIR=docs/.vitepress/dist CLOUDFLARE_PAGES_BRANCH=v3 node scripts/deploy-cloudflare-pages.mjs",
+    "site:dev": "pnpm --filter @flyfish-group/file-viewer-site dev",
+    "site:build": "pnpm --filter @flyfish-group/file-viewer-site build",
+    "site:preview": "pnpm --filter @flyfish-group/file-viewer-site preview",
+    "site:deploy:cloudflare": "pnpm site:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-site CLOUDFLARE_PAGES_OUTPUT_DIR=apps/official-site/dist CLOUDFLARE_PAGES_BRANCH=main node scripts/deploy-cloudflare-pages.mjs",
     "dev:components": "pnpm --filter @flyfish-group/file-viewer-component-demo dev",
     "build:component-demo": "pnpm --filter @flyfish-group/file-viewer-component-demo build && pnpm verify:component-demo-output",
     "verify:demo-output": "node scripts/verify-demo-output.mjs",

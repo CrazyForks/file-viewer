@@ -23,7 +23,7 @@
     "url": "git+https://github.com/flyfish-dev/file-viewer-core.git",
     "directory": "packages/core"
   },
-  "homepage": "https://doc.flyfish.dev/",
+  "homepage": "https://doc.flyfish-viewer.app/",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -243,6 +243,22 @@ pnpm verify:npm-registry-release
 
 ## Cloudflare Pages 上线
 
+官方网站域名是 `file-viewer.app`:
+
+```bash
+cd /Users/wangyu/IdeaProjects/file-viewer3
+pnpm site:deploy:cloudflare
+```
+
+Cloudflare Pages 项目名为 `flyfish-file-viewer-site`。自定义域名已添加到 Pages 后，还需要在当前域名 DNS 托管处配置:
+
+| 域名 | 记录建议 | 指向 |
+| --- | --- | --- |
+| `file-viewer.app` | CNAME flatten / ALIAS / ANAME | `flyfish-file-viewer-site.pages.dev` |
+| `doc.flyfish-viewer.app` | CNAME | `flyfish-file-viewer-docs.pages.dev` |
+
+如果域名 DNS 后续迁移到 Cloudflare，同样可以在 Cloudflare DNS 中使用 CNAME flatten 完成根域名指向。
+
 线上 Demo 域名是 `viewer.flyfish.dev`:
 
 ```bash
@@ -250,21 +266,22 @@ cd /Users/wangyu/IdeaProjects/file-viewer3
 pnpm deploy:cloudflare
 ```
 
-文档站域名是 `doc.flyfish.dev`:
+文档站域名是 `doc.flyfish-viewer.app`:
 
 ```bash
 pnpm docs:deploy:cloudflare
 ```
 
-注意: 私有 Gitea `main` 是源码发布基线；Cloudflare Pages 项目的自定义域名当前绑定生产分支 `v3`，因此 `docs:deploy:cloudflare` 会把 `docs/.vitepress/dist` 发布到 Pages 的 `v3` 分支，确保 `doc.flyfish.dev` 直接更新。
+注意: 私有 Gitea `main` 是源码发布基线；Cloudflare Pages 项目的自定义域名当前绑定生产分支 `v3`，因此 `docs:deploy:cloudflare` 会把 `docs/.vitepress/dist` 发布到 Pages 的 `v3` 分支，确保 `doc.flyfish-viewer.app` 直接更新。
 
 部署完成后至少打开以下地址冒烟:
 
 - `https://viewer.flyfish.dev/?smoke=<本次标识>`
 - `https://viewer.flyfish.dev/?url=%2Fexample%2Fpdf.pdf&smoke=<本次标识>`
 - `https://viewer.flyfish.dev/compare.html?smoke=<本次标识>`
-- `https://doc.flyfish.dev/?smoke=<本次标识>`
-- `https://doc.flyfish.dev/guide/?smoke=<本次标识>`
+- `https://file-viewer.app/?smoke=<本次标识>`
+- `https://doc.flyfish-viewer.app/?smoke=<本次标识>`
+- `https://doc.flyfish-viewer.app/guide/?smoke=<本次标识>`
 
 ## 同步开源总仓库
 
@@ -385,8 +402,9 @@ git push --mirror https://github.com/flyfish-dev/file-viewer.git
 | 状态报告 | `artifacts/release-status.json` / `artifacts/release-status.schema.json` | 机器可读记录私有 main、开源总仓、组件分仓、npm、Gitee、剩余缺口和 gap 分类摘要，并提供 JSON Schema |
 | 快速审计 | `pnpm audit:ecosystem-status:fast` | 列出当前缺口和下一步命令 |
 | npm | `pnpm verify:npm-registry-release` | 14 个标准包和兼容包均可从 npm 拉回并通过包体校验 |
+| 官方网站 | `https://file-viewer.app` | 门户页面可打开，CTA、文档、Demo、GitHub、小铺和商业支持入口正确 |
 | Demo | `https://viewer.flyfish.dev` | 页面可打开，样例可预览 |
-| 文档站 | `https://doc.flyfish.dev` | 页面可打开，导航和样式正常 |
+| 文档站 | `https://doc.flyfish-viewer.app` | 页面可打开，导航和样式正常 |
 | Release | `https://github.com/flyfish-dev/file-viewer/releases` | 当前版本 tarball 和 manifest 已上传 |
 
 ## 敏感内容应急处理

@@ -156,8 +156,10 @@ titleTemplate: false
 <span>Official Resources</span>
 <h2>官网用于验证，组件用于私有化接入</h2>
 <p>
-官方文档是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，
+官方文档是 <a href="https://doc.flyfish-viewer.app">doc.flyfish-viewer.app</a>，
+备用文档域名是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，
 在线预览是 <a href="https://viewer.flyfish.dev">viewer.flyfish.dev</a>，
+官网门户是 <a href="https://file-viewer.app">file-viewer.app</a>，
 开源总仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>，
 Gitee 镜像是 <a href="https://gitee.com/flyfish-dev/file-viewer">gitee.com/flyfish-dev/file-viewer</a>。
 React 和纯 JS 组件默认在业务页面内原生挂载预览器，不会把官网 Demo 地址作为内置依赖。

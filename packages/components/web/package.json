@@ -24,7 +24,7 @@
     "url": "git+https://github.com/flyfish-dev/file-viewer-web.git",
     "directory": "packages/components/web"
   },
-  "homepage": "https://doc.flyfish.dev/",
+  "homepage": "https://doc.flyfish-viewer.app/",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer-web/issues"
   },

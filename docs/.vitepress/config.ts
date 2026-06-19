@@ -20,8 +20,10 @@ export default defineConfig({
       {
         text: '资源',
         items: [
-          { text: '官方文档', link: 'https://doc.flyfish.dev' },
+          { text: '官方文档', link: 'https://doc.flyfish-viewer.app' },
+          { text: '官网门户', link: 'https://file-viewer.app' },
           { text: '在线 Demo', link: 'https://viewer.flyfish.dev' },
+          { text: '备用文档域名', link: 'https://doc.flyfish.dev' },
           { text: 'npm(Vue3)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
           { text: 'npm(Vue2)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer' },
           { text: 'npm(React)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-react' },

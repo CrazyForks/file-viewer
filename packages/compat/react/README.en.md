@@ -36,4 +36,4 @@ export function Preview() {
 
 `options` cover theme, watermarking, search, unified zoom, download, print, HTML export, beforeOperation guards, lifecycle hooks, and format-specific settings. Lifecycle, operation availability, search state, and document location updates are emitted through `onViewerEvent`.
 
-New projects should prefer the standard package name `@file-viewer/react`. Official documentation: https://doc.flyfish.dev/
+New projects should prefer the standard package name `@file-viewer/react`. Official documentation: https://doc.flyfish-viewer.app/

@@ -11,7 +11,7 @@
     }
   },
   "requiredLinks": [
-    "https://doc.flyfish.dev/",
+    "https://doc.flyfish-viewer.app/",
     "https://viewer.flyfish.dev/"
   ],
   "requiredTerms": [

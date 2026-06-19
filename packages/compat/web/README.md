@@ -61,4 +61,4 @@ npx file-viewer-copy-assets ./public/file-viewer
 
 `options` 会透传给共享预览底座，可配置主题、下载/打印/导出 HTML 操作栏、文字或图片水印、搜索高亮、AI 友好文本切片、统一缩放，以及压缩包预览的 Worker、IndexedDB 缓存和体积上限。生命周期、操作能力变化、搜索状态和当前位置会通过 `onEvent` 回传给宿主，适合记录加载耗时、审计下载/打印尝试、搜索命中、页码/行号、AI 切片和溯源状态。
 
-新项目建议优先使用标准包名 `@file-viewer/web`。官方文档: https://doc.flyfish.dev/
+新项目建议优先使用标准包名 `@file-viewer/web`。官方文档: https://doc.flyfish-viewer.app/

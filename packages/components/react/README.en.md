@@ -28,7 +28,7 @@ The historical package `@flyfish-group/file-viewer-react` remains supported for 
 
 ## Capabilities
 
-`@file-viewer/react` shares the same native preview capability set with the pure web, Vue 3, Vue 2, jQuery, and Svelte standard component packages, including PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets. See the complete format matrix and option reference at https://doc.flyfish.dev/guide/formats
+`@file-viewer/react` shares the same native preview capability set with the pure web, Vue 3, Vue 2, jQuery, and Svelte standard component packages, including PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets. See the complete format matrix and option reference at https://doc.flyfish-viewer.app/guide/formats
 
 <!-- FILE_VIEWER_GENERATED:START -->
 ## Ecosystem Matrix
@@ -146,7 +146,7 @@ Every ecosystem package uses the same `ViewerMountOptions` and `FileViewerOption
 - Format parsing, search, zoom, print, export, watermark, lifecycle, and beforeOperation semantics all come from the same core.
 - Releases should pass type checks, component API verification, README generation checks, format-matrix verification, standalone repository export, and browser smoke tests.
 
-See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish.dev/
+See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish-viewer.app/
 
 Online demo: https://viewer.flyfish.dev/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching component repository.
 <!-- FILE_VIEWER_GENERATED:END -->

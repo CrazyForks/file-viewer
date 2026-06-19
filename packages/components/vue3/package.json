@@ -25,7 +25,7 @@
     "url": "git+https://github.com/flyfish-dev/file-viewer-vue3.git",
     "directory": "packages/components/vue3"
   },
-  "homepage": "https://doc.flyfish.dev/",
+  "homepage": "https://doc.flyfish-viewer.app/",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer-vue3/issues"
   },

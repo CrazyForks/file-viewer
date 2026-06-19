@@ -58,4 +58,4 @@ npx file-viewer-copy-assets ./public/file-viewer
 
 `options` are passed to the shared core and cover theme, toolbar operations, watermarking, search, AI-friendly text chunks, unified zoom, archive workers, IndexedDB cache, and size limits. Lifecycle, operation availability, search state, and document location updates are emitted through `onEvent`.
 
-New projects should prefer the standard package name `@file-viewer/web`. Official documentation: https://doc.flyfish.dev/
+New projects should prefer the standard package name `@file-viewer/web`. Official documentation: https://doc.flyfish-viewer.app/
