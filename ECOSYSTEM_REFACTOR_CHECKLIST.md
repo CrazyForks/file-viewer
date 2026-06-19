@@ -254,6 +254,7 @@
 - [x] `pnpm verify:npm-registry-release` 已接入 npm 发布后校验，会从 registry 拉回 14 个生态包并复用包体规则校验
 - [x] `release-manifest.json` 已声明 `metadataAssets`，显式索引 `release-manifest.json`、`release-status.json` 和 `release-status.schema.json`
 - [x] `pnpm release:status:write` 已接入机器可读状态报告，开源总仓 `artifacts/release-status.json` 会记录各渠道当前状态、缺口、`gapSummary` 和 `gapDetails`
+- [x] `release-status.json` 已声明 `sourceBaseline`，明确私有 Gitea `main` 是完整原始聚合仓发布基线，本地 checkout 分支名只作为执行环境记录
 - [x] `pnpm verify:release-status-schema` 已接入状态报告 schema 校验，开源总仓 `artifacts/release-status.schema.json` 会随 Release 分发
 - [ ] `pnpm release:channels:preflight`（需要 npm 登录态和 Gitee API token 均已就绪）
 - [x] `pnpm audit:ecosystem-status`（只读审计 GitHub / Gitee / npm / Release 当前状态，`--strict` 可用于最终发布阻断）

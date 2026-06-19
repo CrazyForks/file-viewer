@@ -203,7 +203,7 @@ pnpm release:public
 pnpm verify:public-main
 ```
 
-校验会反查 `artifacts/release-manifest.json`、`artifacts/release-status.json`、`artifacts/release-status.schema.json`、所有应公开 tarball、README / README.en.md、组件 GitHub / Gitee 索引和顶层目录边界，避免漏掉源码、重复 tarball 或发布过期产物。`release-manifest.json` 会通过 `metadataAssets` 索引 manifest、status 和 schema 三份元数据；`release-status.schema.json` 是状态报告的公开 JSON Schema，可用于 CI 或下载端判断哪些缺口是本地可修项、哪些是 npm / Gitee / GitHub 等外部发布阻塞。
+校验会反查 `artifacts/release-manifest.json`、`artifacts/release-status.json`、`artifacts/release-status.schema.json`、所有应公开 tarball、README / README.en.md、组件 GitHub / Gitee 索引和顶层目录边界，避免漏掉源码、重复 tarball 或发布过期产物。`release-manifest.json` 会通过 `metadataAssets` 索引 manifest、status 和 schema 三份元数据；`release-status.json` 的 `sourceBaseline` 会明确私有 Gitea `main` 才是完整原始聚合仓基线，本地 checkout 分支名只是执行上下文；`release-status.schema.json` 是状态报告的公开 JSON Schema，可用于 CI 或下载端判断哪些缺口是本地可修项、哪些是 npm / Gitee / GitHub 等外部发布阻塞。
 
 ## Docker 镜像发布
 

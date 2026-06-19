@@ -10,6 +10,7 @@
     "version",
     "sourcePolicy",
     "openSourcePolicy",
+    "sourceBaseline",
     "local",
     "sourceRemote",
     "openSourceMain",
@@ -39,6 +40,30 @@
     "openSourcePolicy": {
       "type": "string",
       "const": "public-open-source-main-repository"
+    },
+    "sourceBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "branch",
+        "policy",
+        "authoritativeCommit",
+        "localBranch",
+        "localCommit",
+        "inSync",
+        "note"
+      ],
+      "properties": {
+        "repository": { "type": "string" },
+        "branch": { "type": "string", "const": "main" },
+        "policy": { "type": "string", "const": "private-complete-original-workspace" },
+        "authoritativeCommit": { "type": "string" },
+        "localBranch": { "type": "string" },
+        "localCommit": { "type": "string" },
+        "inSync": { "type": "boolean" },
+        "note": { "type": "string" }
+      }
     },
     "local": {
       "type": "object",
