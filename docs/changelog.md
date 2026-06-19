@@ -6,10 +6,10 @@
 
 ### `v2.0.0` 架构重构与全生态 2.x 起始版本
 
-- 全线 npm 包、workspace 依赖、Docker 镜像和公开成品包从 `2.0.0` 重新起步，用大版本号明确标识 core / wrapper 架构重构带来的兼容边界变化
-- `@file-viewer/core` 继续保持纯 TypeScript、框架无关的底层能力包；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等 wrapper 只依赖 core，各自提供原生集成体验
-- 清理旧 iframe adapter 和 runtime 包口径，对外文档统一强调 iframe 只是独立参考方案，不再作为核心集成路径
-- 公开成品仓库产物命名切换为 `file-viewer-v2-*`，同时发布 2.x npm tarball、Demo、Wrapper Demo、文档站静态产物和库 dist 包，避免继续暴露旧 `file-viewer-v3-*` 产物线
+- 全线 npm 包、workspace 依赖、Docker 镜像和公开成品包从 `2.0.0` 重新起步，用大版本号明确标识 core / component 架构重构带来的兼容边界变化
+- `@file-viewer/core` 继续保持纯 TypeScript、框架无关的底层能力包；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等标准组件包只依赖 core，各自提供原生集成体验
+- 清理旧独立页面 adapter 和 runtime 包口径，对外文档统一强调原生组件与纯 Web API 是核心集成路径
+- 公开成品仓库产物命名切换为 `file-viewer-v2-*`，同时发布 2.x npm tarball、Demo、Component Demo、文档站静态产物和库 dist 包，避免继续暴露旧 `file-viewer-v3-*` 产物线
 - 文档、README、分发说明、Docker 部署说明和生态验收清单同步刷新到 2.x 版本口径，后续新增能力都在 2.x 线上连续演进
 
 ### 当前主线 统一缩放工具栏
@@ -21,7 +21,7 @@
 ### `v1.0.26` Vue3 npm 入口类型声明修复版本
 
 - 修复 `@flyfish-group/file-viewer3@1.0.25` 在发布前被 Demo 构建覆盖 `dist` 后，npm 包缺少 `dist/src/package/index.d.ts`，导致 TypeScript 项目出现 `TS2307: Cannot find module '@flyfish-group/file-viewer3' or its corresponding type declarations` 的问题
-- Vue3 标准 wrapper 使用包内 `prepublishOnly` 发布前保护，根包只保留 monorepo 编排脚本，阻止 Demo HTML 产物误进入组件库 npm 包
+- Vue3 标准组件包 使用包内 `prepublishOnly` 发布前保护，根包只保留 monorepo 编排脚本，阻止 Demo HTML 产物误进入组件库 npm 包
 - 非 scoped 包 `file-viewer3` 同步发布 `1.0.26`，继续作为 `@flyfish-group/file-viewer3` 的兼容 alias 使用；公开成品仓库只保留一份 scoped v3 tarball，避免重复占用存储
 - 支持格式矩阵补齐到 194 个扩展名、23 条预览链路，新增 RTF/ODT/ODP、MBOX、GeoJSON/KML/GPX/SHP、AVIF/ICO/HEIC/HEIF/JXL、WEBM/M3U8、MIDI、JSONC/JSON5/IPYNB/TOML/Proto/HCL/TeX/Graphviz/HTTP/Ruby/Swift/Kotlin/React 片段，以及字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro、WebArchive 等资产/数据预览入口
 
@@ -35,7 +35,7 @@
 
 ### 当前主线 Demo 富样式公开样例升级
 
-- DOCX 渲染链路下沉到 `@file-viewer/core`，移除 Vue3 本地 Word vendor 入口；所有 wrapper 共享同一套 `docx-preview` 页面渲染、渐进挂载、缩放 provider、打印和 HTML 导出适配器
+- DOCX 渲染链路下沉到 `@file-viewer/core`，移除 Vue3 本地 Word vendor 入口；所有标准组件包 共享同一套 `docx-preview` 页面渲染、渐进挂载、缩放 provider、打印和 HTML 导出适配器
 - DOCX Worker 新增 `options.docx.workerUrl` 与 `options.docx.workerTimeout` 兜底，默认尝试当前部署 base 下的 `vendor/docx/docx.worker.js`，静态资源不可用、CSP/MIME 不兼容或超时后会自动回到同一套 `docx-preview` 原生主线程渲染，避免线上预览永久停留在 loading
 - CAD 渲染器保持在 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS 统一预览；DWG 默认通过独立 Worker 加载 LibreDWG WASM，DWF/DWFx/XPS 使用 native renderer 渲染 W2D/W3D/XPS 图形
 - 构建脚本会复制 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 到 viewer assets 的 `wasm/cad/`
@@ -165,7 +165,7 @@
 
 - Vue3 包 `@flyfish-group/file-viewer3@1.0.9` 和 Vue2 包 `@flyfish-group/file-viewer@1.0.9` 同步发布到 npm `latest`
 - 新增 React 包 `@flyfish-group/file-viewer-react@1.0.9` 和纯 JS 包 `@flyfish-group/file-viewer-web@1.0.9`，复用 Vue3 基线资源
-- 新增原生 wrapper Demo，覆盖 React 组件和纯 JS helper 两种入口，构建后可直接作为私有化静态站点部署
+- 新增原生 组件 Demo，覆盖 React 组件和纯 JS helper 两种入口，构建后可直接作为私有化静态站点部署
 - 增强 PPTX 渲染，补齐组合图形坐标映射、旋转/翻转、主题背景、图片裁剪和 EMF 转 SVG 预览
 - 新增 `.epub` 预览，使用 `epubjs` 按需解析 EPUB 包、目录和滚动阅读，并避开部分浏览器超宽分页白板问题
 - 新增 `.umd` 电子书预览，按 UMD 文件结构解析元数据、章节目录和 zlib 压缩正文
@@ -195,7 +195,7 @@
 - 补齐 OFD、CAD、代码高亮与完整示例文件盒子
 - 示例文件选择器支持分组折叠，默认展开第一个分组，并保持同一时间只展开一个分组
 - 增加 `pnpm obfuscate` 与 `pnpm release:ecosystem:pack`，库产物支持压缩混淆后分发
-- README、文档站和公开成品仓库说明同步补充 npm、GitHub、源码自助开通、授权与贡献说明
+- README、文档站和公开成品仓库说明同步补充 npm、GitHub、私有聚合仓、优先支持、授权与贡献说明
 - npm tarball 只包含 `README.md`、`LICENSE` 和混淆压缩后的 `dist/`
 
 ### 文档站与交付说明完善

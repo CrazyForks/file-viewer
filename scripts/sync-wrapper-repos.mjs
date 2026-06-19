@@ -15,7 +15,12 @@ const readArg = (name, fallback) => {
 
 const outputRoot = resolve(
   sourceRoot,
-  readArg('--out-dir', process.env.FILE_VIEWER_WRAPPER_REPO_DIR || '.release/wrapper-repos')
+  readArg(
+    '--out-dir',
+    process.env.FILE_VIEWER_COMPONENT_REPO_DIR ||
+      process.env.FILE_VIEWER_WRAPPER_REPO_DIR ||
+      '.release/component-repos'
+  )
 )
 const selectedPackages = new Set(
   args
@@ -50,7 +55,7 @@ const workspacePackageDirs = [
   sourceRoot,
   join(sourceRoot, 'packages', 'core'),
   ...(await collectPackageDirs(join(sourceRoot, 'packages', 'compat'))),
-  ...(await collectPackageDirs(join(sourceRoot, 'packages', 'wrappers'))),
+  ...(await collectPackageDirs(join(sourceRoot, 'packages', 'components'))),
   ...(await collectPackageDirs(join(sourceRoot, 'apps')))
 ]
 
@@ -189,7 +194,7 @@ const ensureWebViewerAssets = async (targetDir, wrapper) => {
     return
   }
 
-  const sourceViewerDir = join(sourceRoot, 'packages/wrappers/web/viewer')
+  const sourceViewerDir = join(sourceRoot, 'packages/components/web/viewer')
   const fallbackViewerDir = join(sourceRoot, 'packages/compat/web/viewer')
   const viewerSource = existsSync(join(sourceViewerDir, 'index.html'))
     ? sourceViewerDir
@@ -266,7 +271,7 @@ const wrappers = wrapperManifest.wrappers.filter(wrapper => {
 })
 
 if (!wrappers.length) {
-  throw new Error('No wrappers selected for export.')
+  throw new Error('No component packages selected for export.')
 }
 
 await mkdir(outputRoot, { recursive: true })
@@ -288,4 +293,4 @@ for (const wrapper of wrappers) {
   console.log(`Prepared ${wrapper.packageName} -> ${targetDir}`)
 }
 
-console.log(`Prepared ${wrappers.length} wrapper repo${wrappers.length === 1 ? '' : 's'} in ${outputRoot}`)
+console.log(`Prepared ${wrappers.length} component package repo${wrappers.length === 1 ? '' : 's'} in ${outputRoot}`)

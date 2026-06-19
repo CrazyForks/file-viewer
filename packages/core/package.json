@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://git.flyfish.dev/flyfish-group/file-viewer.git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer-core.git",
     "directory": "packages/core"
   },
   "homepage": "https://doc.flyfish.dev/",

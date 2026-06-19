@@ -1,6 +1,6 @@
 import { nextTick, ref } from 'vue'
 import { describe, expect, it } from 'vitest'
-import { useLoading } from '../packages/wrappers/vue3/src/package/components/FileViewer/hooks/useLoading'
+import { useLoading } from '../packages/components/vue3/src/package/components/FileViewer/hooks/useLoading'
 
 describe('Vue FileViewer loading hook', () => {
   it('syncs extension theme changes through the core loading controller', async () => {

@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3@2.0.0` / `@flyfish-group/file-viewer3@2.0.0`，Vue2.7 使用 `@file-viewer/vue2.7@2.0.0` / `@flyfish-group/file-viewer@2.0.0`，React 使用 `@file-viewer/react@2.0.0` / `@flyfish-group/file-viewer-react@2.0.0`，纯 JS 使用 `@file-viewer/web@2.0.0` / `@flyfish-group/file-viewer-web@2.0.0`。各 wrapper 都使用原生挂载方式，保持一致的 options、事件和类型语义。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3@2.0.0` / `@flyfish-group/file-viewer3@2.0.0`，Vue2.7 使用 `@file-viewer/vue2.7@2.0.0` / `@flyfish-group/file-viewer@2.0.0`，React 使用 `@file-viewer/react@2.0.0` / `@flyfish-group/file-viewer-react@2.0.0`，纯 JS 使用 `@file-viewer/web@2.0.0` / `@flyfish-group/file-viewer-web@2.0.0`。各标准组件包 都使用原生挂载方式，保持一致的 options、事件和类型语义。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -18,7 +18,7 @@ Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入
 - 如果你拿到的是 `Blob` 或 `ArrayBuffer`，推荐先包装成带扩展名的 `File` 再传入。
 - 组件会默认撑满父容器，所以父容器必须有明确高度。
 - 同源 PDF URL 默认交给 PDF.js 渐进读取，首屏不再等待外层预览器整包 Blob 下载；文件服务支持 Range 时会自动分片加载，跨域 URL 默认仍走兼容下载链路。
-- React、纯 JS、jQuery 和 Svelte wrapper 也使用同一套 `url` / `file` / `name` 输入语义。
+- React、纯 JS、jQuery 和 Svelte 标准组件包 也使用同一套 `url` / `file` / `name` 输入语义。
 
 ## 输入方式怎么选
 
@@ -28,7 +28,7 @@ Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入
 | `file: File` | 强烈推荐 | 本地上传、鉴权下载后预览、宿主系统已拿到文件对象 | 最稳妥的二进制接入方式 |
 | `Blob` / `ArrayBuffer` | 先包装再用 | SDK 返回二进制、接口已返回文件流 | 建议先包装成 `new File([...], 'demo.pdf')`，把文件名和扩展名补全 |
 
-React、纯 JS、jQuery 和 Svelte wrapper 允许直接传 `Blob` 或 `ArrayBuffer`，但仍然需要同时提供 `name`，例如 `contract.pdf`。共享 core 会按文件名扩展名选择渲染链路。
+React、纯 JS、jQuery 和 Svelte 标准组件包 允许直接传 `Blob` 或 `ArrayBuffer`，但仍然需要同时提供 `name`，例如 `contract.pdf`。共享 core 会按文件名扩展名选择渲染链路。
 
 ## 行为规则
 
@@ -134,7 +134,7 @@ file.value = new File([buffer], 'report.xlsx')
 
 ## 预览器 options
 
-`options` 用于配置通用交互、搜索定位和重型格式的运行参数。Vue2 / Vue3 组件、React 组件、纯 JS helper、jQuery 和 Svelte wrapper 都使用同一套语义。
+`options` 用于配置通用交互、搜索定位和重型格式的运行参数。Vue2 / Vue3 组件、React 组件、纯 JS helper、jQuery 和 Svelte 标准组件包都使用同一套语义。
 
 ```vue
 <script setup lang="ts">

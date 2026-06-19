@@ -3,5 +3,5 @@
   "framework": "vite",
   "installCommand": "npx --yes pnpm@11.0.9 install --no-frozen-lockfile",
   "buildCommand": "npx --yes pnpm@11.0.9 build-only",
-  "outputDirectory": "dist"
+  "outputDirectory": "apps/viewer-demo/dist"
 }

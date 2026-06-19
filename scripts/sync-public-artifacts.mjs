@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { cp, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
-import { basename, join, resolve } from 'node:path'
+import { basename, join, relative, resolve, sep } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
 import { assertPublicArtifactOnlyRepo } from './lib/public-artifacts.mjs'
@@ -41,9 +41,12 @@ const vue2Tarball = resolve(
 )
 const releaseDir = join(sourceRoot, '.release', `file-viewer-v2-${version}`)
 const demoStagingDir = join(releaseDir, 'demo')
-const wrapperDemoStagingDir = join(releaseDir, 'wrapper-demo')
+const wrapperDemoStagingDir = join(releaseDir, 'component-demo')
 const ecosystemPackDir = join(releaseDir, 'ecosystem')
 const legacyIntegrationDemoArtifactSegment = ['adapter', 'demo'].join('-')
+const viewerDemoDistDir = join(sourceRoot, 'apps', 'viewer-demo', 'dist')
+const viewerDemoExampleDir = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example')
+const vue3LibraryDistDir = join(sourceRoot, 'packages', 'components', 'vue3', 'dist')
 
 function run(command, commandArgs, options = {}) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -107,6 +110,200 @@ async function copyCleanDir(from, to) {
   })
 }
 
+async function copySourceDir(from, to, options = {}) {
+  const excludedRelativePaths = new Set(options.exclude || [])
+  await removePath(to)
+  await cp(from, to, {
+    recursive: true,
+    force: true,
+    filter: source => {
+      const name = basename(source)
+      const relativePath = relative(from, source).split(sep).join('/')
+      if (
+        name === '.DS_Store' ||
+        name === '.git' ||
+        name === '.vercel' ||
+        name === 'node_modules' ||
+        name === 'dist' ||
+        name === 'tsconfig.tsbuildinfo'
+      ) {
+        return false
+      }
+      return !excludedRelativePaths.has(relativePath)
+    }
+  })
+}
+
+async function walkFiles(dir, callback) {
+  if (!existsSync(dir)) {
+    return
+  }
+  const entries = await readdir(dir, { withFileTypes: true })
+  for (const entry of entries) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      if (entry.name === 'node_modules' || entry.name === 'dist') {
+        continue
+      }
+      await walkFiles(path, callback)
+      continue
+    }
+    await callback(path, entry.name)
+  }
+}
+
+function normalizePublicWorkspaceRange(dependencyName, range) {
+  if (!range?.startsWith?.('workspace:')) {
+    return range
+  }
+  return range
+}
+
+function normalizePublicDependencyBlock(block) {
+  if (!block) {
+    return
+  }
+  for (const [dependencyName, range] of Object.entries(block)) {
+    block[dependencyName] = normalizePublicWorkspaceRange(dependencyName, range)
+  }
+}
+
+function normalizePublicPackageScripts(packageJson, relativePackageDir) {
+  if (relativePackageDir === 'apps/viewer-demo') {
+    packageJson.scripts = {
+      dev: 'vite --host 127.0.0.1',
+      build: 'vue-tsc --noEmit -p tsconfig.json && vite build',
+      preview: 'vite preview --host 127.0.0.1',
+      'type-check': 'vue-tsc --noEmit -p tsconfig.json'
+    }
+  }
+  if (relativePackageDir === 'apps/component-demo') {
+    packageJson.scripts = {
+      'prepare-viewer': 'node scripts/sync-viewer-assets.mjs',
+      dev: 'pnpm prepare-viewer && vite --host 127.0.0.1',
+      build: 'pnpm prepare-viewer && tsc -b tsconfig.json && vite build',
+      preview: 'vite preview --host 127.0.0.1'
+    }
+  }
+}
+
+async function rewritePublicPackageJsons(repoDir) {
+  await walkFiles(repoDir, async (path, filename) => {
+    if (filename !== 'package.json') {
+      return
+    }
+    const packageJson = await readJson(path)
+    const relativePackageDir = relative(repoDir, resolve(path, '..')).split(sep).join('/')
+    normalizePublicDependencyBlock(packageJson.dependencies)
+    normalizePublicDependencyBlock(packageJson.devDependencies)
+    normalizePublicDependencyBlock(packageJson.peerDependencies)
+    normalizePublicDependencyBlock(packageJson.optionalDependencies)
+    normalizePublicPackageScripts(packageJson, relativePackageDir)
+    await writeFile(path, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
+  })
+}
+
+async function rewritePublicTsConfigs(repoDir) {
+  await walkFiles(join(repoDir, 'packages'), async (path, filename) => {
+    if (filename !== 'tsconfig.json') {
+      return
+    }
+    const tsconfig = await readJson(path)
+    if (Array.isArray(tsconfig.references)) {
+      const references = tsconfig.references.filter(reference => reference.path !== '../../core')
+      if (references.length) {
+        tsconfig.references = references
+      } else {
+        delete tsconfig.references
+      }
+    }
+    await writeFile(path, `${JSON.stringify(tsconfig, null, 2)}\n`, 'utf8')
+  })
+}
+
+async function writePublicWorkspace(repoDir) {
+  await writeFile(
+    join(repoDir, 'pnpm-workspace.yaml'),
+    [
+      'packages:',
+      '  - packages/core',
+      '  - packages/components/*',
+      '  - packages/compat/*',
+      '  - apps/*',
+      '',
+      'peerDependencyRules:',
+      '  allowedVersions:',
+      "    '@types/react': '>=17 <20'",
+      "    react: '>=17 <20'",
+      "    react-dom: '>=17 <20'",
+      '',
+      'allowBuilds:',
+      "  '@parcel/watcher': true",
+      '  canvas: true',
+      '  core-js: true',
+      '  es5-ext: true',
+      '  esbuild: true',
+      ''
+    ].join('\n'),
+    'utf8'
+  )
+}
+
+async function writePublicRootPackage(repoDir) {
+  const publicPackage = {
+    name: '@flyfish-group/file-viewer-open-source',
+    version,
+    private: true,
+    type: 'module',
+    packageManager: packageJson.packageManager,
+    description: 'Flyfish File Viewer open source demo, core, standard component packages, compatibility aliases, and documentation.',
+    scripts: {
+      dev: 'pnpm --filter @flyfish-group/file-viewer-demo dev',
+      build: 'pnpm build:components && pnpm build:demo',
+      'build:demo': 'pnpm --filter @flyfish-group/file-viewer-demo build',
+      'build:component-demo': 'pnpm --filter @flyfish-group/file-viewer-component-demo build',
+      'build:core': 'pnpm --filter @file-viewer/core build',
+      'build:components': 'pnpm build:core && pnpm --filter @file-viewer/web build && pnpm --filter @file-viewer/react build && pnpm --filter @file-viewer/react-legacy build && pnpm --filter @file-viewer/vue3 build && pnpm --filter @file-viewer/vue2.7 build && pnpm --filter @file-viewer/vue2.6 build && pnpm --filter @file-viewer/jquery build && pnpm --filter @file-viewer/svelte build',
+      'type-check': 'pnpm --filter @flyfish-group/file-viewer-demo type-check && pnpm type-check:core && pnpm type-check:components',
+      'type-check:core': 'pnpm --filter @file-viewer/core type-check',
+      'type-check:components': 'pnpm --filter @file-viewer/web type-check && pnpm --filter @file-viewer/react type-check && pnpm --filter @file-viewer/react-legacy type-check && pnpm --filter @file-viewer/vue3 type-check && pnpm --filter @file-viewer/vue2.7 type-check && pnpm --filter @file-viewer/vue2.6 type-check && pnpm --filter @file-viewer/jquery type-check && pnpm --filter @file-viewer/svelte type-check',
+      'docs:dev': 'vitepress dev docs',
+      'docs:build': 'vitepress build docs',
+      'docs:preview': 'vitepress preview docs'
+    },
+    devDependencies: {
+      '@types/node': packageJson.devDependencies['@types/node'],
+      prettier: packageJson.devDependencies.prettier,
+      typescript: packageJson.devDependencies.typescript,
+      vitepress: packageJson.devDependencies.vitepress
+    },
+    license: packageJson.license
+  }
+  await writeFile(join(repoDir, 'package.json'), `${JSON.stringify(publicPackage, null, 2)}\n`, 'utf8')
+}
+
+async function copyPublicSourceTree(repoDir) {
+  await copySourceDir(join(sourceRoot, 'apps'), join(repoDir, 'apps'), {
+    exclude: [
+      'component-demo/public/file-viewer',
+      'component-demo/public/vendor',
+      'component-demo/public/wasm'
+    ]
+  })
+  await mkdir(join(repoDir, 'packages'), { recursive: true })
+  await copySourceDir(join(sourceRoot, 'packages', 'core'), join(repoDir, 'packages', 'core'))
+  await copySourceDir(join(sourceRoot, 'packages', 'components'), join(repoDir, 'packages', 'components'))
+  await copySourceDir(join(sourceRoot, 'packages', 'compat'), join(repoDir, 'packages', 'compat'))
+  await copySourceDir(join(sourceRoot, 'docs'), join(repoDir, 'docs'), {
+    exclude: [
+      '.vitepress/dist'
+    ]
+  })
+  await writePublicWorkspace(repoDir)
+  await writePublicRootPackage(repoDir)
+  await rewritePublicPackageJsons(repoDir)
+}
+
 async function removeOldArtifacts(artifactsDir) {
   await mkdir(artifactsDir, { recursive: true })
   if (keepOldArtifacts) {
@@ -118,7 +315,7 @@ async function removeOldArtifacts(artifactsDir) {
   )
   for (const entry of entries) {
     if (
-      /^file-viewer-v[23]-.*-(demo|wrapper-demo|lib-dist|docs)\.tar\.gz$/.test(entry) ||
+      /^file-viewer-v[23]-.*-(demo|component-demo|lib-dist|docs)\.tar\.gz$/.test(entry) ||
       entry.includes(`-${legacyIntegrationDemoArtifactSegment}.tar.gz`)
     ) {
       await removePath(join(artifactsDir, entry))
@@ -166,8 +363,8 @@ async function readEcosystemPackManifest() {
 
 async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
-    ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'demo', 'wrapper-demo', 'docs', 'example', 'artifacts']
-    : ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'dist', 'artifacts']
+    ? ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
+    : ['README.md', 'README.en.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
   const packages = ecosystemPackManifest.packages || []
   const manifest = {
@@ -216,10 +413,12 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
           tarball: basename(vue2Tarball)
     },
     publicRepo: repoDir,
-    artifactOnly: true,
+    artifactOnly: false,
+    coreSourceIncluded: true,
+    sourcePolicy: 'public-open-source-demo-and-artifacts',
     layout: keepExpandedAssets ? 'expanded' : 'slim',
     allowedRoots,
-    archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'wrapper-demo', 'docs', 'example'],
+    archiveOnlyRoots: keepExpandedAssets ? [] : ['demo', 'component-demo', 'docs-dist', 'example'],
     slimMode: slimArtifacts
   }
   await writeFile(
@@ -243,20 +442,20 @@ if (!skipBuild) {
   await mkdir(ecosystemPackDir, { recursive: true })
 
   run('pnpm', ['run', 'build:viewer-assets'])
-  await copyCleanDir(join(sourceRoot, 'dist'), demoStagingDir)
+  await copyCleanDir(viewerDemoDistDir, demoStagingDir)
 
-  run('pnpm', ['run', 'build:wrapper-demo'])
-  await copyCleanDir(join(sourceRoot, 'apps', 'wrapper-demo', 'dist'), wrapperDemoStagingDir)
+  run('pnpm', ['run', 'build:component-demo'])
+  await copyCleanDir(join(sourceRoot, 'apps', 'component-demo', 'dist'), wrapperDemoStagingDir)
 
   run('pnpm', ['--filter', '@file-viewer/core', 'build'])
-  run('pnpm', ['run', 'build:wrapper-packages'])
+  run('pnpm', ['run', 'build:component-packages'])
   run('pnpm', ['run', 'obfuscate'])
   run('pnpm', ['run', 'docs:build'])
   run('node', ['scripts/release-ecosystem-packages.mjs', '--pack', '--pack-dir', ecosystemPackDir, '--clean'])
 } else {
   await assertDirectory(demoStagingDir, 'Demo staging directory')
-  await assertDirectory(wrapperDemoStagingDir, 'Wrapper demo staging directory')
-  await assertDirectory(join(sourceRoot, 'dist'), 'Library dist directory')
+  await assertDirectory(wrapperDemoStagingDir, 'Component demo staging directory')
+  await assertDirectory(vue3LibraryDistDir, 'Vue3 library dist directory')
   await assertDirectory(join(sourceRoot, 'docs', '.vitepress', 'dist'), 'Docs dist directory')
   await assertDirectory(ecosystemPackDir, 'Ecosystem pack directory')
 }
@@ -266,22 +465,28 @@ await removeOldArtifacts(artifactsDir)
 
 await removePath(join(publicRepoDir, 'demo'))
 await removePath(join(publicRepoDir, legacyIntegrationDemoArtifactSegment))
-await removePath(join(publicRepoDir, 'wrapper-demo'))
+await removePath(join(publicRepoDir, 'component-demo'))
 await removePath(join(publicRepoDir, 'docs'))
+await removePath(join(publicRepoDir, 'docs-dist'))
 await removePath(join(publicRepoDir, 'example'))
+await removePath(join(publicRepoDir, 'apps'))
+await removePath(join(publicRepoDir, 'packages'))
+await removePath(join(publicRepoDir, 'ecosystem'))
+await removePath(join(publicRepoDir, 'pnpm-workspace.yaml'))
+
+await copyPublicSourceTree(publicRepoDir)
 
 if (keepExpandedAssets) {
   await copyCleanDir(demoStagingDir, join(publicRepoDir, 'demo'))
-  await copyCleanDir(wrapperDemoStagingDir, join(publicRepoDir, 'wrapper-demo'))
-  await copyCleanDir(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(publicRepoDir, 'docs'))
-  await copyCleanDir(join(sourceRoot, 'public', 'example'), join(publicRepoDir, 'example'))
+  await copyCleanDir(wrapperDemoStagingDir, join(publicRepoDir, 'component-demo'))
+  await copyCleanDir(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(publicRepoDir, 'docs-dist'))
+  await copyCleanDir(viewerDemoExampleDir, join(publicRepoDir, 'example'))
 }
 
-await copyCleanDir(join(sourceRoot, 'dist'), join(publicRepoDir, 'dist'))
+await copyCleanDir(vue3LibraryDistDir, join(publicRepoDir, 'dist'))
 await cp(join(sourceRoot, 'README.md'), join(publicRepoDir, 'README.md'), { force: true })
 await cp(join(sourceRoot, 'README.en.md'), join(publicRepoDir, 'README.en.md'), { force: true })
 await cp(join(sourceRoot, 'LICENSE'), join(publicRepoDir, 'LICENSE'), { force: true })
-await cp(join(sourceRoot, 'package.json'), join(publicRepoDir, 'package.json'), { force: true })
 
 const ecosystemPackManifest = await readEcosystemPackManifest()
 for (const packageRecord of ecosystemPackManifest.packages || []) {
@@ -298,7 +503,7 @@ if (!skipVue2Tarball) {
 }
 
 await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-demo.tar.gz`))
-await createTarball(wrapperDemoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-wrapper-demo.tar.gz`))
+await createTarball(wrapperDemoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-component-demo.tar.gz`))
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v2-${version}-lib-dist.tar.gz`))
 await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v2-${version}-docs.tar.gz`))
 await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)

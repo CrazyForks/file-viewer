@@ -18,7 +18,7 @@
 | jQuery / Svelte | 老后台、SvelteKit 或轻量页面 | 复用同一套 core native engine 和 options | [组件用法](/guide/usage) |
 
 <div class="doc-callout">
-  <strong>推荐经验:</strong> core 只负责底层预览能力和 API；Vue、React、纯 JS、jQuery、Svelte wrapper 负责各自生态的原生接入体验。所有标准 wrapper 都使用同一套 options、事件、搜索、缩放、打印和导出语义。
+  <strong>推荐经验:</strong> core 只负责底层预览能力和 API；Vue、React、纯 JS、jQuery、Svelte 标准组件包负责各自生态的原生接入体验。所有标准组件包 都使用同一套 options、事件、搜索、缩放、打印和导出语义。
 </div>
 
 ## 运行环境
@@ -133,4 +133,4 @@ npm install @file-viewer/web@2.0.0
 - 想了解 Demo 中每个示例文件的作用: 看 [Demo 说明](/guide/demo)
 - 想明确 `file`、`url`、水印、工具栏、压缩包缓存和导出的参数行为: 看 [组件用法](/guide/usage)
 - 准备做本地验证和打包: 看 [本地开发与打包](/guide/development)
-- 想下载成品或开通源码: 看 [发布与成品分发](/guide/distribution)
+- 想下载公开源码、成品或了解优先支持: 看 [发布与成品分发](/guide/distribution)

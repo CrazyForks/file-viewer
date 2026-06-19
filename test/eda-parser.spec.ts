@@ -4,7 +4,7 @@ import { parseEdaFile } from '../packages/core/src'
 
 describe('EDA parser', () => {
   it('parses generated OLB CFB fixtures into symbol entities and properties', async () => {
-    const data = await readFile('public/example/sample.olb')
+    const data = await readFile('apps/viewer-demo/public/example/sample.olb')
     const parsed = await parseEdaFile(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength), 'olb')
 
     expect(parsed.parser).toBe('cfb')
@@ -25,7 +25,7 @@ describe('EDA parser', () => {
   })
 
   it('parses generated DRA CFB fixtures into drawing, footprint and padstack hints', async () => {
-    const data = await readFile('public/example/sample.dra')
+    const data = await readFile('apps/viewer-demo/public/example/sample.dra')
     const parsed = await parseEdaFile(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength), 'dra')
 
     expect(parsed.parser).toBe('cfb')

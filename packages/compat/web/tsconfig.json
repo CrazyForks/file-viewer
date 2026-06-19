@@ -13,11 +13,12 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@file-viewer/web": ["../../wrappers/web/src/index.ts"]
+      "@file-viewer/web": ["../../components/web/src/index.ts"],
+      "@file-viewer/web/node": ["../../components/web/src/node.ts"]
     }
   },
   "include": ["src/**/*.ts"],
   "references": [
-    { "path": "../../wrappers/web" }
+    { "path": "../../components/web" }
   ]
 }

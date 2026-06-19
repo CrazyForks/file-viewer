@@ -175,7 +175,7 @@ function hasForbiddenCoreOptionImport(source, typeName) {
 }
 
 function hasForbiddenLocalOptionField(source, fieldName) {
-  const fieldDeclaration = new RegExp(`(^|\\n)\\s*${escapeRegExp(fieldName)}\\??\\s*:`, 'm')
+  const fieldDeclaration = new RegExp(`(^|\\n)\\s*${escapeRegExp(fieldName)}\\??\\s*:\\s*[^,\\n]+;`, 'm')
   return fieldDeclaration.test(source)
 }
 
@@ -203,23 +203,23 @@ for (const wrapper of wrapperManifest.wrappers) {
   ]) {
     assert(
       !controllerContent.includes(forbiddenToken),
-      `${controllerPath} must keep browser mount/source orchestration inside the wrapper instead of importing ${forbiddenToken} from core`
+      `${controllerPath} must keep browser mount/source orchestration inside the component package instead of importing ${forbiddenToken} from core`
     )
   }
   assert(
     !content.includes('from \'@file-viewer/web\'') && !content.includes('from "@file-viewer/web"'),
-    `${path} must not consume another wrapper package`
+    `${path} must not consume another component package`
   )
   assert(
     !controllerContent.includes('from \'@file-viewer/web\'') && !controllerContent.includes('from "@file-viewer/web"'),
-    `${controllerPath} must not consume another wrapper package`
+    `${controllerPath} must not consume another component package`
   )
   assert(
     content.includes('from \'./controller\'') ||
       content.includes('from "./controller"') ||
       content.includes('from \'./controller.js\'') ||
       content.includes('from "./controller.js"'),
-    `${path} must consume its local wrapper controller instead of core mount helpers`
+    `${path} must consume its local component controller instead of core mount helpers`
   )
 
   if (wrapper.packageName !== '@file-viewer/vue3') {
@@ -234,7 +234,7 @@ for (const wrapper of wrapperManifest.wrappers) {
       hasExportedType(content, typeName, './controller') ||
         hasExportedType(content, typeName, './controller.js') ||
         hasTypeToken(content, typeName),
-      `${path} must re-export ${typeName} from the local wrapper controller`
+      `${path} must re-export ${typeName} from the local component controller`
     )
   }
 
@@ -263,4 +263,4 @@ for (const wrapper of wrapperManifest.wrappers) {
   checked += 1
 }
 
-console.log(`Verified ${checked} standard wrapper option surfaces against the shared core contracts.`)
+console.log(`Verified ${checked} standard component package option surfaces against the shared core contracts.`)

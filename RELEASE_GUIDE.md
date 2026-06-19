@@ -24,6 +24,14 @@
 - `example/`
 - `artifacts/`
 
+源码仓库内部目录职责:
+
+- `apps/viewer-demo/`: 正式在线 Demo 和 `/compare.html` 文档比对页
+- `apps/component-demo/`: 各生态 wrapper 的原生接入示例
+- `packages/core/`: framework-neutral TypeScript core
+- `packages/components/`: 标准组件包源码
+- `packages/compat/`: 历史 npm 包名兼容 alias
+
 公开 GitHub 仓库严禁出现这些源码工作区内容:
 
 - `src/`
@@ -96,9 +104,9 @@ pnpm run docs:build
 
 说明:
 
-- `build-only` 生成 Demo 静态站点。
+- `build-only` 生成 `apps/viewer-demo/dist/` 正式 Demo 静态站点。
 - `build:vue3` 生成 Vue3 标准 wrapper 包产物；完整生态包统一使用 `release:ecosystem:*`。
-- `obfuscate` 只处理 `dist/` 下的 JS/MJS 产物，公开仓库必须使用这一步之后的 `dist/`。
+- `obfuscate` 只处理 `packages/components/vue3/dist/` 下的 JS/MJS 产物，公开仓库必须使用这一步之后同步出的 `dist/`。
 - `docs:build` 生成 `docs/.vitepress/dist`，这是文档站的静态产物。
 
 ## npm 发布

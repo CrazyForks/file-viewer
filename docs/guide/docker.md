@@ -121,7 +121,7 @@ pnpm docker:publish
 
 ## 镜像内容
 
-Docker 镜像只包含构建后的静态产物，不包含源码目录:
+Docker 镜像只包含构建后的静态产物，不携带源码工作区:
 
 - `/usr/share/nginx/html/index.html`: 主预览入口
 - `/usr/share/nginx/html/compare.html`: 文档比对入口

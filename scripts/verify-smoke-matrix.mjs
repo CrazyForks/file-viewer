@@ -6,7 +6,7 @@ import { readCoreRendererDefinitions } from './lib/format-support.mjs'
 const sourceRoot = process.cwd()
 const matrixPath = join(sourceRoot, 'ecosystem', 'smoke-matrix.json')
 const wrapperManifestPath = join(sourceRoot, 'ecosystem', 'wrappers.json')
-const examplesRoot = join(sourceRoot, 'public', 'example')
+const examplesRoot = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example')
 
 function fail(message) {
   throw new Error(`[smoke-matrix] ${message}`)
@@ -33,7 +33,7 @@ function assertUnique(items, label, selectId = item => item.id) {
 function assertSampleExists(sample, label) {
   const samplePath = join(examplesRoot, sample)
   if (!existsSync(samplePath)) {
-    fail(`${label} sample does not exist: public/example/${sample}`)
+    fail(`${label} sample does not exist: apps/viewer-demo/public/example/${sample}`)
   }
 }
 

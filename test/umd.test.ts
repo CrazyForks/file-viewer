@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { parseUmdBook } from './helpers/umdParser'
 
 function loadFixture(name: string): ArrayBuffer {
-  const buffer = readFileSync(join(__dirname, '..', 'public', 'example', name))
+  const buffer = readFileSync(join(__dirname, '..', 'apps', 'viewer-demo', 'public', 'example', name))
   return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
 }
 

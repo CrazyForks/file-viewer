@@ -253,5 +253,5 @@ for (const entry of entries) {
 }
 
 console.log(
-  `[production-entrypoints] Verified ${entries.length} packages, ${checkedEntrypointCount} declared entrypoint files, ${importedEntrypointCount} importable ESM production entrypoints, ${checkedGlobalBundleCount} browser global bundles, and ${checkedWrapperEntryFormatCount} wrapper entry format claims.`
+  `[production-entrypoints] Verified ${entries.length} packages, ${checkedEntrypointCount} declared entrypoint files, ${importedEntrypointCount} importable ESM production entrypoints, ${checkedGlobalBundleCount} browser global bundles, and ${checkedWrapperEntryFormatCount} component entry format claims.`
 )

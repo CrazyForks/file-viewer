@@ -58,8 +58,8 @@
       "kind": "baseline-component",
       "packageName": "@flyfish-group/file-viewer3",
       "entryFiles": [
-        "packages/wrappers/vue3/src/package/components/FileViewer/FileViewer.vue",
-        "packages/wrappers/vue3/src/package/index.ts",
+        "packages/components/vue3/src/package/components/FileViewer/FileViewer.vue",
+        "packages/components/vue3/src/package/index.ts",
         "src/main.ts"
       ],
       "smokeScripts": ["verify:demo-browser-smoke"],
@@ -84,30 +84,30 @@
       "kind": "native-viewer",
       "packageName": "@file-viewer/web",
       "entryFiles": [
-        "packages/wrappers/web/src/index.ts",
-        "packages/wrappers/web/src/global.ts",
-        "packages/wrappers/web/package.json"
+        "packages/components/web/src/index.ts",
+        "packages/components/web/src/global.ts",
+        "packages/components/web/package.json"
       ],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
       "id": "react-native-wrapper",
-      "label": "React native wrapper",
+      "label": "React native component package",
       "kind": "native-wrapper",
       "wrapperId": "react",
       "packageName": "@flyfish-group/file-viewer-react",
-      "entryFiles": ["packages/compat/react/src/index.tsx", "apps/wrapper-demo/src/main.tsx"],
+      "entryFiles": ["packages/compat/react/src/index.tsx", "apps/component-demo/src/main.tsx"],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
     {
       "id": "pure-js-native-wrapper",
-      "label": "Pure JS native wrapper",
+      "label": "Pure JS native component package",
       "kind": "native-wrapper",
       "wrapperId": "web",
       "packageName": "@flyfish-group/file-viewer-web",
-      "entryFiles": ["packages/compat/web/src/index.ts", "apps/wrapper-demo/manual-js.html"],
+      "entryFiles": ["packages/compat/web/src/index.ts", "apps/component-demo/manual-js.html"],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "lifecycle-events", "wrapper-contract"]
     },
@@ -117,7 +117,7 @@
       "kind": "script-tag",
       "wrapperId": "web",
       "packageName": "@file-viewer/web",
-      "entryFiles": ["packages/wrappers/web/src/global.ts", "apps/wrapper-demo/manual-iife.html"],
+      "entryFiles": ["packages/components/web/src/global.ts", "apps/component-demo/manual-iife.html"],
       "smokeScripts": ["verify:wrapper-browser-smoke"],
       "preserves": ["source-loading", "options", "wrapper-contract"]
     }

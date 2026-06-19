@@ -52,12 +52,12 @@ assert(branchRoles.currentSourceBranch, 'branch-roles.json must declare currentS
 assert(branchRoles.sourceRemote?.name === 'origin', 'Private source remote must be named origin')
 assert(branchRoles.sourceRemote?.visibility === 'private', 'Source remote must be marked private')
 assert(
-  branchRoles.sourceRemote?.url === wrapperManifest.corePackage.sourceRepository,
-  'branch-roles source remote must match wrappers.json corePackage.sourceRepository'
+  branchRoles.sourceRemote?.url === wrapperManifest.corePackage.aggregateRepository,
+  'branch-roles source remote must match wrappers.json corePackage.aggregateRepository'
 )
 assert(
-  wrapperManifest.corePackage.visibility === 'private-source',
-  'wrappers.json corePackage.visibility must be private-source'
+  wrapperManifest.corePackage.visibility === 'public-source',
+  'wrappers.json corePackage.visibility must be public-source'
 )
 
 const originUrl = runGit(['remote', 'get-url', branchRoles.sourceRemote.name])
@@ -77,8 +77,8 @@ const mainRole = rolesByName.get('main')
 assert(mainRole.role === 'core', 'main branch role must be core')
 assert(mainRole.packageName === wrapperManifest.corePackage.packageName, 'main branch package must be @file-viewer/core')
 assert(
-  mainRole.sourcePolicy === 'private-core-source-only',
-  'main branch source policy must keep core source private'
+  mainRole.sourcePolicy === 'core-source-exported-publicly',
+  'main branch source policy must export core source publicly'
 )
 
 const wrappersById = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.id, wrapper]))
@@ -95,8 +95,8 @@ for (const branchName of ['v2', 'v3']) {
   assert(wrapper, `${branchName} wrapperId ${role.wrapperId} must exist in wrappers.json`)
   assert(role.packageName === wrapper.packageName, `${branchName} packageName must match wrappers.json`)
   assert(
-    role.sourcePolicy === 'wrapper-source-exported-publicly',
-    `${branchName} source policy must export wrapper source publicly`
+    role.sourcePolicy === 'component-source-exported-publicly',
+    `${branchName} source policy must export component source publicly`
   )
   for (const compatibilityPackage of role.compatibilityPackages || []) {
     assert(
@@ -145,7 +145,10 @@ assert(
   'targetBranchModel.v3 must match the declared v3 branch role'
 )
 assert(branchRoles.publicOrganization === wrapperManifest.organization, 'Public organization must match wrappers.json')
-assert(branchRoles.publicArtifactRepository?.sourcePolicy === 'artifacts-only', 'Public artifact repository must be artifacts-only')
+assert(
+  branchRoles.publicArtifactRepository?.sourcePolicy === 'public-open-source-demo-and-artifacts',
+  'Public artifact repository must publish open-source demo code and artifacts'
+)
 assertPublicRepository(branchRoles.publicArtifactRepository.github, branchRoles.publicOrganization, 'Public artifact GitHub repository')
 assertPublicRepository(branchRoles.publicArtifactRepository.gitee, branchRoles.publicOrganization, 'Public artifact Gitee repository')
 
@@ -159,4 +162,6 @@ for (const wrapper of wrapperManifest.wrappers) {
   )
 }
 
-console.log(`Verified ${branchRoles.branches.length} branch roles, private origin, and ${wrapperManifest.wrappers.length} public wrapper repositories.`)
+console.log(
+  `Verified ${branchRoles.branches.length} branch roles, aggregate origin, and ${wrapperManifest.wrappers.length} public component repositories.`
+)

@@ -19,6 +19,8 @@ const sharedRequiredLinks = [
   'https://viewer.flyfish.dev/compare.html',
   branchRoles.publicArtifactRepository.github,
   branchRoles.publicArtifactRepository.gitee,
+  wrapperManifest.corePackage.github,
+  wrapperManifest.corePackage.gitee,
   'https://dev.flyfish.group/shop'
 ]
 
@@ -28,7 +30,7 @@ const localeReadmes = [
     path: 'README.md',
     otherReadme: 'README.en.md',
     heading: readmeTemplate.locales.zh.publicEcosystemHeading,
-    privateCoreHint: 'core 源码只在私有 Gitea 仓库维护',
+    coreSourceHint: 'core 源码已公开',
     noAliasLabel: '无',
     rendererCountText: `${supportSummary.rendererCount} 条预览链路`,
     extensionCountText: `${supportSummary.uniqueExtensionCount} 个扩展名`,
@@ -39,7 +41,7 @@ const localeReadmes = [
     path: 'README.en.md',
     otherReadme: 'README.md',
     heading: readmeTemplate.locales.en.publicEcosystemHeading,
-    privateCoreHint: 'Core source is maintained only in the private Gitea repository',
+    coreSourceHint: 'Core source is public',
     noAliasLabel: 'none',
     rendererCountText: `${supportSummary.rendererCount} preview pipelines`,
     extensionCountText: `${supportSummary.uniqueExtensionCount} file extensions`,
@@ -102,7 +104,7 @@ for (const config of localeReadmes) {
   assertGeneratedBlock(content, label)
   assertIncludes(content, config.heading, label)
   assertIncludes(content, wrapperManifest.corePackage.packageName, label)
-  assertIncludes(content, config.privateCoreHint, label)
+  assertIncludes(content, config.coreSourceHint, label)
   assertIncludes(content, config.rendererCountText, label)
   assertIncludes(content, config.extensionCountText, label)
 
@@ -119,5 +121,5 @@ for (const config of localeReadmes) {
 }
 
 console.log(
-  `Verified root ecosystem READMEs for ${wrapperManifest.wrappers.length} wrappers, ${supportSummary.rendererCount} renderer pipelines, and ${supportSummary.uniqueExtensionCount} extensions.`
+  `Verified root ecosystem READMEs for ${wrapperManifest.wrappers.length} component packages, ${supportSummary.rendererCount} renderer pipelines, and ${supportSummary.uniqueExtensionCount} extensions.`
 )

@@ -5,7 +5,16 @@ import { fileURLToPath } from 'node:url'
 
 const require = createRequire(import.meta.url)
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)))
-const packageJson = require.resolve('@flyfish-dev/cad-viewer/package.json')
+const resolveCadViewerPackageJson = () => {
+  try {
+    return require.resolve('@flyfish-dev/cad-viewer/package.json')
+  } catch {
+    const corePackageJson = join(projectRoot, 'packages/core/package.json')
+    const coreRequire = createRequire(corePackageJson)
+    return coreRequire.resolve('@flyfish-dev/cad-viewer/package.json')
+  }
+}
+const packageJson = resolveCadViewerPackageJson()
 const packageRoot = dirname(packageJson)
 const distRoot = join(packageRoot, 'dist')
 const wasmDir = join(distRoot, 'wasm')
@@ -26,8 +35,8 @@ const resolveFromCwd = value => {
   }
   return isAbsolute(value) ? value : resolve(process.cwd(), value)
 }
-const publicRoot = resolveFromCwd(readArgValue('--public-root')) ?? join(projectRoot, 'public')
-const distBaseRoot = resolveFromCwd(readArgValue('--dist-root')) ?? join(projectRoot, 'dist')
+const publicRoot = resolveFromCwd(readArgValue('--public-root')) ?? join(projectRoot, 'apps/viewer-demo/public')
+const distBaseRoot = resolveFromCwd(readArgValue('--dist-root')) ?? join(projectRoot, 'apps/viewer-demo/dist')
 const targetRoots = [
   !args.has('--dist-only') && join(publicRoot, 'wasm', 'cad'),
   (args.has('--dist') || args.has('--dist-only')) && join(distBaseRoot, 'wasm', 'cad')

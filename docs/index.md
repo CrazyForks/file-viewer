@@ -47,7 +47,7 @@ titleTemplate: false
 <h2>产品化的文件预览，而不是格式清单</h2>
 <p>
 文档解析、阅读布局、示例验收和分发交付被放在同一条链路里维护。接入前可以先看真实 Demo，
-接入后也能通过 npm、私有化静态站和各生态 wrapper 继续迭代。
+接入后也能通过 npm、私有化静态站和各生态标准组件包 继续迭代。
 </p>
 </div>
 
@@ -146,7 +146,7 @@ titleTemplate: false
 </a>
 <a class="doc-path-card" href="/guide/distribution">
 <strong>成品与二开</strong>
-<span>下载公开产物，或前往官方渠道开通源码和商业二开。</span>
+<span>下载公开源码与产物，或通过官方渠道支持项目并获得优先协助。</span>
 </a>
 </div>
 </section>

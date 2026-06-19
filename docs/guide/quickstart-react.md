@@ -90,7 +90,7 @@ export function PrivatePreview() {
 仓库内置了 React + 纯 JS + Vue3 + jQuery + Svelte 多入口演示:
 
 ```bash
-pnpm dev:wrappers
+pnpm dev:components
 ```
 
 打开页面后，React 面板应当能显示同一份本地 DOCX 示例，并能触发生命周期事件、搜索、缩放和操作按钮状态变化。

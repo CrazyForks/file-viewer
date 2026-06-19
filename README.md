@@ -4,7 +4,7 @@
 
 把 Word、Excel、PPT、PDF、Typst、压缩包、邮件、音视频、地理数据、字体、设计资产和结构化数据稳稳带进浏览器里。
 
-`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；Vue3、Vue2、React、纯 Web、jQuery、Svelte 等 wrapper 只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
+`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；Vue3、Vue2、React、纯 Web、jQuery、Svelte 等 标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
@@ -20,17 +20,17 @@
 - Docker 镜像发布目标: `flyfishdev/file-viewer:2.0.0`
 - 公开成品仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 公开成品仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
-- 源码自助开通: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- 私有聚合仓与优先支持: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
 ## 当前发布版本
 
 | 技术栈 | npm 包 | 最新版本 | 推荐分支 | 说明 |
 | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | `2.0.0` | `main` | 框架无关的格式矩阵、预览能力、事件和操作 API |
-| Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Vue3 原生组件包，代码已迁移到 `packages/wrappers/vue3` 独立包线 |
+| Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Vue3 原生组件包，代码已迁移到 `packages/components/vue3` 独立包线 |
 | Vue2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Vue2 原生组件包，格式能力与 Vue3 保持一致 |
-| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | wrapper 子工程 | React 原生组件，复用共享 core native engine |
-| 纯 JS | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | wrapper 子工程 | `mountViewer(container, options)` 原生 DOM 挂载和资源工具 |
+| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | 标准组件包 | React 原生组件，复用共享 core native engine |
+| 纯 JS | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | 标准组件包 | `mountViewer(container, options)` 原生 DOM 挂载和资源工具 |
 
 如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用公开成品仓库 `artifacts/` 里的 tarball。离线安装 React 包时请先安装同版本 web 包:
 
@@ -50,18 +50,18 @@ GitHub Release 会同步提供完整下载项:
 | 文件 | 用途 |
 | --- | --- |
 | `file-viewer-v2-*-demo.tar.gz` | 主 Demo 静态站，解压后即可体验主预览和 `/compare.html` 文档比对 |
-| `file-viewer-v2-*-wrapper-demo.tar.gz` | React / 纯 JS 原生 wrapper 演示站 |
+| `file-viewer-v2-*-component-demo.tar.gz` | React / 纯 JS 原生 组件演示站 |
 | `file-viewer-v2-*-lib-dist.tar.gz` | Vue3 组件库构建产物，适合离线检查 dist 内容 |
 | `file-viewer-v2-*-docs.tar.gz` | 文档站静态产物 |
 | `file-viewer-core-*.tgz` | `@file-viewer/core` 纯 TypeScript 底座本地 npm 安装包 |
 | `file-viewer-vue3-*.tgz` | Vue3 标准包名本地 npm 安装包 |
-| `file-viewer-vue2.7-*.tgz` | Vue2.7 标准 wrapper 本地 npm 安装包 |
-| `file-viewer-vue2.6-*.tgz` | Vue2.6 标准 wrapper 本地 npm 安装包 |
-| `file-viewer-react-*.tgz` | React 18/19 标准 wrapper 本地 npm 安装包 |
-| `file-viewer-react-legacy-*.tgz` | React 16.8/17 标准 wrapper 本地 npm 安装包 |
-| `file-viewer-web-*.tgz` | 纯 Web 标准 wrapper，本地安装后可复制 Worker/WASM viewer assets |
-| `file-viewer-jquery-*.tgz` | jQuery 标准 wrapper 本地 npm 安装包 |
-| `file-viewer-svelte-*.tgz` | Svelte 标准 wrapper 本地 npm 安装包 |
+| `file-viewer-vue2.7-*.tgz` | Vue2.7 标准组件包 本地 npm 安装包 |
+| `file-viewer-vue2.6-*.tgz` | Vue2.6 标准组件包 本地 npm 安装包 |
+| `file-viewer-react-*.tgz` | React 18/19 标准组件包 本地 npm 安装包 |
+| `file-viewer-react-legacy-*.tgz` | React 16.8/17 标准组件包 本地 npm 安装包 |
+| `file-viewer-web-*.tgz` | 纯 Web 标准组件包，本地安装后可复制 Worker/WASM viewer assets |
+| `file-viewer-jquery-*.tgz` | jQuery 标准组件包 本地 npm 安装包 |
+| `file-viewer-svelte-*.tgz` | Svelte 标准组件包 本地 npm 安装包 |
 | `flyfish-group-file-viewer3-*.tgz` | Vue3 本地 npm 安装包 |
 | `flyfish-group-file-viewer-*.tgz` | Vue2.7 本地 npm 安装包 |
 | `flyfish-group-file-viewer-web-*.tgz` | 纯 JS 历史兼容包，提供 `mountViewer` 原生挂载和资源复制工具 |
@@ -72,9 +72,9 @@ GitHub Release 会同步提供完整下载项:
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## 标准生态包与公开仓库
 
-下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开成品仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开 wrapper 仓库。
+下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开组件仓库。
 
-核心底座包: `@file-viewer/core`。core 源码只在私有 Gitea 仓库维护；公开 GitHub/Gitee 只发布 wrapper 源码、压缩构建产物、Demo、文档站、示例文件和 tarball。
+核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。公开仓库提供分散包源码、Demo、文档站、构建产物、示例文件和 tarball；私有 Gitea 完整聚合仓用于打赏支持、统一自动化和优先技术支持。
 
 | 框架 | 标准 npm 包 | 入口格式 | GitHub | Gitee | 兼容历史包 |
 | --- | --- | --- | --- | --- | --- |
@@ -103,9 +103,9 @@ GitHub Release 会同步提供完整下载项:
 - **明暗主题有边界。** Demo 外壳、Markdown 和代码预览会适配系统暗色模式；PDF、Word、Excel 等带原始版式的内容保持独立纸张或表格背景，避免全局主题污染文档。
 - **Demo 更适合验收。** 示例文件按文档、表格、图纸、代码、图片等类型分组展示，点击样例即可打开并自动收起选择器。
 - **独立文档比对入口。** 生产 Demo 额外提供 `/compare.html`，左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档搜索、行级定位和 PDF 工具栏隐藏，不污染主预览入口。
-- **各框架体验一致。** core 聚焦底层预览能力，Vue3、Vue2、React、纯 Web、jQuery 和 Svelte wrapper 各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
+- **各框架体验一致。** core 聚焦底层预览能力，Vue3、Vue2、React、纯 Web、jQuery 和 Svelte 标准组件包 各自提供原生接入体验，并共享同一套 options、事件、搜索、缩放、打印和导出语义。
 - **Docker 一键部署。** 提供 nginx 静态镜像、`Dockerfile` 和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`。
-- **适合成品交付。** 公开成品仓库、混淆压缩产物、npm tarball、静态部署产物和各生态 wrapper 都一起维护，便于下载、验收和二次接入。
+- **适合成品交付和二次接入。** 公开仓库同时维护 core、标准组件包、兼容包、Demo、文档源码、混淆压缩产物、npm tarball 和静态部署产物，便于下载、验收和二次接入；私有 Gitea 作为完整聚合仓、自动化发布链路和优先技术支持入口继续提供价值。
 
 ## 支持格式
 
@@ -143,7 +143,7 @@ GitHub Release 会同步提供完整下载项:
 
 ### 1. Vue 3 组件集成
 
-适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。Vue3 wrapper 直接使用共享 core 能力，并承担 Vue 生态内的插件安装、组件 props、ref API 和类型出口。
+适合已经在 Vue 3 项目里开发，希望最短路径完成接入的团队。Vue3 标准组件包 直接使用共享 core 能力，并承担 Vue 生态内的插件安装、组件 props、ref API 和类型出口。
 
 ```bash
 pnpm add @flyfish-group/file-viewer3
@@ -234,22 +234,22 @@ export function Preview() {
 }
 ```
 
-`@file-viewer/react` 支持 React 17 / 18 / 19，内部使用本包本地 controller 调用 `@file-viewer/core` 与 core browser engine，不依赖纯 Web wrapper。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 交给预览器。资源复制命令仍保留，用于 worker/WASM 和示例资源的自托管分发；标准 wrapper 接入不需要额外的静态页面地址。
+`@file-viewer/react` 支持 React 17 / 18 / 19，内部使用本包本地 controller 调用 `@file-viewer/core` 与 core browser engine，不依赖纯 Web 组件实现。鉴权文件仍建议由宿主系统先下载成 `Blob`，再用 `file` + `name` 交给预览器。资源复制命令仍保留，用于 worker/WASM 和示例资源的自托管分发；标准组件包接入不需要额外的静态页面地址。
 
-本仓库内置了一个wrapper 演示应用，覆盖 React 组件、纯 Web helper、jQuery 和 Svelte 入口。调试时直接运行:
+本仓库内置了一个组件演示应用，覆盖 React 组件、纯 Web helper、jQuery 和 Svelte 入口。调试时直接运行:
 
 ```bash
-pnpm dev:wrappers
+pnpm dev:components
 ```
 
 打开本地地址即可验证 React 组件和纯 JS `mountViewer` 的 native 预览效果。验证静态部署产物时运行:
 
 ```bash
-pnpm build:wrapper-demo
-pnpm --filter @flyfish-group/file-viewer-demo preview
+pnpm build:component-demo
+pnpm --filter @flyfish-group/file-viewer-component-demo preview
 ```
 
-确认无误后，`apps/wrapper-demo/dist` 可以作为普通静态目录部署；其中包含主 Demo、文档比对入口和示例文件。
+确认无误后，`apps/component-demo/dist` 可以作为普通静态目录部署；其中只包含 React、Pure Web、Vue3、jQuery、Svelte 和 script 标签接入示例。正式在线预览站和文档比对入口由 `apps/viewer-demo` 承载。
 
 ### 4. Docker 一键部署
 
@@ -296,7 +296,7 @@ const file = new File([blob], 'contract.pdf', { type: blob.type })
 
 ## 本地开发
 
-下面的命令适用于源码开通后的完整项目。公开 GitHub / Gitee 成品仓库不包含源码目录，普通用户建议直接通过 npm、`dist/` 或 `artifacts/` 里的 tarball 使用。
+下面的命令适用于公开仓库和源码开通后的完整项目。GitHub / Gitee 会公开 core、Demo、标准组件包、兼容包和文档站源码；私有 Gitea 提供完整聚合仓、统一发布脚本、内部自动化和优先技术支持。普通用户仍建议优先通过 npm、公开仓库 `dist/` 或 `artifacts/` 里的 tarball 使用。
 
 ```bash
 pnpm install
@@ -306,16 +306,16 @@ pnpm dev
 常用脚本:
 
 - `pnpm build`: 构建示例站点
-- `pnpm build:vue3`: 构建 Vue3 标准 wrapper 包产物
+- `pnpm build:vue3`: 构建 Vue3 标准组件包产物
 - `pnpm docs:dev`: 启动 VitePress 文档站
 - `pnpm docs:build`: 构建文档站
 - `pnpm type-check`: 执行 TypeScript 类型检查
-- `pnpm dev:wrappers`: 启动 React + 纯 JS wrapper Demo
-- `pnpm build:wrapper-demo`: 构建 wrapper Demo
+- `pnpm dev:components`: 启动 React + 纯 JS 组件 Demo
+- `pnpm build:component-demo`: 构建 组件 Demo
 - `pnpm docker:build`: 构建本机架构 Docker 镜像
 - `pnpm docker:publish`: 推送 Docker Hub `linux/amd64` / `linux/arm64` 多架构镜像；可通过 `DOCKER_IMAGE` 替换命名空间
 - `pnpm release:ecosystem:list`: 列出当前完整生态 npm 发布目标
-- `pnpm release:ecosystem:pack`: 构建并打包 core、标准 wrapper 和历史兼容 npm tarball
+- `pnpm release:ecosystem:pack`: 构建并打包 core、标准组件包 和历史兼容 npm tarball
 
 ## 打包发布
 
@@ -328,7 +328,7 @@ Vue3 和 Vue2 发包时分别在对应分支执行同一套发布链路:
 | Core | `v3` | `@file-viewer/core` |
 | React | 当前仓库子工程 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` |
 | 纯 JS | 当前仓库子工程 | `@file-viewer/web` / `@flyfish-group/file-viewer-web` |
-| 其他 wrapper | 当前仓库子工程 | `@file-viewer/vue2.7` / `@file-viewer/vue2.6` / `@file-viewer/react-legacy` / `@file-viewer/jquery` / `@file-viewer/svelte` |
+| 其他组件包 | 当前仓库子工程 | `@file-viewer/vue2.7` / `@file-viewer/vue2.6` / `@file-viewer/react-legacy` / `@file-viewer/jquery` / `@file-viewer/svelte` |
 
 建议在发布前执行下面这组命令:
 
@@ -343,7 +343,8 @@ pnpm release:ecosystem:pack
 
 其中:
 
-- `dist/` 是主 Demo 和根部署产物；执行 `pnpm obfuscate` 后会对其中的 `.js` / `.mjs` 进行压缩混淆
+- `apps/viewer-demo/dist/` 是正式在线 Demo 和文档比对页的部署产物
+- `packages/components/vue3/dist/` 是 Vue3 标准组件包构建产物；执行 `pnpm obfuscate` 后会对其中的 `.js` / `.mjs` 进行压缩混淆
 - `pnpm build` 会生成可独立部署的 Demo 静态站点产物
 - `docs/.vitepress/dist/` 是文档站静态产物
 - `npm pack` 会生成可直接发布或分发的 npm 包 tarball
@@ -357,8 +358,8 @@ pnpm release:ecosystem:pack
 完整生态包发布前执行:
 
 ```bash
-pnpm type-check:wrappers
-pnpm build:wrapper-demo
+pnpm type-check:components
+pnpm build:component-demo
 pnpm release:ecosystem:list
 pnpm release:ecosystem:pack
 pnpm release:ecosystem:publish:dry-run
@@ -374,7 +375,7 @@ npm publish --access public
 
 如果 npm 账号启用了 MFA，请使用交互式终端完成浏览器确认后再等待发布结果。
 
-公开 GitHub / Gitee 成品仓库只提交可直接使用的构建产物、Demo、文档站、示例文件和 npm tarball，不提交当前源码目录。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新完整成品快照的干净历史，而不是把多轮构建产物历史全部带过去。需要源码、二开包或商业自助开通的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水后按页面提示自助开通。
+公开 GitHub / Gitee 仓库提交 core、Demo、标准组件包、兼容包、文档源码，同时保留可直接使用的构建产物、示例文件和 npm tarball。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新完整快照的干净历史。私有 Gitea 仍作为完整聚合仓，保留统一发布脚本、内部集成历史和优先技术支持；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水。
 
 ## 文档导航
 

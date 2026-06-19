@@ -6,8 +6,8 @@ import {
   createFileViewerRenderCompleteState,
   createFileViewerRequestController
 } from '../packages/core/src'
-import { useViewerSourceLoading } from '../packages/wrappers/vue3/src/package/components/FileViewer/hooks/useViewerSourceLoading'
-import type { FileViewerLifecycleContext } from '../packages/wrappers/vue3/src/package/common/type'
+import { useViewerSourceLoading } from '../packages/components/vue3/src/package/components/FileViewer/hooks/useViewerSourceLoading'
+import type { FileViewerLifecycleContext } from '../packages/components/vue3/src/package/common/type'
 
 describe('Vue FileViewer source loading hook', () => {
   it('keeps local file loading state and lifecycle events aligned with the legacy component flow', async () => {

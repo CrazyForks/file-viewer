@@ -13,13 +13,13 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@file-viewer/react": ["../../wrappers/react/src/index.tsx"],
-      "@file-viewer/web": ["../../wrappers/web/src/index.ts"]
+      "@file-viewer/react": ["../../components/react/src/index.tsx"],
+      "@file-viewer/web": ["../../components/web/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "references": [
-    { "path": "../../wrappers/web" },
-    { "path": "../../wrappers/react" }
+    { "path": "../../components/web" },
+    { "path": "../../components/react" }
   ]
 }

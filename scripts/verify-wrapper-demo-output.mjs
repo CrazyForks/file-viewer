@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-const outputDir = resolve(process.env.WRAPPER_DEMO_OUTPUT_DIR || 'apps/wrapper-demo/dist')
+const outputDir = resolve(process.env.WRAPPER_DEMO_OUTPUT_DIR || 'apps/component-demo/dist')
 const requiredFiles = [
   'index.html',
   'jquery.html',
@@ -20,7 +20,7 @@ const requiredFiles = [
 ]
 
 const fail = message => {
-  console.error(`[wrapper-demo-output] ${message}`)
+  console.error(`[component-demo-output] ${message}`)
   process.exit(1)
 }
 
@@ -72,4 +72,4 @@ assertNotHtmlFallback('vendor/docx/docx.worker.js')
 assertNotHtmlFallback('vendor/xlsx/sheet.worker.js')
 assertNotHtmlFallback('wasm/cad/dwg-worker.js')
 
-console.log(`[wrapper-demo-output] Verified wrapper demo output in ${outputDir}`)
+console.log(`[component-demo-output] Verified wrapper demo output in ${outputDir}`)

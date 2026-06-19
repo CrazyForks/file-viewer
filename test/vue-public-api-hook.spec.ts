@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { computed, ref } from 'vue'
-import { useViewerPublicApi } from '../packages/wrappers/vue3/src/package/components/FileViewer/hooks/useViewerPublicApi'
+import { useViewerPublicApi } from '../packages/components/vue3/src/package/components/FileViewer/hooks/useViewerPublicApi'
 import type {
   FileViewerOperationAvailability,
   FileViewerSearchState,
   FileViewerZoomState
-} from '../packages/wrappers/vue3/src/package/common/type'
+} from '../packages/components/vue3/src/package/common/type'
 
 const createAvailability = (): FileViewerOperationAvailability => ({
   download: true,

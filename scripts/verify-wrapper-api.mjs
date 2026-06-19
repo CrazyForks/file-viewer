@@ -196,7 +196,7 @@ async function assertNoWrapperToWrapperImports(wrapper) {
     for (const packageName of forbiddenPackages) {
       assert(
         !importsFromPackage(source, packageName),
-        `${label} must not import another standard wrapper package ${packageName}`
+        `${label} must not import another standard component package ${packageName}`
       )
     }
   }
@@ -204,7 +204,7 @@ async function assertNoWrapperToWrapperImports(wrapper) {
 
 function assertReexportsLocalControllerTypes(source, label) {
   const reExportPattern = /export\s+type\s*{[\s\S]*}\s+from\s+['"]\.\/controller(?:\.js)?['"]/
-  assert(reExportPattern.test(source), `${label} must re-export its local wrapper controller types`)
+  assert(reExportPattern.test(source), `${label} must re-export its local component controller types`)
   assertTokens(source, sharedOptionTypeExports, label)
 }
 
@@ -361,4 +361,4 @@ for (const wrapper of wrapperManifest.wrappers) {
   checked += 1
 }
 
-console.log(`Verified ${checked} standard wrapper native core API surfaces.`)
+console.log(`Verified ${checked} standard component package native core API surfaces.`)

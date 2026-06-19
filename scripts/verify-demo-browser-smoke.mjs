@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url'
 const outputDir = resolve(
   process.env.DEMO_BROWSER_SMOKE_OUTPUT_DIR ||
   process.env.DEMO_OUTPUT_DIR ||
-  'dist'
+  'apps/viewer-demo/dist'
 )
 const externalUrl = process.env.DEMO_BROWSER_SMOKE_URL
 const timeout = Number(process.env.DEMO_BROWSER_SMOKE_TIMEOUT || 45000)

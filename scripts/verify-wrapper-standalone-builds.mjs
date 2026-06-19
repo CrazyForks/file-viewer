@@ -20,11 +20,21 @@ const readArg = (name, fallback) => {
 
 const outputRoot = resolve(
   sourceRoot,
-  readArg('--out-dir', process.env.FILE_VIEWER_WRAPPER_REPO_DIR || '.release/wrapper-repos')
+  readArg(
+    '--out-dir',
+    process.env.FILE_VIEWER_COMPONENT_REPO_DIR ||
+      process.env.FILE_VIEWER_WRAPPER_REPO_DIR ||
+      '.release/component-repos'
+  )
 )
 const smokeRoot = resolve(
   sourceRoot,
-  readArg('--tmp-dir', process.env.FILE_VIEWER_WRAPPER_STANDALONE_SMOKE_DIR || '.release/wrapper-standalone-smoke')
+  readArg(
+    '--tmp-dir',
+    process.env.FILE_VIEWER_COMPONENT_STANDALONE_SMOKE_DIR ||
+      process.env.FILE_VIEWER_WRAPPER_STANDALONE_SMOKE_DIR ||
+      '.release/component-standalone-smoke'
+  )
 )
 const selectedPackages = new Set(
   args
@@ -206,7 +216,7 @@ if (!wrappers.length) {
 }
 
 if (!existsSync(outputRoot)) {
-  throw new Error(`Missing exported wrapper repo directory: ${outputRoot}. Run pnpm wrappers:export first.`)
+  throw new Error(`Missing exported component repo directory: ${outputRoot}. Run pnpm components:export first.`)
 }
 
 const tarballDir = join(smokeRoot, 'tarballs')

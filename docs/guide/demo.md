@@ -13,7 +13,7 @@
 | --- | --- | --- |
 | 主示例页 | `/` | 切换预置文件、上传本地文件、快速确认各类格式表现 |
 | 文档比对页 | `/compare.html` | 左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位 |
-| wrapper Demo | `apps/wrapper-demo` | 同时验证 React、Pure Web、Vue3、jQuery、Svelte 和 script 标签接入 |
+| 组件 Demo | `apps/component-demo` | 同时验证 React、Pure Web、Vue3、jQuery、Svelte 和 script 标签接入 |
 
 ## 主示例页
 
@@ -96,28 +96,28 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
   <p class="doc-caption">Word 文件会显示在灰色工作台中的白色纸张上，页面居中，阅读体验更接近真实文档。</p>
 </div>
 
-## React / 纯 JS wrapper Demo
+## React / 纯 JS 组件 Demo
 
-仓库中的 `apps/wrapper-demo` 会同时挂载 React 组件、Pure Web controller、Vue3 组件、jQuery wrapper、Svelte action 和普通 script 标签全局包，用同一份 DOCX 示例验证 wrapper 原生挂载、生命周期事件、文件输入和资源加载。调试时运行:
+仓库中的 `apps/component-demo` 会同时挂载 React 组件、Pure Web controller、Vue3 组件、jQuery 组件、Svelte action 和普通 script 标签全局包，用同一份 DOCX 示例验证 组件原生挂载、生命周期事件、文件输入和资源加载。调试时运行:
 
 ```bash
-pnpm dev:wrappers
+pnpm dev:components
 ```
 
 构建上线前运行:
 
 ```bash
-pnpm build:wrapper-demo
-pnpm --filter @flyfish-group/file-viewer-demo preview
+pnpm build:component-demo
+pnpm --filter @flyfish-group/file-viewer-component-demo preview
 ```
 
 如果开发服务和 build preview 中各个面板都能显示同一份 DOCX 示例，就说明 React 组件、纯 JS `mountViewer`、jQuery、Svelte 和 script 标签全局包都可用。
 
 ## 示例文件清单
 
-仓库中当前提供的示例文件位于 `public/example/`:
+仓库中当前提供的示例文件位于 `apps/viewer-demo/public/example/`:
 
-代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。`word.docx` 使用 Basel Convention 公开中文正式文档，`ppt.pptx` 使用 R4Psy 公开中文课程课件，`markdown.md` 使用更丰富的长内容样例，`pdf.pdf` 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》，`report.typ` 使用项目内编写的多页 Typst 源文件报告，用于验证浏览器端直接编译、按页预览、打印和 HTML 导出链路。CAD、3D、绘图、音频和 EPUB 样本使用公开文件或项目内最小夹具，UMD 电子书样本由项目内生成，来源记录在 `public/example/SOURCES.md`。
+代码、配置和日志类样本已经按真实集成场景扩充，不再只是几行占位内容；它们会覆盖注释、函数、类型、嵌套配置、SQL CTE、Shell 参数、diff 块和长内容滚动，适合验证代码高亮的实际可读性。`word.docx` 使用 Basel Convention 公开中文正式文档，`ppt.pptx` 使用 R4Psy 公开中文课程课件，`markdown.md` 使用更丰富的长内容样例，`pdf.pdf` 使用项目方提供的 13 页《PDF沉浸式翻译技术说明》，`report.typ` 使用项目内编写的多页 Typst 源文件报告，用于验证浏览器端直接编译、按页预览、打印和 HTML 导出链路。CAD、3D、绘图、音频和 EPUB 样本使用公开文件或项目内最小夹具，UMD 电子书样本由项目内生成，来源记录在 `apps/viewer-demo/public/example/SOURCES.md`。
 
 | 文件 | 用途 | 对应能力 |
 | --- | --- | --- |

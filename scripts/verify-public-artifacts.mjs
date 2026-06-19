@@ -56,7 +56,9 @@ async function assertReleaseManifest(repoDir) {
   await assertFile(manifestPath, 'artifacts/release-manifest.json')
   const manifest = await readJson(manifestPath)
   assert(manifest.version === version, `Public artifact manifest version ${manifest.version} !== ${version}`)
-  assert(manifest.artifactOnly === true, 'Public artifact manifest must declare artifactOnly=true')
+  assert(manifest.artifactOnly === false, 'Public artifact manifest must declare artifactOnly=false after source is published')
+  assert(manifest.coreSourceIncluded === true, 'Public artifact manifest must declare coreSourceIncluded=true')
+  assert(manifest.sourcePolicy === 'public-open-source-demo-and-artifacts', 'Public artifact manifest source policy drifted')
   assert(manifest.corePackage?.packageName === wrapperManifest.corePackage.packageName, 'Core package metadata drifted')
   assert(manifest.corePackage?.visibility === wrapperManifest.corePackage.visibility, 'Core package visibility metadata drifted')
 
@@ -106,7 +108,7 @@ async function assertReleaseManifest(repoDir) {
 
   for (const requiredTarball of [
     `file-viewer-v2-${version}-demo.tar.gz`,
-    `file-viewer-v2-${version}-wrapper-demo.tar.gz`,
+    `file-viewer-v2-${version}-component-demo.tar.gz`,
     `file-viewer-v2-${version}-lib-dist.tar.gz`,
     `file-viewer-v2-${version}-docs.tar.gz`
   ]) {
@@ -160,9 +162,11 @@ await assertDirectory(publicRepoDir, 'public artifact repository')
 for (const requiredFile of ['README.md', 'README.en.md', 'LICENSE', 'package.json']) {
   await assertFile(join(publicRepoDir, requiredFile), requiredFile)
 }
-for (const requiredDirectory of ['dist', 'artifacts']) {
+for (const requiredDirectory of ['apps', 'packages', 'docs', 'dist', 'artifacts']) {
   await assertDirectory(join(publicRepoDir, requiredDirectory), requiredDirectory)
 }
+await assertDirectory(join(publicRepoDir, 'packages', 'core'), 'packages/core')
+await assertFile(join(publicRepoDir, 'pnpm-workspace.yaml'), 'pnpm-workspace.yaml')
 
 const manifest = await assertReleaseManifest(publicRepoDir)
 await assertPublicArtifactOnlyRepo(publicRepoDir, { allowedRoots: manifest.allowedRoots })

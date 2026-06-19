@@ -18,7 +18,12 @@ const readArg = (name, fallback) => {
 
 const outputRoot = resolve(
   sourceRoot,
-  readArg('--out-dir', process.env.FILE_VIEWER_WRAPPER_REPO_DIR || '.release/wrapper-repos')
+  readArg(
+    '--out-dir',
+    process.env.FILE_VIEWER_COMPONENT_REPO_DIR ||
+      process.env.FILE_VIEWER_WRAPPER_REPO_DIR ||
+      '.release/component-repos'
+  )
 )
 const sourceOnly = args.includes('--source-only')
 const selectedPackages = new Set(
@@ -559,5 +564,5 @@ for (const wrapper of wrappers) {
 }
 
 console.log(
-  `Verified ${wrappers.length} wrapper package${wrappers.length === 1 ? '' : 's'}${sourceOnly ? '' : ` and standalone exports in ${outputRoot}`}.`
+  `Verified ${wrappers.length} component package${wrappers.length === 1 ? '' : 's'}${sourceOnly ? '' : ` and standalone exports in ${outputRoot}`}.`
 )

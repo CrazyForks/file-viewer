@@ -12,7 +12,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/compat/web/package.json packages/compat/web/package.json
 COPY packages/compat/web/scripts packages/compat/web/scripts
 COPY packages/compat/react/package.json packages/compat/react/package.json
-COPY apps/wrapper-demo/package.json apps/wrapper-demo/package.json
+COPY apps/viewer-demo/package.json apps/viewer-demo/package.json
+COPY apps/component-demo/package.json apps/component-demo/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY . .
@@ -28,7 +29,7 @@ LABEL org.opencontainers.image.title="Flyfish Viewer" \
       org.opencontainers.image.licenses="Apache-2.0"
 
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/apps/viewer-demo/dist /usr/share/nginx/html
 
 EXPOSE 80
 

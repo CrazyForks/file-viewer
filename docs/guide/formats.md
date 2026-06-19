@@ -89,7 +89,7 @@
 
 ### 演示文稿、PDF、OFD 与 Typst
 
-- `pptx` 适合浏览幻灯片内容、做方案回看和日常演示，不需要 Office 本体参与；当前由 core 内的纯 TypeScript browser renderer 按需加载 `@aiden0z/pptx-renderer`，各 wrapper 共享同一条链路。
+- `pptx` 适合浏览幻灯片内容、做方案回看和日常演示，不需要 Office 本体参与；当前由 core 内的纯 TypeScript browser renderer 按需加载 `@aiden0z/pptx-renderer`，各标准组件包 共享同一条链路。
 - PPTX 渲染器现在会按 DrawingML 的组合图形坐标系处理 `chOff/chExt`，组合内元素在缩放、旋转、翻转时会更接近 PowerPoint 中的位置关系。
 - 主题背景支持从 `fillStyleLst` / `bgFillStyleLst` 解析纯色、渐变、图片和平铺图案；PPTX 内嵌的 EMF 图片会尽量转换为 SVG 数据图，避免只显示空白占位。
 - 图片填充会处理 `srcRect` 裁剪信息，复杂模板里的裁切图、背景图和组合形状更适合作为真实业务样本回归。

@@ -72,7 +72,7 @@ for (const wrapper of wrapperManifest.wrappers) {
 }
 
 if (failures.length) {
-  throw new Error(`Public wrapper remote verification failed:\n${failures.join('\n')}`)
+  throw new Error(`Public component remote verification failed:\n${failures.join('\n')}`)
 }
 
-console.log(`Verified ${checked} public wrapper remotes.`)
+console.log(`Verified ${checked} public component remotes.`)

@@ -130,7 +130,7 @@ function generatedWrapperBlock(locale) {
       wrapperMarkers.start,
       `## ${template.wrapperEcosystemHeading}`,
       '',
-      '所有标准 wrapper 都只共享 `@file-viewer/core` 这个总底座，不依赖其他 wrapper。core 内部负责格式矩阵、资源解析、browser/renderers、事件、操作 API、搜索、缩放、打印和导出；各框架 wrapper 自己维护本地 controller、组件生命周期、类型出口和生态交互。',
+      '所有标准组件包都只共享 `@file-viewer/core` 这个总底座，不依赖其他框架组件实现。core 内部负责格式矩阵、资源解析、browser/renderers、事件、操作 API、搜索、缩放、打印和导出；各框架组件包自己维护本地 controller、组件生命周期、类型出口和生态交互。',
       '',
       markdownTable(
         template.wrapperMatrixHeaders,
@@ -139,7 +139,7 @@ function generatedWrapperBlock(locale) {
       '',
       `## ${template.wrapperFormatHeading}`,
       '',
-      `共享 core 当前覆盖 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。所有格式都按需异步加载，wrapper 层只做生态适配，不互相嵌套。`,
+      `共享 core 当前覆盖 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。所有格式都按需异步加载，组件层只做生态适配，不互相嵌套。`,
       '',
       markdownTable(
         template.formatMatrixHeaders,
@@ -148,7 +148,7 @@ function generatedWrapperBlock(locale) {
       '',
       '完整参数、生命周期 hooks、beforeOperation、主题、水印、搜索、缩放、打印和导出说明见官方文档: https://doc.flyfish.dev/',
       '',
-      '在线 Demo: https://viewer.flyfish.dev/ 。License: Apache-2.0。二开或商用请保留 Flyfish Viewer 来源说明；如果修复了通用兼容问题，也欢迎贡献回对应 wrapper 仓库。',
+      '在线 Demo: https://viewer.flyfish.dev/ 。License: Apache-2.0。二开或商用请保留 Flyfish Viewer 来源说明；如果修复了通用兼容问题，也欢迎贡献回对应组件仓库。',
       wrapperMarkers.end
     ].join('\n')
   }
@@ -157,7 +157,7 @@ function generatedWrapperBlock(locale) {
     wrapperMarkers.start,
     `## ${template.wrapperEcosystemHeading}`,
     '',
-    'Every standard wrapper shares `@file-viewer/core` as the only common foundation, and no wrapper depends on another wrapper. Core owns format metadata, source loading, browser/renderers, events, operation APIs, search, zoom, print, and export; each framework wrapper owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.',
+    'Every standard component package shares `@file-viewer/core` as the only common foundation, and no framework component package depends on another framework implementation. Core owns format metadata, source loading, browser/renderers, events, operation APIs, search, zoom, print, and export; each framework package owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.',
     '',
     markdownTable(
       template.wrapperMatrixHeaders,
@@ -166,7 +166,7 @@ function generatedWrapperBlock(locale) {
     '',
     `## ${template.wrapperFormatHeading}`,
     '',
-    `The shared core currently covers ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Renderers stay lazy-loaded, and wrapper packages only adapt their own ecosystem without nesting through another wrapper.`,
+    `The shared core currently covers ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Renderers stay lazy-loaded, and component packages only adapt their own ecosystem without nesting through another framework implementation.`,
     '',
     markdownTable(
       template.formatMatrixHeaders,
@@ -175,7 +175,7 @@ function generatedWrapperBlock(locale) {
     '',
     'See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish.dev/',
     '',
-    'Online demo: https://viewer.flyfish.dev/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching wrapper repository.',
+    'Online demo: https://viewer.flyfish.dev/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching component repository.',
     wrapperMarkers.end
   ].join('\n')
 }
@@ -189,9 +189,9 @@ function generatedPublicBlock(locale) {
       publicMarkers.start,
       `## ${template.publicEcosystemHeading}`,
       '',
-      '下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开成品仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开 wrapper 仓库。',
+      '下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/formats.ts` 自动生成。公开仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包和公开组件仓库。',
       '',
-      `核心底座包: \`${core.packageName}\`。core 源码只在私有 Gitea 仓库维护；公开 GitHub/Gitee 只发布 wrapper 源码、压缩构建产物、Demo、文档站、示例文件和 tarball。`,
+      `核心底座包: \`${core.packageName}\`。core 源码已公开，GitHub: ${core.github}，Gitee: ${core.gitee}。公开仓库提供分散包源码、Demo、文档站、构建产物、示例文件和 tarball；私有 Gitea 完整聚合仓用于打赏支持、统一自动化和优先技术支持。`,
       '',
       markdownTable(
         template.wrapperMatrixHeaders,
@@ -207,9 +207,9 @@ function generatedPublicBlock(locale) {
     publicMarkers.start,
     `## ${template.publicEcosystemHeading}`,
     '',
-    'This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public artifact repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public wrapper repositories from one place.',
+    'This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public component repositories from one place.',
     '',
-    `Core foundation package: \`${core.packageName}\`. Core source is maintained only in the private Gitea repository; public GitHub/Gitee repositories publish wrapper source, minified build artifacts, demos, documentation output, examples, and tarballs.`,
+    `Core foundation package: \`${core.packageName}\`. Core source is public: ${core.github} and ${core.gitee}. Public repositories provide split package sources, demos, documentation, build artifacts, examples, and tarballs; the private Gitea aggregate remains available for sponsorship, unified automation, and priority support.`,
     '',
     markdownTable(
       template.wrapperMatrixHeaders,

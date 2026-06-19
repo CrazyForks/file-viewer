@@ -60,7 +60,7 @@ assertIncludes(`${supportSummary.uniqueExtensionCount} 个扩展名`, 'supported
 assertIncludes(`${supportSummary.rendererCount} 条预览链路`, 'renderer pipeline count')
 
 assertIncludes(wrapperManifest.corePackage.packageName, 'core package name')
-assertIncludesUrl(wrapperManifest.corePackage.sourceRepository, 'private core source repository')
+assertIncludesUrl(wrapperManifest.corePackage.sourceRepository, 'public core source repository')
 assertIncludes(wrapperManifest.corePackage.visibility, 'core source visibility policy')
 
 for (const entry of entries) {
@@ -97,11 +97,11 @@ for (const branch of branchRoles.branches) {
 }
 
 for (const requiredAuditItem of [
-  '当前私有 Gitea 仓库 `main` 分支只包含 core 核心底座源码',
-  '`v2` / `v3` 分支分别是 Vue2.7 / Vue3 wrapper',
-  '所有目标 wrapper 均存在 GitHub 和 Gitee 公开仓库',
+  '当前私有 Gitea 仓库作为完整聚合仓',
+  '`v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包',
+  '所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库',
   '所有 `@file-viewer/*` npm 包均发布成功',
-  '所有 wrapper 的 README 中英文完整',
+  '所有标准组件包的 README 中英文完整',
   '公开产物仓库包含最新全渠道构建产物',
   '本地和生产 smoke 证明各生态体验与当前 v3 基线一致'
 ]) {
@@ -111,7 +111,7 @@ for (const requiredAuditItem of [
 for (const requiredChecklistStatus of [
   '## 目标包名和仓库矩阵',
   '## Phase 3: 当前仓库分支职责重排',
-  '## Phase 4: Wrapper 标准实现',
+  '## Phase 4: 标准组件包实现',
   '## Phase 5: 公开仓库与 README',
   '## Phase 6: npm 发布与兼容别名',
   '## Phase 7: 构建产物与公开分发',
@@ -126,5 +126,5 @@ assertIncludesAny(
 )
 
 console.log(
-  `[ecosystem-checklist] Verified checklist coverage for ${wrapperManifest.wrappers.length} wrappers, ${entries.length} npm packages, ${branchRoles.branches.length} branch roles, ${supportSummary.rendererCount} renderer pipelines, and ${supportSummary.uniqueExtensionCount} extensions.`
+  `[ecosystem-checklist] Verified checklist coverage for ${wrapperManifest.wrappers.length} component packages, ${entries.length} npm packages, ${branchRoles.branches.length} branch roles, ${supportSummary.rendererCount} renderer pipelines, and ${supportSummary.uniqueExtensionCount} extensions.`
 )

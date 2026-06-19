@@ -4,6 +4,7 @@ import { join } from 'node:path'
 
 export const publicArtifactForbiddenTopLevel = [
   '.env',
+  '.env.local',
   '.eslintrc.cjs',
   '.prettierrc.json',
   '.vscode',
@@ -11,7 +12,6 @@ export const publicArtifactForbiddenTopLevel = [
   'env.d.ts',
   'index.html',
   'pnpm-lock.yaml',
-  'pnpm-workspace.yaml',
   'public',
   'scripts',
   'src',
@@ -23,10 +23,14 @@ export const publicArtifactDefaultRoots = [
   'README.en.md',
   'LICENSE',
   'package.json',
+  'pnpm-workspace.yaml',
+  'apps',
+  'packages',
   'dist',
   'demo',
-  'wrapper-demo',
+  'component-demo',
   'docs',
+  'docs-dist',
   'example',
   'artifacts'
 ]
@@ -57,8 +61,8 @@ export async function assertPublicArtifactOnlyRepo(repoDir, options = {}) {
       throw new Error(`Forbidden source workspace entry found in public artifact repo: ${entry}`)
     }
   }
-  if (existsSync(join(repoDir, 'docs', '.vitepress'))) {
-    throw new Error('Forbidden VitePress source directory found in public artifact repo: docs/.vitepress')
+  if (existsSync(join(repoDir, 'packages', 'runtime'))) {
+    throw new Error('Forbidden removed runtime package found in public artifact repo: packages/runtime')
   }
 
   if (!options.allowedRoots) {

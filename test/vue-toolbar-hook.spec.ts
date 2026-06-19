@@ -1,11 +1,11 @@
 import { computed, effectScope, nextTick, reactive, ref, shallowRef } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import { useViewerToolbar } from '../packages/wrappers/vue3/src/package/components/FileViewer/hooks/useViewerToolbar'
+import { useViewerToolbar } from '../packages/components/vue3/src/package/components/FileViewer/hooks/useViewerToolbar'
 import type {
   FileViewerOperationAvailability,
   FileViewerToolbarOptions,
   FileViewerZoomState
-} from '../packages/wrappers/vue3/src/package/common/type'
+} from '../packages/components/vue3/src/package/common/type'
 
 describe('Vue FileViewer toolbar hook', () => {
   it('keeps toolbar visibility, PDF floating position and emitted capability states in one facade', async () => {

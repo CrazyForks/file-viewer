@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ref } from 'vue'
-import { useViewerWatermark } from '../packages/wrappers/vue3/src/package/components/FileViewer/hooks/useViewerWatermark'
+import { useViewerWatermark } from '../packages/components/vue3/src/package/components/FileViewer/hooks/useViewerWatermark'
 import type { FileViewerWatermarkOptions } from '../packages/core/src'
 
 describe('Vue FileViewer watermark hook', () => {

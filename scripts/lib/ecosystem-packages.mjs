@@ -15,7 +15,8 @@ export function ecosystemPackageSpecs(wrapperManifest) {
       id: 'core',
       kind: 'core',
       packageDir: 'packages/core',
-      publicSource: false
+      publicSource: true,
+      corePackage: wrapperManifest.corePackage
     },
     ...(wrapperManifest.compatibilityPackages || []).map(compatibilityPackage => ({
       id: compatibilityPackage.id,
@@ -125,6 +126,7 @@ export function ecosystemPackageManifestEntry(entry) {
     publicArtifact: entry.publicArtifact,
     targetPackage: entry.compatibilityPackage?.targetPackage ?? null,
     github: entry.wrapper?.github ?? null,
-    gitee: entry.wrapper?.gitee ?? null
+    gitee: entry.wrapper?.gitee ?? null,
+    sourceRepository: entry.corePackage?.sourceRepository ?? null
   }
 }

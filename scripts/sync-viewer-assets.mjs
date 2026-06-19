@@ -3,19 +3,24 @@ import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promi
 import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import viewerPackage from '../packages/wrappers/web/package.json' with { type: 'json' }
+import viewerPackage from '../packages/components/web/package.json' with { type: 'json' }
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
-const source = resolve(root, 'dist')
+const source = resolve(
+  root,
+  process.env.FILE_VIEWER_DEMO_OUTPUT_DIR ||
+    process.env.DEMO_OUTPUT_DIR ||
+    'apps/viewer-demo/dist'
+)
 const targets = [
   resolve(root, 'packages/compat/web/viewer'),
-  resolve(root, 'packages/wrappers/web/viewer')
+  resolve(root, 'packages/components/web/viewer')
 ]
 const coreAssetsEntry = resolve(root, 'packages/core/dist/assets.js')
 const viewerAssetManifestFilename = 'flyfish-viewer-assets.json'
 
 if (!existsSync(resolve(source, 'index.html'))) {
-  throw new Error('缺少 dist/index.html，请先运行 pnpm build-only')
+  throw new Error(`缺少 ${source}/index.html，请先运行 pnpm build-only`)
 }
 
 const removeMacMetadata = async dir => {

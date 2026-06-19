@@ -100,4 +100,4 @@ for (const file of files) {
   }
 }
 
-console.log(`[core-framework-neutral] Verified @file-viewer/core has no framework/wrapper dependencies across ${files.length} source files.`)
+console.log(`[core-framework-neutral] Verified @file-viewer/core has no framework/component package dependencies across ${files.length} source files.`)

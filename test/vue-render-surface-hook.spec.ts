@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { parseHTML } from 'linkedom'
 import { ref } from 'vue'
-import { useViewerRenderSurface } from '../packages/wrappers/vue3/src/package/components/FileViewer/hooks/useViewerRenderSurface'
-import type { FileRenderExportAdapter } from '../packages/wrappers/vue3/src/package/common/type'
+import { useViewerRenderSurface } from '../packages/components/vue3/src/package/components/FileViewer/hooks/useViewerRenderSurface'
+import type { FileRenderExportAdapter } from '../packages/components/vue3/src/package/common/type'
 
 const createVueRenderSessionMock = vi.hoisted(() => vi.fn())
 
-vi.mock('../packages/wrappers/vue3/src/package/components/FileViewer/rendererBridge', () => ({
+vi.mock('../packages/components/vue3/src/package/components/FileViewer/rendererBridge', () => ({
   createVueRenderSession: createVueRenderSessionMock
 }))
 

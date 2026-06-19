@@ -3,8 +3,8 @@
   "currentSourceBranch": "v3",
   "targetBranchModel": {
     "main": "core",
-    "v2": "vue2.7-wrapper",
-    "v3": "vue3-wrapper"
+    "v2": "vue2.7-component",
+    "v3": "vue3-component"
   },
   "sourceRemote": {
     "name": "origin",
@@ -15,38 +15,38 @@
   "publicArtifactRepository": {
     "github": "https://github.com/flyfish-dev/file-viewer",
     "gitee": "https://gitee.com/flyfish-dev/file-viewer",
-    "sourcePolicy": "artifacts-only"
+    "sourcePolicy": "public-open-source-demo-and-artifacts"
   },
   "branches": [
     {
       "name": "main",
       "role": "core",
       "packageName": "@file-viewer/core",
-      "sourcePolicy": "private-core-source-only",
-      "description": "Maintains the pure TypeScript core foundation, renderer registry, shared protocols, types, capability model, and worker/asset contracts."
+      "sourcePolicy": "core-source-exported-publicly",
+      "description": "Maintains the pure TypeScript core foundation, renderer registry, shared protocols, types, capability model, worker/asset contracts, and the public @file-viewer/core source package."
     },
     {
       "name": "v2",
-      "role": "vue2.7-wrapper",
+      "role": "vue2.7-component",
       "wrapperId": "vue2.7",
       "packageName": "@file-viewer/vue2.7",
       "compatibilityPackages": [
         "@flyfish-group/file-viewer"
       ],
-      "sourcePolicy": "wrapper-source-exported-publicly",
-      "description": "Tracks the Vue 2.7 integration experience while sharing the same @file-viewer/core foundation and public wrapper repository."
+      "sourcePolicy": "component-source-exported-publicly",
+      "description": "Tracks the Vue 2.7 integration experience while sharing the same @file-viewer/core foundation and public component repository."
     },
     {
       "name": "v3",
-      "role": "vue3-wrapper",
+      "role": "vue3-component",
       "wrapperId": "vue3",
       "packageName": "@file-viewer/vue3",
       "compatibilityPackages": [
         "@flyfish-group/file-viewer3",
         "file-viewer3"
       ],
-      "sourcePolicy": "wrapper-source-exported-publicly",
-      "description": "Tracks the Vue 3 wrapper and v3 demo experience while sharing the same @file-viewer/core foundation and public wrapper repository."
+      "sourcePolicy": "component-source-exported-publicly",
+      "description": "Tracks the Vue 3 component package and v3 demo experience while sharing the same @file-viewer/core foundation and public component repository."
     }
   ]
 }

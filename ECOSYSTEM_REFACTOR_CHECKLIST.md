@@ -1,6 +1,6 @@
 # File Viewer 生态重构 Checklist
 
-> 目标: 以 `@file-viewer/core` 作为唯一纯 TypeScript core 底座，在同一个 core 包内部按 `headless` / `browser` / `renderers` 分层沉淀格式矩阵、资源读取、renderer 协议、能力模型、生命周期上下文、操作 API、搜索/定位/缩放/打印/导出/水印/AI 文本结构契约，以及 framework-neutral DOM/Canvas/Worker/WASM 解析、渲染和呈现能力；Vue、React、React legacy、Vue 2.6、Vue 2.7、Vue 3、Pure JS、jQuery、Svelte 均作为 native wrapper，只依赖 `@file-viewer/core` 并提供完整参数、生命周期和生态交互体验。旧的独立页面协议不再作为当前仓库正式实现，必要示例只能在独立参考仓库中存在。
+> 目标: 以 `@file-viewer/core` 作为唯一纯 TypeScript core 底座，在同一个 core 包内部按 `headless` / `browser` / `renderers` 分层沉淀格式矩阵、资源读取、renderer 协议、能力模型、生命周期上下文、操作 API、搜索/定位/缩放/打印/导出/水印/AI 文本结构契约，以及 framework-neutral DOM/Canvas/Worker/WASM 解析、渲染和呈现能力；Vue、React、React legacy、Vue 2.6、Vue 2.7、Vue 3、Pure JS、jQuery、Svelte 均作为 native standard component packages，只依赖 `@file-viewer/core` 并提供完整参数、生命周期和生态交互体验。旧的独立页面协议不再作为当前仓库正式实现，必要示例只能在独立参考仓库中存在。
 
 ## 基线
 
@@ -16,8 +16,8 @@
 - 当前源码远端可见性: `private`
 - 公开组织: `flyfish-dev`
 - 公开成品仓库: `https://github.com/flyfish-dev/file-viewer` / `https://gitee.com/flyfish-dev/file-viewer`
-- 公开成品仓库策略: `artifacts-only`
-- core source visibility policy: `private-source`
+- 公开仓库策略: `public-open-source-demo-and-artifacts`
+- core source visibility policy: `public-source`
 - 标准包命名: `@file-viewer/*`
 
 ## 最新外部发布审计
@@ -25,8 +25,8 @@
 - 审计时间: `2026-06-19`
 - 源码仓当前状态: 本地 `v3` 工作区干净，领先 `origin/v3` 223 个提交；推送 `https://git.flyfish.dev/flyfish-group/file-viewer.git` 返回 `403`，待私有 Gitea / Cloudflare 权限放行。
 - 公开成品仓库: GitHub `flyfish-dev/file-viewer` 已推送 `c2d714f`，Gitee `flyfish-dev/file-viewer` 已推送 `eb7ed9f`；两端 tree hash 均为 `747f6f35494f35383b6e5de563142cffebf9f369`，内容一致。
-- Wrapper GitHub 仓库: 8 个标准 wrapper 仓库已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
-- Wrapper Gitee 仓库: 8 个标准 wrapper 仓库仍返回 404；当前可用 token 创建仓库返回 `401 Unauthorized: Access token does not exist`，Gitee 不支持对不存在仓库直接 push，待有效 Gitee token 或网页创建权限。
+- Component GitHub 仓库: 8 个标准组件包仓库已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
+- Component Gitee 仓库: 8 个标准组件包仓库仍返回 404；当前可用 token 创建仓库返回 `401 Unauthorized: Access token does not exist`，Gitee 不支持对不存在仓库直接 push，待有效 Gitee token 或网页创建权限。
 - Demo / 文档站: `pnpm deploy:cloudflare` 已部署 demo 到 Cloudflare Pages `https://6b7ec5e0.flyfish-file-viewer.pages.dev`，`pnpm docs:deploy:cloudflare` 已部署文档站到 `https://a2fbb134.flyfish-file-viewer-docs.pages.dev`；正式域名 `https://viewer.flyfish.dev` 与 `https://doc.flyfish.dev` 均返回 200，并能读取到本轮构建内容。
 - npm 发布: `@file-viewer/*` 标准包尚未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
 
@@ -36,48 +36,49 @@
 - [ ] 当前 194 个扩展名、23 条预览链路的支持矩阵不得倒退。
 - [x] core 是唯一总底座：内部可以分 `headless`、`browser`、`renderers`，但对外不再形成第二个核心包。
 - [x] core 可以承载 `HTMLElement` / `window` / `document` / `MutationObserver` / DOM 搜索高亮 / 缩放 provider / 打印窗口 / 下载触发 / Canvas、Worker、WASM 渲染等浏览器执行能力，但必须保持纯 TS 和 framework-neutral，不依赖 Vue/React/Svelte 等上层框架。
-- [x] 移除 `@flyfish-group/file-viewer3` 临时 renderer host，将渲染器注册、异步加载和呈现链路收敛到 `@file-viewer/core` 内部 browser/renderers 分层；各标准 wrapper 仅持有自己的本地 controller 和生态生命周期逻辑。
-- [x] Vue、React、Svelte、jQuery 和 Pure JS wrapper 必须默认走 core native browser engine，不把旧的独立页面方案作为正式 wrapper 实现。
-- [x] Vue、React、Svelte、jQuery 和 Pure JS wrapper 只能依赖 `@file-viewer/core` 和自身生态依赖，不得依赖其他 wrapper 或任何第二核心包。
+- [x] 移除 `@flyfish-group/file-viewer3` 临时 renderer host，将渲染器注册、异步加载和呈现链路收敛到 `@file-viewer/core` 内部 browser/renderers 分层；各标准组件包 仅持有自己的本地 controller 和生态生命周期逻辑。
+- [x] Vue、React、Svelte、jQuery 和 Pure JS 标准组件包必须默认走 core native browser engine，不把旧的独立页面方案作为正式组件实现。
+- [x] Vue、React、Svelte、jQuery 和 Pure JS 标准组件包只能依赖 `@file-viewer/core` 和自身生态依赖，不得依赖其他标准组件包或任何第二核心包。
 - [x] `@flyfish-group/*`、`file-viewer3` 等历史包名只作为标准包名的兼容别名同步更新。
-- [ ] core 源码只在 Gitea 私有仓库维护，不把私有源码推到公开 GitHub/Gitee。
-- [x] 公开产物仓库只发布混淆/压缩后的构建产物、Demo、文档、示例、tarball、release manifest 和分发说明。
+- [x] core 源码公开到独立 `file-viewer-core` 仓库，并随公开成品仓库提供可审计源码。
+- [x] 公开仓库发布 core、标准组件包、兼容包、Demo、文档源码，同时保留混淆/压缩后的构建产物、示例、tarball、release manifest 和分发说明。
 
 ## 分支与目录验收
 
-- [ ] `main` 分支成为 core 主线，只承载 framework-neutral 底座和共享协议，branch role 为 `core`，包名为 `@file-viewer/core`，source policy 为 `private-core-source-only`。
-- [ ] 原 `main` 分支转为 `v2`，用于 Vue2.7 wrapper 兼容包线，branch role 为 `vue2.7-wrapper`，包名为 `@file-viewer/vue2.7`，source policy 为 `wrapper-source-exported-publicly`。
-- [ ] 新 `v3` 分支用于 Vue3 wrapper 包线，branch role 为 `vue3-wrapper`，包名为 `@file-viewer/vue3`，source policy 为 `wrapper-source-exported-publicly`。
-- [x] 当前 `v3` 分支的 Vue3 wrapper 代码迁移到 `packages/wrappers/vue3` 独立包。
+- [ ] `main` 分支成为 core 主线，只承载 framework-neutral 底座和共享协议，branch role 为 `core`，包名为 `@file-viewer/core`，source policy 为 `core-source-exported-publicly`。
+- [ ] 原 `main` 分支转为 `v2`，用于 Vue2.7 标准组件兼容包线，branch role 为 `vue2.7-component`，包名为 `@file-viewer/vue2.7`，source policy 为 `component-source-exported-publicly`。
+- [ ] 新 `v3` 分支用于 Vue3 标准组件包线，branch role 为 `vue3-component`，包名为 `@file-viewer/vue3`，source policy 为 `component-source-exported-publicly`。
+- [x] 当前 `v3` 分支的 Vue3 标准组件代码迁移到 `packages/components/vue3` 独立包。
+- [x] 正式在线 Demo 已迁移到 `apps/viewer-demo`，组件接入示例保留在 `apps/component-demo`，`packages/` 下只保留 core、标准组件包和兼容 alias。
 - [ ] 当前 `v3` 分支提升为新的 `main` 基线，并在远端完成分支角色切换。
-- [ ] 新的 Vue3 wrapper 包线提交到新的 `v3` 分支，并保持 `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` 三个发布入口一致。
-- [x] `packages/wrappers/vue3`、`packages/wrappers/vue2.7`、`packages/wrappers/vue2.6`、`packages/wrappers/react`、`packages/wrappers/react-legacy`、`packages/wrappers/web`、`packages/wrappers/jquery`、`packages/wrappers/svelte` 都只保留对应生态 wrapper 职责，不依赖其他 wrapper。
+- [ ] 新的 Vue3 标准组件包线提交到新的 `v3` 分支，并保持 `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` 三个发布入口一致。
+- [x] `packages/components/vue3`、`packages/components/vue2.7`、`packages/components/vue2.6`、`packages/components/react`、`packages/components/react-legacy`、`packages/components/web`、`packages/components/jquery`、`packages/components/svelte` 都只保留对应生态组件职责，不依赖其他标准组件包。
 - [x] `packages/compat/vue2.7`、`packages/compat/vue3-scoped`、`packages/compat/vue3-unscoped`、`packages/compat/web`、`packages/compat/react` 与根包只作为历史兼容别名或历史发布入口，不承载新的业务实现。
-- [x] core 与 wrapper 的类型边界在 CI 中通过 `pnpm verify:core-api`、`pnpm verify:wrapper-api`、`pnpm verify:wrapper-options` 固化。
+- [x] core 与标准组件包的类型边界在 CI 中通过 `pnpm verify:core-api`、`pnpm verify:wrapper-api`、`pnpm verify:wrapper-options` 固化。
 
 ## 架构分层验收
 
 | 层级 | 包 | 允许职责 | 禁止职责 |
 | --- | --- | --- | --- |
 | Core headless | `@file-viewer/core` | 格式矩阵、source 解析、renderer 协议、能力模型、options 归一化、生命周期/操作/搜索/定位/缩放/打印/导出/水印/AI 契约、纯状态机和类型 | 组件生命周期、框架依赖、业务 UI 状态 |
-| Core browser/renderers | `@file-viewer/core` | direct browser viewer engine、renderer registry、异步 loader、DOM/Canvas/Worker/WASM 渲染器、DOM 搜索高亮、缩放 provider、打印/导出执行适配、浏览器资源路径解析 | Vue/React/Svelte wrapper 生命周期、框架插件安装、依赖任何上层框架 |
-| Wrappers | `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 等 | 对应生态的组件/插件/action、props/ref/controller、toolbar/search/loading UI、生命周期转发、类型出口 | 依赖其他 wrapper、依赖第二核心包、复制重型 renderer、重新定义格式矩阵 |
+| Core browser/renderers | `@file-viewer/core` | direct browser viewer engine、renderer registry、异步 loader、DOM/Canvas/Worker/WASM 渲染器、DOM 搜索高亮、缩放 provider、打印/导出执行适配、浏览器资源路径解析 | Vue/React/Svelte 标准组件生命周期、框架插件安装、依赖任何上层框架 |
+| Standard Components | `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 等 | 对应生态的组件/插件/action、props/ref/controller、toolbar/search/loading UI、生命周期转发、类型出口 | 依赖其他标准组件包、依赖第二核心包、复制重型 renderer、重新定义格式矩阵 |
 | Alias packages | `@flyfish-group/*`、`file-viewer3` | 标准包的兼容发布入口 | 承载新的业务实现或重复存储同内容产物 |
 
 ## 目标包名和仓库矩阵
 
 | 能力 | 标准 npm 包名 | 兼容/历史 npm 包名 | 代码归属 | GitHub | Gitee | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
-| Core | `@file-viewer/core` | 无 | Gitea 私有 `main` | 仅公开 npm 包和产物 | 仅公开 npm 包和产物 | [ ] 待最终切主线 |
-| Vue 3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | `packages/wrappers/vue3` / `v3` | `https://github.com/flyfish-dev/file-viewer-vue3` | `https://gitee.com/flyfish-dev/file-viewer-vue3` | [~] GitHub 已发布，Gitee / 分支切换待完成 |
-| Vue 2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | `packages/wrappers/vue2.7` / `v2` | `https://github.com/flyfish-dev/file-viewer-vue2.7` | `https://gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] GitHub 已发布，Gitee / v2 分支待完成 |
-| Vue 2.6 | `@file-viewer/vue2.6` | 无 | `packages/wrappers/vue2.6` | `https://github.com/flyfish-dev/file-viewer-vue2.6` | `https://gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] GitHub 已发布，Gitee 待完成 |
-| React 18/19 | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | `packages/wrappers/react` | `https://github.com/flyfish-dev/file-viewer-react` | `https://gitee.com/flyfish-dev/file-viewer-react` | [~] GitHub 已发布，Gitee 待完成 |
-| React legacy | `@file-viewer/react-legacy` | 无 | `packages/wrappers/react-legacy` | `https://github.com/flyfish-dev/file-viewer-react-legacy` | `https://gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] GitHub 已发布，Gitee 待完成 |
-| Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/wrappers/web` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] GitHub 已发布，Gitee 待完成 |
-| jQuery | `@file-viewer/jquery` | 无 | `packages/wrappers/jquery` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] GitHub 已发布，Gitee 待完成 |
-| Svelte | `@file-viewer/svelte` | 无 | `packages/wrappers/svelte` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] GitHub 已发布，Gitee 待完成 |
-| Public artifacts | 非源码分发 | 当前 `flyfish-dev/file-viewer` | 公开成品仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [x] v2.0.0 已刷新，GitHub/Gitee 内容一致 |
+| Core | `@file-viewer/core` | 无 | `packages/core` / `main` | `https://github.com/flyfish-dev/file-viewer-core` | `https://gitee.com/flyfish-dev/file-viewer-core` | [ ] 待最终切主线与独立仓同步 |
+| Vue 3 | `@file-viewer/vue3` | `@flyfish-group/file-viewer3`, `file-viewer3` | `packages/components/vue3` / `v3` | `https://github.com/flyfish-dev/file-viewer-vue3` | `https://gitee.com/flyfish-dev/file-viewer-vue3` | [~] GitHub 已发布，Gitee / 分支切换待完成 |
+| Vue 2.7 | `@file-viewer/vue2.7` | `@flyfish-group/file-viewer` | `packages/components/vue2.7` / `v2` | `https://github.com/flyfish-dev/file-viewer-vue2.7` | `https://gitee.com/flyfish-dev/file-viewer-vue2.7` | [~] GitHub 已发布，Gitee / v2 分支待完成 |
+| Vue 2.6 | `@file-viewer/vue2.6` | 无 | `packages/components/vue2.6` | `https://github.com/flyfish-dev/file-viewer-vue2.6` | `https://gitee.com/flyfish-dev/file-viewer-vue2.6` | [~] GitHub 已发布，Gitee 待完成 |
+| React 18/19 | `@file-viewer/react` | `@flyfish-group/file-viewer-react` | `packages/components/react` | `https://github.com/flyfish-dev/file-viewer-react` | `https://gitee.com/flyfish-dev/file-viewer-react` | [~] GitHub 已发布，Gitee 待完成 |
+| React legacy | `@file-viewer/react-legacy` | 无 | `packages/components/react-legacy` | `https://github.com/flyfish-dev/file-viewer-react-legacy` | `https://gitee.com/flyfish-dev/file-viewer-react-legacy` | [~] GitHub 已发布，Gitee 待完成 |
+| Pure Web / Pure JS | `@file-viewer/web` | `@flyfish-group/file-viewer-web` | `packages/components/web` | `https://github.com/flyfish-dev/file-viewer-web` | `https://gitee.com/flyfish-dev/file-viewer-web` | [~] GitHub 已发布，Gitee 待完成 |
+| jQuery | `@file-viewer/jquery` | 无 | `packages/components/jquery` | `https://github.com/flyfish-dev/file-viewer-jquery` | `https://gitee.com/flyfish-dev/file-viewer-jquery` | [~] GitHub 已发布，Gitee 待完成 |
+| Svelte | `@file-viewer/svelte` | 无 | `packages/components/svelte` | `https://github.com/flyfish-dev/file-viewer-svelte` | `https://gitee.com/flyfish-dev/file-viewer-svelte` | [~] GitHub 已发布，Gitee 待完成 |
+| Public repository | 开源源码 + 成品分发 | 当前 `flyfish-dev/file-viewer` | 公开成品仓库 | `https://github.com/flyfish-dev/file-viewer` | `https://gitee.com/flyfish-dev/file-viewer` | [x] v2.0.0 已刷新，GitHub/Gitee 内容一致 |
 
 ## npm 发布包清单
 
@@ -103,42 +104,42 @@
 - [x] 移除 core 中的旧独立页面协议、事件桥、二进制投递和来源校验类型。
 - [ ] 完成 `main` 分支只包含 core 核心底座源码的切换审计。
 - [x] 移除 `temporary-v3-renderer-host-until-core-renderer-migration` 过渡策略。
-- [x] 撤回 core 中偏 Web 的 `mountViewer` 下沉，改为各 wrapper 自带本地 controller。
+- [x] 撤回 core 中偏 Web 的 `mountViewer` 下沉，改为各标准组件包自带本地 controller。
 - [x] 将旧 v3 拆出的 `createViewer`、renderer registry、异步 loader、DOM provider registry、print layout 和浏览器资源解析合并回 `@file-viewer/core` 的 browser/renderers 分层。
 - [ ] 保留 `documentDom` 中的锚点/滚动定位、DOM search controller、DOM zoom controller、浏览器下载/打印/导出执行器作为 core browser 能力，但拆目录、拆文件，避免污染 headless 契约入口。
 - [~] DOM search / zoom provider registry 已归入 `@file-viewer/core/browser` 方向，后续不得作为独立核心入口。
 - [~] DOM print layout helper 已归入 `@file-viewer/core/browser/printLayout` 方向。
 - [~] 浏览器 `document.baseURI` / `location.href` 默认读取已归入 `@file-viewer/core/browser/assets` 方向，headless asset/source loading 继续只接受显式 `documentBaseUrl` / `pageHref`。
 - [x] `verify:core-api` 应拆分 headless 与 browser export 门禁，允许 core browser 入口，但禁止任何 Vue/React/Svelte 框架依赖。
-- [x] `@file-viewer/core`、`@file-viewer/core/headless`、`@file-viewer/core/browser` 的入口职责已写入 core README / README.en.md 和开发门禁文档，wrapper 后续应优先选择最窄入口。
+- [x] `@file-viewer/core`、`@file-viewer/core/headless`、`@file-viewer/core/browser` 的入口职责已写入 core README / README.en.md 和开发门禁文档，标准组件包后续应优先选择最窄入口。
 
 ## Phase 2: Vue3 基线拆包
 
-- [x] Vue3 wrapper 从旧 `v3` 根实现迁移到 `packages/wrappers/vue3`。
+- [x] Vue3 标准组件从旧 `v3` 根实现迁移到 `packages/components/vue3`。
 - [x] `@file-viewer/vue3` 提供 Vue 插件、组件、props、ref API、事件和类型出口。
 - [x] `@flyfish-group/file-viewer3` 和 `file-viewer3` 保持兼容发布入口。
-- [ ] 新的 `v3` 分支只维护 Vue3 wrapper 包线。
+- [ ] 新的 `v3` 分支只维护 Vue3 标准组件包线。
 
 ## Phase 3: 当前仓库分支职责重排
 
 - [ ] 私有 Gitea `main` 分支提升为 pure TypeScript core 主线。
-- [ ] 旧 `main` 分支迁移为 `v2`，对应 Vue2.7 wrapper。
+- [ ] 旧 `main` 分支迁移为 `v2`，对应 Vue2.7 标准组件包。
 - [ ] 当前 `v3` 基线提升为新的 core `main` 前，完成源码、产物、文档和发布记录审计。
 - [ ] `ecosystem/branch-roles.json`、`ecosystem/wrappers.json`、`WRAPPER_ECOSYSTEM.md` 与实际远端分支一致。
 
-## Phase 4: Wrapper 标准实现
+## Phase 4: 标准组件包实现
 
-- [x] React 18/19 wrapper 提供 native React 组件和完整 options 类型。
-- [x] React legacy wrapper 提供 React 16.8/17 native 组件体验。
-- [x] Vue 2.6 wrapper 提供 `Vue.use()` 和 native viewer。
-- [x] Vue 2.7 wrapper 提供 `Vue.use()` 和 native viewer。
-- [x] Vue 3 wrapper 提供 `createApp(App).use(FileViewer)` 和 native viewer。
-- [x] Pure JS wrapper 提供 `mountViewer(container, options)`、IIFE、viewer assets、copy-assets CLI。
-- [x] jQuery wrapper 提供插件式 native 挂载。
-- [x] Svelte wrapper 提供原生 Svelte component 和 action 体验。
-- [x] 所有 wrapper 的参数、事件、操作、搜索、缩放、打印、导出、主题、水印、AI 文本结构能力对齐 core。
-- [x] 标准 wrapper 不再依赖其他 wrapper；`pnpm verify:wrapper-api` 会扫描源码并阻止 wrapper-to-wrapper import。
-- [x] 标准 wrapper 和 script tag IIFE 不再暴露 `mountViewerFrame`、`postFileToViewer`、`viewerUrl`、`targetOrigin` 等旧 iframe API；`pnpm verify:wrapper-api` 与 `pnpm verify:wrapper-demo-output` 已作为回归门禁。
+- [x] React 18/19 标准组件包提供 native React 组件、hooks 和完整 options 类型。
+- [x] React legacy 标准组件包提供 React 16.8/17 native 组件体验。
+- [x] Vue 2.6 标准组件包提供 `Vue.use()` 和 native viewer。
+- [x] Vue 2.7 标准组件包提供 `Vue.use()` 和 native viewer。
+- [x] Vue 3 标准组件包提供 `createApp(App).use(FileViewer)` 和 native viewer。
+- [x] Pure JS 标准组件包提供 `mountViewer(container, options)`、IIFE、viewer assets、copy-assets CLI。
+- [x] jQuery 标准组件包提供插件式 native 挂载。
+- [x] Svelte 标准组件包提供原生 Svelte component 和 action 体验。
+- [x] 所有标准组件包 的参数、事件、操作、搜索、缩放、打印、导出、主题、水印、AI 文本结构能力对齐 core。
+- [x] 标准组件包不再依赖其他标准组件包；`pnpm verify:wrapper-api` 会扫描源码并阻止 package-to-package import。
+- [x] 标准组件包 和 script tag IIFE 不再暴露 `mountViewerFrame`、`postFileToViewer`、`viewerUrl`、`targetOrigin` 等旧独立页面 API；`pnpm verify:wrapper-api` 与 `pnpm verify:component-demo-output` 已作为回归门禁。
 
 ## Phase 4.5: Core Renderers 去框架化
 
@@ -151,7 +152,7 @@
 - [x] 将 UMD renderer 迁为 core browser TypeScript DOM 实现，并保留章节目录、封面/图集、正文段解压、移动端目录和状态展示。
 - [x] 将 Geo renderer 迁为 core browser TypeScript DOM 实现，并保留 GeoJSON/KML/GPX/SHP 解析、离线 SVG 预览、范围统计和暗色主题。
 - [x] 将 OpenDocument / RTF renderer 迁为 core browser TypeScript DOM 实现，并保留 ODT/ODP XML 解析、RTF DOM 渲染、纸张阅读样式和暗色主题隔离。
-- [x] 将 Email renderer 迁为 core browser TypeScript DOM 实现，并保留 EML/MSG/MBOX 解析、CID 图片、正文/头信息切换、附件下载和 wrapper 注入的嵌套预览能力。
+- [x] 将 Email renderer 迁为 core browser TypeScript DOM 实现，并保留 EML/MSG/MBOX 解析、CID 图片、正文/头信息切换、附件下载和标准组件包注入的嵌套预览能力。
 - [x] 将 EDA renderer 迁为 core browser TypeScript DOM 实现，并保留 OLB/DRA CFB 解析、结构树、对象分组、流筛选、属性/字符串/诊断展示和安全二进制退化。
 - [x] 将 CAD renderer 迁为 core browser TypeScript DOM 实现，并保留 DWG/DXF/DWF/DWFx/XPS、图层侧栏、结构面板、fit/zoom、Worker/WASM 路径解析和 native DWF renderer。
 - [x] 将 Typst renderer 迁为 core browser TypeScript DOM 实现，并保留浏览器 WASM 编译、按页 SVG、compiler/renderer WASM 路径配置、缩放 provider、打印和 HTML 导出适配器。
@@ -162,8 +163,8 @@
 - [x] 将 Data Asset renderer 迁为 core browser TypeScript DOM 实现，并保留 FontFace、PSD 图层摘要、SQLite/Parquet/Avro/WASM 结构预览、AI/EPS/WebArchive 安全摘要和 SQLite WASM 路径配置。
 - [x] 将 PDF renderer 迁为 core browser TypeScript DOM 实现，并保留 PDF.js 按需加载、workerUrl 配置、流式/Range 读取、页面/目录导航、缩放 provider、原生搜索、打印和 HTML 导出适配器。
 - [x] PDF 等剩余渲染链路迁移时必须逐条保留按需加载、Worker/WASM 资源路径、导出适配器和 demo 样例。
-- [x] core browser/renderers 完成后，React/Vue/Svelte/jQuery/Web wrapper 的生产依赖不得因为 core 传递引入非自身生态框架。
-- [x] 增加 core browser/renderers 门禁：`@file-viewer/core` 不得依赖 `vue`、`@vitejs/plugin-vue`、`vue-tsc`、`@lucide/vue`、React、Svelte 或任何 wrapper 包。
+- [x] core browser/renderers 完成后，React/Vue/Svelte/jQuery/Web 标准组件包的生产依赖不得因为 core 传递引入非自身生态框架。
+- [x] 增加 core browser/renderers 门禁：`@file-viewer/core` 不得依赖 `vue`、`@vitejs/plugin-vue`、`vue-tsc`、`@lucide/vue`、React、Svelte 或任何 标准组件包。
 
 ### Renderer 迁移盘点
 
@@ -191,12 +192,12 @@
 
 ## Phase 5: 公开仓库与 README
 
-- [ ] 所有目标 wrapper 均存在 GitHub 和 Gitee 公开仓库。
-- [x] 所有目标 wrapper 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
-- [ ] 所有目标 wrapper 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
-- [ ] 所有 wrapper 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式。
-- [ ] 公开成品仓库 README 中列出所有开源 wrapper 仓库、npm 包、历史兼容包、下载包和文档地址。
-- [ ] core 源码不进入任何公开 GitHub/Gitee wrapper 或成品仓库。
+- [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
+- [x] 所有目标标准组件包 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
+- [ ] 所有目标标准组件包 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
+- [ ] 所有标准组件包 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式。
+- [ ] 公开成品仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址。
+- [x] core 源码进入 `file-viewer-core` 与公开成品仓库，Gitea 私有仓继续作为完整聚合仓和优先支持入口。
 
 ## Phase 6: npm 发布与兼容别名
 
@@ -208,18 +209,18 @@
 
 ## Phase 7: 构建产物与公开分发
 
-- [x] 公开产物仓库包含最新全渠道构建产物、viewer assets、Demo、wrapper demo、文档静态产物、示例文件、tarball、release manifest 和更新历史。
-- [x] 公开产物仓库只包含混淆压缩后的成品，不包含私有 core 源码。
+- [x] 公开产物仓库包含最新全渠道构建产物、viewer assets、Demo、component demo、文档静态产物、示例文件、tarball、release manifest、开源源码和更新历史。
+- [x] 公开产物仓库包含 core 和标准组件包源码，同时保留混淆压缩后的成品。
 - [x] GitHub / Gitee 公开成品仓库同步一致。
 - [ ] Docker 镜像按需发布 `linux/amd64` 和 `linux/arm64`。
 
 ## Phase 8: 验证与发布门禁
 
 - [x] `pnpm type-check`
-- [x] `pnpm type-check:wrappers`
+- [x] `pnpm type-check:components`
 - [x] `pnpm docs:build`
 - [x] `pnpm build-only`
-- [x] `pnpm build:wrapper-demo`
+- [x] `pnpm build:component-demo`
 - [x] `pnpm verify:format-support`
 - [x] `pnpm verify:ecosystem-checklist`
 - [x] `pnpm verify:ecosystem-readmes`
@@ -236,7 +237,7 @@
 - [ ] `pnpm verify:wrapper-public-remotes`
 - [x] `pnpm verify:production-entrypoints`
 - [x] `pnpm verify:browser-smoke`
-- [x] `pnpm wrappers:standalone-smoke`
+- [x] `pnpm components:standalone-smoke`
 - [x] `pnpm deploy:cloudflare`
 - [x] `pnpm docs:deploy:cloudflare`
 - [x] `node scripts/sync-public-artifacts.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.0/ecosystem/flyfish-group-file-viewer-2.0.0.tgz`
@@ -245,12 +246,12 @@
 
 ## 完成审计标准
 
-- [ ] 当前私有 Gitea 仓库 `main` 分支只包含 core 核心底座源码。
-- [ ] `v2` / `v3` 分支分别是 Vue2.7 / Vue3 wrapper。
-- [ ] 所有目标 wrapper 均存在 GitHub 和 Gitee 公开仓库。
+- [ ] 当前私有 Gitea 仓库作为完整聚合仓，`main` 分支以 core 为主线，并保留统一发布自动化。
+- [ ] `v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包。
+- [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [ ] 所有 `@file-viewer/*` npm 包均发布成功。
 - [ ] 所有历史兼容包和别名包均发布成功。
-- [ ] 所有 wrapper 的 README 中英文完整。
+- [ ] 所有标准组件包的 README 中英文完整。
 - [ ] 公开产物仓库包含最新全渠道构建产物。
 - [x] 文档站和 Demo 站均上线最新内容。
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { computed, ref } from 'vue'
-import { useViewerErrorState, useViewerPresentation } from '../packages/wrappers/vue3/src/package/components/FileViewer/hooks/useViewerPresentation'
+import { useViewerErrorState, useViewerPresentation } from '../packages/components/vue3/src/package/components/FileViewer/hooks/useViewerPresentation'
 import { resolveFileViewerLoadingTheme } from '../packages/core/src'
-import type { FileViewerOptions } from '../packages/wrappers/vue3/src/package/common/type'
+import type { FileViewerOptions } from '../packages/components/vue3/src/package/common/type'
 
 describe('Vue FileViewer presentation hook', () => {
   it('derives filename, extension, theme and toolbar defaults through core rules', () => {

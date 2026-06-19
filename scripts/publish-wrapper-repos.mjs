@@ -15,12 +15,24 @@ const readArg = (name, fallback) => {
 
 const outputRoot = resolve(
   sourceRoot,
-  readArg('--out-dir', process.env.FILE_VIEWER_WRAPPER_REPO_DIR || '.release/wrapper-repos')
+  readArg(
+    '--out-dir',
+    process.env.FILE_VIEWER_COMPONENT_REPO_DIR ||
+      process.env.FILE_VIEWER_WRAPPER_REPO_DIR ||
+      '.release/component-repos'
+  )
 )
-const branch = readArg('--branch', process.env.FILE_VIEWER_WRAPPER_REPO_BRANCH || 'main')
+const branch = readArg(
+  '--branch',
+  process.env.FILE_VIEWER_COMPONENT_REPO_BRANCH ||
+    process.env.FILE_VIEWER_WRAPPER_REPO_BRANCH ||
+    'main'
+)
 const commitMessage = readArg(
   '--message',
-  process.env.FILE_VIEWER_WRAPPER_REPO_COMMIT_MESSAGE || 'chore: sync wrapper release'
+  process.env.FILE_VIEWER_COMPONENT_REPO_COMMIT_MESSAGE ||
+    process.env.FILE_VIEWER_WRAPPER_REPO_COMMIT_MESSAGE ||
+    'chore: sync component package release'
 )
 const dryRun = args.includes('--dry-run')
 const push = args.includes('--push')
@@ -53,7 +65,7 @@ const wrappers = wrapperManifest.wrappers.filter(wrapper => {
 })
 
 if (!wrappers.length) {
-  throw new Error('No wrappers selected for publishing.')
+  throw new Error('No component packages selected for publishing.')
 }
 
 const assertDirectory = async (path, label = path) => {
@@ -132,7 +144,7 @@ const ensureRemote = (cwd, name, url) => {
 }
 
 const verifyWrapperRepos = () => {
-  console.log('Verifying wrapper repositories before publishing...')
+  console.log('Verifying component repositories before publishing...')
   run(
     'node',
     ['scripts/verify-wrapper-repos.mjs', '--out-dir', outputRoot, ...selectedVerifyArgs],
@@ -160,7 +172,7 @@ for (const wrapper of wrappers) {
   if (hasStagedChanges(repoDir)) {
     run('git', ['commit', '-m', commitMessage], repoDir)
   } else {
-    console.log(`No wrapper changes to commit for ${wrapper.packageName}`)
+    console.log(`No component package changes to commit for ${wrapper.packageName}`)
   }
 
   if (push) {
@@ -175,5 +187,5 @@ for (const wrapper of wrappers) {
 }
 
 console.log(
-  `${push ? 'Published' : 'Prepared'} ${wrappers.length} wrapper repos from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
+  `${push ? 'Published' : 'Prepared'} ${wrappers.length} component repos from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
 )

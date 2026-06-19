@@ -4,7 +4,7 @@
 
 Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
-`@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte wrappers provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
+`@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
 
 The viewer does not require a backend conversion service. It is designed for OA systems, knowledge bases, attachment centers, workflow platforms, customer support portals, document approval flows, intranet systems, and offline-capable deployments where file preview should feel like a maintained product module rather than a temporary feature.
 
@@ -26,10 +26,10 @@ The viewer does not require a backend conversion service. It is designed for OA 
 | Stack | Package | Version | Recommended branch | Notes |
 | --- | --- | --- | --- | --- |
 | Core | `@file-viewer/core` | `2.0.0` | `main` | Framework-neutral format matrix, preview capabilities, events, and operation APIs |
-| Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Native Vue 3 component package now maintained from the independent `packages/wrappers/vue3` package line |
+| Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Native Vue 3 component package now maintained from the independent `packages/components/vue3` package line |
 | Vue 2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Native Vue 2 package with the same format coverage and API semantics |
-| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | wrapper package | Native React component backed by the shared core |
-| Vanilla JavaScript | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | wrapper package | `mountViewer(container, options)` native DOM mounting and asset tooling |
+| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | component package | Native React component backed by the shared core |
+| Vanilla JavaScript | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | component package | `mountViewer(container, options)` native DOM mounting and asset tooling |
 
 For intranet or offline environments, this artifact repository also ships npm tarballs under `artifacts/`:
 
@@ -42,7 +42,7 @@ npm install ./artifacts/flyfish-group-file-viewer-web-2.0.0.tgz
 npm install ./artifacts/flyfish-group-file-viewer-react-2.0.0.tgz
 ```
 
-The public artifact repository ships tarballs for core, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. The unscoped `file-viewer3` compatibility package is still published to npm, but its package body duplicates `@flyfish-group/file-viewer3`, so the artifact repository does not store a second copy. React and vanilla JavaScript packages are native wrappers; use npm installation for the cleanest dependency resolution.
+The public artifact repository ships tarballs for core, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. The unscoped `file-viewer3` compatibility package is still published to npm, but its package body duplicates `@flyfish-group/file-viewer3`, so the artifact repository does not store a second copy. React and vanilla JavaScript packages are native component packages; use npm installation for the cleanest dependency resolution.
 
 If you use pnpm 10 and see `Ignored build scripts: @flyfish-group/file-viewer-web`, run:
 
@@ -61,18 +61,18 @@ GitHub Releases provide all distribution downloads:
 | File | Purpose |
 | --- | --- |
 | `file-viewer-v2-*-demo.tar.gz` | Main demo static site with the primary viewer and `/compare.html` document comparison page |
-| `file-viewer-v2-*-wrapper-demo.tar.gz` | React / vanilla JavaScript wrapper demo site |
+| `file-viewer-v2-*-component-demo.tar.gz` | React / vanilla JavaScript component demo site |
 | `file-viewer-v2-*-lib-dist.tar.gz` | Vue 3 library dist for offline inspection or self-hosted packaging |
 | `file-viewer-v2-*-docs.tar.gz` | Documentation site static output |
 | `file-viewer-core-*.tgz` | `@file-viewer/core` pure TypeScript foundation tarball |
 | `file-viewer-vue3-*.tgz` | Vue 3 standard package tarball |
-| `file-viewer-vue2.7-*.tgz` | Vue 2.7 standard wrapper tarball |
-| `file-viewer-vue2.6-*.tgz` | Vue 2.6 standard wrapper tarball |
-| `file-viewer-react-*.tgz` | React 18/19 standard wrapper tarball |
-| `file-viewer-react-legacy-*.tgz` | React 16.8/17 standard wrapper tarball |
-| `file-viewer-web-*.tgz` | Pure Web standard wrapper with viewer asset tooling |
-| `file-viewer-jquery-*.tgz` | jQuery standard wrapper tarball |
-| `file-viewer-svelte-*.tgz` | Svelte standard wrapper tarball |
+| `file-viewer-vue2.7-*.tgz` | Vue 2.7 standard component package tarball |
+| `file-viewer-vue2.6-*.tgz` | Vue 2.6 standard component package tarball |
+| `file-viewer-react-*.tgz` | React 18/19 standard component package tarball |
+| `file-viewer-react-legacy-*.tgz` | React 16.8/17 standard component package tarball |
+| `file-viewer-web-*.tgz` | Pure Web standard component package with viewer asset tooling |
+| `file-viewer-jquery-*.tgz` | jQuery standard component package tarball |
+| `file-viewer-svelte-*.tgz` | Svelte standard component package tarball |
 | `flyfish-group-file-viewer3-*.tgz` | Vue 3 local npm package |
 | `flyfish-group-file-viewer-*.tgz` | Vue 2.7 local npm package |
 | `flyfish-group-file-viewer-web-*.tgz` | Historical vanilla JavaScript package with `mountViewer` native mounting and asset tooling |
@@ -83,9 +83,9 @@ The unscoped `file-viewer3` historical alias remains part of the npm release flo
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
 ## Standard Ecosystem Packages and Public Repositories
 
-This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public artifact repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public wrapper repositories from one place.
+This section is generated from `ecosystem/wrappers.json` and `packages/core/src/formats.ts`. The public repository carries the same index so users can find the standard npm packages, historical compatibility packages, and public component repositories from one place.
 
-Core foundation package: `@file-viewer/core`. Core source is maintained only in the private Gitea repository; public GitHub/Gitee repositories publish wrapper source, minified build artifacts, demos, documentation output, examples, and tarballs.
+Core foundation package: `@file-viewer/core`. Core source is public: https://github.com/flyfish-dev/file-viewer-core and https://gitee.com/flyfish-dev/file-viewer-core. Public repositories provide split package sources, demos, documentation, build artifacts, examples, and tarballs; the private Gitea aggregate remains available for sponsorship, unified automation, and priority support.
 
 | Framework | Standard npm package | Entrypoints | GitHub | Gitee | Historical aliases |
 | --- | --- | --- | --- | --- | --- |
@@ -114,8 +114,8 @@ The shared core currently declares 23 preview pipelines and 194 file extensions.
 - **Controlled theming.** `options.theme` supports `light`, `dark`, and `system`. Light business UIs can lock the viewer to `light` even when the operating system is in dark mode.
 - **PDF toolbar ergonomics.** `toolbar.position` supports `auto`, `top`, and `bottom-right`. In `auto` mode, PDF uses a bottom-right floating operation bar to avoid duplicating the PDF navigation toolbar.
 - **Demo and comparison views.** The repository includes the main demo and a standalone `/compare.html` page for side-by-side document comparison.
-- **Consistent native wrapper experience.** Core focuses on preview capabilities while Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte wrappers expose the same option, event, search, zoom, print, and export semantics in each ecosystem.
-- **Artifact-first delivery.** This public repository contains minified build artifacts, static demos, documentation output, sample files, Docker deployment assets, and npm tarballs. It does not contain the private source tree.
+- **Consistent native component package experience.** Core focuses on preview capabilities while Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages expose the same option, event, search, zoom, print, and export semantics in each ecosystem.
+- **Open source plus artifact delivery.** Public repositories contain core, standard component packages, compatibility packages, demos, documentation source, minified build artifacts, sample files, Docker deployment assets, and npm tarballs. The private Gitea aggregate remains valuable for the complete workspace, unified release automation, sponsorship, and priority support.
 
 ## Supported Formats
 
@@ -234,7 +234,7 @@ The Vue 2 and Vue 3 package lines share the same user-facing capabilities and op
 
 ## React Integration
 
-The React package is a native wrapper. It renders a React container and mounts the complete viewer through its local controller on top of `@file-viewer/core` and the core browser engine.
+The React package is a native component package. It renders a React container and mounts the complete viewer through its local controller on top of `@file-viewer/core` and the core browser engine.
 
 ```bash
 npm install @file-viewer/react
@@ -325,7 +325,7 @@ npx file-viewer-copy-assets ./public/file-viewer
 | `hooks` | Vue component lifecycle hooks for load and unload events. |
 | `beforeOperation` | Vue component guard before download, print, HTML export, or zoom actions. Return `false` to cancel. |
 
-React and vanilla JavaScript integrations use `onViewerEvent` or `onEvent` to receive lifecycle and operation events. Vue wrappers can also pass function hooks directly through `options`.
+React and vanilla JavaScript integrations use `onViewerEvent` or `onEvent` to receive lifecycle and operation events. Vue packages can also pass function hooks directly through `options`.
 
 ## Printing, Exporting, and Watermarks
 
@@ -346,7 +346,7 @@ It supports two-pane document preview, built-in samples, URL input, local upload
 
 ## Private Deployment
 
-For native wrapper integrations, install the matching npm package in your application. If you also want to self-host worker, WASM, and sample assets, keep the copied asset directory intact:
+For native component package integrations, install the matching npm package in your application. If you also want to self-host worker, WASM, and sample assets, keep the copied asset directory intact:
 
 ```txt
 file-viewer/assets/*
@@ -359,9 +359,9 @@ The artifact repository also contains:
 
 | Path | Purpose |
 | --- | --- |
-| `dist/` | Minified library build artifacts |
+| `dist/` | Minified Vue 3 library build artifacts copied from `packages/components/vue3/dist` |
 | `demo/` | Static production demo, including `index.html` and `compare.html` |
-| `wrapper-demo/` | React and vanilla JavaScript integration demo |
+| `component-demo/` | React and vanilla JavaScript integration demo |
 | `docs/` | Static documentation site output |
 | `example/` | Sample files used by the demo |
 | `artifacts/` | npm tarballs and packaged static build archives |
@@ -386,15 +386,15 @@ http://localhost:8080/compare.html
 
 If you build the image yourself, use the provided `Dockerfile` and keep the static viewer assets, examples, and vendor WASM files together.
 
-## Public Artifacts vs Source Code
+## Public Source and Aggregate Workspace
 
-This public repository is for artifact delivery. It contains minified build output, static demo sites, sample files, documentation output, and npm tarballs. It intentionally does not include the private source tree. The Gitee mirror is synchronized from a clean latest-artifact snapshot when needed, so domestic users can clone the full expanded artifact repository without inheriting oversized binary release history.
+This public repository now carries the open-source core, demo, standard component packages, compatibility aliases, documentation source, build output, sample files, documentation output, and npm tarballs. The Gitee mirror is synchronized from a clean latest snapshot when needed, so domestic users can clone the full expanded repository without inheriting oversized binary release history.
 
-If you need source code access, second development resources, or commercial customization, use the self-service source access portal:
+The private Gitea workspace remains valuable as the complete aggregate repository with unified release automation, integration history, sponsorship, and priority support:
 
 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
-Source access can be opened from the shop page with a small lemonade-level support for the maintainers. This keeps legitimate second development and commercial evaluation straightforward without mixing source delivery into the public artifact repository.
+The shop is now a lemonade-level sponsorship and priority support channel rather than a source-code paywall. Public GitHub repositories stay split by package; the private aggregate workspace is still useful for teams that want one consolidated source tree and faster maintainer help.
 
 ## License and Attribution
 

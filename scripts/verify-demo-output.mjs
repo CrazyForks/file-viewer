@@ -1,7 +1,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-const outputDir = process.env.DEMO_OUTPUT_DIR || process.env.CLOUDFLARE_PAGES_OUTPUT_DIR || 'dist'
+const outputDir =
+  process.env.DEMO_OUTPUT_DIR ||
+  process.env.CLOUDFLARE_PAGES_OUTPUT_DIR ||
+  'apps/viewer-demo/dist'
 const requiredHtmlEntries = ['index.html', 'compare.html']
 
 const fail = message => {
