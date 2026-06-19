@@ -68,6 +68,8 @@
     "verify:public-main": "node scripts/verify-public-main.mjs",
     "verify:production-entrypoints": "node scripts/verify-production-entrypoints.mjs",
     "verify:migration-gates": "pnpm type-check && pnpm build-only && pnpm docs:build && pnpm verify:format-support && pnpm verify:ecosystem-checklist && pnpm verify:ecosystem-readmes && pnpm verify:smoke-matrix && pnpm verify:experience-baseline && pnpm verify:branch-roles && pnpm verify:core-api && pnpm verify:core-framework-neutral && pnpm components:verify --source-only && pnpm verify:wrapper-api && pnpm verify:wrapper-options && pnpm verify:compatibility-api && pnpm verify:compatibility-readmes && pnpm verify:ecosystem-versions && pnpm verify:ecosystem-tarballs && pnpm release:ecosystem:list",
+    "branch:cutover:prepare": "node scripts/prepare-branch-cutover.mjs",
+    "branch:cutover:verify": "node scripts/prepare-branch-cutover.mjs --verify-only",
     "audit:ecosystem-status": "node scripts/audit-ecosystem-status.mjs",
     "deploy:cloudflare": "pnpm build-only && pnpm verify:demo-output && node scripts/deploy-cloudflare-pages.mjs",
     "docker:build": "node scripts/docker-buildx.mjs --load",

@@ -121,6 +121,26 @@ pnpm docs:build
 - `obfuscate` 处理 `packages/components/vue3/dist/` 下的 JS/MJS 产物，开源总仓库的兼容 `dist/` 使用这一步之后同步出的产物。
 - `docs:build` 生成 `docs/.vitepress/dist`，这是文档站的静态产物。
 
+## 分支切换预演
+
+当前分支角色切换必须先生成本地快照，再人工核对。不要直接把聚合仓 `v3` 推成 GitHub/Gitee 开源总仓库，也不要跳过预演去重写私有 Gitea 的 `main` / `v2` / `v3`。
+
+```bash
+cd /Users/wangyu/IdeaProjects/file-viewer3
+pnpm branch:cutover:prepare
+pnpm branch:cutover:verify
+```
+
+预演目录在 `.release/branch-cutover/`:
+
+| 目录 | 目标分支 | 目标职责 |
+| --- | --- | --- |
+| `main-core` | `main` | `@file-viewer/core` pure TypeScript core 主线 |
+| `v2-vue2.7-component` | `v2` | `@file-viewer/vue2.7` 和 `@flyfish-group/file-viewer` Vue 2.7 组件线 |
+| `v3-vue3-component` | `v3` | `@file-viewer/vue3`、`@flyfish-group/file-viewer3`、`file-viewer3` Vue 3 组件线 |
+
+每个目录都必须包含 `package.json`、`README.md`、`README.en.md`、`LICENSE`、`BRANCH_ROLE.md` 和 `branch-cutover-manifest.json`，并且不能包含 `node_modules/`、`dist/` 或 `workspace:` 依赖范围。确认这些快照之后，才进入远端分支替换和 npm 发布。
+
 ## npm 发布
 
 所有标准包和历史兼容包使用统一生态发布脚本:
