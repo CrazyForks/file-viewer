@@ -1,11 +1,16 @@
 import { default as FileViewer } from './components/FileViewer';
 import { App } from 'vue';
+import { FileViewerExpose } from './common/type';
 declare interface FileViewerInstaller {
     /**
      * 全局注册 `<file-viewer>` 组件。
      */
-    install(app: App): void;
+    install(app: App, options?: FileViewerVue3PluginOptions): void;
 }
+export interface FileViewerVue3PluginOptions {
+    componentName?: string;
+}
+export type FileViewerVue3Handle = FileViewerExpose;
 /**
  * Vue3 插件安装器。
  *
@@ -14,9 +19,12 @@ declare interface FileViewerInstaller {
  */
 declare class Installer implements FileViewerInstaller {
     private installed;
-    install(app: App): void;
+    install(app: App, options?: FileViewerVue3PluginOptions): void;
 }
 declare const _default: Installer;
 export default _default;
 export { FileViewer };
-export type { FileRef, FileRenderExportAdapter, FileRenderExportMode, FileRenderExportOptions, FileViewerAiOptions, FileViewerArchiveOptions, FileViewerBeforeOperation, FileViewerDocumentAnchor, FileViewerDocumentChunk, FileViewerLifecycleContext, FileViewerLifecycleHooks, FileViewerLifecyclePhase, FileViewerOperationAvailability, FileViewerOperationContext, FileViewerOperationType, FileViewerOptions, FileViewerPdfOptions, FileViewerSearchMatch, FileViewerSearchOptions, FileViewerSearchState, FileViewerSourceType, FileViewerToolbarOptions, FileViewerToolbarPosition, FileViewerThemeMode, FileViewerTypstOptions, FileViewerWatermarkOptions, FileViewerZoomProvider, FileViewerZoomState } from './common/type';
+export { createFlyfishFileViewer, mountFlyfishFileViewer } from './native';
+export type { CreateFlyfishFileViewerOptions, FlyfishFileViewerNativeController, FlyfishFileViewerNativeSource } from './native';
+export type { FileRef, ViewerAiOptions, ViewerArchiveOptions, ViewerCadOptions, ViewerController, ViewerControllerAccessor, ViewerControllerHandle, ViewerDocxOptions, ViewerEvent, ViewerEventHandler, ViewerEventType, ViewerFetchFile, ViewerFetchInput, ViewerMountOptions, ViewerOptions, ViewerPdfOptions, ViewerSpreadsheetOptions, ViewerCoreOptions, ViewerSearchOptions, ViewerSourceInput, ViewerThemeMode, ViewerToolbarOptions, ViewerToolbarPosition, ViewerTypstOptions, ViewerWatermarkOptions, ViewerLifecycleContext, ViewerOperationContext, ViewerState, ViewerStateListener, } from './controller';
+export type { FileRenderContext, FileRenderExportAdapter, FileRenderExportMode, FileRenderExportOptions, FileViewerAiOptions, FileViewerArchiveOptions, FileViewerBeforeOperation, FileViewerCadDwfLineWeightMode, FileViewerCadOptions, FileViewerCadRenderer, FileViewerDocxOptions, FileViewerDocumentAnchor, FileViewerDocumentChunk, FileViewerEmits, FileViewerEventMap, FileViewerExpose, FileViewerLifecycleContext, FileViewerLifecycleHooks, FileViewerLifecyclePhase, FileViewerOperationAvailability, FileViewerOperationContext, FileViewerOperationType, FileViewerOptions, FileViewerPdfOptions, FileViewerSpreadsheetOptions, FileViewerProps, FileViewerSearchMatch, FileViewerSearchOptions, FileViewerSearchProvider, FileViewerSearchState, FileViewerSourceType, FileViewerToolbarOptions, FileViewerToolbarPosition, FileViewerThemeMode, FileViewerTypstOptions, FileViewerWatermarkOptions, FileViewerZoomProvider, FileViewerZoomState } from './common/type';

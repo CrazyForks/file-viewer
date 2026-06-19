@@ -14,7 +14,7 @@
   columns: (1fr, 1fr, 1fr),
   gutter: 10pt,
   box(fill: rgb("#f0fdf4"), stroke: rgb("#bbf7d0"), inset: 10pt, radius: 5pt)[
-    #text(weight: "bold", fill: rgb("#166534"))[Async Runtime]
+    #text(weight: "bold", fill: rgb("#166534"))[Async Engine]
     #linebreak()
     WASM compiler and renderer are loaded only for `.typ` documents.
   ],

@@ -1,25 +1,25 @@
 {
   "name": "file-viewer",
-  "version": "1.0.23",
-  "runtime": {
+  "version": "1.0.26",
+  "environment": {
     "framework": "vue3",
     "viewerSite": "https://viewer.flyfish.dev",
     "docs": "https://doc.flyfish.dev"
   },
   "packages": {
-    "vue3": "@flyfish-group/file-viewer3@1.0.23",
-    "vue2": "@flyfish-group/file-viewer@1.0.23"
+    "vue3": "@flyfish-group/file-viewer3@1.0.26",
+    "vue2": "@flyfish-group/file-viewer@1.0.26"
   },
   "features": [
     {
       "group": "document",
-      "extensions": ["doc", "docx", "pdf", "ofd", "typ", "typst"],
+      "extensions": ["doc", "docx", "docm", "dot", "dotx", "dotm", "rtf", "odt", "pdf", "ofd", "typ", "typst"],
       "lazyLoaded": true,
       "defaultScale": "fit-width"
     },
     {
       "group": "drawing",
-      "extensions": ["dxf", "dwg", "dwf", "dwfx", "xps", "excalidraw", "drawio", "dio"],
+      "extensions": ["dxf", "dwg", "dwf", "dwfx", "xps", "geojson", "kml", "gpx", "shp", "excalidraw", "drawio", "dio"],
       "notes": ["CAD uses @flyfish-dev/cad-viewer", "DWG uses Worker + LibreDWG WASM", "DWF/DWFx/XPS use native dwf-viewer", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
     },
     {
@@ -36,9 +36,15 @@
     },
     {
       "group": "source",
-      "extensions": ["js", "ts", "tsx", "vue", "json", "yaml", "sql"],
+      "extensions": ["js", "ts", "tsx", "vue", "react", "json", "jsonc", "json5", "ipynb", "yaml", "toml", "proto", "hcl", "tex", "gv", "http", "sql", "rb", "swift", "kt"],
       "renderer": "highlight.js",
       "executeHtml": false
+    },
+    {
+      "group": "asset-data",
+      "extensions": ["ttf", "otf", "woff", "woff2", "psd", "ai", "eps", "sqlite", "wasm", "parquet", "avro", "webarchive"],
+      "renderer": "native-or-structured-parser",
+      "lazyLoaded": true
     }
   ],
   "qualityGate": {
@@ -46,5 +52,5 @@
     "build": true,
     "browserSmoke": ["sample-picker", "code-preview", "pdf-toolbar"]
   },
-  "updatedAt": "2026-06-12T12:30:00+08:00"
+  "updatedAt": "2026-06-17T10:30:00+08:00"
 }

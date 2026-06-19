@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<preview-suite name="Flyfish Viewer" version="1.0.23">
+<preview-suite name="Flyfish Viewer" version="1.0.26">
   <environment framework="vue3" bundler="vite" />
 
   <groups>
     <group id="document" label="Documents">
       <format extension="docx" renderer="docx-preview" async="true" />
+      <format extension="rtf" renderer="rtf.js" async="true" />
+      <format extension="odt" renderer="open-document" async="true" />
       <format extension="pdf" renderer="pdfjs-dist" navigation="true" />
       <format extension="ofd" renderer="DLTech21/ofd.js" async="true" />
       <format extension="typ" renderer="typst.ts" async="true" paged="true" />
@@ -16,6 +18,9 @@
       <format extension="dwf" renderer="@flyfish-dev/cad-viewer" native="true" />
       <format extension="dwfx" renderer="@flyfish-dev/cad-viewer" native="true" />
       <format extension="xps" renderer="@flyfish-dev/cad-viewer" native="true" />
+      <format extension="geojson" renderer="geojson-svg" async="true" />
+      <format extension="kml" renderer="@tmcw/togeojson" async="true" />
+      <format extension="gpx" renderer="@tmcw/togeojson" async="true" />
       <format extension="excalidraw" renderer="@excalidraw/excalidraw" async="true" />
       <format extension="drawio" renderer="diagrams.net GraphViewer" async="true" />
       <format extension="dio" renderer="diagrams.net GraphViewer" async="true" />
@@ -29,8 +34,16 @@
     </group>
     <group id="source" label="Code and Data">
       <format extension="ts" renderer="highlight.js" />
+      <format extension="jsonc" renderer="highlight.js" />
+      <format extension="toml" renderer="highlight.js" />
+      <format extension="proto" renderer="highlight.js" />
       <format extension="json" renderer="highlight.js" />
       <format extension="vue" renderer="highlight.js" />
+    </group>
+    <group id="asset-data" label="Assets and Data">
+      <format extension="sqlite" renderer="sql.js" async="true" />
+      <format extension="wasm" renderer="WebAssembly.Module" async="true" />
+      <format extension="psd" renderer="ag-psd" async="true" />
     </group>
     <group id="ebook" label="Ebooks">
       <format extension="epub" renderer="epubjs" async="true" />

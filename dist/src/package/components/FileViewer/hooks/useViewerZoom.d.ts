@@ -1,5 +1,5 @@
 import { Ref } from 'vue';
-import { FileViewerOperationType, FileViewerZoomState } from '../../../../../package/common/type';
+import { FileViewerOperationType } from '@file-viewer/core';
 interface UseFileViewerZoomOptions {
     output: Ref<HTMLDivElement | null>;
     enabled: () => boolean;
@@ -8,11 +8,19 @@ interface UseFileViewerZoomOptions {
 /**
  * FileViewer 组件层的缩放门面。
  *
- * 通用 provider 协议放在 `src/package/use` 里供各渲染器注册；
- * 这里只负责把缩放按钮接入现有操作前置钩子和组件 ref API。
+ * provider 注册、状态读取和 MutationObserver 调度由 core controller 负责；
+ * 这里只保留 Vue 响应式状态同步、操作前置钩子和组件 ref API。
  */
 export declare const useViewerZoom: ({ output, enabled, runBeforeOperation }: UseFileViewerZoomOptions) => {
-    getZoomState: () => FileViewerZoomState;
+    hasZoomProvider(): boolean;
+    refreshZoomProvider(): import('@file-viewer/core').FileViewerZoomProvider | null;
+    startZoomObserver(): import('@file-viewer/core').FileViewerZoomState;
+    stopZoomObserver(): import('@file-viewer/core').FileViewerZoomState;
+    clearZoomProvider(): import('@file-viewer/core').FileViewerZoomState;
+    getZoomState(): import('@file-viewer/core').FileViewerZoomState;
+    zoomIn(): Promise<import('@file-viewer/core').FileViewerZoomState>;
+    zoomOut(): Promise<import('@file-viewer/core').FileViewerZoomState>;
+    resetZoom(): Promise<import('@file-viewer/core').FileViewerZoomState>;
     zoomState: {
         scale: number;
         label: string;
@@ -22,13 +30,5 @@ export declare const useViewerZoom: ({ output, enabled, runBeforeOperation }: Us
         minScale?: number | undefined;
         maxScale?: number | undefined;
     };
-    hasZoomProvider: () => boolean;
-    refreshZoomProvider: () => import('../../../../../package/common/type').FileViewerZoomProvider | null;
-    startZoomObserver: () => void;
-    stopZoomObserver: () => void;
-    clearZoomProvider: () => void;
-    zoomIn: () => Promise<FileViewerZoomState>;
-    zoomOut: () => Promise<FileViewerZoomState>;
-    resetZoom: () => Promise<FileViewerZoomState>;
 };
 export {};

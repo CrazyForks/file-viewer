@@ -1,4 +1,4 @@
-export const runtime = 'browser-module'
+export const environment = 'browser-module'
 
 const rendererLoaders = {
   pdf: () => import('/src/package/vendors/pdf'),

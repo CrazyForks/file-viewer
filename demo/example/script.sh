@@ -2,7 +2,7 @@
 set -eu
 
 ROOT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
-EXAMPLE_DIR="$ROOT_DIR/public/example"
+EXAMPLE_DIR="$ROOT_DIR/apps/viewer-demo/public/example"
 
 count_files() {
   find "$EXAMPLE_DIR" -type f | wc -l | tr -d ' '

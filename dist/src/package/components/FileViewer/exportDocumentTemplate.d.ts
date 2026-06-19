@@ -1,9 +1,2 @@
-export interface BuildExportHtmlDocumentOptions {
-    contentHtml: string;
-    includeDocumentStyles?: boolean;
-    printStyle?: string;
-    title: string;
-    watermarkInlineStyle?: string;
-}
-export declare const collectDocumentStyles: () => string;
-export declare const buildExportHtmlDocument: ({ contentHtml, includeDocumentStyles, printStyle, title, watermarkInlineStyle }: BuildExportHtmlDocumentOptions) => string;
+export { buildExportHtmlDocument, collectDocumentStyles, } from '@file-viewer/core';
+export type { BuildExportHtmlDocumentOptions, } from '@file-viewer/core';

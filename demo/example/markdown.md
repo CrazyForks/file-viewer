@@ -74,7 +74,7 @@ the paper, and table borders should stay visible without looking heavy.
 {
   "viewer": "flyfish",
   "theme": "isolated document surface",
-  "formats": ["pdf", "docx", "xlsx", "ofd", "typst", "markdown", "code"],
+  "formats": ["pdf", "docx", "xlsx", "ofd", "typst", "geojson", "midi", "sqlite", "markdown", "code"],
   "buttons": {
     "download": true,
     "print": "dynamic",
