@@ -43,7 +43,7 @@ const releaseDir = join(sourceRoot, '.release', `file-viewer-v2-${version}`)
 const demoStagingDir = join(releaseDir, 'demo')
 const wrapperDemoStagingDir = join(releaseDir, 'component-demo')
 const ecosystemPackDir = join(releaseDir, 'ecosystem')
-const legacyIntegrationDemoArtifactSegment = ['adapter', 'demo'].join('-')
+const legacyStandaloneDemoArtifactSegment = ['adapter', 'demo'].join('-')
 const viewerDemoDistDir = join(sourceRoot, 'apps', 'viewer-demo', 'dist')
 const viewerDemoExampleDir = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example')
 const vue3LibraryDistDir = join(sourceRoot, 'packages', 'components', 'vue3', 'dist')
@@ -316,7 +316,7 @@ async function removeOldArtifacts(artifactsDir) {
   for (const entry of entries) {
     if (
       /^file-viewer-v[23]-.*-(demo|component-demo|lib-dist|docs)\.tar\.gz$/.test(entry) ||
-      entry.includes(`-${legacyIntegrationDemoArtifactSegment}.tar.gz`)
+      entry.includes(`-${legacyStandaloneDemoArtifactSegment}.tar.gz`)
     ) {
       await removePath(join(artifactsDir, entry))
     }
@@ -464,7 +464,7 @@ const artifactsDir = join(publicRepoDir, 'artifacts')
 await removeOldArtifacts(artifactsDir)
 
 await removePath(join(publicRepoDir, 'demo'))
-await removePath(join(publicRepoDir, legacyIntegrationDemoArtifactSegment))
+await removePath(join(publicRepoDir, legacyStandaloneDemoArtifactSegment))
 await removePath(join(publicRepoDir, 'component-demo'))
 await removePath(join(publicRepoDir, 'docs'))
 await removePath(join(publicRepoDir, 'docs-dist'))

@@ -63,7 +63,7 @@ for (const requiredExport of ['FlyfishFileViewerWeb', 'mountViewer', 'createView
 }
 for (const legacyExport of ['mountViewerFrame', 'postFileToViewer', 'viewerUrl', 'targetOrigin']) {
   if (iifeBundle.includes(legacyExport)) {
-    fail(`IIFE helper bundle must not expose legacy iframe API ${legacyExport}.`)
+    fail(`IIFE helper bundle must not expose legacy standalone-page API ${legacyExport}.`)
   }
 }
 

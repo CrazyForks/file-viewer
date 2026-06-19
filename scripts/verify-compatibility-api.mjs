@@ -107,7 +107,7 @@ function requireEntry(packageName) {
 
 function assertNoLegacyIframeTokens(source, label) {
   for (const token of forbiddenLegacyTokens) {
-    assert(!source.includes(token), `${label} must not contain legacy iframe API token ${token}`)
+    assert(!source.includes(token), `${label} must not contain legacy standalone-page API token ${token}`)
   }
 }
 

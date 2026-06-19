@@ -150,7 +150,7 @@ function assertTokens(source, tokens, label) {
 
 function assertNoLegacyIframeApi(source, label) {
   for (const token of forbiddenLegacyTokens) {
-    assert(!hasToken(source, token), `${label} must not expose legacy iframe API token ${token}`)
+    assert(!hasToken(source, token), `${label} must not expose legacy standalone-page API token ${token}`)
   }
 }
 

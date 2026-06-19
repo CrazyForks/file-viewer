@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { build } from 'vite'
+import { createRequire } from 'node:module'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -10,12 +10,15 @@ const packageDir = resolve(sourceRoot, process.argv[2] || 'packages/compat/web')
 const entry = join(packageDir, 'src', 'global.ts')
 const outDir = join(packageDir, 'dist')
 const fileName = 'flyfish-file-viewer-web.iife.js'
+const requireFromPackage = createRequire(join(packageDir, 'package.json'))
 
 if (!existsSync(entry)) {
   throw new Error(`Missing web global entry: ${entry}`)
 }
 
 await mkdir(outDir, { recursive: true })
+
+const { build } = await import(requireFromPackage.resolve('vite'))
 
 await build({
   configFile: false,

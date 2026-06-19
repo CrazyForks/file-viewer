@@ -125,7 +125,7 @@
 - [ ] 私有 Gitea `main` 分支提升为 pure TypeScript core 主线。
 - [ ] 旧 `main` 分支迁移为 `v2`，对应 Vue2.7 标准组件包。
 - [ ] 当前 `v3` 基线提升为新的 core `main` 前，完成源码、产物、文档和发布记录审计。
-- [ ] `ecosystem/branch-roles.json`、`ecosystem/wrappers.json`、`WRAPPER_ECOSYSTEM.md` 与实际远端分支一致。
+- [ ] `ecosystem/branch-roles.json`、`ecosystem/wrappers.json`、`README.md`、`README.en.md` 与实际远端分支一致。
 
 ## Phase 4: 标准组件包实现
 
