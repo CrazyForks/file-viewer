@@ -27,6 +27,7 @@
 - 公开成品仓库: GitHub `flyfish-dev/file-viewer` 已推送 `c2d714f`，Gitee `flyfish-dev/file-viewer` 已推送 `eb7ed9f`；两端 tree hash 均为 `747f6f35494f35383b6e5de563142cffebf9f369`，内容一致。
 - Wrapper GitHub 仓库: 8 个标准 wrapper 仓库已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
 - Wrapper Gitee 仓库: 8 个标准 wrapper 仓库仍返回 404；当前可用 token 创建仓库返回 `401 Unauthorized: Access token does not exist`，Gitee 不支持对不存在仓库直接 push，待有效 Gitee token 或网页创建权限。
+- Demo / 文档站: `pnpm deploy:cloudflare` 已部署 demo 到 Cloudflare Pages `https://6b7ec5e0.flyfish-file-viewer.pages.dev`，`pnpm docs:deploy:cloudflare` 已部署文档站到 `https://a2fbb134.flyfish-file-viewer-docs.pages.dev`；正式域名 `https://viewer.flyfish.dev` 与 `https://doc.flyfish.dev` 均返回 200，并能读取到本轮构建内容。
 - npm 发布: `@file-viewer/*` 标准包尚未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
 
 ## 总体不变量
@@ -236,6 +237,8 @@
 - [x] `pnpm verify:production-entrypoints`
 - [x] `pnpm verify:browser-smoke`
 - [x] `pnpm wrappers:standalone-smoke`
+- [x] `pnpm deploy:cloudflare`
+- [x] `pnpm docs:deploy:cloudflare`
 - [x] `node scripts/sync-public-artifacts.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.0/ecosystem/flyfish-group-file-viewer-2.0.0.tgz`
 - [x] `pnpm test`
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
@@ -249,6 +252,6 @@
 - [ ] 所有历史兼容包和别名包均发布成功。
 - [ ] 所有 wrapper 的 README 中英文完整。
 - [ ] 公开产物仓库包含最新全渠道构建产物。
-- [ ] 文档站和 Demo 站均上线最新内容。
+- [x] 文档站和 Demo 站均上线最新内容。
 - [ ] 本地和生产 smoke 证明各生态体验与当前 v3 基线一致。
 - [ ] 发布记录能证明 npm、GitHub、Gitee、Gitea、Demo、文档站、公开成品仓库的版本口径一致。

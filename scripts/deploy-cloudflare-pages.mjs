@@ -4,8 +4,21 @@ const projectName = process.env.CLOUDFLARE_PAGES_PROJECT || 'flyfish-file-viewer
 const branch = process.env.CLOUDFLARE_PAGES_BRANCH || 'v3'
 const outputDir = process.env.CLOUDFLARE_PAGES_OUTPUT_DIR || 'dist'
 
-const command = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+function commandExists(command, args = ['--version']) {
+  const result = spawnSync(command, args, {
+    encoding: 'utf8',
+    shell: false,
+    stdio: 'pipe'
+  })
+  return result.status === 0
+}
+
+const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+const usePnpmDlx = commandExists(pnpmCommand)
+const command = usePnpmDlx ? pnpmCommand : npxCommand
 const args = [
+  ...(usePnpmDlx ? ['dlx'] : ['--yes']),
   'wrangler',
   'pages',
   'deploy',
