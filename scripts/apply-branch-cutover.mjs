@@ -196,14 +196,14 @@ try {
         }
       }
     }
-    const mainPushArgs = []
+    const mainPushArgs = ['push']
     if (mainRemoteHead) {
       mainPushArgs.push(`--force-with-lease=refs/heads/main:${mainRemoteHead}`)
     }
     mainPushArgs.push(remoteName, 'HEAD:refs/heads/main')
     run('git', mainPushArgs)
     for (const target of materializedTargets) {
-      const pushArgs = []
+      const pushArgs = ['push']
       if (target.currentRemoteHead) {
         pushArgs.push(`--force-with-lease=refs/heads/${target.branch}:${target.currentRemoteHead}`)
       }
