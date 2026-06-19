@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
+import { normalizeReleaseError } from './lib/release-error-normalizer.mjs'
 import { describeReleaseGaps } from './lib/release-gap-classifier.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
@@ -110,7 +111,9 @@ function firstRefHash(output) {
 }
 
 function commandError(result) {
-  return result.ok ? '' : result.error || result.stderr || result.stdout || result.signal || 'unknown error'
+  return result.ok
+    ? ''
+    : normalizeReleaseError(result.error || result.stderr || result.stdout || result.signal || 'unknown error')
 }
 
 async function lsRemoteHead(url, branch = 'main') {
@@ -180,7 +183,7 @@ async function githubRelease(tag) {
       hasManifest: false,
       hasStatus: false,
       hasSchema: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: normalizeReleaseError(error instanceof Error ? error.message : String(error))
     }
   }
 }

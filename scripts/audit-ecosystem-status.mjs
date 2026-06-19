@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
+import { normalizeReleaseError } from './lib/release-error-normalizer.mjs'
 import { describeReleaseGaps } from './lib/release-gap-classifier.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
@@ -72,7 +73,7 @@ function lsRemoteHead(url, branch = 'main') {
   return {
     ok: result.ok && Boolean(firstRefHash(result.stdout)),
     hash: firstRefHash(result.stdout),
-    error: result.ok ? '' : result.error || result.stderr || result.stdout || result.signal
+    error: result.ok ? '' : normalizeReleaseError(result.error || result.stderr || result.stdout || result.signal)
   }
 }
 
@@ -81,7 +82,7 @@ function npmVersion(packageName) {
   return {
     ok: result.ok && Boolean(result.stdout),
     version: result.stdout.replace(/^"|"$/g, ''),
-    error: result.ok ? '' : result.error || result.stderr || result.stdout || result.signal
+    error: result.ok ? '' : normalizeReleaseError(result.error || result.stderr || result.stdout || result.signal)
   }
 }
 
@@ -105,7 +106,7 @@ function ghRelease(tag) {
       hasManifest: false,
       hasStatus: false,
       hasSchema: false,
-      error: result.error || result.stderr || result.stdout || result.signal
+      error: normalizeReleaseError(result.error || result.stderr || result.stdout || result.signal)
     }
   }
 
@@ -131,7 +132,7 @@ function ghRelease(tag) {
       hasManifest: false,
       hasStatus: false,
       hasSchema: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: normalizeReleaseError(error instanceof Error ? error.message : String(error))
     }
   }
 }
