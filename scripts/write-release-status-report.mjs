@@ -270,7 +270,9 @@ const report = {
   openSourceMain: {
     github: publicGithub,
     gitee: publicGitee,
-    inSync: publicGithub.ok && publicGitee.ok && publicGithub.hash === publicGitee.hash
+    inSync: publicGithub.ok && publicGitee.ok && publicGithub.hash === publicGitee.hash,
+    reportHashNote:
+      'This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Use pnpm audit:ecosystem-status for live remote heads.'
   },
   githubRelease: release,
   componentRepositories,

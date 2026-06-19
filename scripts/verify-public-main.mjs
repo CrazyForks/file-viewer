@@ -134,6 +134,12 @@ async function assertReleaseStatus(repoDir) {
   assert(status.version === version, `Release status version ${status.version} !== ${version}`)
   assert(status.sourcePolicy === 'private-complete-original-workspace', 'Release status source policy drifted')
   assert(status.openSourcePolicy === 'public-open-source-main-repository', 'Release status open-source policy drifted')
+  assert(
+    typeof status.openSourceMain?.reportHashNote === 'string' && status.openSourceMain.reportHashNote.includes('metadata-only commit'),
+    'Release status must document the self-referential open-source main hash caveat'
+  )
+  assert(typeof status.githubRelease?.hasManifest === 'boolean', 'Release status GitHub Release manifest flag missing')
+  assert(typeof status.githubRelease?.hasStatus === 'boolean', 'Release status GitHub Release status flag missing')
   assert(Array.isArray(status.componentRepositories), 'Release status component repository rows missing')
   assert(Array.isArray(status.npmPackages), 'Release status npm package rows missing')
   assert(Array.isArray(status.gaps), 'Release status gaps list missing')

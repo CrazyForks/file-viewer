@@ -187,6 +187,8 @@ pnpm verify:wrapper-github-content
 pnpm release:status:write
 ```
 
+注意: 状态报告会先生成再提交到开源总仓，因此其中记录的开源总仓 HEAD 可能落后承载该报告文件的元数据提交；需要实时远端头时，以 `pnpm audit:ecosystem-status` 的输出为准。
+
 ## npm 发布
 
 所有标准包和历史兼容包使用统一生态发布脚本:
