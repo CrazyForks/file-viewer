@@ -48,8 +48,16 @@ function lsRemote(url) {
 
 const failures = []
 let checked = 0
+const targets = [
+  {
+    id: 'core',
+    github: wrapperManifest.corePackage.github,
+    gitee: wrapperManifest.corePackage.gitee
+  },
+  ...wrapperManifest.wrappers
+]
 
-for (const wrapper of wrapperManifest.wrappers) {
+for (const wrapper of targets) {
   for (const host of hosts) {
     const url = wrapper[host]
     checked += 1
@@ -72,7 +80,7 @@ for (const wrapper of wrapperManifest.wrappers) {
 }
 
 if (failures.length) {
-  throw new Error(`Public component remote verification failed:\n${failures.join('\n')}`)
+  throw new Error(`Public core/component remote verification failed:\n${failures.join('\n')}`)
 }
 
-console.log(`Verified ${checked} public component remotes.`)
+console.log(`Verified ${checked} public core/component remotes.`)

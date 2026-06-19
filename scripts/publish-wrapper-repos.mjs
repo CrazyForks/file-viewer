@@ -36,6 +36,18 @@ const commitMessage = readArg(
 )
 const dryRun = args.includes('--dry-run')
 const push = args.includes('--push')
+const selectedHosts = new Set(
+  args
+    .filter(arg => arg.startsWith('--host='))
+    .map(arg => arg.slice('--host='.length))
+)
+const allowedHosts = new Set(['github', 'gitee'])
+for (const host of selectedHosts) {
+  if (!allowedHosts.has(host)) {
+    throw new Error(`Unsupported host ${host}. Use --host=github or --host=gitee.`)
+  }
+}
+const hosts = selectedHosts.size ? [...selectedHosts] : [...allowedHosts]
 const selectedPackages = new Set(
   args
     .filter(arg => arg.startsWith('--package='))
@@ -160,6 +172,26 @@ const remoteExists = (cwd, name) => {
   return result.status === 0
 }
 
+const fetchRemoteBranch = (cwd, remoteName, branchName) => {
+  const result = run('git', ['fetch', remoteName, branchName], cwd, {
+    allowFailure: true,
+    capture: true
+  })
+  return result.status === 0
+}
+
+const adoptRemoteBranchHistory = (cwd, remoteName, branchName) => {
+  if (dryRun || !push) {
+    return false
+  }
+  if (!fetchRemoteBranch(cwd, remoteName, branchName)) {
+    return false
+  }
+
+  run('git', ['reset', '--mixed', `${remoteName}/${branchName}`], cwd)
+  return true
+}
+
 const ensureRemote = (cwd, name, url) => {
   if (remoteExists(cwd, name)) {
     run('git', ['remote', 'set-url', name, url], cwd)
@@ -190,8 +222,18 @@ for (const target of targets) {
     run('git', ['checkout', '-B', branch], repoDir)
   }
 
-  ensureRemote(repoDir, 'origin', gitUrl(target.github))
-  ensureRemote(repoDir, 'gitee', gitUrl(target.gitee))
+  if (hosts.includes('github')) {
+    ensureRemote(repoDir, 'origin', gitUrl(target.github))
+  }
+  if (hosts.includes('gitee')) {
+    ensureRemote(repoDir, 'gitee', gitUrl(target.gitee))
+  }
+
+  const primaryRemote = hosts.includes('github') ? 'origin' : 'gitee'
+  const adoptedRemoteHistory = adoptRemoteBranchHistory(repoDir, primaryRemote, branch)
+  if (adoptedRemoteHistory) {
+    console.log(`Using existing ${primaryRemote}/${branch} history for ${target.packageName}`)
+  }
 
   run('git', ['add', '-A'], repoDir)
   if (hasStagedChanges(repoDir)) {
@@ -204,13 +246,17 @@ for (const target of targets) {
     if (!hasHeadCommit(repoDir)) {
       throw new Error(`Cannot push ${target.packageName}: repository has no commit`)
     }
-    run('git', ['push', '-u', 'origin', branch], repoDir)
-    run('git', ['push', '-u', 'gitee', branch], repoDir)
+    if (hosts.includes('github')) {
+      run('git', ['push', '-u', 'origin', branch], repoDir)
+    }
+    if (hosts.includes('gitee')) {
+      run('git', ['push', '-u', 'gitee', branch], repoDir)
+    }
   }
 
   console.log(`${push ? 'Published' : 'Prepared'} ${target.packageName} in ${repoDir}`)
 }
 
 console.log(
-  `${push ? 'Published' : 'Prepared'} ${targets.length} core/component repos from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
+  `${push ? 'Published' : 'Prepared'} ${targets.length} core/component repos to ${hosts.join(', ')} from ${outputRoot}${dryRun ? ' (dry-run)' : ''}.`
 )

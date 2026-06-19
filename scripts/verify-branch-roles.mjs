@@ -153,6 +153,20 @@ assertPublicRepository(branchRoles.publicArtifactRepository.github, branchRoles.
 assertPublicRepository(branchRoles.publicArtifactRepository.gitee, branchRoles.publicOrganization, 'Public artifact Gitee repository')
 
 const publicArtifactRepo = repositoryPath(branchRoles.publicArtifactRepository.github)
+assertPublicRepository(
+  wrapperManifest.corePackage.github,
+  wrapperManifest.organization,
+  `${wrapperManifest.corePackage.packageName} GitHub repository`
+)
+assertPublicRepository(
+  wrapperManifest.corePackage.gitee,
+  wrapperManifest.organization,
+  `${wrapperManifest.corePackage.packageName} Gitee repository`
+)
+assert(
+  repositoryPath(wrapperManifest.corePackage.github) !== publicArtifactRepo,
+  `${wrapperManifest.corePackage.packageName} must use a dedicated core repository, not the public artifact repository`
+)
 for (const wrapper of wrapperManifest.wrappers) {
   assertPublicRepository(wrapper.github, wrapperManifest.organization, `${wrapper.packageName} GitHub repository`)
   assertPublicRepository(wrapper.gitee, wrapperManifest.organization, `${wrapper.packageName} Gitee repository`)
@@ -163,5 +177,5 @@ for (const wrapper of wrapperManifest.wrappers) {
 }
 
 console.log(
-  `Verified ${branchRoles.branches.length} branch roles, aggregate origin, and ${wrapperManifest.wrappers.length} public component repositories.`
+  `Verified ${branchRoles.branches.length} branch roles, aggregate origin, and ${wrapperManifest.wrappers.length + 1} public core/component repositories.`
 )
