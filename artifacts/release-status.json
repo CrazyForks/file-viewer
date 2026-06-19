@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-19T18:21:41.116Z",
+  "generatedAt": "2026-06-19T18:25:45.660Z",
   "version": "2.0.0",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -8,23 +8,23 @@
     "repository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "policy": "private-complete-original-workspace",
-    "authoritativeCommit": "edcd1b07dced5a71b6f95697d9eabf22516ae6e1",
+    "authoritativeCommit": "3cc87051625e718d00a4d8b0fe7ce31ec2bef4ab",
     "localBranch": "v3",
-    "localCommit": "edcd1b07dced5a71b6f95697d9eabf22516ae6e1",
+    "localCommit": "3cc87051625e718d00a4d8b0fe7ce31ec2bef4ab",
     "inSync": true,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "v3",
-    "commit": "edcd1b07dced5a71b6f95697d9eabf22516ae6e1",
-    "shortCommit": "edcd1b07",
+    "commit": "3cc87051625e718d00a4d8b0fe7ce31ec2bef4ab",
+    "shortCommit": "3cc87051",
     "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "ok": true,
-    "hash": "edcd1b07dced5a71b6f95697d9eabf22516ae6e1",
+    "hash": "3cc87051625e718d00a4d8b0fe7ce31ec2bef4ab",
     "error": ""
   },
   "openSourceMain": {
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "882a0d769d141fbd01d73b7b4273ac59cf95cd7a",
+      "hash": "a7221aa3a78c2323d2c6e066dbb373458bbc2e95",
       "error": ""
     },
     "gitee": {
@@ -71,7 +71,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-0b47748d] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-core/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-core/' not found"
       }
     },
     {
@@ -89,7 +89,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-11445a85] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue3/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue3/' not found"
       }
     },
     {
@@ -107,7 +107,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-94488bb7] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.7/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.7/' not found"
       }
     },
     {
@@ -125,7 +125,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-be4a7182] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.6/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.6/' not found"
       }
     },
     {
@@ -143,7 +143,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-ac4a8ea8] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react/' not found"
       }
     },
     {
@@ -161,7 +161,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-c64b4383] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react-legacy/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react-legacy/' not found"
       }
     },
     {
@@ -179,7 +179,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-0a4380b6] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-web/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-web/' not found"
       }
     },
     {
@@ -197,7 +197,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-7b4c31b5] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-jquery/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-jquery/' not found"
       }
     },
     {
@@ -215,7 +215,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "remote: \u001b[31m[session-6042b5ab] 404 not found!\u001b[0m\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-svelte/' not found"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-svelte/' not found"
       }
     }
   ],
@@ -225,7 +225,7 @@
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fcore - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/core@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_521Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fcore - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/core@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@flyfish-group/file-viewer3",
@@ -267,60 +267,60 @@
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fvue3 - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/vue3@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_539Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fvue3 - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/vue3@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@file-viewer/vue2.7",
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fvue2.7 - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/vue2.7@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_593Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fvue2.7 - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/vue2.7@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@file-viewer/vue2.6",
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fvue2.6 - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/vue2.6@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_574Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fvue2.6 - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/vue2.6@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@file-viewer/react",
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2freact - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/react@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_608Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2freact - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/react@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@file-viewer/react-legacy",
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2freact-legacy - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/react-legacy@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_640Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2freact-legacy - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/react-legacy@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@file-viewer/web",
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fweb - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/web@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_682Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fweb - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/web@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@file-viewer/jquery",
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fjquery - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/jquery@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_622Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fjquery - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/jquery@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     },
     {
       "packageName": "@file-viewer/svelte",
       "expectedVersion": "2.0.0",
       "publishedVersion": null,
       "ok": false,
-      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fsvelte - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/svelte@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/wangyu/.npm/_logs/2026-06-19T18_21_36_703Z-debug-0.log"
+      "error": "npm warn Unknown user config \"shamefully-hoist\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"auto-install-peers\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm warn Unknown user config \"strict-peer-dependencies\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@file-viewer%2fsvelte - Not found\nnpm error 404\nnpm error 404  The requested resource '@file-viewer/svelte@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: <npm-debug-log>"
     }
   ],
   "gaps": [
-    "open-source main Gitee repository 8ddb952be08d differs from GitHub 882a0d769d14",
+    "open-source main Gitee repository 8ddb952be08d differs from GitHub a7221aa3a78c",
     "core Gitee repository missing",
     "vue3 Gitee repository missing",
     "vue2.7 Gitee repository missing",
@@ -361,11 +361,11 @@
   },
   "gapDetails": [
     {
-      "id": "gitee-open-source-main-gitee-repository-8ddb952be08d-differs-from-github-882a0d769d14",
+      "id": "gitee-open-source-main-gitee-repository-8ddb952be08d-differs-from-github-a7221aa3a78c",
       "channel": "gitee",
       "scope": "public-mirror",
       "externalBlocker": true,
-      "message": "open-source main Gitee repository 8ddb952be08d differs from GitHub 882a0d769d14",
+      "message": "open-source main Gitee repository 8ddb952be08d differs from GitHub a7221aa3a78c",
       "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
     },
     {
