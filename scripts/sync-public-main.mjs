@@ -35,6 +35,8 @@ const {
   wrapperManifest,
   entries: ecosystemPackageEntries
 } = await loadEcosystemReleaseContext(sourceRoot)
+const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
+const releaseSourceBranch = branchRoles.currentSourceBranch || currentBranch()
 const version = packageJson.version
 const vue2Tarball = resolve(
   readArg(
@@ -104,6 +106,37 @@ async function assertCleanGitRepo(repoDir, label) {
 
 function currentBranch() {
   return run('git', ['branch', '--show-current'], { capture: true })
+}
+
+function currentCommit() {
+  return run('git', ['rev-parse', 'HEAD'], { capture: true })
+}
+
+function remoteHeadForBranch(remoteName, branchName) {
+  const refs = run('git', ['ls-remote', '--heads', remoteName, branchName], { capture: true })
+  const line = refs
+    .split('\n')
+    .map(value => value.trim())
+    .find(Boolean)
+  return line ? line.split(/\s+/)[0] : ''
+}
+
+function assertReleaseSourceBranch() {
+  const sourceRemoteName = branchRoles.sourceRemote?.name || 'origin'
+  const branch = currentBranch()
+  if (branch === releaseSourceBranch) {
+    return
+  }
+  const remoteHead = remoteHeadForBranch(sourceRemoteName, releaseSourceBranch)
+  if (remoteHead && remoteHead === currentCommit()) {
+    return
+  }
+  if (process.env.FILE_VIEWER_ALLOW_NON_SOURCE_BRANCH === '1') {
+    return
+  }
+  throw new Error(
+    `Open-source main repository releases must be prepared from ${releaseSourceBranch} or an identical HEAD. Current branch ${branch || '(detached)'} does not match ${sourceRemoteName}/${releaseSourceBranch}.`
+  )
 }
 
 async function removePath(path) {
@@ -466,7 +499,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
     version,
     package: packageJson.name,
     generatedAt: new Date().toISOString(),
-    sourceBranch: currentBranch(),
+    sourceBranch: releaseSourceBranch,
     sourceCommit: run('git', ['rev-parse', '--short', 'HEAD'], { capture: true }),
     corePackage: wrapperManifest.corePackage,
     ecosystemPackages: Object.fromEntries(
@@ -535,9 +568,7 @@ async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   )
 }
 
-if (currentBranch() !== 'v3' && process.env.FILE_VIEWER_ALLOW_NON_V3 !== '1') {
-  throw new Error('Open-source main repository releases must be prepared from v3. Set FILE_VIEWER_ALLOW_NON_V3=1 only for emergency maintenance.')
-}
+assertReleaseSourceBranch()
 
 await assertCleanGitRepo(publicRepoDir, 'Open-source main repository')
 await assertOpenSourceMainRepoLayout(publicRepoDir)
