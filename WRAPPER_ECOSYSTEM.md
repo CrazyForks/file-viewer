@@ -65,6 +65,16 @@ pnpm components:publish
 
 `components:publish` runs the export and verification pipeline first, then initializes or updates each folder in `.release/wrapper-repos`, configures remotes from `ecosystem/wrappers.json`, commits the current export with `chore: sync wrapper release`, and pushes the selected branch. Use `node scripts/publish-wrapper-repos.mjs --id=react --push` or `--package=@file-viewer/react --push` when only one component package needs to be refreshed.
 
+From the private aggregate workspace, Gitee mirrors can be bootstrapped from the same manifest once an organization token has repository creation permission:
+
+```bash
+FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:create
+FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:publish
+pnpm verify:wrapper-public-remotes --host=gitee
+```
+
+`components:gitee:create` creates the core and standard component repositories under `flyfish-dev` when missing. It does not print the token and supports `--dry-run`, `--id=<wrapper>` and `--package=<name>` for targeted checks. These commands are maintainer automation in the private aggregate workspace; the open-source main repository keeps the resulting source packages and public metadata.
+
 ## npm Ecosystem Release
 
 Use the ecosystem release helper to keep core, standard wrappers and compatibility packages on the same version:

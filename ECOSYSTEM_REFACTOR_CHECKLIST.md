@@ -27,7 +27,7 @@
 - 开源总仓库: GitHub `flyfish-dev/file-viewer` 与 Gitee `flyfish-dev/file-viewer` 已同步为同一文件树；具体提交和 tree hash 以实时审计命令输出为准。
 - 开源总仓库 Release: GitHub Release `v2.0.0` 已创建并维护 18 个资产（core、标准组件包、兼容包、Demo、文档、lib dist 和 `release-manifest.json`）。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
-- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前环境没有可用 Gitee token，SSH 账号也不是 `flyfish-dev` 写权限，待有效 Gitee 组织权限后创建并推送。
+- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:publish`。
 - Demo / 文档站: 历史 Cloudflare Pages 部署曾完成并指向正式域名；本次开源总仓库定位与治理文档更新后，`viewer.flyfish.dev` 与 `doc.flyfish.dev` 的最新重部署仍待执行。
 - npm 发布: `@file-viewer/*` 标准包均仍未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
 
@@ -196,6 +196,7 @@
 - [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [x] 所有目标标准组件包 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
 - [ ] 所有目标标准组件包 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
+- [x] Gitee core/组件分仓创建与发布命令已标准化为 `components:gitee:create` / `components:gitee:publish`，但仍待有效组织 token 实际执行。
 - [ ] 所有标准组件包 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式。
 - [ ] 开源总仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址。
 - [x] core 源码进入 `file-viewer-core` 与开源总仓库，Gitea 私有仓继续作为完整聚合仓和优先支持入口。
@@ -237,6 +238,8 @@
 - [x] `pnpm audit:ecosystem-status`（只读审计 GitHub / Gitee / npm / Release 当前状态，`--strict` 可用于最终发布阻断）
 - [x] `pnpm verify:wrapper-public-remotes --host=github`
 - [ ] `pnpm verify:wrapper-public-remotes`
+- [ ] `FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:create`
+- [ ] `FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:publish`
 - [x] `pnpm verify:production-entrypoints`
 - [x] `pnpm verify:browser-smoke`
 - [x] `pnpm components:standalone-smoke`

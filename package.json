@@ -88,6 +88,8 @@
     "components:standalone-smoke": "pnpm --filter @file-viewer/core build && pnpm build:component-packages && pnpm components:export && node scripts/verify-wrapper-standalone-builds.mjs",
     "components:publish:dry-run": "pnpm components:export && node scripts/publish-wrapper-repos.mjs --dry-run",
     "components:publish": "pnpm components:export && node scripts/publish-wrapper-repos.mjs --push",
+    "components:gitee:create": "node scripts/create-gitee-component-repos.mjs",
+    "components:gitee:publish": "pnpm components:gitee:create && pnpm components:export && node scripts/publish-wrapper-repos.mjs --host=gitee --push && pnpm verify:wrapper-public-remotes --host=gitee",
     "obfuscate": "FILE_VIEWER_DIST_DIR=packages/components/vue3/dist node scripts/obfuscate-dist.mjs",
     "pretest": "node scripts/patch-msdoc-viewer.mjs",
     "test": "vitest",

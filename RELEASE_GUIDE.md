@@ -225,6 +225,23 @@ git push origin main
 git push gitee main
 ```
 
+## 同步 core 和组件分仓
+
+GitHub/Gitee 的 core 和标准组件分仓由 `ecosystem/wrappers.json` 驱动。GitHub 仓库可直接通过 `components:publish` 更新；Gitee 需要先确保组织下仓库存在:
+
+```bash
+cd /Users/wangyu/IdeaProjects/file-viewer3
+FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:create
+FILE_VIEWER_GITEE_TOKEN=<token> pnpm components:gitee:publish
+pnpm verify:wrapper-public-remotes --host=gitee
+```
+
+说明:
+
+- `components:gitee:create` 只创建缺失仓库，已存在仓库会跳过；可加 `--dry-run` 预览。
+- `components:gitee:publish` 会先导出 core + 标准组件包，再只推送 Gitee 远端并验证 `main` 分支可达。
+- token 不要写入文件或提交到仓库；只通过环境变量传入当前 shell。
+
 ## 私有聚合仓提交规则
 
 私有聚合仓只提交到 Gitea:
