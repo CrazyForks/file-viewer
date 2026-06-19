@@ -30,7 +30,7 @@
 - 开源总仓库: GitHub `flyfish-dev/file-viewer` 已同步到最新开源总仓库内容；Gitee `flyfish-dev/file-viewer` 当前仍停留在旧快照，普通 push 为 non-fast-forward，`git push --force-with-lease gitee main` 持续无响应，`pnpm audit:ecosystem-status` 会将其标记为 stale，待 Gitee 仓库 GC / 扩容或远端推送恢复后再同步为同一文件树；具体提交和 tree hash 以实时审计命令输出为准。
 - 开源总仓库 Release: GitHub Release `v2.0.0` 已创建并维护 18 个资产（core、标准组件包、兼容包、Demo、文档、lib dist 和 `release-manifest.json`）。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
-- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前本机未配置 `FILE_VIEWER_GITEE_TOKEN` / `GITEE_TOKEN` / `GITEE_ACCESS_TOKEN` / `~/.config/flyfish/gitee-token`，待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
+- Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前本机未配置 `FILE_VIEWER_GITEE_TOKEN` / `GITEE_TOKEN` / `GITEE_ACCESS_TOKEN` / `~/.config/flyfish/gitee-token`，待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:preflight`、`FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
 - Demo / 文档站: Demo 生产部署仍以 `viewer.flyfish.dev` 为准，最近一次 Cloudflare Pages 部署为 `https://7533352f.flyfish-file-viewer.pages.dev`；文档站已生成并部署最新开源总仓库口径，`doc.flyfish.dev` 当前由 Cloudflare Pages 生产分支 `v3` 承载，源码发布基线仍是私有 Gitea `main` 完整原始聚合仓。
 - npm 发布: `@file-viewer/*` 标准包均仍未发布；历史包当前仍为 `@flyfish-group/file-viewer3@1.0.26`、`file-viewer3@1.0.26`、`@flyfish-group/file-viewer@1.0.25`、`@flyfish-group/file-viewer-web@1.0.25`、`@flyfish-group/file-viewer-react@1.0.25`；`node scripts/release-ecosystem-packages.mjs --publish --dry-run` 已验证 14 个包会以 `--no-git-checks --ignore-scripts` 发布到 npm registry，`release:ecosystem:publish` 已接入构建前 npm 登录 preflight，当前机器 `npm whoami` 返回 `ENEEDAUTH`，待交互式登录/Passkey。
 
@@ -203,7 +203,7 @@
 - [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [x] 所有目标标准组件包 均存在 GitHub 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=github`。
 - [ ] 所有目标标准组件包 均存在 Gitee 公开仓库并通过 `pnpm verify:wrapper-public-remotes --host=gitee`。
-- [x] Gitee core/组件分仓创建与发布命令已标准化为 `components:gitee:create` / `components:gitee:publish`，但仍待有效组织 token 实际执行。
+- [x] Gitee core/组件分仓预检、创建与发布命令已标准化为 `components:gitee:preflight` / `components:gitee:create` / `components:gitee:publish`，但仍待有效组织 token 实际执行。
 - [x] 所有标准组件包 的 README 中英文完整，体现完整格式支持矩阵、官方文档、Demo、安装方式、options、事件、操作 API、私有化 viewer assets 说明和贡献方式，并由 `pnpm verify:ecosystem-readmes` 覆盖。
 - [x] 开源总仓库 README 中列出 core、所有开源标准组件仓库、npm 包、历史兼容包、下载包和文档地址，并由 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-main` 覆盖。
 - [x] core 源码进入 `file-viewer-core` 与开源总仓库，Gitea 私有仓继续作为完整聚合仓和优先支持入口。
@@ -250,6 +250,7 @@
 - [x] `pnpm audit:ecosystem-status`（只读审计 GitHub / Gitee / npm / Release 当前状态，`--strict` 可用于最终发布阻断）
 - [x] `pnpm verify:wrapper-public-remotes --host=github`
 - [ ] `pnpm verify:wrapper-public-remotes`
+- [ ] `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:preflight`
 - [ ] `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create`
 - [ ] `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`
 - [x] `pnpm verify:production-entrypoints`
@@ -263,7 +264,7 @@
 
 ## 完成审计标准
 
-- [ ] 当前私有 Gitea 仓库作为完整原始聚合仓，`main` 分支保留完整 monorepo 和统一发布自动化，不代表开源总仓库，也不缩减为 core-only。
+- [x] 当前私有 Gitea 仓库作为完整原始聚合仓，`main` 分支保留完整 monorepo 和统一发布自动化，不代表开源总仓库，也不缩减为 core-only。
 - [ ] `v2` / `v3` 分支分别是 Vue2.7 / Vue3 标准组件包。
 - [ ] 所有目标标准组件包 均存在 GitHub 和 Gitee 公开仓库。
 - [ ] 所有 `@file-viewer/*` npm 包均发布成功。

@@ -9,6 +9,7 @@ const sourceRoot = resolve(scriptDir, '..')
 const args = process.argv.slice(2)
 
 const dryRun = args.includes('--dry-run') || process.env.FILE_VIEWER_GITEE_CREATE_DRY_RUN === '1'
+const preflight = args.includes('--preflight')
 const force = args.includes('--force')
 const explicitToken =
   process.env.FILE_VIEWER_GITEE_TOKEN ||
@@ -75,6 +76,8 @@ const tokenSource = explicitToken
     : credentialToken
       ? 'git-credential'
       : 'missing'
+const missingTokenMessage =
+  'Missing Gitee token. Set FILE_VIEWER_GITEE_TOKEN, GITEE_TOKEN, GITEE_ACCESS_TOKEN, FILE_VIEWER_GITEE_TOKEN_FILE, or pass --use-git-credential when the stored gitee.com password is an API token.'
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'))
@@ -103,9 +106,7 @@ function targetHomepage(target) {
 
 async function giteeRequest(method, path, body = undefined) {
   if (!token) {
-    throw new Error(
-      'Missing Gitee token. Set FILE_VIEWER_GITEE_TOKEN, GITEE_TOKEN, GITEE_ACCESS_TOKEN, FILE_VIEWER_GITEE_TOKEN_FILE, or pass --use-git-credential when the stored gitee.com password is an API token.'
-    )
+    throw new Error(missingTokenMessage)
   }
 
   const url = new URL(path, `${apiBase.replace(/\/+$/, '')}/`)
@@ -154,6 +155,20 @@ function authHint(response) {
     return ' The stored gitee.com git credential was used as the API token and was rejected; store a Gitee API access token in FILE_VIEWER_GITEE_TOKEN_FILE or an environment variable instead.'
   }
   return ' Check that the Gitee API token is valid and has organization repository permissions.'
+}
+
+async function verifyGiteeToken() {
+  const response = await giteeRequest('GET', 'user')
+  if (!response.ok) {
+    throw new Error(
+      `Gitee token preflight failed: HTTP ${response.status} ${JSON.stringify(response.payload)}${authHint(response)}`
+    )
+  }
+
+  const user = response.payload?.login || response.payload?.name || response.payload?.id || 'unknown'
+  console.log(
+    `Gitee token preflight ok: source=${tokenSource}, user=${user}, selectedRepositories=${targets.length}.`
+  )
 }
 
 async function repoExists(owner, repo) {
@@ -250,10 +265,13 @@ if (!targets.length) {
   throw new Error('No Gitee core/component repositories selected.')
 }
 
-if (!dryRun && !token) {
-  throw new Error(
-    'Missing Gitee token. Set FILE_VIEWER_GITEE_TOKEN, GITEE_TOKEN, GITEE_ACCESS_TOKEN, FILE_VIEWER_GITEE_TOKEN_FILE, or pass --use-git-credential when the stored gitee.com password is an API token.'
-  )
+if ((preflight || !dryRun) && !token) {
+  throw new Error(missingTokenMessage)
+}
+
+if (preflight) {
+  await verifyGiteeToken()
+  process.exit(0)
 }
 
 const results = new Map()
