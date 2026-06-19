@@ -40,6 +40,7 @@ pnpm install
 | `pnpm verify:experience-baseline` | 校验 `ecosystem/experience-baseline.json` 中的 Vue3 当前组件、比对页、历史 React、历史纯 JS 和 script 标签 IIFE 基线体验证据 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
 | `pnpm verify:ecosystem-versions` | 校验 core、标准组件包 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准组件包 仓库元数据和历史包依赖边界 |
+| `pnpm verify:release-status-schema` | 校验开源总仓 `artifacts/release-status.json` 符合 `release-status.schema.json`，并确认 gap 分类摘要结构稳定 |
 | `pnpm verify:public-main` | 校验开源总仓库的 release manifest、tarball、README、组件仓库索引、入口格式、历史兼容包和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 资源、可导入 ESM 入口，以及 组件 manifest 声明的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口 |
 | `pnpm verify:migration-gates` | 迁移门禁: 类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、分支职责、组件源包、组件运行 API、组件参数面、兼容包 API/README、生态版本和 npm manifest 校验 |
@@ -163,7 +164,7 @@ pnpm release:ecosystem:pack
 - 独立 组件仓库是否已经通过 `pnpm components:standalone-smoke`，确认离开 monorepo 后可用 npm 安装本地生态 tarball 并完成构建
 - `npm pack` 产物中是否包含正确的 `dist/` 和 README
 - 生态 tarball 是否包含 core、标准组件包、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`、source map 或私有源码
-- 开源总仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-main`，确认 `artifacts/release-manifest.json`、`artifacts/release-status.json`、tarball、README 和 组件仓库索引均与当前生态清单一致
+- 开源总仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-main`，确认 `artifacts/release-manifest.json`、`artifacts/release-status.json`、`artifacts/release-status.schema.json`、tarball、README 和 组件仓库索引均与当前生态清单一致
 - 混淆后的 `packages/components/vue3/dist/index.mjs` 是否仍可被业务项目正常导入
 - README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 公开仓库、私有聚合仓与优先支持和 Apache-2.0 许可证说明
 

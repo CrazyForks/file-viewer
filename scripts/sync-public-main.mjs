@@ -649,6 +649,11 @@ await createTarball(demoStagingDir, join(artifactsDir, `file-viewer-v2-${version
 await createTarball(wrapperDemoStagingDir, join(artifactsDir, `file-viewer-v2-${version}-component-demo.tar.gz`))
 await createTarball(join(publicRepoDir, 'dist'), join(artifactsDir, `file-viewer-v2-${version}-lib-dist.tar.gz`))
 await createTarball(join(sourceRoot, 'docs', '.vitepress', 'dist'), join(artifactsDir, `file-viewer-v2-${version}-docs.tar.gz`))
+await copyFileIfChanged(
+  join(sourceRoot, 'ecosystem', 'release-status.schema.json'),
+  join(artifactsDir, 'release-status.schema.json'),
+  'release-status.schema.json'
+)
 await writeReleaseManifest(publicRepoDir, ecosystemPackManifest)
 run('node', ['scripts/write-release-status-report.mjs', '--public-repo-dir', publicRepoDir, '--fast'])
 await assertOpenSourceMainRepoLayout(publicRepoDir)

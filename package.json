@@ -68,6 +68,7 @@
     "verify:ecosystem-tarballs": "node scripts/verify-ecosystem-tarballs.mjs",
     "verify:ecosystem-versions": "node scripts/verify-ecosystem-versions.mjs",
     "verify:npm-registry-release": "node scripts/verify-npm-registry-release.mjs",
+    "verify:release-status-schema": "node scripts/verify-release-status-schema.mjs",
     "verify:public-main": "node scripts/verify-public-main.mjs",
     "verify:github-release-assets": "node scripts/verify-github-release-assets.mjs",
     "verify:production-entrypoints": "node scripts/verify-production-entrypoints.mjs",

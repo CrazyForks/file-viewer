@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
+import { validateJsonSchema } from './lib/simple-json-schema.mjs'
 import {
   assertDirectory,
   assertFile,
@@ -127,9 +128,21 @@ async function assertReleaseManifest(repoDir) {
 }
 
 async function assertReleaseStatus(repoDir) {
+  const sourceSchemaPath = join(sourceRoot, 'ecosystem', 'release-status.schema.json')
+  const publicSchemaPath = join(repoDir, 'artifacts', 'release-status.schema.json')
+  await assertFile(publicSchemaPath, 'artifacts/release-status.schema.json')
+  const sourceSchema = await readJson(sourceSchemaPath)
+  const publicSchema = await readJson(publicSchemaPath)
+  assert(
+    JSON.stringify(publicSchema) === JSON.stringify(sourceSchema),
+    'Open-source main release status schema drifted from ecosystem/release-status.schema.json'
+  )
+
   const statusPath = join(repoDir, 'artifacts', 'release-status.json')
   await assertFile(statusPath, 'artifacts/release-status.json')
   const status = await readJson(statusPath)
+  const schemaFailures = validateJsonSchema(status, publicSchema)
+  assert(!schemaFailures.length, `Release status schema validation failed:\n${schemaFailures.join('\n')}`)
   assert(status.schemaVersion === 1, 'Release status schemaVersion drifted')
   assert(status.version === version, `Release status version ${status.version} !== ${version}`)
   assert(status.sourcePolicy === 'private-complete-original-workspace', 'Release status source policy drifted')
