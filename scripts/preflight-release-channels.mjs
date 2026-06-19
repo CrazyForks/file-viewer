@@ -43,6 +43,13 @@ const steps = [
     skipReason: `missing ${publicRepoDir}`
   },
   {
+    name: 'GitHub Release assets',
+    command: ['node', 'scripts/verify-github-release-assets.mjs', '--public-repo-dir', publicRepoDir],
+    external: true,
+    skip: !existsSync(publicRepoDir),
+    skipReason: `missing ${publicRepoDir}`
+  },
+  {
     name: 'npm publish authentication',
     command: ['node', 'scripts/release-ecosystem-packages.mjs', '--publish', '--preflight'],
     external: true
