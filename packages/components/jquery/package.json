@@ -24,7 +24,7 @@
     "url": "git+https://github.com/flyfish-dev/file-viewer-jquery.git",
     "directory": "packages/components/jquery"
   },
-  "homepage": "https://doc.flyfish-viewer.app/",
+  "homepage": "https://doc.file-viewer.app/",
   "bugs": {
     "url": "https://github.com/flyfish-dev/file-viewer-jquery/issues"
   },

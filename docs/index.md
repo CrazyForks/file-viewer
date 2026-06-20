@@ -15,8 +15,8 @@ titleTemplate: false
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
-<a class="doc-action" href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
-<a class="doc-action" href="https://viewer.flyfish.dev/compare.html" target="_blank" rel="noreferrer">文档比对</a>
+<a class="doc-action" href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">在线 Demo</a>
+<a class="doc-action" href="https://demo.file-viewer.app/compare.html" target="_blank" rel="noreferrer">文档比对</a>
 <a class="doc-action" href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 开源总仓库</a>
 </div>
 </div>
@@ -156,9 +156,8 @@ titleTemplate: false
 <span>Official Resources</span>
 <h2>官网用于验证，组件用于私有化接入</h2>
 <p>
-官方文档是 <a href="https://doc.flyfish-viewer.app">doc.flyfish-viewer.app</a>，
-备用文档域名是 <a href="https://doc.flyfish.dev">doc.flyfish.dev</a>，
-在线预览是 <a href="https://viewer.flyfish.dev">viewer.flyfish.dev</a>，
+官方文档是 <a href="https://doc.file-viewer.app">doc.file-viewer.app</a>，
+在线预览是 <a href="https://demo.file-viewer.app">demo.file-viewer.app</a>，
 官网门户是 <a href="https://file-viewer.app">file-viewer.app</a>，
 开源总仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>，
 Gitee 镜像是 <a href="https://gitee.com/flyfish-dev/file-viewer">gitee.com/flyfish-dev/file-viewer</a>。

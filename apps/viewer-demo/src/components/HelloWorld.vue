@@ -491,7 +491,7 @@ const extensionOf = (target: string) => {
 const sampleUrlKey = (target: string) => {
   const clean = target.split(/[?#]/)[0] || target
   try {
-    return decodeURIComponent(new URL(clean, 'https://viewer.flyfish.dev').pathname)
+    return decodeURIComponent(new URL(clean, 'https://demo.file-viewer.app').pathname)
   } catch {
     const path = clean.startsWith('/') ? clean : `/${clean}`
     return decodeURIComponent(path)

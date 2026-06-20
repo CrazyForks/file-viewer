@@ -64,9 +64,9 @@ const archiveAssets = resolveFileViewerRendererAssets('archive', {
 
 The manifest API lets wrappers and deployment scripts discover archive, DOCX, Spreadsheet, CAD, Typst, and data-asset worker/WASM resources from the same core contract instead of hard-coding per-framework paths.
 
-Official documentation: https://doc.flyfish-viewer.app/
+Official documentation: https://doc.file-viewer.app/
 
-Online demo: https://viewer.flyfish.dev/
+Online demo: https://demo.file-viewer.app/
 
 Public source repositories:
 

@@ -8,8 +8,8 @@
 </p>
 
 <div class="doc-link-row">
-  <a href="https://doc.flyfish-viewer.app" target="_blank" rel="noreferrer">官方文档</a>
-  <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">在线 Demo</a>
+  <a href="https://doc.file-viewer.app" target="_blank" rel="noreferrer">官方文档</a>
+  <a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">在线 Demo</a>
   <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 开源总仓库</a>
   <a href="https://gitee.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">Gitee 开源总仓库</a>
   <a href="/guide/quickstart">快速开始</a>
@@ -95,5 +95,5 @@
 | 想下载源码、release 或了解支持 | [发布与开源分发](/guide/distribution) |
 
 <div class="doc-note">
-  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://viewer.flyfish.dev" target="_blank" rel="noreferrer">viewer.flyfish.dev</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React 和纯 JS 组件会在业务页面中原生挂载，不依赖官网 Demo。
+  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">demo.file-viewer.app</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React 和纯 JS 组件会在业务页面中原生挂载，不依赖官网 Demo。
 </div>

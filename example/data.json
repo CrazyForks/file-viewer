@@ -3,8 +3,8 @@
   "version": "1.0.26",
   "environment": {
     "framework": "vue3",
-    "viewerSite": "https://viewer.flyfish.dev",
-    "docs": "https://doc.flyfish.dev"
+    "viewerSite": "https://demo.file-viewer.app",
+    "docs": "https://doc.file-viewer.app"
   },
   "packages": {
     "vue3": "@flyfish-group/file-viewer3@1.0.26",

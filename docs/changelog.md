@@ -85,7 +85,7 @@
 - 文档站补全文档比对页使用说明，明确 `/compare.html`、`left` / `right` 预置参数、内置示例、URL、本地上传、同步滚动、私有化部署路径和视觉比对边界
 - 开源总仓库新增 Gitee 镜像 `gitee.com/flyfish-dev/file-viewer`，GitHub / Gitee 同步交付混淆构建产物、Demo、文档静态产物、示例文件和 tarball
 - Demo 输出校验继续覆盖 `compare.html`、主入口资源、viewer 资源目录和示例资源，避免上线缺少独立比对入口
-- 文档站新增 Cloudflare Pages Direct Upload 脚本和 `docs/public/_headers` 缓存策略，`doc.flyfish-viewer.app` 可切换到 `flyfish-file-viewer-docs.pages.dev` 以改善国内访问速度
+- 文档站新增 Cloudflare Pages Direct Upload 脚本和 `docs/public/_headers` 缓存策略，`doc.file-viewer.app` 可切换到 `flyfish-file-viewer-docs.pages.dev` 以改善国内访问速度
 - 新增 `options.theme`，支持 `light`、`dark`、`system`；显式主题优先于浏览器 `prefers-color-scheme`，固定浅色业务 UI 可以传 `light` 避免 Markdown、代码、Typst 等预览区域被系统暗色模式带偏
 - 新增 `toolbar.position`，支持 `auto`、`top`、`bottom-right`；默认 `auto` 下 PDF 通用下载/打印/HTML 操作栏会悬浮到右下角，避免和 PDF 页码、缩放、目录导航栏形成双顶部导航
 - 升级 Vue、Vite、PDF.js、Axios、Marked、React 适配层等第三方依赖到当前 npm latest；`docx-preview` 已确认 npm latest 仍为 `0.3.7`，同步刷新 DOCX 构建 chunk
@@ -99,7 +99,7 @@
 - PDF 远端 URL 加载链路新增渐进读取策略: 同源 PDF 默认直接交给 PDF.js 通过 URL 读取，服务端支持 Range 时自动分片加载，避免先整包下载 Blob 后才开始建页；跨域 URL 默认保持旧的兼容下载链路
 - 新增 `options.pdf.streaming`、`options.pdf.rangeChunkSize` 和 `options.pdf.withCredentials`，可按业务文件服务能力控制 PDF 渐进读取、Range 分片大小和凭据策略
 - 下载按钮支持 URL 源文件回退，流式 PDF 没有预下载 buffer 时也可以触发原始文件下载
-- 新增 Cloudflare Pages Direct Upload 部署脚本、`wrangler.toml` 和 `_headers` 缓存策略，便于将 Demo 切到 Cloudflare 边缘网络并保持 `viewer.flyfish.dev` 域名不变
+- 新增 Cloudflare Pages Direct Upload 部署脚本、`wrangler.toml` 和 `_headers` 缓存策略，便于将 Demo 切到 Cloudflare 边缘网络并保持 `demo.file-viewer.app` 域名不变
 - 新增独立文档比对入口 `/compare.html`，支持左右并排预览、示例选择、URL、本地上传和同步滚动，不污染主预览入口
 - 新增 Dockerfile、nginx 静态运行配置和 buildx 发布脚本，发布镜像覆盖 `linux/amd64` 与 `linux/arm64`，用于一键部署 Demo 与比对页
 - 新增 Office 模板兼容入口，覆盖 `dot`、`dotx`、`dotm`、`docm`、`xlt`、`xltx`、`xltm`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`
