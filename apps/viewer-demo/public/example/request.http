@@ -1,5 +1,5 @@
 ### Open a remote preview
-POST https://viewer.flyfish.dev/api/preview
+POST https://demo.file-viewer.app/api/preview
 Content-Type: application/json
 
 {

@@ -14,10 +14,9 @@
 | 渠道 | 地址 | 内容 |
 | --- | --- | --- |
 | 官方网站 | [file-viewer.app](https://file-viewer.app) | 一站式组件门户、产品定位、应用场景、资源导航和商业支持入口 |
-| 官方文档/组件主页 | [doc.flyfish-viewer.app](https://doc.flyfish-viewer.app) | 主文档域名，提供组件主页、接入文档、格式说明和开源分发说明 |
-| 文档辅助域名 | [doc.flyfish.dev](https://doc.flyfish.dev) | 保留作为备用入口，便于旧链接和国内网络环境继续访问 |
-| 在线 Demo | [viewer.flyfish.dev](https://viewer.flyfish.dev) | 可直接体验完整预览器，用于快速验证能力 |
-| 文档比对 Demo | [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html) | 独立入口，支持左右并排预览、上传、URL、交换、重置、同步滚动、聚焦搜索和行级定位 |
+| 官方文档/组件主页 | [doc.file-viewer.app](https://doc.file-viewer.app) | 主文档域名，提供组件主页、接入文档、格式说明和开源分发说明 |
+| 在线 Demo | [demo.file-viewer.app](https://demo.file-viewer.app) | 可直接体验完整预览器，用于快速验证能力 |
+| 文档比对 Demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) | 独立入口，支持左右并排预览、上传、URL、交换、重置、同步滚动、聚焦搜索和行级定位 |
 | Docker 镜像发布目标 | `flyfishdev/file-viewer:2.0.1` | 可一键部署的 nginx 静态镜像，发布时支持 `linux/amd64` 和 `linux/arm64` |
 | npm 包(Core) | `@file-viewer/core` | framework-neutral 预览能力、格式矩阵、事件、操作 API 和共享类型 |
 | npm 包(Vue3 标准) | `@file-viewer/vue3` | Vue3 标准包名，推荐新项目使用 |
