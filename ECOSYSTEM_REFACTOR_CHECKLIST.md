@@ -31,7 +31,7 @@
 - 开源总仓库 Release: GitHub Release `v2.0.1` 维护 20 个资产（core、标准组件包、兼容包、Demo、文档、lib dist、`release-manifest.json`、`release-status.json` 和 `release-status.schema.json`），由 `pnpm verify:github-release-assets` 校验文件名、大小和 sha256。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
 - Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前本机未配置 `FILE_VIEWER_GITEE_TOKEN` / `GITEE_TOKEN` / `GITEE_ACCESS_TOKEN` / `~/.config/flyfish/gitee-token`，待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:preflight`、`FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
-- Demo / 文档站: Demo 生产部署仍以 `viewer.flyfish.dev` 为准，最近一次 Cloudflare Pages 部署为 `https://7533352f.flyfish-file-viewer.pages.dev`；文档站已生成并部署最新开源总仓库口径，`doc.flyfish-viewer.app` 当前由 Cloudflare Pages 生产分支 `v3` 承载，源码发布基线仍是私有 Gitea `main` 完整原始聚合仓。
+- Demo / 文档站: Demo 生产部署仍以 `demo.file-viewer.app` 为准，最近一次 Cloudflare Pages 部署为 `https://7533352f.flyfish-file-viewer.pages.dev`；文档站已生成并部署最新开源总仓库口径，`doc.file-viewer.app` 当前由 Cloudflare Pages 生产分支 `v3` 承载，源码发布基线仍是私有 Gitea `main` 完整原始聚合仓。
 - npm 发布: `@file-viewer/*` 标准包、`@flyfish-group/*` 历史兼容包和 `file-viewer3` 非 scoped alias 已通过交互式 passkey 发布到 npm registry，目标版本为 `2.0.1`；`pnpm verify:npm-registry-release -- --registry https://registry.npmjs.org/` 已拉回 14 个 release tarball 并完成包体校验。
 
 ## 总体不变量

@@ -44,7 +44,7 @@ Use `@file-viewer/react` for React 18 or React 19 projects. Use this package whe
 
 `@file-viewer/react-legacy` shares the same `@file-viewer/core` capabilities, core browser engine, and format matrix as the other standard component packages, including PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets.
 
-See the official documentation for the full format matrix, options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish-viewer.app/
+See the official documentation for the full format matrix, options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.file-viewer.app/
 
 Chinese README: [README.md](./README.md).
 
@@ -164,7 +164,7 @@ Every ecosystem package uses the same `ViewerMountOptions` and `FileViewerOption
 - Format parsing, search, zoom, print, export, watermark, lifecycle, and beforeOperation semantics all come from the same core.
 - Releases should pass type checks, component API verification, README generation checks, format-matrix verification, standalone repository export, and browser smoke tests.
 
-See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish-viewer.app/
+See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.file-viewer.app/
 
-Online demo: https://viewer.flyfish.dev/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching component repository.
+Online demo: https://demo.file-viewer.app/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching component repository.
 <!-- FILE_VIEWER_GENERATED:END -->

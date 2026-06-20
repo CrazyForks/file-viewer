@@ -17,7 +17,7 @@ const publicMarkers = readmeTemplate.markers.publicGenerated
 const wrapperMarkers = readmeTemplate.markers.wrapperGenerated
 const sharedRequiredLinks = [
   ...readmeTemplate.requiredLinks,
-  'https://viewer.flyfish.dev/compare.html',
+  'https://demo.file-viewer.app/compare.html',
   branchRoles.publicMainRepository.github,
   branchRoles.publicMainRepository.gitee,
   wrapperManifest.corePackage.github,
@@ -71,8 +71,8 @@ const wrapperReadmeConfigs = [
       'getDocumentTextChunks()',
       'file-viewer-copy-assets',
       '按需异步',
-      'https://doc.flyfish-viewer.app/',
-      'https://viewer.flyfish.dev/',
+      'https://doc.file-viewer.app/',
+      'https://demo.file-viewer.app/',
       'Apache-2.0'
     ]
   },
@@ -96,8 +96,8 @@ const wrapperReadmeConfigs = [
       'getDocumentTextChunks()',
       'file-viewer-copy-assets',
       'lazy-loaded',
-      'https://doc.flyfish-viewer.app/',
-      'https://viewer.flyfish.dev/',
+      'https://doc.file-viewer.app/',
+      'https://demo.file-viewer.app/',
       'Apache-2.0'
     ]
   }

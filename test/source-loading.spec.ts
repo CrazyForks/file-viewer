@@ -51,7 +51,7 @@ import {
   shouldStreamPdfUrl
 } from '../packages/core/src'
 
-const pageHref = 'https://viewer.flyfish.dev/app/index.html'
+const pageHref = 'https://demo.file-viewer.app/app/index.html'
 
 describe('remote source loading helpers', () => {
   it('resolves display filenames from explicit names, file refs and urls', () => {

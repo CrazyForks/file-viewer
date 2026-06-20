@@ -37,4 +37,4 @@ export function Preview() {
 
 `options` 支持主题、水印、搜索、统一缩放、下载、打印、导出 HTML、beforeOperation 前置校验、生命周期 hooks 和格式专项参数。生命周期、操作能力变化、搜索状态和当前位置会通过 `onViewerEvent` 回传给宿主。
 
-新项目建议优先使用标准包名 `@file-viewer/react`。官方文档: https://doc.flyfish-viewer.app/
+新项目建议优先使用标准包名 `@file-viewer/react`。官方文档: https://doc.file-viewer.app/

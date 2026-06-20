@@ -295,9 +295,9 @@ function generatedWrapperBlock(locale) {
       '- 格式解析、搜索、缩放、打印、导出、水印、生命周期和 beforeOperation 语义全部来自同一个 core。',
       '- 发布前需通过类型检查、组件 API 校验、README 生成校验、格式矩阵校验、独立仓库导出和浏览器 smoke。',
       '',
-      '完整参数、生命周期 hooks、beforeOperation、主题、水印、搜索、缩放、打印和导出说明见官方文档: https://doc.flyfish-viewer.app/',
+      '完整参数、生命周期 hooks、beforeOperation、主题、水印、搜索、缩放、打印和导出说明见官方文档: https://doc.file-viewer.app/',
       '',
-      '在线 Demo: https://viewer.flyfish.dev/ 。License: Apache-2.0。二开或商用请保留 Flyfish Viewer 来源说明；如果修复了通用兼容问题，也欢迎贡献回对应组件仓库。',
+      '在线 Demo: https://demo.file-viewer.app/ 。License: Apache-2.0。二开或商用请保留 Flyfish Viewer 来源说明；如果修复了通用兼容问题，也欢迎贡献回对应组件仓库。',
       wrapperMarkers.end
     ].join('\n')
   }
@@ -348,9 +348,9 @@ function generatedWrapperBlock(locale) {
     '- Format parsing, search, zoom, print, export, watermark, lifecycle, and beforeOperation semantics all come from the same core.',
     '- Releases should pass type checks, component API verification, README generation checks, format-matrix verification, standalone repository export, and browser smoke tests.',
     '',
-    'See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.flyfish-viewer.app/',
+    'See the official documentation for options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.file-viewer.app/',
     '',
-    'Online demo: https://viewer.flyfish.dev/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching component repository.',
+    'Online demo: https://demo.file-viewer.app/. License: Apache-2.0. For second development or commercial use, keep clear Flyfish Viewer attribution; shared compatibility fixes are welcome in the matching component repository.',
     wrapperMarkers.end
   ].join('\n')
 }
@@ -373,7 +373,7 @@ function generatedPublicBlock(locale) {
         wrapperRows('zh')
       ),
       '',
-      `共享 core 当前声明 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.flyfish-viewer.app/guide/formats`,
+      `共享 core 当前声明 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.file-viewer.app/guide/formats`,
       publicMarkers.end
     ].join('\n')
   }
@@ -391,7 +391,7 @@ function generatedPublicBlock(locale) {
       wrapperRows('en')
     ),
     '',
-    `The shared core currently declares ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. See the full format guide in this README and the official documentation: https://doc.flyfish-viewer.app/guide/formats`,
+    `The shared core currently declares ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats`,
     publicMarkers.end
   ].join('\n')
 }

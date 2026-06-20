@@ -14,9 +14,9 @@
 - npm(React): [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react)
 - npm(纯 JS): [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)
 - 官方网站: [file-viewer.app](https://file-viewer.app)
-- 官方文档: [doc.flyfish-viewer.app](https://doc.flyfish-viewer.app)（主域名，`doc.flyfish.dev` 保留为辅助入口）
-- 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
-- 文档比对 Demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
+- 官方文档: [doc.file-viewer.app](https://doc.file-viewer.app)
+- 在线 Demo: [demo.file-viewer.app](https://demo.file-viewer.app)
+- 文档比对 Demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - Release 下载: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
 - Docker 镜像发布目标: `flyfishdev/file-viewer:2.0.1`
 - 开源总仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
@@ -88,7 +88,7 @@ GitHub Release 会同步提供完整下载项:
 | jQuery | `@file-viewer/jquery` | ESM, 类型声明 | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | 无 |
 | Svelte | `@file-viewer/svelte` | Svelte 组件, ESM, 类型声明 | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | 无 |
 
-共享 core 当前声明 23 条预览链路、194 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.flyfish-viewer.app/guide/formats
+共享 core 当前声明 23 条预览链路、194 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.file-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
 ![Flyfish Viewer demo](docs/_images/demo-main.png)
@@ -380,13 +380,13 @@ npm publish --access public
 
 ## 文档导航
 
-- [文档导览](https://doc.flyfish-viewer.app/guide/)
-- [快速开始](https://doc.flyfish-viewer.app/guide/quickstart)
-- [Demo 说明](https://doc.flyfish-viewer.app/guide/demo)
-- [组件用法](https://doc.flyfish-viewer.app/guide/usage)
-- [支持格式](https://doc.flyfish-viewer.app/guide/formats)
-- [本地开发与打包](https://doc.flyfish-viewer.app/guide/development)
-- [Docker 部署](https://doc.flyfish-viewer.app/guide/docker)
+- [文档导览](https://doc.file-viewer.app/guide/)
+- [快速开始](https://doc.file-viewer.app/guide/quickstart)
+- [Demo 说明](https://doc.file-viewer.app/guide/demo)
+- [组件用法](https://doc.file-viewer.app/guide/usage)
+- [支持格式](https://doc.file-viewer.app/guide/formats)
+- [本地开发与打包](https://doc.file-viewer.app/guide/development)
+- [Docker 部署](https://doc.file-viewer.app/guide/docker)
 
 ## 开源说明
 

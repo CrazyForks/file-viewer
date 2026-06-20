@@ -14,9 +14,9 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - npm for React: [@flyfish-group/file-viewer-react](https://www.npmjs.com/package/@flyfish-group/file-viewer-react)
 - npm for vanilla JavaScript: [@flyfish-group/file-viewer-web](https://www.npmjs.com/package/@flyfish-group/file-viewer-web)
 - Official website: [file-viewer.app](https://file-viewer.app)
-- Official documentation: [doc.flyfish-viewer.app](https://doc.flyfish-viewer.app) (primary; `doc.flyfish.dev` remains available as a secondary domain)
-- Online demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
-- Document comparison demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
+- Official documentation: [doc.file-viewer.app](https://doc.file-viewer.app)
+- Online demo: [demo.file-viewer.app](https://demo.file-viewer.app)
+- Document comparison demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - Release downloads: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
 - GitHub open-source main repository: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - Gitee open-source main mirror: [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
@@ -99,7 +99,7 @@ Core foundation package: `@file-viewer/core`. Core source is public: https://git
 | jQuery | `@file-viewer/jquery` | ESM, type declarations | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | none |
 | Svelte | `@file-viewer/svelte` | Svelte component, ESM, type declarations | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | none |
 
-The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.flyfish-viewer.app/guide/formats
+The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
 ![Flyfish Viewer demo](docs/_images/demo-main.png)
@@ -342,7 +342,7 @@ React and vanilla JavaScript integrations use `onViewerEvent` or `onEvent` to re
 
 The production demo includes a standalone comparison page:
 
-[https://viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
+[https://demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 
 It supports two-pane document preview, built-in samples, URL input, local upload, swapping panes, reset, and synchronized scrolling. The comparison page is intentionally separate from the main viewer entry so that the primary component API stays small and predictable.
 

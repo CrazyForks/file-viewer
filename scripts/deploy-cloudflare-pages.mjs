@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 
 const projectName = process.env.CLOUDFLARE_PAGES_PROJECT || 'flyfish-file-viewer'
-const branch = process.env.CLOUDFLARE_PAGES_BRANCH || 'v3'
+const branch = process.env.CLOUDFLARE_PAGES_BRANCH || 'main'
 const outputDir = process.env.CLOUDFLARE_PAGES_OUTPUT_DIR || 'apps/viewer-demo/dist'
 
 function commandExists(command, args = ['--version']) {

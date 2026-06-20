@@ -41,7 +41,7 @@
 生产环境体验地址:
 
 ```text
-https://viewer.flyfish.dev/compare.html
+https://demo.file-viewer.app/compare.html
 ```
 
 也可以用查询参数预置左右文件:
