@@ -31,7 +31,8 @@
 - 开源总仓库 Release: GitHub Release `v2.0.1` 维护 20 个资产（core、标准组件包、兼容包、Demo、文档、lib dist、`release-manifest.json`、`release-status.json` 和 `release-status.schema.json`），由 `pnpm verify:github-release-assets` 校验文件名、大小和 sha256。
 - Component GitHub 仓库: core + 8 个标准组件包仓库均已创建并推送 `main`，`pnpm verify:wrapper-public-remotes --host=github` 通过。
 - Component Gitee 仓库: core + 8 个标准组件包仓库仍返回 404，`pnpm verify:wrapper-public-remotes --host=gitee` 失败；当前本机未配置 `FILE_VIEWER_GITEE_TOKEN` / `GITEE_TOKEN` / `GITEE_ACCESS_TOKEN` / `~/.config/flyfish/gitee-token`，待有效 Gitee 组织 token 后执行 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:preflight`、`FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:create` 和 `FILE_VIEWER_GITEE_TOKEN_FILE=<仓库外 token 文件> pnpm components:gitee:publish`。
-- Demo / 文档站: Demo 与文档站 Cloudflare Pages 构建物已部署并可通过 Pages 主别名访问；`file-viewer.app` 已返回 200。当前 `demo.file-viewer.app` 仍卡在 SSL 握手，`doc.file-viewer.app` 仍返回旧内容，需在 Cloudflare 自定义域名/DNS 绑定层切到对应 Pages 项目后再关闭生产域名 smoke 缺口。
+- Demo / 文档站: Demo 与文档站已按 Cloudflare Pages production branch `v3` 重新部署；`file-viewer.app`、`doc.file-viewer.app` 和 `viewer.flyfish.dev` 均返回 200，`doc.file-viewer.app` 已确认是最新文档口径。`demo.file-viewer.app` 已通过 Cloudflare Pages API 添加到 `flyfish-file-viewer` 项目，但当前状态仍为 `pending`，需等待 Cloudflare 验证/证书生效后再关闭 demo 主域名 smoke 缺口。
+- Docker Hub: `docker manifest inspect flyfishdev/file-viewer:2.0.1` 返回 `no such manifest`；本机 Docker daemon 当前不可连接，无法在本机完成 `linux/amd64` / `linux/arm64` 镜像构建和推送。
 - npm 发布: `@file-viewer/*` 标准包、`@flyfish-group/*` 历史兼容包和 `file-viewer3` 非 scoped alias 已通过交互式 passkey 发布到 npm registry，目标版本为 `2.0.1`；`pnpm verify:npm-registry-release -- --registry https://registry.npmjs.org/` 已拉回 14 个 release tarball 并完成包体校验。
 
 ## 总体不变量
@@ -221,7 +222,7 @@
 - [x] 开源总仓库包含最新全渠道构建产物、viewer assets、Demo、component demo、文档静态产物、示例文件、tarball、release manifest、开源源码和更新历史。
 - [x] 开源总仓库包含 core 和标准组件包源码，同时保留混淆压缩后的成品。
 - [~] GitHub 开源总仓库已同步最新内容；Gitee 开源总仓库完整历史 push 超限，已提供 `pnpm public:gitee:snapshot` 浅历史镜像流程用于同步同一文件树。
-- [ ] Docker 镜像按需发布 `linux/amd64` 和 `linux/arm64`。
+- [ ] Docker 镜像按需发布 `linux/amd64` 和 `linux/arm64`。（Docker Hub `flyfishdev/file-viewer:2.0.1` 暂无 manifest；本机 Docker daemon 未运行）
 
 ## Phase 8: 验证与发布门禁
 
@@ -273,7 +274,7 @@
 - [x] `node scripts/sync-public-main.mjs --public-repo-dir ../file-viewer-public --vue2-tarball .release/file-viewer-v2-2.0.1/ecosystem/flyfish-group-file-viewer-2.0.1.tgz`
 - [x] `pnpm test`
 - [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
-- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（GitHub Release 与 npm 已通过；Demo/文档 Pages 主别名已通过；Gitee 与自定义域名绑定仍待完成）
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（GitHub Release、npm、文档主域名与 Demo 旧域名已通过；Gitee、Docker Hub 和 `demo.file-viewer.app` pending 仍待完成）
 
 ## 完成审计标准
 
@@ -285,7 +286,7 @@
 - [x] 所有标准组件包的 README 中英文完整。
 - [x] GitHub 开源总仓库包含最新全渠道构建产物、文档静态产物、混淆库产物、release manifest、release status 和 GitHub Release 下载物。
 - [~] Gitee 开源总仓库使用 `pnpm public:gitee:snapshot` 同步到与 GitHub 开源总仓库相同的文件树，正式推送需显式确认重写镜像历史。
-- [ ] 文档站和 Demo 站均上线最新内容。（Cloudflare Pages 主别名已上线最新内容；`demo.file-viewer.app` / `doc.file-viewer.app` 自定义域名绑定仍待修正）
+- [ ] 文档站和 Demo 站均上线最新内容。（文档主域名已最新；Demo 已部署到 `viewer.flyfish.dev` 和 Pages production，`demo.file-viewer.app` 已添加但仍 pending）
 - [x] 本地 smoke 已通过 `pnpm verify:migration-gates` 与 `pnpm verify:browser-smoke`，证明各生态体验与当前私有 `main` 发布基线一致。
-- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（当前剩余缺口为 Gitee 镜像/分仓与 Cloudflare 自定义域名绑定）
+- [ ] 生产 smoke 证明 Demo、文档站、开源总仓下载物和 npm/Gitee 发布结果与当前私有 `main` 发布基线一致。（当前剩余缺口为 Gitee 镜像/分仓、Docker Hub 镜像和 `demo.file-viewer.app` pending）
 - [~] 发布记录已经证明私有 Gitea `main`、GitHub 开源总仓库、GitHub Release、Demo 构建物和文档构建物的版本口径一致，且 npm registry 已发布并校验到 `2.0.1`；Gitee 外部镜像完成后关闭剩余缺口。
