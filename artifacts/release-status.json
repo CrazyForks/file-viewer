@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-20T00:10:45.153Z",
+  "generatedAt": "2026-06-20T00:25:17.294Z",
   "version": "2.0.0",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -8,23 +8,23 @@
     "repository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "policy": "private-complete-original-workspace",
-    "authoritativeCommit": "24fbc9e2d5baef451a2db8b517cc8f41c8845041",
+    "authoritativeCommit": "1b152d97a0948ac92e502dd0305bc9cc5ad4a79e",
     "localBranch": "v3",
-    "localCommit": "24fbc9e2d5baef451a2db8b517cc8f41c8845041",
+    "localCommit": "1b152d97a0948ac92e502dd0305bc9cc5ad4a79e",
     "inSync": true,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "v3",
-    "commit": "24fbc9e2d5baef451a2db8b517cc8f41c8845041",
-    "shortCommit": "24fbc9e2",
+    "commit": "1b152d97a0948ac92e502dd0305bc9cc5ad4a79e",
+    "shortCommit": "1b152d97",
     "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "ok": true,
-    "hash": "24fbc9e2d5baef451a2db8b517cc8f41c8845041",
+    "hash": "1b152d97a0948ac92e502dd0305bc9cc5ad4a79e",
     "error": ""
   },
   "openSourceMain": {
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "07ded658498e2deabf3ca81cab49b80460051f42",
+      "hash": "d7a81d7e07e11da6498f1002dfe5d9ff45954ec2",
       "error": ""
     },
     "gitee": {
@@ -320,7 +320,7 @@
     }
   ],
   "gaps": [
-    "open-source main Gitee repository 8ddb952be08d differs from GitHub 07ded658498e",
+    "open-source main Gitee repository 8ddb952be08d differs from GitHub d7a81d7e07e1",
     "core Gitee repository missing",
     "vue3 Gitee repository missing",
     "vue2.7 Gitee repository missing",
@@ -361,84 +361,84 @@
   },
   "gapDetails": [
     {
-      "id": "gitee-open-source-main-gitee-repository-8ddb952be08d-differs-from-github-07ded658498e",
+      "id": "gitee-open-source-main-gitee-repository-8ddb952be08d-differs-from-github-d7a81d7e07e1",
       "channel": "gitee",
       "scope": "public-mirror",
       "externalBlocker": true,
-      "message": "open-source main Gitee repository 8ddb952be08d differs from GitHub 07ded658498e",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "message": "open-source main Gitee repository 8ddb952be08d differs from GitHub d7a81d7e07e1",
+      "nextAction": "Run `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror with the same file tree."
     },
     {
       "id": "gitee-core-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "core Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-vue3-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "vue3 Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-vue2.7-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "vue2.7 Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-vue2.6-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "vue2.6 Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-react-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "react Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-react-legacy-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "react-legacy Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-web-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "web Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-jquery-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "jquery Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "gitee-svelte-gitee-repository-missing",
       "channel": "gitee",
-      "scope": "public-mirror",
+      "scope": "component-repository",
       "externalBlocker": true,
       "message": "svelte Gitee repository missing",
-      "nextAction": "Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror."
+      "nextAction": "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`."
     },
     {
       "id": "npm-@file-viewer-core-npm-unpublished-2.0.0",
@@ -557,6 +557,6 @@
     "Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.",
     "After npm publish, run `pnpm verify:npm-registry-release`.",
     "Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.",
-    "After Gitee quota/GC or remote recovery, push `/Users/wangyu/IdeaProjects/file-viewer-public` to `gitee main`."
+    "Use `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror when full-history push exceeds remote limits."
   ]
 }
