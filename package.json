@@ -97,6 +97,7 @@
     "release:channels:preflight": "node scripts/preflight-release-channels.mjs",
     "release:status:write": "node scripts/write-release-status-report.mjs --fast",
     "release:public": "node scripts/sync-public-main.mjs",
+    "public:gitee:snapshot": "node scripts/publish-public-gitee-snapshot.mjs",
     "core:export": "node scripts/sync-core-repo.mjs",
     "components:readme": "node scripts/sync-wrapper-readmes.mjs",
     "components:verify": "node scripts/verify-wrapper-repos.mjs",

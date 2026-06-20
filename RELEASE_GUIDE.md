@@ -344,6 +344,14 @@ git push origin main
 git push gitee main
 ```
 
+如果 Gitee 因开源总仓库历史包过大返回 HTTP 413、长时间卡住或反复超时，改用浅历史快照镜像。该方式会让 Gitee `main` 的文件树与 GitHub 开源总仓库一致，但会重写 Gitee 镜像仓历史，避免继续传输旧 release 产物历史对象:
+
+```bash
+cd /Users/wangyu/IdeaProjects/file-viewer3
+pnpm public:gitee:snapshot
+pnpm public:gitee:snapshot -- --push --confirm-rewrite-history
+```
+
 ## 同步 core 和组件分仓
 
 GitHub/Gitee 的 core 和标准组件分仓由 `ecosystem/wrappers.json` 驱动。GitHub 仓库可直接通过 `components:publish` 更新；Gitee 需要先确保组织下仓库存在:

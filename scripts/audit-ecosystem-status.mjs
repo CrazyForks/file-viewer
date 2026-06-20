@@ -286,7 +286,7 @@ const nextActions = [
   failures.some(failure => failure.includes('Gitee repository missing')) &&
     'Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.',
   failures.some(failure => failure.includes('open-source main Gitee repository')) &&
-    'After Gitee quota/GC or remote recovery, push `/Users/wangyu/IdeaProjects/file-viewer-public` to `gitee main`.',
+    'Use `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror when full-history push exceeds remote limits.',
   'Use `pnpm release:channels:preflight -- --skip-external` for a fast local release gate, or `pnpm release:channels:preflight` when npm/Gitee credentials are ready.'
 ].filter(Boolean)
 

@@ -305,7 +305,7 @@ const report = {
     'Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.',
     'After npm publish, run `pnpm verify:npm-registry-release`.',
     'Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.',
-    'After Gitee quota/GC or remote recovery, push `/Users/wangyu/IdeaProjects/file-viewer-public` to `gitee main`.'
+    'Use `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror when full-history push exceeds remote limits.'
   ]
 }
 

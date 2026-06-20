@@ -28,11 +28,19 @@ const RULES = [
     nextAction: 'Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets.'
   },
   {
-    test: message => message.includes('Gitee'),
+    test: message => message.includes('open-source main Gitee repository'),
     channel: 'gitee',
     scope: 'public-mirror',
     externalBlocker: true,
-    nextAction: 'Provide a Gitee organization token or wait for the mirror remote/quota to recover, then publish the mirror.'
+    nextAction:
+      'Run `pnpm public:gitee:snapshot -- --push --confirm-rewrite-history` to publish a shallow Gitee mirror with the same file tree.'
+  },
+  {
+    test: message => message.includes('Gitee'),
+    channel: 'gitee',
+    scope: 'component-repository',
+    externalBlocker: true,
+    nextAction: 'Set `FILE_VIEWER_GITEE_TOKEN_FILE=<repo-external-token-file>` and run `pnpm components:gitee:publish`.'
   },
   {
     test: message => message.includes('npm') || message.includes('published'),
