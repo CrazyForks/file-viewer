@@ -1,4 +1,4 @@
-import { createReadStream, existsSync, statSync } from 'node:fs'
+import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { delimiter, extname, join, normalize, relative, resolve, sep } from 'node:path'
@@ -11,7 +11,97 @@ const outputDir = resolve(
 )
 const externalUrl = process.env.DEMO_BROWSER_SMOKE_URL
 const timeout = Number(process.env.DEMO_BROWSER_SMOKE_TIMEOUT || 45000)
+const sampleTimeout = Number(process.env.DEMO_BROWSER_SMOKE_SAMPLE_TIMEOUT || Math.max(timeout, 60000))
+const sourceExamplesRoot = resolve('apps/viewer-demo/public/example')
+const examplesRoot = resolve(
+  process.env.DEMO_BROWSER_SMOKE_EXAMPLE_DIR ||
+  (externalUrl && existsSync(sourceExamplesRoot)
+    ? sourceExamplesRoot
+    : existsSync(join(outputDir, 'example'))
+      ? join(outputDir, 'example')
+      : sourceExamplesRoot)
+)
 const require = createRequire(import.meta.url)
+
+const sampleSmokeConfig = {
+  hiddenStateSelectors: [
+    '.cad-state[hidden]',
+    '.drawing-state[hidden]',
+    '.epub-state[hidden]',
+    '.model-state[hidden]',
+    '.ofd-state[hidden]',
+    '.pdf-nav-pane[hidden]',
+    '.pdf-state[hidden]',
+    '.pptx-error[hidden]',
+    '.pptx-loading[hidden]',
+    '.umd-state[hidden]'
+  ],
+  loadingSelectors: [
+    '.archive-state:not(.archive-hidden)',
+    '.cad-state:not(.error):not([hidden])',
+    '.drawing-state:not(.error):not([hidden])',
+    '.eda-state',
+    '.email-state',
+    '.epub-state:not(.error):not([hidden])',
+    '.excel-wrapper .loading:not(.hidden)',
+    '.model-state:not(.error):not([hidden])',
+    '.ofd-state:not(.error):not([hidden])',
+    '.pdf-state:not(.pdf-state--error):not([hidden])',
+    '.pptx-loading:not([hidden])',
+    '.sheet-loading:not(.hidden)',
+    '.state-panel.loading-panel:not(.hidden)',
+    '.typst-loading',
+    '.umd-state:not(.error):not([hidden])'
+  ],
+  errorSelectors: [
+    '.archive-error:not(.archive-hidden)',
+    '.cad-state.error:not([hidden])',
+    '.drawing-state.error:not([hidden])',
+    '.epub-state.error:not([hidden])',
+    '.model-state.error:not([hidden])',
+    '.ofd-state.error:not([hidden])',
+    '.pdf-state.pdf-state--error:not([hidden])',
+    '.pptx-error:not([hidden])',
+    '.state-panel.error-panel:not(.hidden)',
+    '.typst-error',
+    '.umd-state.error:not([hidden])'
+  ],
+  meaningfulSelectors: [
+    '.archive-entry',
+    '.archive-nested-target > *',
+    '.cad-shell',
+    '.docx-wrapper',
+    '.drawing-viewer svg',
+    '.email-viewer',
+    '.epub-viewer iframe',
+    '.excel-wrapper',
+    '.file-viewer .content:not(.hidden)',
+    '.geo-viewer',
+    '.markdown-body',
+    '.model-viewer canvas',
+    '.ofd-viewer canvas',
+    '.pdfViewer .page',
+    '.pptx-slide',
+    '.typst-page-shell',
+    '.typst-source-fallback',
+    '.umd-viewer',
+    'audio',
+    'canvas',
+    'code',
+    'iframe',
+    'img',
+    'pre',
+    'svg',
+    'table',
+    'video'
+  ],
+  allowedNotices: [
+    {
+      sample: 'model.step',
+      includes: 'STEP 属于 CAD B-Rep'
+    }
+  ]
+}
 
 const mimeTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -166,6 +256,144 @@ const waitForBodyText = async (page, requiredTexts, context) => {
   })
 }
 
+const collectSampleFiles = directory => {
+  if (!existsSync(directory) || !statSync(directory).isDirectory()) {
+    fail(`Missing demo sample directory ${directory}.`)
+  }
+
+  const files = []
+  const walk = currentDirectory => {
+    for (const entry of readdirSync(currentDirectory, { withFileTypes: true })) {
+      if (entry.name.startsWith('.')) {
+        continue
+      }
+      const entryPath = join(currentDirectory, entry.name)
+      if (entry.isDirectory()) {
+        walk(entryPath)
+      } else if (entry.isFile()) {
+        files.push(relative(directory, entryPath).split(sep).join('/'))
+      }
+    }
+  }
+
+  walk(directory)
+  return files.sort((left, right) => left.localeCompare(right, 'en'))
+}
+
+const evaluateSampleSmokeState = async (page, samplePath) => page.evaluate(
+  ({ config, sample }) => {
+    const readElement = element => {
+      const text = (element.textContent || '').replace(/\s+/g, ' ').trim()
+      return {
+        selector: element.dataset.smokeSelector || element.className || element.tagName.toLowerCase(),
+        text: text.slice(0, 180)
+      }
+    }
+    const isVisible = element => {
+      if (!(element instanceof HTMLElement || element instanceof SVGElement) || element.hidden) {
+        return false
+      }
+      const style = window.getComputedStyle(element)
+      if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+        return false
+      }
+      const rect = element.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
+    }
+    const collectVisible = selectors => selectors.flatMap(selector =>
+      [...document.querySelectorAll(selector)].filter(isVisible).map(element => ({
+        ...readElement(element),
+        selector
+      }))
+    )
+    const hiddenLeaks = config.hiddenStateSelectors.flatMap(selector =>
+      [...document.querySelectorAll(selector)]
+        .filter(element => window.getComputedStyle(element).display !== 'none')
+        .map(element => ({
+          ...readElement(element),
+          selector
+        }))
+    )
+    const visibleLoading = collectVisible(config.loadingSelectors)
+    const visibleErrors = collectVisible(config.errorSelectors)
+    const hasContent = Boolean(document.querySelector('.file-viewer .content:not(.hidden)'))
+    const hasMeaningful = config.meaningfulSelectors.some(selector =>
+      [...document.querySelectorAll(selector)].some(isVisible)
+    )
+    const allowedNotice = config.allowedNotices.some(notice =>
+      sample.endsWith(notice.sample) &&
+      visibleErrors.some(error => error.text.includes(notice.includes))
+    )
+
+    return {
+      allowedNotice,
+      bodyText: (document.body.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 360),
+      hasContent,
+      hasMeaningful,
+      hiddenLeaks,
+      ready: hasContent &&
+        hasMeaningful &&
+        hiddenLeaks.length === 0 &&
+        visibleLoading.length === 0 &&
+        (visibleErrors.length === 0 || allowedNotice),
+      visibleErrors,
+      visibleLoading
+    }
+  },
+  {
+    config: sampleSmokeConfig,
+    sample: samplePath
+  }
+)
+
+const waitForSampleReady = async (page, samplePath) => {
+  await page.waitForSelector('.file-viewer .content:not(.hidden)', { timeout: sampleTimeout })
+  await page.waitForFunction(
+    ({ config, sample }) => {
+      const isVisible = element => {
+        if (!(element instanceof HTMLElement || element instanceof SVGElement) || element.hidden) {
+          return false
+        }
+        const style = window.getComputedStyle(element)
+        if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+          return false
+        }
+        const rect = element.getBoundingClientRect()
+        return rect.width > 0 && rect.height > 0
+      }
+      const hiddenLeaks = config.hiddenStateSelectors.some(selector =>
+        [...document.querySelectorAll(selector)]
+          .some(element => window.getComputedStyle(element).display !== 'none')
+      )
+      const visibleLoading = config.loadingSelectors.some(selector =>
+        [...document.querySelectorAll(selector)].some(isVisible)
+      )
+      const visibleErrors = config.errorSelectors.flatMap(selector =>
+        [...document.querySelectorAll(selector)].filter(isVisible)
+      )
+      const allowedNotice = config.allowedNotices.some(notice =>
+        sample.endsWith(notice.sample) &&
+        visibleErrors.some(error => (error.textContent || '').includes(notice.includes))
+      )
+      const hasContent = Boolean(document.querySelector('.file-viewer .content:not(.hidden)'))
+      const hasMeaningful = config.meaningfulSelectors.some(selector =>
+        [...document.querySelectorAll(selector)].some(isVisible)
+      )
+
+      return hasContent &&
+        hasMeaningful &&
+        !hiddenLeaks &&
+        !visibleLoading &&
+        (visibleErrors.length === 0 || allowedNotice)
+    },
+    {
+      config: sampleSmokeConfig,
+      sample: samplePath
+    },
+    { timeout: sampleTimeout }
+  )
+}
+
 const verifyMainDemo = async (page, baseUrl, failures) => {
   await page.goto(`${baseUrl}/index.html?url=/example/markdown.md&smoke=demo-browser`, {
     waitUntil: 'domcontentloaded',
@@ -221,6 +449,54 @@ const verifyCompareDemo = async (page, baseUrl, failures) => {
   failures.length = 0
 }
 
+const verifySampleFile = async (page, baseUrl, samplePath, failures) => {
+  const url = new URL(`${baseUrl}/index.html`)
+  url.searchParams.set('url', `/example/${samplePath}`)
+  url.searchParams.set('smoke', `demo-browser-sample-${samplePath.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`)
+
+  await page.goto(url.href, {
+    waitUntil: 'domcontentloaded',
+    timeout: sampleTimeout
+  })
+
+  try {
+    await waitForSampleReady(page, samplePath)
+  } catch (error) {
+    const state = await evaluateSampleSmokeState(page, samplePath).catch(() => null)
+    throw new Error([
+      `Sample ${samplePath} did not become ready.`,
+      error instanceof Error ? error.message : String(error),
+      state ? `State: ${JSON.stringify(state, null, 2)}` : ''
+    ].filter(Boolean).join('\n'))
+  }
+
+  const state = await evaluateSampleSmokeState(page, samplePath)
+  if (!state.ready) {
+    throw new Error(`Sample ${samplePath} has visible renderer issues: ${JSON.stringify(state, null, 2)}`)
+  }
+
+  assertNoBrowserFailures(failures, `Sample ${samplePath} emitted browser errors.`)
+  failures.length = 0
+  return state
+}
+
+const verifySampleMatrix = async (page, baseUrl, failures) => {
+  const samples = collectSampleFiles(examplesRoot)
+  let allowedNotices = 0
+
+  for (const sample of samples) {
+    const state = await verifySampleFile(page, baseUrl, sample, failures)
+    if (state.allowedNotice) {
+      allowedNotices += 1
+    }
+  }
+
+  console.log(
+    `[demo-browser-smoke] Verified ${samples.length} demo sample files from ${examplesRoot}` +
+      (allowedNotices ? ` (${allowedNotices} documented notices).` : '.')
+  )
+}
+
 const run = async () => {
   const playwrightModule = await importPlaywright()
   const { chromium } = playwrightModule.chromium ? playwrightModule : playwrightModule.default
@@ -239,12 +515,13 @@ const run = async () => {
   try {
     await verifyMainDemo(page, serverHandle.url, failures)
     await verifyCompareDemo(page, serverHandle.url, failures)
+    await verifySampleMatrix(page, serverHandle.url, failures)
   } finally {
     await browser.close()
     await new Promise(resolveClose => serverHandle.server?.close(resolveClose) ?? resolveClose())
   }
 
-  console.log(`[demo-browser-smoke] Verified main demo and compare page at ${serverHandle.url}`)
+  console.log(`[demo-browser-smoke] Verified main demo, compare page, and sample matrix at ${serverHandle.url}`)
 }
 
 run().catch(error => {

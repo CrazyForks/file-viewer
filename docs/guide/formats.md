@@ -98,7 +98,7 @@
 - PDF 的打印与导出 HTML 会通过专属导出适配器逐页生成完整页面，不依赖当前滚动位置、当前可见页或已经渲染的 canvas，也不会被导航窗格、预览容器或全局样式截断，适合正式归档和审批留痕。
 - `ofd` 走 core 内的 framework-neutral browser renderer，按需加载 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，并保留解析缓存、resize 重排、缩放、打印和 HTML 导出。
 - `typ` / `typst` 始终按源文件直接预览，不会自动探测或替换为同名 PDF。组件会在命中 Typst 时按需加载 `@myriaddreamin/typst.ts` 的浏览器 WASM 编译与 SVG 渲染链路。
-- 组件会读取 Typst 输出里的页面尺寸元数据，把整文档拆成按页 SVG 预览，打印和导出 HTML 时只输出文档页面，不带 Demo 外壳。compiler / renderer WASM 默认使用固定 CDN 地址，也可以通过 `options.typst.compilerWasmUrl` 和 `options.typst.rendererWasmUrl` 指向私有化部署地址。
+- 组件会读取 Typst 输出里的页面尺寸元数据，把整文档拆成按页 SVG 预览，打印和导出 HTML 时只输出文档页面，不带 Demo 外壳。compiler / renderer WASM 默认随 viewer assets 分发到 `wasm/typst/`，也可以通过 `options.typst.compilerWasmUrl` 和 `options.typst.rendererWasmUrl` 指向私有化部署地址；Cloudflare Pages 等静态平台如果限制单文件大小，部署脚本会跳过超限 compiler WASM，运行时自动回退到官方 npm CDN；`options.typst.renderTimeoutMs` 可控制浏览器端编译超时，超时后自动切换源码预览。
 - Typst 适合技术报告、论文草稿、工程文档模板和需要保留排版语言源文件的场景。如果文档引用本地图片或拆分文件，建议在业务侧先把资源打包进压缩包，保留完整项目结构。
 - 如果你更在意“展示结果必须完全稳定”，优先考虑 `pdf` / `ofd` 这类版式成品；如果你希望保留可编辑源文件和排版语义，Typst 是更轻量的工程文档入口。
 
@@ -164,7 +164,7 @@
 
 - 字体类 `ttf`、`otf`、`woff`、`woff2` 使用浏览器 FontFace API 临时加载并展示样张，不把字体注册到全局业务页面。
 - `psd` 使用 `ag-psd` 解析画布、图层和基础尺寸；`ai` 如果是 PDF-backed 文件会交给 PDF 链路，否则展示安全摘要；`eps` 按 PostScript 文本摘要展示，不执行脚本或渲染不可信指令。
-- `sqlite` 使用 core 共享 data renderer 按需加载 `sql.js` 打开本地数据库并展示表结构和少量行数据，默认使用公开 CDN 的 `sql-wasm.wasm`，也可以通过 `options.data.sqlWasmUrl` 或全局 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指向私有化资源；`parquet` 使用 `hyparquet` 读取元数据和预览行；`avro` 使用 `avsc` 读取 schema 和样例对象；`wasm` 只读取模块导入导出信息；`webarchive` 做安全文本摘要。
+- `sqlite` 使用 core 共享 data renderer 按需加载 `sql.js` 打开本地数据库并展示表结构和少量行数据，默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，也可以通过 `options.data.sqlWasmUrl` 或全局 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指向私有化资源；`parquet` 使用 `hyparquet` 读取元数据和预览行；`avro` 使用 `avsc` 读取 schema 和样例对象；`wasm` 只读取模块导入导出信息；`webarchive` 做安全文本摘要。
 - 这些格式默认定位是“附件快速审阅”，不会替代数据库客户端、设计软件或专业二进制分析工具。超大数据文件建议通过业务层先做分页、抽样或服务端索引。
 
 ## 真实业务里怎么选

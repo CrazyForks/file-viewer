@@ -4,6 +4,16 @@
 
 ## 当前主线
 
+### 当前主线 全格式浏览器冒烟与静态资源稳定性修复
+
+- 修复 3D 模型、OFD、EPUB、UMD、绘图和 CAD 等渲染器的隐藏 loading 状态在部分浏览器/CSS 组合下仍可见的问题，避免预览完成后继续显示“正在解析”
+- Draw.io 官方预览器加载超时后自动切换为本地 SVG 安全预览，保证 `drawio` / `dio` 样例不会因外部 viewer 初始化卡住而长期 loading
+- Typst compiler / renderer WASM 改为默认随 viewer assets 本地分发，并新增 `options.typst.renderTimeoutMs`；浏览器端编译超过阈值时自动降级为源码预览，避免用户只看到 loading
+- Cloudflare Pages 部署会自动过滤超过平台单文件限制的 Typst compiler WASM，并由运行时切换到官方 npm CDN fallback；npm 包和普通自托管部署仍保持本地 WASM 优先
+- SQLite 预览默认使用 viewer assets 中的 `wasm/data/sql-wasm.wasm`，构建脚本同步复制并校验 sql.js WASM，减少 CDN、移动端 WebView、本地服务器和 CSP 环境下的加载不确定性
+- PDF 样式注入会去除 PDF.js 内置外部图片引用，避免静态产物部署时因 `images/shadow.png` / `loading-icon.gif` 缺失导致 404 或控制台噪声
+- 新增全量 demo sample matrix 浏览器冒烟，逐一打开 `example/` 下 107 个样例文件；本轮已在 dev server 和静态 dist 产物中完成真实浏览器验证
+
 ### `v2.0.1` 架构重构与全生态 2.x 起始版本
 
 - 全线 npm 包、workspace 依赖、Docker 镜像和开源 release 包从 `2.0.1` 重新起步，用大版本号明确标识 core / component 架构重构带来的兼容边界变化

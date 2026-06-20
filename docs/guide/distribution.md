@@ -85,7 +85,7 @@ export function Preview() {
 }
 ```
 
-React 标准接入不需要额外配置静态页面地址。只有当你希望固定 Worker、WASM 或示例文件的访问路径时，才需要执行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。复制脚本会写入 `flyfish-viewer-assets.json`，按 core renderer asset manifest 校验 archive、CAD、DOCX、Spreadsheet 等 worker/WASM 静态资源。
+React 标准接入不需要额外配置静态页面地址。只有当你希望固定 Worker、WASM 或示例文件的访问路径时，才需要执行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。复制脚本会写入 `flyfish-viewer-assets.json`，按 core renderer asset manifest 校验 archive、CAD、DOCX、Spreadsheet、Typst、SQLite 等 worker/WASM 静态资源。
 
 ### 纯 JS
 

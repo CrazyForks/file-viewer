@@ -220,13 +220,14 @@ const options = {
 
 图片水印可以传 `https` URL、相对路径或 data URL。开启图片水印时，文字水印不会重复绘制。
 
-Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 使用固定 CDN 地址，也可以按私有化部署要求指定自己的地址。
+Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器和 SVG 渲染链路；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，也可以按私有化部署要求指定自己的地址；Cloudflare Pages 等静态平台如果限制单文件大小，部署脚本会跳过超限 compiler WASM，运行时自动回退到官方 npm CDN；浏览器端编译超出预期时间时会自动切换为源码预览，避免长期停留在 loading。
 
 ```ts
 const options = {
   typst: {
     compilerWasmUrl: 'https://cdn.example.com/typst/typst_ts_web_compiler_bg.wasm',
-    rendererWasmUrl: 'https://cdn.example.com/typst/typst_ts_renderer_bg.wasm'
+    rendererWasmUrl: 'https://cdn.example.com/typst/typst_ts_renderer_bg.wasm',
+    renderTimeoutMs: 20000
   }
 }
 ```
@@ -453,7 +454,7 @@ async function useLocal(blob: Blob) {
 
 ### 字体、设计资产和数据文件怎么接
 
-字体文件 `ttf/otf/woff/woff2` 会用 FontFace 临时注册到预览容器并展示样张。`psd` 会按需加载 `ag-psd` 展示尺寸、图层和预览图；`ai` 如果是 PDF-backed 文件会进入 PDF 预览，否则展示安全摘要；`eps` 不执行 PostScript，仅展示文本摘要。`sqlite`、`parquet`、`avro`、`wasm` 和 `webarchive` 都走 core 共享结构预览链路，目标是快速判断文件内容，不替代数据库客户端或专业分析工具。私有化部署 SQLite 预览时，可以通过 `options.data.sqlWasmUrl` 或 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指定 `sql-wasm.wasm`。
+字体文件 `ttf/otf/woff/woff2` 会用 FontFace 临时注册到预览容器并展示样张。`psd` 会按需加载 `ag-psd` 展示尺寸、图层和预览图；`ai` 如果是 PDF-backed 文件会进入 PDF 预览，否则展示安全摘要；`eps` 不执行 PostScript，仅展示文本摘要。`sqlite`、`parquet`、`avro`、`wasm` 和 `webarchive` 都走 core 共享结构预览链路，目标是快速判断文件内容，不替代数据库客户端或专业分析工具。SQLite 默认从 viewer assets 加载 `wasm/data/sql-wasm.wasm`；私有化部署路径特殊时，可以通过 `options.data.sqlWasmUrl` 或 `window.__FLYFISH_DATA_SQL_WASM_URL__` 指定自托管地址。
 
 ### `html` 会被当网页渲染吗
 

@@ -97,7 +97,7 @@ cp ./node_modules/@file-viewer/web/dist/flyfish-file-viewer-web.iife.js ./public
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
-复制命令会写入 `flyfish-viewer-assets.json`，并校验 archive、DOCX、CAD 等 worker/WASM 静态资源是否齐全。部署路径特殊时，可以在 `options.archive.workerUrl`、`options.archive.wasmUrl`、`options.docx.workerUrl`、`options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.data.sqlWasmUrl` 等参数中指定自托管地址。
+复制命令会写入 `flyfish-viewer-assets.json`，并校验 archive、DOCX、CAD、Typst、SQLite 等 worker/WASM 静态资源是否齐全。部署路径特殊时，可以在 `options.archive.workerUrl`、`options.archive.wasmUrl`、`options.docx.workerUrl`、`options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.data.sqlWasmUrl` 等参数中指定自托管地址。
 
 ## API
 

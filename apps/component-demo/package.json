@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-component-demo",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,11 +10,11 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@file-viewer/jquery": "workspace:^2.0.6",
-    "@file-viewer/react": "workspace:^2.0.6",
-    "@file-viewer/svelte": "workspace:^2.0.6",
-    "@file-viewer/vue3": "workspace:^2.0.6",
-    "@file-viewer/web": "workspace:^2.0.6",
+    "@file-viewer/jquery": "workspace:^2.0.8",
+    "@file-viewer/react": "workspace:^2.0.8",
+    "@file-viewer/svelte": "workspace:^2.0.8",
+    "@file-viewer/vue3": "workspace:^2.0.8",
+    "@file-viewer/web": "workspace:^2.0.8",
     "jquery": "^4.0.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

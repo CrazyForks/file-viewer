@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/jquery",
-  "version": "2.0.6",
+  "version": "2.0.8",
   "private": false,
   "type": "module",
   "description": "Standard jQuery component package for Flyfish File Viewer",
@@ -52,7 +52,7 @@
     "jquery": ">=3 <5"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:^2.0.6"
+    "@file-viewer/core": "workspace:^2.0.8"
   },
   "devDependencies": {
     "@types/jquery": "^4.0.1",
