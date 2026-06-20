@@ -134,7 +134,7 @@ for (const requiredChecklistStatus of [
 }
 
 assertIncludesAny(
-  ['[ ] 待建', '[~] monorepo', '[~] GitHub 已发布', '[x] v2.0.0 已刷新'],
+  ['[ ] 待建', '[~] monorepo', '[~] GitHub 已发布', '[x] v2.0.1 已刷新'],
   'matrix progress status markers'
 )
 

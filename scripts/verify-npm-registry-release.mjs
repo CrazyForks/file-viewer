@@ -19,7 +19,13 @@ const explicitPackDir = readArg('--pack-dir', '')
 const packDir = explicitPackDir
   ? resolve(sourceRoot, explicitPackDir)
   : await mkdtemp(join(tmpdir(), 'file-viewer-npm-registry-'))
-const registry = readArg('--registry', process.env.npm_config_registry || 'https://registry.npmjs.org/')
+const registry = readArg(
+  '--registry',
+  process.env.FILE_VIEWER_NPM_REGISTRY ||
+    process.env.NPM_CONFIG_REGISTRY ||
+    process.env.npm_config_registry ||
+    'https://registry.npmjs.org/'
+)
 const keep = args.includes('--keep')
 const { entries } = await loadEcosystemReleaseContext(sourceRoot)
 
@@ -64,7 +70,8 @@ function verifyNpmMetadata(entry) {
   if (metadata.version !== entry.version) {
     throw new Error(`${spec} npm version ${metadata.version} !== ${entry.version}`)
   }
-  if (!metadata.dist?.tarball) {
+  const tarball = metadata.dist?.tarball || metadata['dist.tarball']
+  if (!tarball) {
     throw new Error(`${spec} is missing npm dist.tarball`)
   }
 }

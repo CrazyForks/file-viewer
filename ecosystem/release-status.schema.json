@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/flyfish-dev/file-viewer/releases/download/v2.0.0/release-status.schema.json",
+  "$id": "https://github.com/flyfish-dev/file-viewer/releases/download/v2.0.1/release-status.schema.json",
   "title": "Flyfish File Viewer release status",
   "type": "object",
   "additionalProperties": false,
@@ -82,11 +82,29 @@
     "openSourceMain": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["github", "gitee", "inSync", "reportHashNote"],
+      "required": [
+        "github",
+        "gitee",
+        "inSync",
+        "syncMode",
+        "treeChecked",
+        "referenceTree",
+        "giteeTree",
+        "treeError",
+        "reportHashNote"
+      ],
       "properties": {
         "github": { "$ref": "#/$defs/remoteHead" },
         "gitee": { "$ref": "#/$defs/remoteHead" },
         "inSync": { "type": "boolean" },
+        "syncMode": {
+          "type": "string",
+          "enum": ["commit", "tree", "stale", "missing", "unchecked"]
+        },
+        "treeChecked": { "type": "boolean" },
+        "referenceTree": { "type": "string" },
+        "giteeTree": { "type": "string" },
+        "treeError": { "type": "string" },
         "reportHashNote": { "type": "string" }
       }
     },

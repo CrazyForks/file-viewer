@@ -83,7 +83,7 @@ new Vue({
 ## React 最短路径
 
 ```bash
-npm install @file-viewer/react@2.0.0
+npm install @file-viewer/react@2.0.1
 ```
 
 ```tsx
@@ -106,7 +106,7 @@ export function Preview() {
 ## 纯 JS 最短路径
 
 ```bash
-npm install @file-viewer/web@2.0.0
+npm install @file-viewer/web@2.0.1
 ```
 
 ```html

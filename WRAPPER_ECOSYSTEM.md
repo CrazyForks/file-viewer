@@ -33,7 +33,7 @@ The export command first refreshes all component README files from `ecosystem/wr
 - a standalone `.gitignore`
 - `wrapper-repo-manifest.json` with source commit and repository metadata
 
-Workspace dependency specifiers such as `workspace:^2.0.0` are rewritten to normal npm ranges before export, so the folders are ready to initialize as standalone public repositories.
+Workspace dependency specifiers such as `workspace:^2.0.1` are rewritten to normal npm ranges before export, so the folders are ready to initialize as standalone public repositories.
 
 Refresh README files without exporting standalone repositories:
 

@@ -26,6 +26,13 @@ const mode = args.includes('--publish')
 const dryRun = args.includes('--dry-run')
 const preflight = args.includes('--preflight')
 const clean = args.includes('--clean')
+const npmRegistry = readArg(
+  '--registry',
+  process.env.FILE_VIEWER_NPM_REGISTRY ||
+    process.env.NPM_CONFIG_REGISTRY ||
+    process.env.npm_config_registry ||
+    'https://registry.npmjs.org/'
+)
 const packDir = resolve(
   sourceRoot,
   readArg('--pack-dir', process.env.FILE_VIEWER_ECOSYSTEM_PACK_DIR || '.release/ecosystem')
@@ -60,7 +67,7 @@ function capture(command, commandArgs, cwd = sourceRoot) {
 }
 
 function verifyNpmAuthentication() {
-  const result = capture('npm', ['whoami'])
+  const result = capture('npm', ['whoami', '--registry', npmRegistry])
   if (!result.ok || !result.stdout) {
     throw new Error(
       [
@@ -72,7 +79,7 @@ function verifyNpmAuthentication() {
         .join('\n')
     )
   }
-  console.log(`npm authenticated as ${result.stdout}`)
+  console.log(`npm authenticated as ${result.stdout} on ${npmRegistry}`)
 }
 
 async function assertDirectory(path, label = path) {
@@ -194,7 +201,9 @@ if (mode === 'publish') {
       '--access',
       'public',
       '--no-git-checks',
-      '--ignore-scripts'
+      '--ignore-scripts',
+      '--registry',
+      npmRegistry
     ]
     if (dryRun) {
       publishArgs.push('--dry-run')

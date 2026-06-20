@@ -26,21 +26,21 @@ The viewer does not require a backend conversion service. It is designed for OA 
 
 | Stack | Package | Version | Source entry | Notes |
 | --- | --- | --- | --- | --- |
-| Core | `@file-viewer/core` | `2.0.0` | `packages/core` / `file-viewer-core` | Framework-neutral format matrix, preview capabilities, events, and operation APIs. Private Gitea `main` remains the complete original aggregate workspace. |
-| Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Native Vue 3 component package now maintained from the independent `packages/components/vue3` package line |
-| Vue 2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Native Vue 2 package with the same format coverage and API semantics |
-| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | component package | Native React component backed by the shared core |
-| Vanilla JavaScript | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | component package | `mountViewer(container, options)` native DOM mounting and asset tooling |
+| Core | `@file-viewer/core` | `2.0.1` | `packages/core` / `file-viewer-core` | Framework-neutral format matrix, preview capabilities, events, and operation APIs. Private Gitea `main` remains the complete original aggregate workspace. |
+| Vue 3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.1` | `v3` | Native Vue 3 component package now maintained from the independent `packages/components/vue3` package line |
+| Vue 2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.1` | `v2` | Native Vue 2 package with the same format coverage and API semantics |
+| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.1` | component package | Native React component backed by the shared core |
+| Vanilla JavaScript | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.1` | component package | `mountViewer(container, options)` native DOM mounting and asset tooling |
 
 For intranet or offline environments, the open-source main repository also ships release tarballs under `artifacts/`:
 
 ```bash
-npm install ./artifacts/flyfish-group-file-viewer3-2.0.0.tgz
-npm install ./artifacts/file-viewer-core-2.0.0.tgz
-npm install ./artifacts/file-viewer-vue3-2.0.0.tgz
-npm install ./artifacts/flyfish-group-file-viewer-2.0.0.tgz
-npm install ./artifacts/flyfish-group-file-viewer-web-2.0.0.tgz
-npm install ./artifacts/flyfish-group-file-viewer-react-2.0.0.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-2.0.1.tgz
+npm install ./artifacts/file-viewer-core-2.0.1.tgz
+npm install ./artifacts/file-viewer-vue3-2.0.1.tgz
+npm install ./artifacts/flyfish-group-file-viewer-2.0.1.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-2.0.1.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-2.0.1.tgz
 ```
 
 The open-source main repository ships tarballs for core, Vue 3, Vue 2, React, React legacy, vanilla JavaScript, jQuery, Svelte, and historical compatibility packages. The unscoped `file-viewer3` compatibility package is still published to npm, but its package body duplicates `@flyfish-group/file-viewer3`, so the repository does not store a second copy. React and vanilla JavaScript packages are native component packages; use npm installation for the cleanest dependency resolution.
@@ -376,7 +376,7 @@ The open-source main repository also contains:
 The project provides a static nginx static image and build scripts for `linux/amd64` and `linux/arm64`. A typical deployment can serve the demo and comparison page directly:
 
 ```bash
-docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.0
+docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.1
 ```
 
 Then open:

@@ -3,7 +3,7 @@
 纯 Web 文件预览组件。这个包是 `@file-viewer/web` 的历史包名同步版本，当前只提供 native DOM 挂载能力: 在目标容器内直接创建完整 Flyfish Viewer，不需要额外的静态页面协议。
 
 ```bash
-npm install @flyfish-group/file-viewer-web@2.0.0
+npm install @flyfish-group/file-viewer-web@2.0.1
 ```
 
 ```ts

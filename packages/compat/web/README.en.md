@@ -3,7 +3,7 @@
 Pure web file preview package. This package is the historical alias of `@file-viewer/web` and now provides the same native DOM mounting API: it creates the complete Flyfish Viewer inside your target container.
 
 ```bash
-npm install @flyfish-group/file-viewer-web@2.0.0
+npm install @flyfish-group/file-viewer-web@2.0.1
 ```
 
 ```ts

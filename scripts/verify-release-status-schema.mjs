@@ -33,7 +33,7 @@ const statusPath = resolve(
 const [schema, status] = await Promise.all([readJson(schemaPath), readJson(statusPath)])
 const failures = validateJsonSchema(status, schema)
 
-if (schema.$id !== 'https://github.com/flyfish-dev/file-viewer/releases/download/v2.0.0/release-status.schema.json') {
+if (schema.$id !== 'https://github.com/flyfish-dev/file-viewer/releases/download/v2.0.1/release-status.schema.json') {
   failures.push('schema $id must point at the GitHub Release schema asset')
 }
 

@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3@2.0.0` / `@flyfish-group/file-viewer3@2.0.0`，Vue2.7 使用 `@file-viewer/vue2.7@2.0.0` / `@flyfish-group/file-viewer@2.0.0`，React 使用 `@file-viewer/react@2.0.0` / `@flyfish-group/file-viewer-react@2.0.0`，纯 JS 使用 `@file-viewer/web@2.0.0` / `@flyfish-group/file-viewer-web@2.0.0`。各标准组件包 都使用原生挂载方式，保持一致的 options、事件和类型语义。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3@2.0.1` / `@flyfish-group/file-viewer3@2.0.1`，Vue2.7 使用 `@file-viewer/vue2.7@2.0.1` / `@flyfish-group/file-viewer@2.0.1`，React 使用 `@file-viewer/react@2.0.1` / `@flyfish-group/file-viewer-react@2.0.1`，纯 JS 使用 `@file-viewer/web@2.0.1` / `@flyfish-group/file-viewer-web@2.0.1`。各标准组件包 都使用原生挂载方式，保持一致的 options、事件和类型语义。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 

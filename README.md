@@ -18,7 +18,7 @@
 - 在线 Demo: [viewer.flyfish.dev](https://viewer.flyfish.dev)
 - 文档比对 Demo: [viewer.flyfish.dev/compare.html](https://viewer.flyfish.dev/compare.html)
 - Release 下载: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)
-- Docker 镜像发布目标: `flyfishdev/file-viewer:2.0.0`
+- Docker 镜像发布目标: `flyfishdev/file-viewer:2.0.1`
 - 开源总仓库(GitHub): [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - 开源总仓库(Gitee): [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer)
 - 打赏与优先支持: [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
@@ -27,21 +27,21 @@
 
 | 技术栈 | npm 包 | 最新版本 | 源码入口 | 说明 |
 | --- | --- | --- | --- | --- |
-| Core | `@file-viewer/core` | `2.0.0` | `packages/core` / `file-viewer-core` | 框架无关的格式矩阵、预览能力、事件和操作 API；私有 `main` 仍是完整原始聚合仓 |
-| Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.0` | `v3` | Vue3 原生组件包，代码已迁移到 `packages/components/vue3` 独立包线 |
-| Vue2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.0` | `v2` | Vue2 原生组件包，格式能力与 Vue3 保持一致 |
-| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.0` | 标准组件包 | React 原生组件，复用共享 core native engine |
-| 纯 JS | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.0` | 标准组件包 | `mountViewer(container, options)` 原生 DOM 挂载和资源工具 |
+| Core | `@file-viewer/core` | `2.0.1` | `packages/core` / `file-viewer-core` | 框架无关的格式矩阵、预览能力、事件和操作 API；私有 `main` 仍是完整原始聚合仓 |
+| Vue3 | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` | `2.0.1` | `v3` | Vue3 原生组件包，代码已迁移到 `packages/components/vue3` 独立包线 |
+| Vue2.7 | `@file-viewer/vue2.7` / `@flyfish-group/file-viewer` | `2.0.1` | `v2` | Vue2 原生组件包，格式能力与 Vue3 保持一致 |
+| React 17 / 18 / 19 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `2.0.1` | 标准组件包 | React 原生组件，复用共享 core native engine |
+| 纯 JS | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `2.0.1` | 标准组件包 | `mountViewer(container, options)` 原生 DOM 挂载和资源工具 |
 
 如果你在内网、离线环境，或者 npm 发布权限还没有完成配置，也可以直接使用开源总仓库 `artifacts/` 里的 release tarball。离线安装 React 包时请先安装同版本 web 包:
 
 ```bash
-npm install ./artifacts/flyfish-group-file-viewer3-2.0.0.tgz
-npm install ./artifacts/file-viewer-core-2.0.0.tgz
-npm install ./artifacts/file-viewer-vue3-2.0.0.tgz
-npm install ./artifacts/flyfish-group-file-viewer-2.0.0.tgz
-npm install ./artifacts/flyfish-group-file-viewer-web-2.0.0.tgz
-npm install ./artifacts/flyfish-group-file-viewer-react-2.0.0.tgz
+npm install ./artifacts/flyfish-group-file-viewer3-2.0.1.tgz
+npm install ./artifacts/file-viewer-core-2.0.1.tgz
+npm install ./artifacts/file-viewer-vue3-2.0.1.tgz
+npm install ./artifacts/flyfish-group-file-viewer-2.0.1.tgz
+npm install ./artifacts/flyfish-group-file-viewer-web-2.0.1.tgz
+npm install ./artifacts/flyfish-group-file-viewer-react-2.0.1.tgz
 ```
 
 Core、Vue3、Vue2、React、React legacy、纯 JS、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库不再重复存储该 tarball。React / 纯 JS 包推荐用 `npm install` 获得完整依赖体验；如需自托管 Worker、WASM 和示例资源，可运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
@@ -217,8 +217,8 @@ export default {
 React 与纯 Web 标准包都走 native controller，直接在业务页面挂载完整预览器。
 
 ```bash
-npm install @file-viewer/react@2.0.0
-npm install @file-viewer/web@2.0.0
+npm install @file-viewer/react@2.0.1
+npm install @file-viewer/web@2.0.1
 ```
 
 ```tsx
@@ -261,7 +261,7 @@ docker run -d \
   --name flyfish-viewer \
   --restart unless-stopped \
   -p 8080:80 \
-  flyfishdev/file-viewer:2.0.0
+  flyfishdev/file-viewer:2.0.1
 ```
 
 访问:
@@ -273,7 +273,7 @@ docker run -d \
 
 ```bash
 pnpm docker:build
-docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.0
+docker run --rm -p 8080:80 flyfishdev/file-viewer:2.0.1
 ```
 
 ## 使用说明

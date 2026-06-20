@@ -110,20 +110,20 @@ pnpm release:ecosystem:pack
 
 ## Vue2 / Vue3 / React / 纯 JS 发版
 
-当前生态包线都使用 `2.0.0`:
+当前生态包线都使用 `2.0.1`:
 
 | 技术栈 | 分支 | npm 包 | 注册方式 |
 | --- | --- | --- | --- |
 | 私有原始聚合仓 | `main` | `@flyfish-group/file-viewer-workspace` | 完整 monorepo、apps、docs、core、标准组件包、兼容包、发布自动化和内部集成历史 |
 | Core | `packages/core` / `file-viewer-core` | `@file-viewer/core` | framework-neutral 预览能力、能力矩阵、事件和操作 API |
 | Vue3 | `v3` | `@file-viewer/vue3` / `@flyfish-group/file-viewer3` / `file-viewer3` | `createApp(App).use(FileViewer)` |
-| Vue2.7 | `v2` | `@file-viewer/vue2.7@2.0.0` / `@flyfish-group/file-viewer` | 兼容 Vue2.7 插件式注册 |
-| Vue2.6 标准组件包 | 当前仓库子工程 | `@file-viewer/vue2.6@2.0.0` | 兼容 Vue2.6 插件式注册 |
-| React 18 / 19 | 当前仓库子工程 | `@file-viewer/react@2.0.0` / `@flyfish-group/file-viewer-react@2.0.0` | `<FileViewer url="/files/demo.pdf" />` |
-| React 16.8 / 17 | 当前仓库子工程 | `@file-viewer/react-legacy@2.0.0` | legacy React 原生组件 |
-| 纯 JS | 当前仓库子工程 | `@file-viewer/web@2.0.0` / `@flyfish-group/file-viewer-web@2.0.0` | `mountViewer(container, options)` |
-| jQuery | 当前仓库子工程 | `@file-viewer/jquery@2.0.0` | `$(el).fileViewer(options)` |
-| Svelte | 当前仓库子工程 | `@file-viewer/svelte@2.0.0` | Svelte component package |
+| Vue2.7 | `v2` | `@file-viewer/vue2.7@2.0.1` / `@flyfish-group/file-viewer` | 兼容 Vue2.7 插件式注册 |
+| Vue2.6 标准组件包 | 当前仓库子工程 | `@file-viewer/vue2.6@2.0.1` | 兼容 Vue2.6 插件式注册 |
+| React 18 / 19 | 当前仓库子工程 | `@file-viewer/react@2.0.1` / `@flyfish-group/file-viewer-react@2.0.1` | `<FileViewer url="/files/demo.pdf" />` |
+| React 16.8 / 17 | 当前仓库子工程 | `@file-viewer/react-legacy@2.0.1` | legacy React 原生组件 |
+| 纯 JS | 当前仓库子工程 | `@file-viewer/web@2.0.1` / `@flyfish-group/file-viewer-web@2.0.1` | `mountViewer(container, options)` |
+| jQuery | 当前仓库子工程 | `@file-viewer/jquery@2.0.1` | `$(el).fileViewer(options)` |
+| Svelte | 当前仓库子工程 | `@file-viewer/svelte@2.0.1` | Svelte component package |
 
 分支职责以 `ecosystem/branch-roles.json`、仓库根目录 `BRANCHES.md` 和 `ECOSYSTEM_REFACTOR_CHECKLIST.md` 为准: 私有 Gitea 的 `main` 是完整原始聚合仓，保留完整 monorepo、统一发布自动化和内部集成历史，不缩减为 core-only，也不等同于 GitHub 开源总仓库；`v2` 对应 Vue 2.7 标准组件包线，`v3` 对应 Vue 3 标准组件包线。`@file-viewer/core` 的源码通过 `packages/core`、独立公开仓 `flyfish-dev/file-viewer-core` 和开源总仓库分发。标准组件包、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且组件入口使用最新 core native engine。
 
@@ -183,7 +183,7 @@ pnpm release:ecosystem:pack
 - `apps/viewer-demo/public/_headers` 已为哈希资源、WASM/Worker、示例文件和 HTML 配置缓存策略，部署到 Cloudflare 后会自动生效
 - `docs/public/_headers` 已为 VitePress 文档站的哈希资源、图片和 HTML 配置缓存策略，部署到 Cloudflare 后会自动生效
 - React / 纯 JS 包默认在用户项目内原生挂载预览器；如需 Worker/WASM 自托管，请使用资源复制命令并配置对应 options
-- Docker 镜像发布后可直接运行 `flyfishdev/file-viewer:2.0.0`，主预览入口是 `/`，文档比对入口是 `/compare.html`
+- Docker 镜像发布后可直接运行 `flyfishdev/file-viewer:2.0.1`，主预览入口是 `/`，文档比对入口是 `/compare.html`
 - 不要把已移除的旧式页面协议写成推荐接入方式
 - 发布前先用本地构建产物做一次完整 smoke test
 

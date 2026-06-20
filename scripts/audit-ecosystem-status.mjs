@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
 import { normalizeReleaseError } from './lib/release-error-normalizer.mjs'
 import { describeReleaseGaps } from './lib/release-gap-classifier.mjs'
+import { comparePublicMirrorTrees } from './lib/git-remote-tree.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -43,6 +44,10 @@ const ghTimeout = readNumberArg(
 
 const { rootPackage, wrapperManifest, entries } = await loadEcosystemReleaseContext(sourceRoot)
 const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
+const publicRepoDir = resolve(
+  sourceRoot,
+  readArg('--public-repo-dir', process.env.FILE_VIEWER_PUBLIC_REPO_DIR || '../file-viewer-public')
+)
 
 function run(command, commandArgs, options = {}) {
   const result = spawnSync(command, commandArgs, {
@@ -145,11 +150,20 @@ function okLabel(ok) {
   return ok ? 'ok' : 'missing'
 }
 
-function syncLabel(left, right) {
+function syncLabel(left, right, treeStatus) {
   if (!left.ok || !right.ok) {
     return 'missing'
   }
-  return left.hash === right.hash ? 'ok' : 'stale'
+  if (left.hash === right.hash) {
+    return 'ok'
+  }
+  if (treeStatus?.mode === 'tree') {
+    return 'ok-tree'
+  }
+  if (treeStatus?.mode === 'unchecked') {
+    return 'unchecked'
+  }
+  return 'stale'
 }
 
 function parseWorktrees(output) {
@@ -214,7 +228,15 @@ const branchRows = branchRoles.branches.map(branch => ({
 }))
 const publicGithubHead = lsRemoteHead(branchRoles.publicMainRepository.github, 'main')
 const publicGiteeHead = lsRemoteHead(branchRoles.publicMainRepository.gitee, 'main')
-const publicMainInSync = publicGithubHead.ok && publicGiteeHead.ok && publicGithubHead.hash === publicGiteeHead.hash
+const publicMainTreeStatus = comparePublicMirrorTrees({
+  publicRepoDir,
+  githubHead: publicGithubHead,
+  giteeHead: publicGiteeHead,
+  giteeUrl: branchRoles.publicMainRepository.gitee,
+  branch: 'main',
+  timeout: gitTimeout
+})
+const publicMainInSync = publicGithubHead.ok && publicGiteeHead.ok && publicMainTreeStatus.inSync
 const release = ghRelease(`v${rootPackage.version}`)
 
 const remoteTargets = [
@@ -259,7 +281,9 @@ const failures = [
   publicGithubHead.ok &&
     publicGiteeHead.ok &&
     !publicMainInSync &&
-    `open-source main Gitee repository ${publicGiteeHead.hash.slice(0, 12)} differs from GitHub ${publicGithubHead.hash.slice(0, 12)}`,
+    (publicMainTreeStatus.checked
+      ? `open-source main Gitee repository tree ${publicMainTreeStatus.giteeTree.slice(0, 12)} differs from GitHub tree ${publicMainTreeStatus.referenceTree.slice(0, 12)}`
+      : `open-source main Gitee repository ${publicGiteeHead.hash.slice(0, 12)} differs from GitHub ${publicGithubHead.hash.slice(0, 12)}${publicMainTreeStatus.error ? ` (${publicMainTreeStatus.error})` : ''}`),
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
   release.ok && !release.hasManifest && `GitHub Release v${rootPackage.version} missing release-manifest.json`,
   release.ok && !release.hasStatus && `GitHub Release v${rootPackage.version} missing release-status.json`,
@@ -341,7 +365,12 @@ console.log()
 
 console.log(`## Open-Source Main Repository\n`)
 console.log(`- GitHub main: ${formatHash(publicGithubHead.hash)} (${okLabel(publicGithubHead.ok)})`)
-console.log(`- Gitee main: ${formatHash(publicGiteeHead.hash)} (${syncLabel(publicGithubHead, publicGiteeHead)})`)
+console.log(`- Gitee main: ${formatHash(publicGiteeHead.hash)} (${syncLabel(publicGithubHead, publicGiteeHead, publicMainTreeStatus)})`)
+if (publicGithubHead.ok && publicGiteeHead.ok && publicGithubHead.hash !== publicGiteeHead.hash) {
+  console.log(
+    `- Mirror tree sync: ${publicMainTreeStatus.mode}${publicMainTreeStatus.referenceTree ? `, reference ${formatHash(publicMainTreeStatus.referenceTree)}` : ''}${publicMainTreeStatus.giteeTree ? `, gitee ${formatHash(publicMainTreeStatus.giteeTree)}` : ''}${publicMainTreeStatus.error ? `, ${publicMainTreeStatus.error}` : ''}`
+  )
+}
 console.log(
   `- GitHub Release: \`${release.tag}\` (${okLabel(release.ok)}, assets: ${release.assetCount}, manifest: ${okLabel(release.hasManifest)}, status: ${okLabel(release.hasStatus)}, schema: ${okLabel(release.hasSchema)}${release.url ? `, ${release.url}` : ''})\n`
 )

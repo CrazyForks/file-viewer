@@ -7,7 +7,7 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 标准 npm 包是 `@file-viewer/vue3@2.0.0`，历史包名 `@flyfish-group/file-viewer3@2.0.0` 会继续同步维护。Vue3 标准组件包 直接使用共享 core 能力，并提供 Vue 插件、组件 props、ref API 和类型出口。
+当前 Vue3 标准 npm 包是 `@file-viewer/vue3@2.0.1`，历史包名 `@flyfish-group/file-viewer3@2.0.1` 会继续同步维护。Vue3 标准组件包 直接使用共享 core 能力，并提供 Vue 插件、组件 props、ref API 和类型出口。
 
 ## 安装
 
@@ -173,7 +173,7 @@ import { FileViewer } from '@file-viewer/vue3'
 
 ## Vue2 项目怎么选
 
-Vue2.7 项目请使用 `@file-viewer/vue2.7@2.0.0` 或历史包名 `@flyfish-group/file-viewer@2.0.0`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和运行参数保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
+Vue2.7 项目请使用 `@file-viewer/vue2.7@2.0.1` 或历史包名 `@flyfish-group/file-viewer@2.0.1`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和运行参数保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## 更适合平台化的方案
 

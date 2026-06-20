@@ -4,9 +4,9 @@
 
 ## 当前主线
 
-### `v2.0.0` 架构重构与全生态 2.x 起始版本
+### `v2.0.1` 架构重构与全生态 2.x 起始版本
 
-- 全线 npm 包、workspace 依赖、Docker 镜像和开源 release 包从 `2.0.0` 重新起步，用大版本号明确标识 core / component 架构重构带来的兼容边界变化
+- 全线 npm 包、workspace 依赖、Docker 镜像和开源 release 包从 `2.0.1` 重新起步，用大版本号明确标识 core / component 架构重构带来的兼容边界变化
 - `@file-viewer/core` 继续保持纯 TypeScript、框架无关的底层能力包；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等标准组件包只依赖 core，各自提供原生集成体验
 - 清理旧独立页面实现和历史过渡口径，对外文档统一强调原生组件与纯 Web API 是核心集成路径
 - 开源总仓库产物命名切换为 `file-viewer-v2-*`，同时发布 2.x npm tarball、Demo、Component Demo、文档站静态产物和库 dist 包，避免继续暴露旧 `file-viewer-v3-*` 产物线

@@ -2,9 +2,9 @@
 
 ## Vue、React 和纯 JS 应该安装哪个包
 
-Vue3 项目安装 `@flyfish-group/file-viewer3@2.0.0`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@2.0.0`，使用 `Vue.use(FileViewer)` 注册。
+Vue3 项目安装 `@flyfish-group/file-viewer3@2.0.1`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer@2.0.1`，使用 `Vue.use(FileViewer)` 注册。
 
-React 项目安装 `@file-viewer/react@2.0.0` 或历史包名 `@flyfish-group/file-viewer-react@2.0.0`，纯 JS 或非框架页面安装 `@file-viewer/web@2.0.0` 或历史包名 `@flyfish-group/file-viewer-web@2.0.0`。React 和纯 JS 包现在都是原生挂载，直接复用共享 core native engine。
+React 项目安装 `@file-viewer/react@2.0.1` 或历史包名 `@flyfish-group/file-viewer-react@2.0.1`，纯 JS 或非框架页面安装 `@file-viewer/web@2.0.1` 或历史包名 `@flyfish-group/file-viewer-web@2.0.1`。React 和纯 JS 包现在都是原生挂载，直接复用共享 core native engine。
 
 React / 纯 JS 包推荐用 npm、pnpm 或业务项目已有包管理器安装。如果需要固定 Worker、WASM 或示例资源路径，可以运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 

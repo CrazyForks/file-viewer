@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { loadEcosystemReleaseContext, readJson } from './lib/ecosystem-packages.mjs'
 import { normalizeReleaseError } from './lib/release-error-normalizer.mjs'
 import { describeReleaseGaps } from './lib/release-gap-classifier.mjs'
+import { comparePublicMirrorTrees } from './lib/git-remote-tree.mjs'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
@@ -246,6 +247,16 @@ const [sourceRemote, publicGithub, publicGitee, release, componentRepositories, 
     }))
   ])
 
+const publicMainTreeStatus = comparePublicMirrorTrees({
+  publicRepoDir,
+  githubHead: publicGithub,
+  giteeHead: publicGitee,
+  giteeUrl: branchRoles.publicMainRepository.gitee,
+  branch: 'main',
+  timeout: gitTimeout
+})
+const publicMainInSync = publicGithub.ok && publicGitee.ok && publicMainTreeStatus.inSync
+
 const gaps = [
   !sourceRemote.ok && `source remote ${sourceRemote.url} missing ${sourceBranch}`,
   sourceRemote.ok &&
@@ -256,8 +267,10 @@ const gaps = [
   !publicGitee.ok && 'open-source main Gitee repository missing main',
   publicGithub.ok &&
     publicGitee.ok &&
-    publicGithub.hash !== publicGitee.hash &&
-    `open-source main Gitee repository ${publicGitee.hash.slice(0, 12)} differs from GitHub ${publicGithub.hash.slice(0, 12)}`,
+    !publicMainInSync &&
+    (publicMainTreeStatus.checked
+      ? `open-source main Gitee repository tree ${publicMainTreeStatus.giteeTree.slice(0, 12)} differs from GitHub tree ${publicMainTreeStatus.referenceTree.slice(0, 12)}`
+      : `open-source main Gitee repository ${publicGitee.hash.slice(0, 12)} differs from GitHub ${publicGithub.hash.slice(0, 12)}${publicMainTreeStatus.error ? ` (${publicMainTreeStatus.error})` : ''}`),
   !release.ok && `GitHub Release v${rootPackage.version} missing`,
   release.ok && !release.hasManifest && `GitHub Release v${rootPackage.version} missing release-manifest.json`,
   release.ok && !release.hasStatus && `GitHub Release v${rootPackage.version} missing release-status.json`,
@@ -291,9 +304,14 @@ const report = {
   openSourceMain: {
     github: publicGithub,
     gitee: publicGitee,
-    inSync: publicGithub.ok && publicGitee.ok && publicGithub.hash === publicGitee.hash,
+    inSync: publicMainInSync,
+    syncMode: publicMainTreeStatus.mode,
+    treeChecked: publicMainTreeStatus.checked,
+    referenceTree: publicMainTreeStatus.referenceTree,
+    giteeTree: publicMainTreeStatus.giteeTree,
+    treeError: publicMainTreeStatus.error,
     reportHashNote:
-      'This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Use pnpm audit:ecosystem-status for live remote heads.'
+      'This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads.'
   },
   githubRelease: release,
   componentRepositories,
