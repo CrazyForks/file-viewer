@@ -4,7 +4,7 @@
 
 把 Word、Excel、PPT、PDF、Typst、压缩包、邮件、音视频、地理数据、字体、设计资产和结构化数据稳稳带进浏览器里。
 
-`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；`@file-viewer/pptx` 等独立渲染引擎包负责可单独演进的重型格式能力；Vue3、Vue2、React、纯 Web、jQuery、Svelte 等标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
+`@file-viewer/core` 提供底层预览能力、格式矩阵、生命周期事件和操作 API；`@file-viewer/pptx` 等独立渲染引擎包负责可单独演进的重型格式能力；Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 等标准组件包只负责各自生态的原生组件体验、类型出口和交互封装。新项目建议优先使用 `@file-viewer/*` 标准包名，`@flyfish-group/*` 历史包名继续同步维护。
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
@@ -12,6 +12,7 @@
 - 历史兼容 npm 包: `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web`
 - 官方网站: [file-viewer.app](https://file-viewer.app)
 - 官方文档: [doc.file-viewer.app](https://doc.file-viewer.app)
+- 生态接入指南: [doc.file-viewer.app/guide/ecosystem](https://doc.file-viewer.app/guide/ecosystem)
 - 在线 Demo: [demo.file-viewer.app](https://demo.file-viewer.app)
 - 文档比对 Demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - Release 下载: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)

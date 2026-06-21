@@ -33,12 +33,12 @@ pnpm install
 | `pnpm verify:ecosystem-readmes` | 校验根 README / README.en.md 的公开生态索引、官方文档/Demo、GitHub/Gitee 组件仓库、入口格式、历史兼容包、core 公开仓和格式数量口径 |
 | `pnpm verify:compatibility-api` | 校验历史兼容包的运行门面边界: React 兼容包转发到标准 React 组件包，纯 Web 兼容包转发到标准 web 组件包，scoped Vue3 根包只保留 core 类型门面、登记过的 alias 和受控公共类型出口，`file-viewer3` 保持薄 alias |
 | `pnpm verify:compatibility-readmes` | 校验历史兼容包 README / README.en.md 明确推荐迁移到对应 `@file-viewer/*` 标准包名 |
-| `pnpm verify:wrapper-api` | 校验标准组件包 的运行入口、组件/插件/action/helper 导出和 controller 方法，并阻止 `mountViewerFrame`、`postFileToViewer` 等旧独立页面 API 回流，防止不同框架接入体验漂移 |
-| `pnpm verify:wrapper-options` | 校验标准组件包 使用本包本地 controller 暴露统一参数和 handle，controller 只消费 `@file-viewer/core` 底层契约，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等预览选项，也不依赖其他组件包 |
+| `pnpm verify:wrapper-api` | 校验标准组件包的运行入口、组件/插件/action/helper 导出和 controller 方法，并阻止 `mountViewerFrame`、`postFileToViewer` 等旧独立页面 API 回流，防止不同框架接入体验漂移 |
+| `pnpm verify:wrapper-options` | 校验标准组件包使用本包本地 controller 暴露统一参数和 handle，controller 只消费 `@file-viewer/core` 底层契约，不重新声明 theme、toolbar、watermark、search、AI、Office、CAD 等预览选项，也不依赖其他组件包 |
 | `pnpm verify:smoke-matrix` | 校验 `ecosystem/smoke-matrix.json` 覆盖当前 renderer pipeline、标准组件包和真实示例文件 |
 | `pnpm verify:experience-baseline` | 校验 `ecosystem/experience-baseline.json` 中的 Vue3 当前组件、比对页、历史 React、历史纯 JS 和 script 标签 IIFE 基线体验证据 |
 | `pnpm verify:ecosystem-tarballs` | 使用 npm dry-run 校验生态包包含中英文 README 和声明入口，且不会打入未声明源码、工作区文件、source map、`.DS_Store` 或非 bin 脚本 |
-| `pnpm verify:ecosystem-versions` | 校验 core、标准组件包 和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准组件包 仓库元数据和历史包依赖边界 |
+| `pnpm verify:ecosystem-versions` | 校验 core、标准组件包和兼容包版本一致、内部 workspace 依赖范围一致、README 打包声明、标准组件包仓库元数据和历史包依赖边界 |
 | `pnpm verify:release-status-schema` | 校验开源总仓 `artifacts/release-status.json` 符合 `release-status.schema.json`，并确认 gap 分类摘要结构稳定 |
 | `pnpm verify:public-main` | 校验开源总仓库的 release manifest、tarball、README、组件仓库索引、入口格式、历史兼容包和源码边界 |
 | `pnpm verify:production-entrypoints` | 校验完整生态构建后的 package 入口、纯 Web viewer 资源、可导入 ESM 入口，以及 组件 manifest 声明的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口 |
@@ -47,7 +47,7 @@ pnpm install
 | `pnpm docs:deploy:cloudflare` | 构建文档站，并发布到 `flyfish-file-viewer-docs` Cloudflare Pages 项目 |
 | `pnpm docker:build` | 使用 Dockerfile 构建本机架构镜像 |
 | `pnpm docker:publish` | 使用 buildx 推送 `linux/amd64` / `linux/arm64` Docker Hub 镜像 |
-| `pnpm dev:components` | 启动 React + 纯 JS 原生 组件 Demo |
+| `pnpm dev:components` | 启动 React + Pure Web + Vue3 + jQuery + Svelte 组件 Demo |
 | `pnpm build:component-demo` | 构建 组件 Demo，验证上线静态产物 |
 | `pnpm release:components:pack` | 构建并打包 core、历史兼容包和标准组件包 npm tarball |
 | `pnpm release:components:publish` | 构建并发布 core、历史兼容包和标准组件包 npm 包 |
@@ -55,7 +55,7 @@ pnpm install
 | `pnpm release:ecosystem:pack` | 构建完整生态并生成可离线安装的 npm tarball |
 | `pnpm release:ecosystem:publish:dry-run` | 对完整生态包执行 npm publish dry-run |
 | `pnpm release:ecosystem:publish` | 正式发布完整生态包；MFA 账号请使用交互式终端确认 |
-| `pnpm components:readme` | 根据 `ecosystem/wrapper-readme-template.json`、组件 manifest 和 core 格式定义刷新所有标准组件包 中英文 README 与根 README 生态矩阵 |
+| `pnpm components:readme` | 根据 `ecosystem/wrapper-readme-template.json`、组件 manifest 和 core 格式定义刷新所有标准组件包中英文 README 与根 README 生态矩阵 |
 | `pnpm components:verify` | 校验 标准组件包和导出仓库的 README 模板、格式矩阵、仓库元数据、入口、依赖边界和源码边界 |
 | `pnpm components:publish:dry-run` | 导出并校验独立 组件仓库，发布脚本复跑目标仓库预检后预览 GitHub/Gitee 推送动作 |
 | `pnpm components:standalone-smoke` | 构建 core 与 标准组件包，导出独立 组件仓库，并用 npm 在临时独立仓库中安装、构建验证 |
@@ -63,7 +63,7 @@ pnpm install
 | `pnpm docs:dev` | 启动 VitePress 文档站 |
 | `pnpm docs:build` | 构建 VitePress 文档站 |
 | `pnpm type-check` | 执行 Vue3 基线 TypeScript 类型检查 |
-| `pnpm type-check:components` | 执行 React / 纯 JS 组件 包类型检查 |
+| `pnpm type-check:components` | 执行 React / Pure Web / jQuery / Svelte 等标准组件包类型检查 |
 | `pnpm test` | 运行测试 |
 
 ## 推荐验证顺序
@@ -107,7 +107,7 @@ npm pack
 pnpm release:ecosystem:pack
 ```
 
-## Vue2 / Vue3 / React / 纯 JS 发版
+## 完整生态发版
 
 当前生态包线都使用 `latest`:
 
@@ -120,11 +120,11 @@ pnpm release:ecosystem:pack
 | Vue2.6 标准组件包 | 当前仓库子工程 | `@file-viewer/vue2.6` | 兼容 Vue2.6 插件式注册 |
 | React 18 / 19 | 当前仓库子工程 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `<FileViewer url="/files/demo.pdf" />` |
 | React 16.8 / 17 | 当前仓库子工程 | `@file-viewer/react-legacy` | legacy React 原生组件 |
-| 纯 JS | 当前仓库子工程 | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `mountViewer(container, options)` |
+| Pure Web | 当前仓库子工程 | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `mountViewer(container, options)` |
 | jQuery | 当前仓库子工程 | `@file-viewer/jquery` | `$(el).fileViewer(options)` |
 | Svelte | 当前仓库子工程 | `@file-viewer/svelte` | Svelte component package |
 
-分支职责以 `ecosystem/branch-roles.json` 和仓库根目录 `BRANCHES.md` 为准: 私有 Gitea 的 `main` 是完整原始聚合仓，保留完整 monorepo、统一发布自动化和内部集成历史，不缩减为 core-only，也不等同于 GitHub 开源总仓库；`v2` 对应 Vue 2.7 标准组件包线，`v3` 对应 Vue 3 标准组件包线。`@file-viewer/core` 的源码通过 `packages/core`、独立公开仓 `flyfish-dev/file-viewer-core` 和开源总仓库分发。标准组件包、core、React、纯 JS、jQuery 和 Svelte 包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且组件入口使用最新 core native engine。
+分支职责以 `ecosystem/branch-roles.json` 和仓库根目录 `BRANCHES.md` 为准: 私有 Gitea 的 `main` 是完整原始聚合仓，保留完整 monorepo、统一发布自动化和内部集成历史，不缩减为 core-only，也不等同于 GitHub 开源总仓库。`@file-viewer/core` 的源码通过 `packages/core`、独立公开仓 `flyfish-dev/file-viewer-core` 和开源总仓库分发。标准组件包、core、PPTX 引擎和历史兼容包在当前仓库内作为子工程统一发布，发版前必须通过 `pnpm verify:branch-roles`、`pnpm release:ecosystem:pack` 或 `pnpm release:ecosystem:publish:dry-run`，确保源码边界正确且组件入口使用最新 core 能力。
 
 ## 主要产物位置
 
@@ -133,28 +133,28 @@ pnpm release:ecosystem:pack
 - Vue3 标准组件包产物: `packages/components/vue3/dist/`
 - 文档站构建产物: `docs/.vitepress/dist/`
 - npm 包 tarball: 仓库根目录下的 `*.tgz`，完整生态 tarball 默认位于 `.release/ecosystem/`，组件离线安装包位于 `.release/components/`
-- React / 纯 JS 随包 viewer assets: `packages/compat/web/viewer/`
+- Pure Web 随包 viewer assets: `packages/compat/web/viewer/`
 - 组件 Demo 构建产物: `apps/component-demo/dist/`
 - 公开 GitHub / Gitee 仓库: 提供 core、标准组件包、兼容包、Demo、文档源码，同时保留混淆压缩后的库产物、Demo 静态站点、文档静态站点、示例文件和 tarball
 
 ## 发版前检查清单
 
 - README 是否和当前代码能力一致
-- README 和文档站是否同时写清 Vue3 / Vue2 / React / 纯 JS 包名、版本和接入方式
+- README 和文档站是否同时写清 Vue3 / Vue2.7 / Vue2.6 / React / React Legacy / Pure Web / jQuery / Svelte / Core / PPTX 包名、版本和接入方式
 - 文档站中的支持格式、native component package 接入说明和 Demo 截图是否最新
 - `file` / `url` 的行为说明是否与运行逻辑一致
 - 每轮迁移是否已经运行 `pnpm verify:migration-gates`，覆盖类型检查、主 Demo 构建、文档站构建、格式矩阵、根 README 生态索引、smoke 矩阵、体验基线证据、分支职责/源码边界、core API 与纯 TS 边界、组件源包校验、组件运行 API 与参数面一致性、兼容包运行/类型门面、兼容包 README 迁移提示、生态版本/依赖一致性和 npm manifest 列表校验
 - 生态目标、包名、仓库和分支职责是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:branch-roles`，确认 `ecosystem/wrappers.json` / `ecosystem/branch-roles.json` / core 格式矩阵口径一致
-- 新增格式、示例或标准组件包 时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
+- 新增格式、示例或标准组件包时，`ecosystem/smoke-matrix.json` 是否已经同步补充对应样本、surface 和断言项
 - 修改主入口、文档比对、历史 React / 纯 JS 组件或 script tag 接入时，`ecosystem/experience-baseline.json` 是否同步补充对应页面、特性组、事件/按钮/打印导出/视觉证据和验证脚本
-- 每个标准组件包 是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
-- 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准组件包 和历史兼容包不会漂移，且标准组件包 仍指向对应 GitHub 公开仓库
-- 根 README 与开源总仓库 README 是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-main`，确认 组件入口格式、GitHub/Gitee 仓库和历史兼容包口径没有漂移
+- 每个标准组件包是否仍由 `wrapperCoverage.requiredFamilies` 覆盖 PDF、DOCX、XLSX、图片、Markdown、CAD、压缩包、邮件和地理数据这些关键族
+- 生态 npm 版本、内部 workspace 依赖和仓库元数据是否已经通过 `pnpm verify:ecosystem-versions`，确认 core、标准组件包和历史兼容包不会漂移，且标准组件包仍指向对应 GitHub 公开仓库
+- 根 README 与开源总仓库 README 是否已经通过 `pnpm verify:ecosystem-readmes` / `pnpm verify:public-main`，确认组件入口格式、GitHub/Gitee 仓库和历史兼容包口径没有漂移
 - 生态 npm tarball 是否已经通过 `pnpm verify:ecosystem-tarballs` 或正式 pack 后的自动校验，确认每个包都包含中英文 README，并避免未声明源码、工作区目录、source map、构建配置和本地元数据泄露
-- 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、Vue3、Vue2、React、纯 JS、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入，并确认 组件 manifest 的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口与 package 字段、实际文件一致
+- 生产入口是否已经通过 `pnpm verify:production-entrypoints`，确认 core、PPTX、Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 和历史兼容包的声明入口存在且 ESM 入口可被真实导入，并确认组件 manifest 的 ESM、类型、IIFE、viewer assets、复制 CLI 和 Svelte 组件入口与 package 字段、实际文件一致
 - 本地构建和文档构建是否全部通过
 - 主 Demo、文档比对页和 组件 Demo 是否已经通过 `pnpm verify:browser-smoke`，确认轻量文档实际渲染、左右比对组件挂载、`Ctrl/Command+F` 搜索浮层、React/Web/Vue3/jQuery/Svelte standard component package 和 script tag IIFE 行为正常
-- React / 纯 JS 组件 Demo 是否在开发服务和 build preview 中都能显示内容
+- React / Pure Web / jQuery / Svelte 组件 Demo 是否在开发服务和 build preview 中都能显示内容
 - `packages/compat/web` / `packages/components/web` 的资源复制结果是否已经由最新构建产物同步
 - `file-viewer-copy-assets` 是否生成 `flyfish-viewer-assets.json`，且 archive / CAD 等 worker/WASM 资源校验为 `valid: true`
 - `.release/component-repos/*` 是否已经通过 `pnpm components:publish:dry-run` 预检，确认 GitHub/Gitee remotes、README、manifest、source HEAD freshness、依赖边界和 npm 入口元数据均来自 `ecosystem/wrappers.json`
@@ -165,7 +165,7 @@ pnpm release:ecosystem:pack
 - 生态 tarball 是否包含 core、标准组件包、历史兼容包、README 中英文说明和必要的 `viewer/` / `dist/` 文件，且不包含 `.DS_Store`、source map 或私有源码
 - 开源总仓库是否在 `pnpm release:public` 后自动通过 `pnpm verify:public-main`，确认 `artifacts/release-manifest.json`、`artifacts/release-status.json`、`artifacts/release-status.schema.json`、tarball、README 和 组件仓库索引均与当前生态清单一致
 - 混淆后的 `packages/components/vue3/dist/index.mjs` 是否仍可被业务项目正常导入
-- README 是否包含官方文档、在线 Demo、npm(Vue3/Vue2/React/纯 JS)、私有化部署、GitHub / Gitee 公开仓库、私有聚合仓与优先支持和 Apache-2.0 许可证说明
+- README 是否包含官方文档、在线 Demo、完整 npm 生态、私有化部署、GitHub / Gitee 公开仓库、私有聚合仓与优先支持和 Apache-2.0 许可证说明
 
 ## 部署建议
 
@@ -181,7 +181,7 @@ pnpm release:ecosystem:pack
 - 文档站切到 Cloudflare Pages 时同理，需要把 `doc.file-viewer.app` 添加到 `flyfish-file-viewer-docs` 的自定义域名，并让 DNS CNAME 指向 `flyfish-file-viewer-docs.pages.dev`
 - `apps/viewer-demo/public/_headers` 已为哈希资源、WASM/Worker、示例文件和 HTML 配置缓存策略，部署到 Cloudflare 后会自动生效
 - `docs/public/_headers` 已为 VitePress 文档站的哈希资源、图片和 HTML 配置缓存策略，部署到 Cloudflare 后会自动生效
-- React / 纯 JS 包默认在用户项目内原生挂载预览器；如需 Worker/WASM 自托管，请使用资源复制命令并配置对应 options
+- React、Pure Web、jQuery 和 Svelte 包默认在用户项目内原生挂载预览器；如需 Worker/WASM 自托管，请使用资源复制命令并配置对应 options
 - Docker 镜像发布后可直接运行 `flyfishdev/file-viewer:latest`，主预览入口是 `/`，文档比对入口是 `/compare.html`
 - 不要把已移除的旧式页面协议写成推荐接入方式
 - 发布前先用本地构建产物做一次完整 smoke test

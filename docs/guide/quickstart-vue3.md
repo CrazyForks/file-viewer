@@ -7,7 +7,7 @@
   安装组件、注册一次，然后把文件 URL 或二进制交给它，剩下的渲染工作交给预览器处理。
 </p>
 
-当前 Vue3 标准 npm 包是 `@file-viewer/vue3`，历史包名 `@flyfish-group/file-viewer3` 会继续同步维护。Vue3 标准组件包 直接使用共享 core 能力，并提供 Vue 插件、组件 props、ref API 和类型出口。
+当前 Vue3 标准 npm 包是 `@file-viewer/vue3`，历史包名 `@flyfish-group/file-viewer3` 和 `file-viewer3` 会继续同步维护。Vue3 标准组件包直接使用共享 core 能力，并提供 Vue 插件、组件 props、ref API 和类型出口。
 
 ## 安装
 
@@ -173,8 +173,8 @@ import { FileViewer } from '@file-viewer/vue3'
 
 ## Vue2 项目怎么选
 
-Vue2.7 项目请使用 `@file-viewer/vue2.7` 或历史包名 `@flyfish-group/file-viewer`，插件注册方式是 `Vue.use(FileViewer)`。两条包线的文件格式能力、Demo 样例和运行参数保持一致，详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
+Vue2.7 项目请使用 `@file-viewer/vue2.7`，Vue2.6 项目请使用 `@file-viewer/vue2.6`。历史包名 `@flyfish-group/file-viewer` 仍对应 Vue2.7 线。详细步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## 更适合平台化的方案
 
-如果你正在做的是统一附件中心或多个系统共用预览能力，建议先统一到 core + component 的包线管理: Vue、React、纯 JS、jQuery、Svelte 使用同一套 options、事件和文件输入语义，业务侧只需要按技术栈选择对应标准组件包。
+如果你正在做的是统一附件中心或多个系统共用预览能力，建议先统一到 core + 标准组件包的包线管理: Vue、React、Pure Web、jQuery、Svelte 使用同一套 options、事件和文件输入语义，业务侧只需要按技术栈选择对应标准组件包。完整矩阵见 [生态组件总览](/guide/ecosystem)。

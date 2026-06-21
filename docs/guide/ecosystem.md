@@ -1,0 +1,307 @@
+# 生态组件总览
+
+<div class="doc-kicker">Native Ecosystem Packages</div>
+
+<p class="doc-lead">
+  Flyfish Viewer 的 2.x 架构把底层预览能力、重型渲染引擎和各框架组件拆清楚了。
+  新项目优先选择 <code>@file-viewer/*</code> 标准包名；历史 <code>@flyfish-group/*</code> 包名仍同步维护，用于平滑升级旧项目。
+</p>
+
+## 选型一览
+
+| 场景 | 推荐包 | 适合项目 | 入口能力 |
+| --- | --- | --- | --- |
+| 底层能力 | `@file-viewer/core` | 自研组件、二次封装、框架适配 | 纯 TypeScript 预览能力、格式矩阵、事件、搜索、缩放、打印、导出和共享类型 |
+| PPTX 引擎 | `@file-viewer/pptx` | 单独优化或验证 PPTX 渲染 | 独立原生 PPTX renderer、Worker 渐进解析和样式文件 |
+| Vue 3 | `@file-viewer/vue3` | Vue 3.3+ | Vue 插件、`<file-viewer>` 组件、props、事件、ref/controller 和完整类型 |
+| Vue 2.7 | `@file-viewer/vue2.7` | Vue 2.7 项目 | `Vue.use(FileViewer)` 插件式注册，能力与 Vue 3 线保持一致 |
+| Vue 2.6 | `@file-viewer/vue2.6` | 仍停留在 Vue 2.6 的老项目 | Vue 2.6 专线，避免强迫业务升级到 2.7 |
+| React 18/19 | `@file-viewer/react` | React 18 / 19，也兼容 React 17 | 原生 React 组件、`useFileViewer`、`useFileViewerState` 和 ref handle |
+| React 16.8/17 | `@file-viewer/react-legacy` | 旧 React hooks 项目 | 面向 React 16.8 / 17 的独立组件包 |
+| Pure Web | `@file-viewer/web` | 无框架页面、微前端壳、传统系统 | `mountViewer(container, options)`、IIFE script 标签包、资源复制 CLI |
+| jQuery | `@file-viewer/jquery` | 传统后台、jQuery 插件体系 | `$(el).fileViewer(options)` 和插件方法调用 |
+| Svelte | `@file-viewer/svelte` | Svelte / SvelteKit | Svelte 组件、action、事件和 controller 方法 |
+
+历史兼容包继续发布: `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web`。新系统建议使用标准包名，便于理解依赖边界和后续迁移。
+
+## 架构边界
+
+- `@file-viewer/core` 是 framework-neutral 底座，不依赖 Vue、React、Svelte 或 jQuery。
+- 各标准组件包只依赖 core 和自己的生态依赖，不嵌套其他框架实现。
+- 所有组件包共享同一套 `ViewerMountOptions`、`FileViewerOptions`、生命周期事件、操作回调、搜索、缩放、水印、打印和导出语义。
+- Office、PDF、OFD、Typst、CAD、压缩包、邮件、3D、绘图、数据文件等重型链路按格式异步加载，未命中的格式不会进入首屏。
+- 私有化或内网部署时，运行 `file-viewer-copy-assets` 复制 Worker、WASM、PDF.js、Draw.io、Typst、CAD、SQLite、压缩包和 Office 静态资源，运行时默认不依赖公共 CDN。
+
+## Vue 3
+
+```bash
+pnpm add @file-viewer/vue3
+```
+
+```ts
+import { createApp } from 'vue'
+import App from './App.vue'
+import FileViewer from '@file-viewer/vue3'
+
+createApp(App).use(FileViewer).mount('#app')
+```
+
+```vue
+<script setup lang="ts">
+const options = {
+  theme: 'light',
+  toolbar: { position: 'bottom-right', zoom: true },
+  watermark: { text: '内部预览', opacity: 0.14 }
+}
+</script>
+
+<template>
+  <div style="height: 100vh">
+    <file-viewer url="/files/demo.docx" :options="options" />
+  </div>
+</template>
+```
+
+## Vue 2.7 / Vue 2.6
+
+Vue 2.7:
+
+```bash
+pnpm add @file-viewer/vue2.7
+```
+
+Vue 2.6:
+
+```bash
+pnpm add @file-viewer/vue2.6
+```
+
+```ts
+import Vue from 'vue'
+import App from './App.vue'
+import FileViewer from '@file-viewer/vue2.7'
+
+Vue.use(FileViewer)
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
+```
+
+历史 Vue 2 包 `@flyfish-group/file-viewer` 仍对应 Vue 2.7 线。新项目如果无法升级 Vue，先按运行时版本选择 `@file-viewer/vue2.7` 或 `@file-viewer/vue2.6`。
+
+## React
+
+```bash
+npm install @file-viewer/react
+```
+
+```tsx
+import { useRef } from 'react'
+import FileViewer, { type FileViewerHandle } from '@file-viewer/react'
+
+export function Preview() {
+  const viewerRef = useRef<FileViewerHandle | null>(null)
+
+  return (
+    <div style={{ height: '100vh' }}>
+      <FileViewer
+        ref={viewerRef}
+        url="/files/demo.pdf"
+        options={{ theme: 'light', toolbar: { position: 'bottom-right' } }}
+        onEvent={(event) => console.log(event.type, event.context)}
+      />
+    </div>
+  )
+}
+```
+
+需要状态同步时可以使用 `useFileViewer`:
+
+```tsx
+import FileViewer, { useFileViewer } from '@file-viewer/react'
+
+export function SearchablePreview() {
+  const viewer = useFileViewer({
+    url: '/files/report.docx',
+    options: { search: true }
+  })
+
+  return (
+    <>
+      <button onClick={() => viewer.handle.searchDocument('合同')}>搜索</button>
+      <div style={{ height: '70vh' }}>
+        <FileViewer ref={viewer.ref} {...viewer.props} />
+      </div>
+    </>
+  )
+}
+```
+
+React 16.8 / 17 的旧项目可改用 `@file-viewer/react-legacy`，API 保持同一套 props 与 controller 语义。
+
+## Pure Web
+
+```bash
+npm install @file-viewer/web
+```
+
+```html
+<div id="viewer" style="height: 100vh"></div>
+
+<script type="module">
+  import { mountViewer } from '@file-viewer/web'
+
+  const controller = mountViewer(document.getElementById('viewer'), {
+    url: '/files/demo.xlsx',
+    options: {
+      theme: 'light',
+      toolbar: { position: 'bottom-right' }
+    }
+  })
+
+  window.zoomIn = () => controller.zoomIn()
+</script>
+```
+
+无构建工具页面可以使用 IIFE:
+
+```html
+<link rel="stylesheet" href="/file-viewer/viewer/style.css" />
+<div id="viewer" style="height: 100vh"></div>
+<script src="/file-viewer/viewer/flyfish-file-viewer-web.iife.js"></script>
+<script>
+  window.FlyfishFileViewerWeb.mountViewer(
+    document.getElementById('viewer'),
+    { url: '/files/demo.pdf', options: { theme: 'light' } }
+  )
+</script>
+```
+
+`@file-viewer/web` 还提供 `file-viewer-copy-assets`，用于把离线资源复制到业务静态目录。
+
+## jQuery
+
+```bash
+npm install jquery @file-viewer/jquery
+```
+
+```ts
+import $ from 'jquery'
+import { installJQueryFileViewer } from '@file-viewer/jquery'
+
+installJQueryFileViewer($)
+
+$('#viewer').fileViewer({
+  url: '/files/demo.pdf',
+  options: {
+    theme: 'light',
+    toolbar: { position: 'bottom-right' }
+  }
+})
+
+$('#viewer').fileViewer('searchDocument', '发票')
+$('#viewer').fileViewer('zoomIn')
+```
+
+如果页面已经有全局 jQuery，插件包会尽量自动挂载；显式调用 `installJQueryFileViewer($)` 更稳，也更适合模块化项目。
+
+## Svelte
+
+```bash
+npm install @file-viewer/svelte
+```
+
+```svelte
+<script lang="ts">
+  import FileViewer from '@file-viewer/svelte'
+
+  let viewer
+  const options = {
+    theme: 'light',
+    toolbar: { position: 'bottom-right' },
+    search: true
+  }
+
+  function searchContract() {
+    viewer.searchDocument('合同')
+  }
+</script>
+
+<button on:click={searchContract}>搜索合同</button>
+<div style="height: 80vh">
+  <FileViewer
+    bind:this={viewer}
+    url="/files/demo.docx"
+    {options}
+    on:viewerEvent={(event) => console.log(event.detail.type)}
+  />
+</div>
+```
+
+也可以在普通 DOM 节点上使用 action:
+
+```svelte
+<script lang="ts">
+  import { fileViewer } from '@file-viewer/svelte/action'
+
+  const viewerOptions = {
+    url: '/files/demo.pdf',
+    options: { theme: 'light' }
+  }
+</script>
+
+<div use:fileViewer={viewerOptions} style="height: 100vh" />
+```
+
+SvelteKit 中请确保预览器只在浏览器端挂载，并给容器稳定高度；服务端渲染阶段不要访问 `window`、`document` 或真实文件对象。
+
+## Core 自定义接入
+
+业务如果要做自己的组件层，可以直接依赖 `@file-viewer/core`，但建议只有在标准组件包无法覆盖交互模型时才这么做。
+
+```bash
+npm install @file-viewer/core
+```
+
+Core 暴露格式矩阵、资源路径解析、搜索/缩放/打印导出工具、生命周期上下文和渲染器注册能力。上层组件应只负责容器、状态管理、事件桥接和生态交互，不要把 Vue / React / Svelte 运行时下沉到 core。
+
+## 离线资源
+
+所有生态包都可以使用同一套离线资源复制流程:
+
+```bash
+npx file-viewer-copy-assets ./public/file-viewer
+```
+
+发布后确认这些路径能直接访问，并且 `.wasm`、`.mjs`、Worker 脚本不会被网关回退为 HTML:
+
+| 资源 | 默认目录 |
+| --- | --- |
+| PDF.js worker / CMap / WASM / standard fonts | `file-viewer/vendor/pdf/` |
+| Draw.io 官方离线 viewer | `file-viewer/vendor/drawio/` |
+| CAD DWG / DWF / DWFx WASM | `file-viewer/wasm/cad/` |
+| Typst compiler / renderer WASM | `file-viewer/wasm/typst/` |
+| SQLite WASM | `file-viewer/wasm/sqlite/` |
+| libarchive Worker / WASM | `file-viewer/vendor/libarchive/` |
+| Office Worker | `file-viewer/vendor/docx/`、`file-viewer/vendor/xlsx/` |
+
+## 统一 API
+
+| 能力 | 说明 |
+| --- | --- |
+| 输入 | `url`、`file`、`buffer`、`name`、`filename`、`type`、`size` |
+| 事件 | `onEvent` / `viewerEvent`，包含加载开始、加载完成、卸载开始、卸载完成、错误、搜索、缩放、位置变化等上下文 |
+| 状态 | React `useFileViewerState`、controller `subscribe()`，其他生态可通过事件和 controller 获取 |
+| 操作 | `downloadOriginalFile()`、`printRenderedHtml()`、`exportRenderedHtml()`、`zoomIn()`、`zoomOut()`、`resetZoom()` |
+| 搜索定位 | `searchDocument()`、`clearDocumentSearch()`、`nextSearchResult()`、`previousSearchResult()`、`collectDocumentAnchors()`、`scrollToAnchor()`、`scrollToLine()` |
+| AI 友好能力 | `getDocumentTextChunks()` 返回文本块、页码、行号、锚点和 label 上下文，业务侧可用于向量化、溯源和召回高亮 |
+| 权限前置 | `options.beforeOperation` 可在下载、打印、导出、缩放等操作前返回 `true` / `false` 或 Promise，便于做权限校验 |
+
+## 推荐决策
+
+- Vue 项目优先使用对应 Vue 标准包，不建议把 Pure Web 包再包一层组件。
+- React 项目优先使用 `@file-viewer/react`；React 16.8 / 17 老项目用 `@file-viewer/react-legacy`。
+- Svelte、jQuery 和普通 HTML 页面都有独立入口，不需要借用 Vue 组件。
+- 内网部署先把 viewer assets 复制到业务静态目录，再根据网关路径覆盖 `options.pdf.*`、`options.cad.*`、`options.typst.*`、`options.archive.*` 等资源地址。
+- 所有生态都要给父容器稳定高度；如果传入 `Blob` / `ArrayBuffer`，请同时提供带扩展名的 `name` 或包装成 `File`。

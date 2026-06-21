@@ -4,7 +4,7 @@
 
 Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks, drawings, CAD, geospatial data, 3D models, Markdown, images, fonts, design assets, structured data, and source code preview into the browser with a clean, deployable viewer.
 
-`@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Independent renderer packages such as `@file-viewer/pptx` own heavy format engines that can evolve separately. Vue 3, Vue 2, React, vanilla JavaScript, jQuery, and Svelte standard component packages provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
+`@file-viewer/core` provides the low-level preview capabilities, format matrix, lifecycle events, and operation APIs. Independent renderer packages such as `@file-viewer/pptx` own heavy format engines that can evolve separately. Vue 3, Vue 2.7, Vue 2.6, React, React Legacy, Pure Web, jQuery, and Svelte standard component packages provide native component experiences, type exports, and ecosystem-specific interaction layers on top of the same foundation. New integrations should prefer the standard `@file-viewer/*` package names; historical `@flyfish-group/*` package names remain synchronized.
 
 The viewer does not require a backend conversion service. It is designed for OA systems, knowledge bases, attachment centers, workflow platforms, customer support portals, document approval flows, intranet systems, and offline-capable deployments where file preview should feel like a maintained product module rather than a temporary feature.
 
@@ -12,6 +12,7 @@ The viewer does not require a backend conversion service. It is designed for OA 
 - Historical compatibility packages: `@flyfish-group/file-viewer3`, `file-viewer3`, `@flyfish-group/file-viewer`, `@flyfish-group/file-viewer-react`, `@flyfish-group/file-viewer-web`
 - Official website: [file-viewer.app](https://file-viewer.app)
 - Official documentation: [doc.file-viewer.app](https://doc.file-viewer.app)
+- Ecosystem integration guide: [doc.file-viewer.app/guide/ecosystem](https://doc.file-viewer.app/guide/ecosystem)
 - Online demo: [demo.file-viewer.app](https://demo.file-viewer.app)
 - Document comparison demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - Release downloads: [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases)

@@ -1,9 +1,9 @@
 # React 集成
 
-<div class="doc-kicker">For React 17 / 18 / 19</div>
+<div class="doc-kicker">For React Projects</div>
 
 <p class="doc-lead">
-  React 包提供原生组件体验。组件内部通过共享 core native engine 直接挂载完整预览器，
+  React 包提供原生组件体验。组件内部通过共享 core 能力直接挂载完整预览器，
   props、事件、ref、调试链路都留在 React 项目内。
 </p>
 
@@ -21,6 +21,8 @@ npm install @file-viewer/react
 npm install @flyfish-group/file-viewer-react
 ```
 
+React 16.8 / 17 老项目可以使用 `@file-viewer/react-legacy`，props、options 和 controller 语义保持一致。
+
 ## 最短示例
 
 ```tsx
@@ -31,7 +33,7 @@ export function Preview() {
     <div style={{ height: '100vh' }}>
       <FileViewer
         url="/files/demo.docx"
-        onViewerEvent={(event) => {
+        onEvent={(event) => {
           console.log(event.type, event.event, event.payload)
         }}
         options={{
@@ -81,7 +83,7 @@ export function PrivatePreview() {
 | `file` | `File \| Blob \| ArrayBuffer` | 本地文件或鉴权下载后的二进制内容，优先级高于 `url` |
 | `name` | `string` | `Blob` / `ArrayBuffer` 的文件名，建议带扩展名 |
 | `options` | `FileViewerOptions` | 主题、操作栏、水印、搜索、统一缩放、打印、导出、压缩包 Worker / 缓存 / 体积限制等运行配置 |
-| `onViewerEvent` | `(event) => void` | 接收加载、卸载、操作能力、搜索状态和当前位置变化 |
+| `onEvent` | `(event) => void` | 接收加载、卸载、操作能力、搜索状态和当前位置变化 |
 
 `options.beforeOperation`、`options.hooks` 等函数型配置可以直接传入 React 组件。下载、打印、导出、缩放等按钮操作会在预览器内部根据文件类型动态显隐，并在执行前触发权限校验钩子。
 

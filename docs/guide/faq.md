@@ -1,16 +1,26 @@
 # 常见问题
 
-## Vue、React 和纯 JS 应该安装哪个包
+## 不同生态应该安装哪个包
 
-Vue3 项目安装 `@flyfish-group/file-viewer3`，使用 `createApp(App).use(FileViewer)` 注册。Vue2.7 项目安装 `@flyfish-group/file-viewer`，使用 `Vue.use(FileViewer)` 注册。
+新项目优先选择 `@file-viewer/*` 标准包名:
 
-React 项目安装 `@file-viewer/react` 或历史包名 `@flyfish-group/file-viewer-react`，纯 JS 或非框架页面安装 `@file-viewer/web` 或历史包名 `@flyfish-group/file-viewer-web`。React 和纯 JS 包现在都是原生挂载，直接复用共享 core native engine。
+| 项目生态 | 推荐包 |
+| --- | --- |
+| Vue3 | `@file-viewer/vue3` |
+| Vue2.7 | `@file-viewer/vue2.7` |
+| Vue2.6 | `@file-viewer/vue2.6` |
+| React 18/19 | `@file-viewer/react` |
+| React 16.8/17 | `@file-viewer/react-legacy` |
+| Pure Web / script 标签 | `@file-viewer/web` |
+| jQuery | `@file-viewer/jquery` |
+| Svelte / SvelteKit | `@file-viewer/svelte` |
+| 自研组件或深度二开 | `@file-viewer/core` |
 
-React / 纯 JS 包推荐用 npm、pnpm 或业务项目已有包管理器安装。如果需要固定 Worker、WASM 或示例资源路径，可以运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
+历史包名 `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web` 仍会同步维护，主要用于旧项目不改包名升级。
 
-所有包线的格式能力、示例文件、`file` / `url` 参数行为、options、事件和类型语义保持一致。
+所有包线的格式能力、示例文件、`file` / `url` 参数行为、options、事件和类型语义保持一致。Vue3、Vue2、React、Pure Web、jQuery 和 Svelte 都是各自生态的原生接入，不需要借用其他框架组件。
 
-Vue3 和 Vue2 的安装器都会自动带上样式，不需要额外 import CSS。
+如果需要固定 Worker、WASM 或示例资源路径，可以运行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。
 
 ## URL 预览为什么失败或空白
 

@@ -107,9 +107,9 @@ npx file-viewer-copy-assets ./public/file-viewer
 | `controller.update(options)` | 更新文件或运行参数 |
 | `controller.reload()` | 重新加载当前文件 |
 | `controller.destroy()` | 卸载预览器并释放资源 |
-| `createViewerControllerHandle()` | 创建可复用的 controller handle，适合框架组件包 封装 |
+| `createViewerControllerHandle()` | 创建可复用的 controller handle，适合框架组件包封装 |
 
-`options` 与 Vue、React、jQuery、Svelte standard component package 保持一致，支持主题、水印、搜索、统一缩放、下载、打印、导出 HTML、beforeOperation 前置校验、生命周期 hooks、压缩包缓存和格式专项参数。
+`options` 与 Vue、React、jQuery、Svelte 标准组件包保持一致，支持主题、水印、搜索、统一缩放、下载、打印、导出 HTML、beforeOperation 前置校验、生命周期 hooks、压缩包缓存和格式专项参数。
 
 ## 常见问题
 

@@ -12,13 +12,14 @@
 | 方案 | 适合谁 | 优点 | 你应该看哪页 |
 | --- | --- | --- | --- |
 | Vue3 组件集成 | Vue 3 项目 | 主推组件体验，完整渲染能力直接进入 Vue 应用 | [Vue3 集成](/guide/quickstart-vue3) |
-| Vue2 组件集成 | Vue2.7 项目 | 保留旧业务栈，体验与 Vue3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
-| React 组件集成 | React 17 / 18 / 19 项目 | 原生 React 组件，props、事件和 ref 都能直接调试 | [React 集成](/guide/quickstart-react) |
+| Vue2 组件集成 | Vue2.7 / Vue2.6 项目 | 保留旧业务栈，体验与 Vue3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
+| React 组件集成 | React 16.8 / 17 / 18 / 19 项目 | 原生 React 组件，props、事件和 ref 都能直接调试 | [React 集成](/guide/quickstart-react) |
 | 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | `mountViewer(container, options)` 直接挂载到 DOM | [纯 JS 集成](/guide/quickstart-web) |
-| jQuery / Svelte | 老后台、SvelteKit 或轻量页面 | 复用同一套 core native engine 和 options | [组件用法](/guide/usage) |
+| jQuery / Svelte | 老后台、SvelteKit 或轻量页面 | 独立标准组件包，复用同一套 core 和 options | [生态组件总览](/guide/ecosystem) |
+| Core / PPTX 引擎 | 自研组件、深度二开、单独验证 PPTX | framework-neutral 能力与独立 renderer 包 | [生态组件总览](/guide/ecosystem) |
 
 <div class="doc-callout">
-  <strong>推荐经验:</strong> core 只负责底层预览能力和 API；Vue、React、纯 JS、jQuery、Svelte 标准组件包负责各自生态的原生接入体验。所有标准组件包 都使用同一套 options、事件、搜索、缩放、打印和导出语义。
+  <strong>推荐经验:</strong> core 只负责底层预览能力和 API；Vue、React、Pure Web、jQuery、Svelte 标准组件包负责各自生态的原生接入体验。所有标准组件包都使用同一套 options、事件、搜索、缩放、打印和导出语义。
 </div>
 
 ## 运行环境
@@ -60,16 +61,16 @@ const options = {
 
 ## Vue2 最短路径
 
-Vue2.7 项目使用 `@flyfish-group/file-viewer`，能力与 Vue3 包保持一致，入口会自动带上样式:
+Vue2.7 项目优先使用 `@file-viewer/vue2.7`，能力与 Vue3 包保持一致，入口会自动带上样式:
 
 ```bash
-pnpm add @flyfish-group/file-viewer
+pnpm add @file-viewer/vue2.7
 ```
 
 ```ts
 import Vue from 'vue'
 import App from './App.vue'
-import FileViewer from '@flyfish-group/file-viewer'
+import FileViewer from '@file-viewer/vue2.7'
 
 Vue.use(FileViewer)
 
@@ -78,7 +79,7 @@ new Vue({
 }).$mount('#app')
 ```
 
-完整步骤见 [Vue2 集成](/guide/quickstart-vue2)。
+Vue2.6 老项目使用 `@file-viewer/vue2.6`。完整步骤见 [Vue2 集成](/guide/quickstart-vue2)。
 
 ## React 最短路径
 
@@ -131,6 +132,7 @@ npm install @file-viewer/web
 ## 下一步建议
 
 - 想了解 Demo 中每个示例文件的作用: 看 [Demo 说明](/guide/demo)
+- 想查看 Vue3、Vue2、React、Pure Web、jQuery、Svelte、Core 和 PPTX 引擎的完整包矩阵: 看 [生态组件总览](/guide/ecosystem)
 - 想明确 `file`、`url`、水印、工具栏、压缩包缓存和导出的参数行为: 看 [组件用法](/guide/usage)
 - 准备做本地验证和打包: 看 [本地开发与打包](/guide/development)
 - 想下载公开源码、成品或了解优先支持: 看 [发布与开源分发](/guide/distribution)

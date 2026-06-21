@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 194 个扩展名和 Vue3、Vue2、React、纯 JS、jQuery、Svelte 原生接入方式',
+  description: '纯前端多格式文件预览组件，覆盖 194 个扩展名和 Vue3、Vue2.7/2.6、React、Pure Web、jQuery、Svelte 原生接入方式',
   cleanUrls: true,
   lastUpdated: true,
   head: [
@@ -16,6 +16,7 @@ export default defineConfig({
     nav: [
       { text: '文档', link: '/guide/' },
       { text: '快速开始', link: '/guide/quickstart' },
+      { text: '生态接入', link: '/guide/ecosystem' },
       { text: '支持格式', link: '/guide/formats' },
       {
         text: '资源',
@@ -23,10 +24,11 @@ export default defineConfig({
           { text: '官方文档', link: 'https://doc.file-viewer.app' },
           { text: '官网门户', link: 'https://file-viewer.app' },
           { text: '在线 Demo', link: 'https://demo.file-viewer.app' },
-          { text: 'npm(Vue3)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer3' },
-          { text: 'npm(Vue2)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer' },
-          { text: 'npm(React)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-react' },
-          { text: 'npm(纯 JS)', link: 'https://www.npmjs.com/package/@flyfish-group/file-viewer-web' },
+          { text: 'npm Core', link: 'https://www.npmjs.com/package/@file-viewer/core' },
+          { text: 'npm Vue3', link: 'https://www.npmjs.com/package/@file-viewer/vue3' },
+          { text: 'npm React', link: 'https://www.npmjs.com/package/@file-viewer/react' },
+          { text: 'npm Pure Web', link: 'https://www.npmjs.com/package/@file-viewer/web' },
+          { text: 'npm Svelte', link: 'https://www.npmjs.com/package/@file-viewer/svelte' },
           { text: 'GitHub 开源总仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
           { text: 'Gitee 开源总仓库', link: 'https://gitee.com/flyfish-dev/file-viewer' },
           { text: '打赏与优先支持', link: 'https://dev.flyfish.group/shop' }
@@ -47,6 +49,7 @@ export default defineConfig({
         {
           text: '集成方式',
           items: [
+            { text: '生态组件总览', link: '/guide/ecosystem' },
             { text: 'Vue3 集成', link: '/guide/quickstart-vue3' },
             { text: 'Vue2 集成', link: '/guide/quickstart-vue2' },
             { text: 'React 集成', link: '/guide/quickstart-react' },

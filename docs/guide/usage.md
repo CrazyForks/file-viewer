@@ -7,7 +7,7 @@
   但要把它接进真实业务里，光知道“有这两个参数”还不够，你还得知道渲染器是怎么识别文件类型的、什么时候该传 URL、什么时候应该先把结果包装成带扩展名的 `File`。
 </p>
 
-这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3` / `@flyfish-group/file-viewer3`，Vue2.7 使用 `@file-viewer/vue2.7` / `@flyfish-group/file-viewer`，React 使用 `@file-viewer/react` / `@flyfish-group/file-viewer-react`，纯 JS 使用 `@file-viewer/web` / `@flyfish-group/file-viewer-web`。各标准组件包 都使用原生挂载方式，保持一致的 options、事件和类型语义。
+这套 API 在多个 npm 包中保持一致: Vue3 使用 `@file-viewer/vue3`，Vue2.7 使用 `@file-viewer/vue2.7`，Vue2.6 使用 `@file-viewer/vue2.6`，React 18/19 使用 `@file-viewer/react`，React 16.8/17 使用 `@file-viewer/react-legacy`，Pure Web 使用 `@file-viewer/web`，jQuery 使用 `@file-viewer/jquery`，Svelte 使用 `@file-viewer/svelte`。历史 `@flyfish-group/*` 包名继续同步维护。各标准组件包都使用原生挂载方式，保持一致的 options、事件和类型语义，完整选型见 [生态组件总览](/guide/ecosystem)。
 
 Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入 CSS。
 
@@ -18,7 +18,7 @@ Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入
 - 如果你拿到的是 `Blob` 或 `ArrayBuffer`，推荐先包装成带扩展名的 `File` 再传入。
 - 组件会默认撑满父容器，所以父容器必须有明确高度。
 - 同源 PDF URL 默认交给 PDF.js 渐进读取，首屏不再等待外层预览器整包 Blob 下载；文件服务支持 Range 时会自动分片加载，跨域 URL 默认仍走兼容下载链路。
-- React、纯 JS、jQuery 和 Svelte 标准组件包 也使用同一套 `url` / `file` / `name` 输入语义。
+- React、Pure Web、jQuery 和 Svelte 标准组件包也使用同一套 `url` / `file` / `name` 输入语义。
 
 ## 输入方式怎么选
 
@@ -28,7 +28,7 @@ Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入
 | `file: File` | 强烈推荐 | 本地上传、鉴权下载后预览、宿主系统已拿到文件对象 | 最稳妥的二进制接入方式 |
 | `Blob` / `ArrayBuffer` | 先包装再用 | SDK 返回二进制、接口已返回文件流 | 建议先包装成 `new File([...], 'demo.pdf')`，把文件名和扩展名补全 |
 
-React、纯 JS、jQuery 和 Svelte 标准组件包 允许直接传 `Blob` 或 `ArrayBuffer`，但仍然需要同时提供 `name`，例如 `contract.pdf`。共享 core 会按文件名扩展名选择渲染链路。
+React、Pure Web、jQuery 和 Svelte 标准组件包允许直接传 `Blob` 或 `ArrayBuffer`，但仍然需要同时提供 `name`，例如 `contract.pdf`。共享 core 会按文件名扩展名选择渲染链路。
 
 ## 行为规则
 
@@ -134,7 +134,7 @@ file.value = new File([buffer], 'report.xlsx')
 
 ## 预览器 options
 
-`options` 用于配置通用交互、搜索定位和重型格式的运行参数。Vue2 / Vue3 组件、React 组件、纯 JS helper、jQuery 和 Svelte 标准组件包都使用同一套语义。
+`options` 用于配置通用交互、搜索定位和重型格式的运行参数。Vue2 / Vue3 组件、React 组件、Pure Web helper、jQuery 和 Svelte 标准组件包都使用同一套语义。
 
 ```vue
 <script setup lang="ts">
@@ -293,7 +293,7 @@ await viewerRef.value?.zoomOut()
 await viewerRef.value?.resetZoom()
 ```
 
-React 和纯 JS 集成可以直接接收同样的生命周期和操作上下文。纯 JS 使用 `onEvent`，React 使用 `onViewerEvent`。
+React、Pure Web、jQuery 和 Svelte 集成可以直接接收同样的生命周期和操作上下文。标准事件入口使用 `onEvent`；Svelte 组件同时会派发 `viewerEvent`。
 
 ```ts
 mountViewer(container, {
@@ -313,7 +313,7 @@ mountViewer(container, {
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { FileViewer } from '@flyfish-group/file-viewer3'
+import { FileViewer } from '@file-viewer/vue3'
 
 const viewerRef = ref<InstanceType<typeof FileViewer> | null>(null)
 
@@ -348,7 +348,7 @@ function buildAiPayload() {
 </template>
 ```
 
-React / 纯 JS 接入时，搜索和定位仍建议由宿主 UI 调用组件或 controller 暴露的标准能力；`onViewerEvent` / `onEvent` 会同步搜索状态、页码、行号和溯源信息。需要 AI 摘要、问答、相似段落召回或证据链展示时，业务侧可把 `getDocumentTextChunks()` 返回的文本切片写入自己的向量库或审计系统，再通过 `scrollToAnchor()` / `searchDocument()` 回到原文位置。
+React、Pure Web、jQuery 和 Svelte 接入时，搜索和定位仍建议由宿主 UI 调用组件或 controller 暴露的标准能力；`onEvent` / `viewerEvent` 会同步搜索状态、页码、行号和溯源信息。需要 AI 摘要、问答、相似段落召回或证据链展示时，业务侧可把 `getDocumentTextChunks()` 返回的文本切片写入自己的向量库或审计系统，再通过 `scrollToAnchor()` / `searchDocument()` 回到原文位置。
 
 ## DOCX Worker 渲染
 

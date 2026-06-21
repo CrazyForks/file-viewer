@@ -4,6 +4,13 @@
 
 ## 当前主线
 
+### 当前主线 生态接入文档全量对齐
+
+- 新增 [生态组件总览](/guide/ecosystem)，集中说明 `@file-viewer/core`、`@file-viewer/pptx`、Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte 和历史兼容包的选型边界
+- 文档站导航、快速开始、Vue2/React/Pure Web 接入、组件用法、FAQ、发布分发和开发发版说明统一改为 `@file-viewer/*` 标准包名优先
+- 补齐 Svelte 组件/action、jQuery 插件、Pure Web script 标签、Core 自定义接入、离线 viewer assets 和统一 controller API 示例
+- 修正 React 文档中的事件参数为标准 `onEvent`，并明确 React Legacy、Vue2.6、PPTX 引擎和离线资源复制流程
+
 ### 当前主线 全格式浏览器冒烟与静态资源稳定性修复
 
 - 修复 3D 模型、OFD、EPUB、UMD、绘图和 CAD 等渲染器的隐藏 loading 状态在部分浏览器/CSS 组合下仍可见的问题，避免预览完成后继续显示“正在解析”

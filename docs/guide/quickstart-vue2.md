@@ -1,22 +1,22 @@
 # Vue2 集成
 
-<div class="doc-kicker">For Vue 2.7 Projects</div>
+<div class="doc-kicker">For Vue 2 Projects</div>
 
 <p class="doc-lead">
-  Vue2 包已经同步发布到 <code>@flyfish-group/file-viewer</code>。
-  它面向 Vue2.7 项目，格式能力、示例文件和 options / 事件语义与 Vue3 包保持一致。
+  Vue2 已拆成 <code>@file-viewer/vue2.7</code> 和 <code>@file-viewer/vue2.6</code> 两条标准包线。
+  它们面向仍在 Vue2 的业务系统，格式能力、示例文件和 options / 事件语义与 Vue3 包保持一致。
 </p>
 
 ## 安装
 
 ```bash
-pnpm add @flyfish-group/file-viewer
+pnpm add @file-viewer/vue2.7
 ```
 
-也可以使用 `npm`:
+Vue2.6 项目请安装:
 
 ```bash
-npm install --save @flyfish-group/file-viewer
+pnpm add @file-viewer/vue2.6
 ```
 
 ## 注册插件
@@ -24,7 +24,7 @@ npm install --save @flyfish-group/file-viewer
 ```ts
 import Vue from 'vue'
 import App from './App.vue'
-import FileViewer from '@flyfish-group/file-viewer'
+import FileViewer from '@file-viewer/vue2.7'
 
 Vue.use(FileViewer)
 
@@ -95,17 +95,20 @@ export default {
 </script>
 ```
 
-## 与 Vue3 版本保持一致
+## 与其他生态版本保持一致
 
-Vue2 `main` 分支和 Vue3 `v3` 分支共享同一套预览能力，包括 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码高亮、图片、音视频、字体、设计资产和结构化数据。差异主要在包名和插件注册入口:
+Vue2.7 / Vue2.6 标准包共享同一套 core 预览能力，包括 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码高亮、图片、音视频、字体、设计资产和结构化数据。差异主要在包名和 Vue 运行时版本:
 
 两条分支也共享同一套打印和缩放能力判断: `toolbar.print` / `toolbar.zoom` 只表示业务是否显示按钮，真实按钮会结合当前文件类型、渲染完成状态、导出适配器和缩放 provider 动态显隐。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏。Word / PDF 会输出完整页面，不适合直接打印的表格、压缩包、邮件、EPUB、音视频、3D / 模型等链路会隐藏打印按钮；Excel 等虚拟表格不会被外层 CSS 强行缩放。`options.theme` 支持 `light`、`dark`、`system`，默认继续跟随系统；浅色业务系统建议显式传 `light`。
 
 | 版本 | npm 包 | 最新版本 | 注册方式 |
 | --- | --- | --- | --- |
-| Vue2.7 | `@flyfish-group/file-viewer` | `latest` | `Vue.use(FileViewer)` |
-| Vue3 | `@flyfish-group/file-viewer3` | `latest` | `createApp(App).use(FileViewer)` |
+| Vue2.7 | `@file-viewer/vue2.7` | `latest` | `Vue.use(FileViewer)` |
+| Vue2.6 | `@file-viewer/vue2.6` | `latest` | `Vue.use(FileViewer)` |
+| Vue3 | `@file-viewer/vue3` | `latest` | `createApp(App).use(FileViewer)` |
+
+历史包名 `@flyfish-group/file-viewer` 仍同步维护，对应 Vue2.7 线；新项目建议优先使用标准包名。
 
 <div class="doc-note">
-  如果一个预览能力需要被多个不同技术栈系统复用，建议统一使用标准组件包线，让 Vue、React、纯 JS、jQuery 和 Svelte 共享同一套 core 能力和运行参数。
+  如果一个预览能力需要被多个不同技术栈系统复用，建议统一使用标准组件包线，让 Vue、React、Pure Web、jQuery 和 Svelte 共享同一套 core 能力和运行参数。完整矩阵见 <a href="/guide/ecosystem">生态组件总览</a>。
 </div>

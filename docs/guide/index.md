@@ -4,7 +4,7 @@
 
 <p class="doc-lead">
   Flyfish Viewer 官方文档同时承担组件主页、接入手册和开源分发说明。
-  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2、React、纯 JS、jQuery 或 Svelte 原生接入，最后了解安装、私有化部署和开源分发。
+  文档围绕真实交付路径组织: 先确认支持格式和 Demo 表现，再选择 Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery 或 Svelte 原生接入，最后了解安装、私有化部署和开源分发。
 </p>
 
 <div class="doc-link-row">
@@ -13,6 +13,7 @@
   <a href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 开源总仓库</a>
   <a href="https://gitee.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">Gitee 开源总仓库</a>
   <a href="/guide/quickstart">快速开始</a>
+  <a href="/guide/ecosystem">生态接入</a>
   <a href="/guide/formats">支持格式</a>
   <a href="/guide/usage">组件用法</a>
   <a href="/guide/distribution">发布分发</a>
@@ -52,7 +53,7 @@
   </div>
   <div class="doc-card">
     <h3>选择接入方式</h3>
-    <p>Vue3 使用 <code>@file-viewer/vue3</code>，Vue2.7 使用 <code>@file-viewer/vue2.7</code> 或历史包 <code>@flyfish-group/file-viewer</code>；React 和纯 JS 包通过 core native engine 原生挂载，适合私有化部署和多系统复用。</p>
+    <p>Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery 和 Svelte 都有独立标准包；各包只依赖 core 和自身生态依赖，适合私有化部署和多系统复用。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>
@@ -89,11 +90,13 @@
 | 想在 Vue 3 中接入 | [Vue3 集成](/guide/quickstart-vue3) |
 | 想在 Vue2.7 中接入 | [Vue2 集成](/guide/quickstart-vue2) |
 | 想在 React 中接入 | [React 集成](/guide/quickstart-react) |
-| 想在非框架页面中接入 | [纯 JS 集成](/guide/quickstart-web) |
+| 想在非框架页面中接入 | [纯 JS / Pure Web 集成](/guide/quickstart-web) |
+| 想在 Svelte 或 jQuery 中接入 | [生态组件总览](/guide/ecosystem) |
+| 想基于 core 自研组件 | [生态组件总览](/guide/ecosystem) |
 | 想了解统一 options 和事件 | [组件用法](/guide/usage) |
 | 想了解参数和事件 | [组件用法](/guide/usage) |
 | 想下载源码、release 或了解支持 | [发布与开源分发](/guide/distribution) |
 
 <div class="doc-note">
-  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">demo.file-viewer.app</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React 和纯 JS 组件会在业务页面中原生挂载，不依赖官网 Demo。
+  如果你只是想快速判断项目是否适合业务，建议先打开 <a href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">demo.file-viewer.app</a> 或运行仓库内置 Demo，再用自己的真实附件补一轮回归。React、Pure Web、jQuery 和 Svelte 组件会在业务页面中原生挂载，不依赖官网 Demo。
 </div>
