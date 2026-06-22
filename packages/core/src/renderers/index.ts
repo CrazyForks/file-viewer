@@ -149,13 +149,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'office-presentation',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderPptx } = await import('./pptx');
-      return renderPptx(buffer, target, type, context);
-    },
-  },
-  {
     rendererId: 'epub',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
       const { default: renderEpub } = await import('./epub');

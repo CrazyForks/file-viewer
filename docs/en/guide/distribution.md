@@ -15,6 +15,9 @@ npm install @file-viewer/web
 npm install @file-viewer/vue3
 npm install @file-viewer/react
 npm install @file-viewer/core
+npm install @file-viewer/renderer-presentation
+npm install @file-viewer/preset-all
+# Optional engine-only package when you build a custom presentation renderer.
 npm install @file-viewer/pptx
 ```
 
@@ -25,11 +28,15 @@ Registry links:
 - [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3)
 - [`@file-viewer/react`](https://www.npmjs.com/package/@file-viewer/react)
 - [`@file-viewer/svelte`](https://www.npmjs.com/package/@file-viewer/svelte)
+- [`@file-viewer/renderer-presentation`](https://www.npmjs.com/package/@file-viewer/renderer-presentation)
 - [`@file-viewer/pptx`](https://www.npmjs.com/package/@file-viewer/pptx)
 - [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all)
 - [`@file-viewer/vite-plugin`](https://www.npmjs.com/package/@file-viewer/vite-plugin)
 
 The package metadata points to the public repositories, documentation, issue trackers, Apache-2.0 license, and sponsorship URL.
+`@file-viewer/core` stays lightweight and does not install the native PPTX engine directly.
+Use `@file-viewer/renderer-presentation` for production PowerPoint preview, or use `@file-viewer/preset-all` when you want the same full renderer matrix as the official demo.
+`@file-viewer/pptx` is the standalone engine package for custom renderer work.
 
 ## GitHub
 

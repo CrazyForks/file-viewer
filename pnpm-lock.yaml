@@ -124,6 +124,9 @@ importers:
       '@file-viewer/core':
         specifier: workspace:^2.0.11
         version: link:../../packages/core
+      '@file-viewer/preset-all':
+        specifier: workspace:^2.0.11
+        version: link:../../packages/presets/all
       '@file-viewer/vue3':
         specifier: workspace:^2.0.11
         version: link:../../packages/components/vue3
@@ -396,9 +399,6 @@ importers:
       '@file-viewer/docx':
         specifier: ^0.3.12
         version: 0.3.12
-      '@file-viewer/pptx':
-        specifier: workspace:^2.0.11
-        version: link:../renderers/pptx
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)

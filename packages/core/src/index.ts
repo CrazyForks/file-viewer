@@ -346,8 +346,13 @@ export const renderFileViewerPptx = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderPptx } = await import('./renderers/pptx');
-  return renderPptx(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'PPTX rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-presentation, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerTypst = async (
   buffer: ArrayBuffer,

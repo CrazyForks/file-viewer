@@ -14,6 +14,7 @@ import {
   ZoomOut
 } from '@lucide/vue'
 import { DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH } from '@file-viewer/core'
+import { allRenderers } from '@file-viewer/preset-all'
 import { listenForFile } from '@/components/utils'
 import type {
   FileViewerFileRef as FileRef,
@@ -640,6 +641,7 @@ const viewerSearchSummary = computed(() => {
 const viewerOptions = computed((): FileViewerOptions => {
   const runtime = runtimeOptions.value
   const options = { ...(runtime as Record<string, unknown>) } as FileViewerOptions
+  options.renderers = runtime.renderers ?? allRenderers
 
   options.archive = {
     workerUrl: `/${DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH}`,

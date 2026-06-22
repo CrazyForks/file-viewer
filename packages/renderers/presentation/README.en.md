@@ -31,4 +31,4 @@ const options = {
 
 ## Migration
 
-The core package still keeps the built-in presentation renderer for historical full-bundle compatibility. A later migration will switch the core PowerPoint entry to this package and remove `@file-viewer/pptx` from core direct dependencies.
+`@file-viewer/core` no longer depends on `@file-viewer/pptx` directly. PowerPoint preview is provided by this renderer package and `@file-viewer/preset-all`. Core-only installs show a clear missing-renderer message for PPTX; pass `allRenderers` when you need the same complete format matrix as the official demo.

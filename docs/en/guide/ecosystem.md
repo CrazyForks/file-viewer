@@ -45,6 +45,10 @@ Heavy renderers are split so applications can install only what they need:
 - `@file-viewer/renderer-data`
 - `@file-viewer/renderer-eda`
 
+Standard component packages depend on the lightweight core foundation by default.
+Install only the renderer packages your product needs, or pass `@file-viewer/preset-all` when you want the complete official demo capability matrix.
+For example, PowerPoint preview is provided by `@file-viewer/renderer-presentation`, which loads the native `@file-viewer/pptx` engine only when a PPTX/PPTM/POTX/POTM/PPSX/PPSM file is opened.
+
 ## Compatibility Names
 
 | Historical package | Prefer now |

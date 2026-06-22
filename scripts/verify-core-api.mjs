@@ -434,8 +434,7 @@ const allowedCoreDevDependencies = new Set([
   '@types/pako'
 ])
 const allowedCoreRendererDependencies = new Set([
-  '@file-viewer/docx',
-  '@file-viewer/pptx'
+  '@file-viewer/docx'
 ])
 const forbiddenCoreDependencyPrefixes = [
   'vue',

@@ -31,4 +31,4 @@ const options = {
 
 ## 迁移说明
 
-当前 core 仍保留内置演示文稿 renderer 以兼容历史全量包。后续会把 core 的 PowerPoint 入口切换到本包，并从 core 直接依赖中移除 `@file-viewer/pptx`。
+`@file-viewer/core` 已不再直接依赖 `@file-viewer/pptx`，PowerPoint 预览能力由本包和 `@file-viewer/preset-all` 承接。只安装 core 时，PPTX 会提示安装对应 renderer；需要官方 Demo 的完整格式矩阵时，直接传入 `allRenderers` 即可。

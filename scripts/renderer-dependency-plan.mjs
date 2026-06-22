@@ -13,7 +13,7 @@ export const rendererModularizationLines = [
     group: 'office',
     targetPackage: '@file-viewer/renderer-presentation',
     phase: 2,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['office-presentation'],
     dependencies: ['@file-viewer/pptx'],
   },
@@ -186,6 +186,9 @@ export const rendererModularizationLines = [
 ];
 
 export const rendererDependencyGroups = rendererModularizationLines.reduce((result, line) => {
+  if (line.status === 'extracted') {
+    return result;
+  }
   result[line.group] ||= [];
   line.dependencies.forEach(dependency => {
     if (!result[line.group].includes(dependency)) {
