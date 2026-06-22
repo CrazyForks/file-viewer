@@ -373,6 +373,8 @@ Historical package names remain compatible, but new projects should prefer the s
 | Option | Description |
 | --- | --- |
 | `theme` | `light`, `dark`, or `system`. Default is `system`. Use `light` when embedding in a fixed light UI. |
+| `builtinRenderers` | Built-in renderer set: `all`, `lite`, or `none`. The current default is `all` for historical compatibility. Use `lite` for image, audio/video, code, Markdown, and UMD only; use `none` when renderer packages or presets should be the only installed rendering surface. |
+| `renderers` / `rendererMode` | Installs renderer packages or presets into the viewer. `replace` starts from an empty registry; `extend` appends to the current built-in set. New projects can combine `builtinRenderers: 'none'` or `lite` with explicit renderers to keep installs and bundles small. |
 | `toolbar` | `true`, `false`, or an object that controls download, print, HTML export, unified zoom controls, and toolbar position. |
 | `toolbar.zoom` | Shows or hides the built-in zoom group. The actual capability is provided by each renderer, so unsupported or interaction-sensitive formats are not force-scaled. |
 | `toolbar.position` | `auto`, `top`, or `bottom-right`. Default `auto` floats the operation bar at bottom right for PDF and keeps other formats at top. |

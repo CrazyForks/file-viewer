@@ -43,12 +43,11 @@
 
 ```ts
 import { FileViewer } from '@file-viewer/vue3'
-import { liteRenderers } from '@file-viewer/preset-lite'
 
 // Vue / React / Svelte / jQuery / Vanilla JS 都保持同一套 options 语义。
 const options = {
-  rendererMode: 'replace',
-  renderers: liteRenderers,
+  // 当前已可用: 只启用图片、音视频、代码、Markdown 和 UMD 这类轻量内置链路。
+  builtinRenderers: 'lite',
 }
 ```
 
@@ -61,7 +60,7 @@ import { wordRenderer, spreadsheetRenderer } from '@file-viewer/preset-office'
 import { cadRenderer } from '@file-viewer/renderer-cad'
 
 const options = {
-  rendererMode: 'replace',
+  builtinRenderers: 'none',
   renderers: [pdfRenderer, wordRenderer, spreadsheetRenderer, cadRenderer],
 }
 ```
@@ -73,6 +72,7 @@ import { FileViewer } from '@file-viewer/vue3'
 import { allRenderers } from '@file-viewer/preset-all'
 
 const options = {
+  builtinRenderers: 'none',
   renderers: allRenderers,
 }
 ```
@@ -171,6 +171,7 @@ export const pdfRenderer: FileViewerRendererPlugin = {
 - [x] 新增 `FileViewerRendererPlugin`、`FileViewerRendererPreset`、`installFileViewerRendererPlugins()` 类型和 API。
 - [x] `createViewer()` 支持传入 renderer plugins，并能通过 `rendererMode: 'replace' | 'extend'` 覆盖或追加默认 registry。
 - [x] 所有 wrapper 共享的 `FileViewerOptions` / `ViewerOptions` 类型暴露 `renderers` 和 `rendererMode`，可直接接收 renderer plugin 或 preset。
+- [x] `FileViewerOptions.builtinRenderers` 支持 `all`、`lite`、`none`，为默认轻量化和显式全量装配提供稳定开关。
 - [ ] wrapper README 和官网示例补齐 `renderers` / `rendererMode` 的按需装配示例。
 - [ ] Vue3 旧组件渲染面板切换到同一套 renderer plugin/preset 装配链路。
 - [x] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。

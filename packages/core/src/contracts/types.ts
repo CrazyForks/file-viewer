@@ -242,6 +242,7 @@ export interface FileViewerCadOptions {
 }
 
 export type FileViewerRendererMode = 'extend' | 'replace';
+export type FileViewerBuiltinRendererPreset = 'all' | 'lite' | 'none';
 
 export interface FileViewerSearchOptions {
   enabled?: boolean;
@@ -271,6 +272,15 @@ export interface FileViewerOptions {
    * build a truly lightweight viewer from selected renderer packages.
    */
   rendererMode?: FileViewerRendererMode;
+  /**
+   * Controls which built-in browser renderers are registered before custom
+   * plugins are installed.
+   *
+   * `all` preserves the historical full matrix, `lite` keeps only low-cost
+   * web-native previewers, and `none` starts from an empty registry while still
+   * allowing renderer plugins or presets to be installed through `renderers`.
+   */
+  builtinRenderers?: FileViewerBuiltinRendererPreset;
   renderers?: FileViewerRendererPluginInput;
   watermark?: boolean | FileViewerWatermarkOptions;
   toolbar?: boolean | FileViewerToolbarOptions;

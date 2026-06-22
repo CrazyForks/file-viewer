@@ -369,6 +369,7 @@ export type {
   FileRenderExportOptions,
   FileRenderHandler,
   FileRenderHandlerComposite,
+  FileViewerBuiltinRendererPreset,
   FileViewerAiOptions,
   FileViewerArchiveOptions,
   FileViewerBeforeOperation,

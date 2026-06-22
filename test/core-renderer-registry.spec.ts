@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_RENDERER_DEFINITIONS,
   DEFAULT_SUPPORTED_EXTENSIONS,
+  CORE_LITE_RENDERER_IDS,
+  createFileViewerCoreRendererRegistry,
   createRendererRegistry,
   fileViewerCoreRendererRegistry,
   missingFileViewerCoreRendererHandlers,
@@ -69,5 +71,23 @@ describe('core renderer registry alignment', () => {
     expect(fileViewerCoreRendererRegistry.getByExtension('drawio')?.load).toBeTypeOf('function');
     expect(fileViewerCoreRendererRegistry.getByExtension('sqlite')?.load).toBeTypeOf('function');
     expect(fileViewerCoreRendererRegistry.getByExtension('zip')?.load).toBeTypeOf('function');
+  });
+
+  it('can build explicit lite and empty built-in renderer registries', () => {
+    const lite = createFileViewerCoreRendererRegistry({ builtinRenderers: 'lite' });
+    const none = createFileViewerCoreRendererRegistry({ builtinRenderers: 'none' });
+
+    expect(lite.missingRendererIds).toEqual([]);
+    expect(lite.registry.list().map(definition => definition.id).sort()).toEqual(
+      [...CORE_LITE_RENDERER_IDS].sort()
+    );
+    expect(lite.registry.getByExtension('png')?.load).toBeTypeOf('function');
+    expect(lite.registry.getByExtension('mp3')?.load).toBeTypeOf('function');
+    expect(lite.registry.getByExtension('pdf')).toBeUndefined();
+    expect(lite.registry.getByExtension('docx')).toBeUndefined();
+
+    expect(none.registry.list()).toEqual([]);
+    expect(none.registry.getByExtension('png')).toBeUndefined();
+    expect(none.registry.getByExtension('pdf')).toBeUndefined();
   });
 });

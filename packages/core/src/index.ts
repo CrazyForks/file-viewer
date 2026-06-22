@@ -193,12 +193,18 @@ export {
   installFileViewerRendererPlugins,
 } from './registry/registry';
 export {
+  CORE_LITE_RENDERER_IDS,
   coreBrowserRendererHandlers,
+  coreLiteBrowserRendererHandlers,
+  coreLiteRendererDefinitions,
   createFileViewerCoreRendererRegistry,
   fileViewerCoreRendererDispatcher,
   fileViewerCoreRendererRegistry,
   fileViewerCoreRendererRegistryBridge,
   missingFileViewerCoreRendererHandlers,
+} from './renderers/index';
+export type {
+  CreateFileViewerCoreRendererRegistryOptions,
 } from './renderers/index';
 export const renderFileViewerAudio = async (
   buffer: ArrayBuffer,
@@ -851,6 +857,7 @@ export type {
   FileRenderExportOptions,
   FileRenderHandler,
   FileRenderHandlerComposite,
+  FileViewerBuiltinRendererPreset,
   FileViewerInstance,
   FileViewerLifecycleContext,
   FileViewerLifecycleHooks,

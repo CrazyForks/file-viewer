@@ -143,6 +143,7 @@ import { ref } from 'vue'
 const url = ref('/example/archive.zip')
 const options = {
   theme: 'light',
+  builtinRenderers: 'all',
   toolbar: {
     position: 'bottom-right',
     download: true,
@@ -188,6 +189,8 @@ const options = {
 | 选项 | 说明 |
 | --- | --- |
 | `theme` | 预览器主题，支持 `light`、`dark`、`system`。默认 `system`，继续跟随浏览器 `prefers-color-scheme`；浅色业务系统建议显式传 `light`，避免操作系统深色模式把预览区、工具栏或支持主题切换的渲染器自动切成深色 |
+| `builtinRenderers` | 内置渲染器集合，支持 `all`、`lite`、`none`。当前默认 `all` 以保持历史完整能力；`lite` 只注册图片、音视频、代码、Markdown 和 UMD 等低成本链路；`none` 适合只通过 `renderers` / renderer preset 显式装配业务需要的格式 |
+| `renderers` / `rendererMode` | 按需 renderer package 或 preset 装配入口。`rendererMode: 'replace'` 从空 registry 开始，`extend` 会在当前内置集合上追加；新项目要压安装体积时，建议用 `builtinRenderers: 'none'` 或 `lite` 再传入需要的 renderer |
 | `toolbar` | `true`、`false` 或对象；声明是否允许下载原文件、打印完整渲染结果、导出渲染后 HTML 和显示统一缩放按钮。传 `false` 会隐藏内置工具栏，但 ref / controller 上的下载、打印、导出、缩放 API 仍可用于自定义业务工具栏。`toolbar.zoom` 可单独关闭缩放按钮；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层或 canvas |

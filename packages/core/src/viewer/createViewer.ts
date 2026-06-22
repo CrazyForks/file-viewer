@@ -43,6 +43,7 @@ import { createFileViewerCoreRendererRegistry } from '../renderers/index';
 import { createFileViewerRequestScope } from '../source/loading';
 import { normalizeSource } from '../source';
 import { buildFileViewerWatermarkInlineStyle } from '../features/watermark';
+import { createFileViewerUnsupportedState } from './state';
 import type {
   FileRenderExportAdapter,
   FileRenderHandler,
@@ -104,7 +105,40 @@ const createBaseRendererRegistry = (
   if (createOptions.registry) {
     return createOptions.registry;
   }
-  return createFileViewerCoreRendererRegistry().registry;
+  return createFileViewerCoreRendererRegistry({
+    builtinRenderers: options.builtinRenderers,
+  }).registry;
+};
+
+const renderMissingRendererState = (container: HTMLElement, type: string) => {
+  const documentRef = container.ownerDocument;
+  const state = createFileViewerUnsupportedState(type);
+  const wrapper = documentRef.createElement('div');
+  wrapper.className = 'file-viewer-missing-renderer';
+  wrapper.style.cssText = [
+    'display:flex',
+    'min-height:260px',
+    'height:100%',
+    'align-items:center',
+    'justify-content:center',
+    'padding:32px',
+    'box-sizing:border-box',
+    'text-align:center',
+    'color:#64748b',
+    'font:14px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+  ].join(';');
+
+  const content = documentRef.createElement('div');
+  const title = documentRef.createElement('strong');
+  title.textContent = state.message;
+  title.style.cssText = 'display:block;margin-bottom:8px;color:#172033;font-size:16px;';
+  const description = documentRef.createElement('p');
+  description.textContent = state.description ||
+    '当前内置 renderer 配置没有加载该格式。请安装并传入对应 @file-viewer/renderer-* 包，或使用 @file-viewer/preset-all。';
+  description.style.cssText = 'max-width:520px;margin:0;';
+  content.append(title, description);
+  wrapper.append(content);
+  container.replaceChildren(wrapper);
 };
 
 export const createViewer = (
@@ -115,6 +149,7 @@ export const createViewer = (
   let registry = createBaseRendererRegistry(createOptions, options);
   let installedRendererInput: FileViewerOptions['renderers'] | undefined = undefined;
   let installedRendererMode = options.rendererMode || 'extend';
+  let installedBuiltinRenderers = options.builtinRenderers || 'all';
   let currentSource: NormalizedFileViewerSource | null = null;
   const renderSurfaceState = createFileViewerRenderSurfaceState<RendererSession>();
   const requestScope = createFileViewerRequestScope();
@@ -126,13 +161,19 @@ export const createViewer = (
   const ensureRendererPluginsInstalled = async () => {
     const nextMode = options.rendererMode || 'extend';
     const nextRendererInput = options.renderers;
-    if (nextMode === installedRendererMode && nextRendererInput === installedRendererInput) {
+    const nextBuiltinRenderers = options.builtinRenderers || 'all';
+    if (
+      nextMode === installedRendererMode &&
+      nextRendererInput === installedRendererInput &&
+      nextBuiltinRenderers === installedBuiltinRenderers
+    ) {
       return;
     }
 
     registry = createBaseRendererRegistry(createOptions, options);
     installedRendererMode = nextMode;
     installedRendererInput = nextRendererInput;
+    installedBuiltinRenderers = nextBuiltinRenderers;
 
     const plugins = collectFileViewerRendererPlugins(nextRendererInput);
     if (!plugins.length) {
@@ -275,6 +316,7 @@ export const createViewer = (
       await emitLifecycle(options, createOptions.onEvent, 'load-start', normalized, version, startedAt);
 
       if (!renderer?.load) {
+        renderMissingRendererState(container, normalized.extension);
         applyFileViewerRenderSurfaceState(renderSurfaceState, { session: null });
         emitOperationAvailabilityChange();
         emitZoomChange();

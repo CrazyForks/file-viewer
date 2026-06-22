@@ -8,6 +8,7 @@ import { createFileRenderHandlerRegistry } from '../rendering/handler';
 import { createFileViewerRendererDispatcher } from '../rendering/dispatcher';
 import { createFileViewerUnsupportedState } from '../viewer/state';
 import type {
+  FileViewerBuiltinRendererPreset,
   FileRenderContext,
   FileRenderHandler,
   FileViewerRenderedInstance,
@@ -198,6 +199,47 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
   },
 ];
 
+export const CORE_LITE_RENDERER_IDS = [
+  'image',
+  'audio',
+  'video',
+  'code',
+  'markdown',
+  'umd',
+] as const;
+
+export const coreLiteBrowserRendererHandlers = coreBrowserRendererHandlers.filter(handler =>
+  CORE_LITE_RENDERER_IDS.includes(handler.rendererId as typeof CORE_LITE_RENDERER_IDS[number])
+);
+
+export const coreLiteRendererDefinitions = DEFAULT_RENDERER_DEFINITIONS.filter(definition =>
+  CORE_LITE_RENDERER_IDS.includes(definition.id as typeof CORE_LITE_RENDERER_IDS[number])
+);
+
+export interface CreateFileViewerCoreRendererRegistryOptions {
+  builtinRenderers?: FileViewerBuiltinRendererPreset;
+}
+
+const resolveCoreRendererDefinitions = (preset: FileViewerBuiltinRendererPreset) => {
+  if (preset === 'none') {
+    return [];
+  }
+  if (preset === 'lite') {
+    return coreLiteRendererDefinitions;
+  }
+  return DEFAULT_RENDERER_DEFINITIONS;
+};
+
+const resolveCoreRendererHandlers = (preset: FileViewerBuiltinRendererPreset) => {
+  if (preset === 'none') {
+    return [];
+  }
+  if (preset === 'lite') {
+    return coreLiteBrowserRendererHandlers;
+  }
+  return coreBrowserRendererHandlers;
+};
+
 const renderUnsupported: CoreBrowserRendererHandler = async (_buffer, target, type) => {
   const state = createFileViewerUnsupportedState(type);
   const wrapper = document.createElement('div');
@@ -218,10 +260,13 @@ const renderUnsupported: CoreBrowserRendererHandler = async (_buffer, target, ty
   return createWrapper(target);
 };
 
-export const createFileViewerCoreRendererRegistry = () => {
+export const createFileViewerCoreRendererRegistry = (
+  options: CreateFileViewerCoreRendererRegistryOptions = {}
+) => {
+  const preset = options.builtinRenderers || 'all';
   const bridge = createFileRenderHandlerRegistry({
-    definitions: DEFAULT_RENDERER_DEFINITIONS,
-    handlers: coreBrowserRendererHandlers,
+    definitions: resolveCoreRendererDefinitions(preset),
+    handlers: resolveCoreRendererHandlers(preset),
   });
 
   return {

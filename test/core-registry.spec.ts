@@ -235,6 +235,22 @@ describe('@file-viewer/core registry', () => {
     expect(container.dataset.pluginDestroyed).toBe('true');
   });
 
+  it('supports lite built-in renderers without registering heavy document handlers', async () => {
+    const { document } = parseHTML('<main id="viewer"></main>');
+    const container = document.getElementById('viewer') as HTMLElement;
+    const viewer = createViewer(container, {
+      options: {
+        builtinRenderers: 'lite',
+      },
+    });
+
+    await viewer.load({ buffer: new ArrayBuffer(1), filename: 'demo.pdf' });
+
+    expect(viewer.getRenderer('pdf')).toBeUndefined();
+    expect(viewer.getRenderer('png')?.load).toBeTypeOf('function');
+    expect(container.querySelector('.file-viewer-missing-renderer')?.textContent).toContain('PDF');
+  });
+
   it('extends the bundled renderer matrix with renderer presets by default', async () => {
     const { document } = parseHTML('<main id="viewer"></main>');
     const container = document.getElementById('viewer') as HTMLElement;
