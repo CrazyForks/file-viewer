@@ -35,7 +35,10 @@ function run(command, commandArgs, options = {}) {
   const result = spawnSync(command, commandArgs, {
     cwd: options.cwd || sourceRoot,
     encoding: 'utf8',
-    stdio: options.capture ? 'pipe' : 'inherit'
+    stdio: options.capture ? 'pipe' : 'inherit',
+    // The open-source aggregate carries many offline assets. Captured commands
+    // such as `git ls-files -z` can exceed Node's default 1 MiB buffer.
+    maxBuffer: 256 * 1024 * 1024
   })
 
   if (result.status !== 0 && !options.allowFailure) {
