@@ -27,6 +27,17 @@
       "publicSource": true
     },
     {
+      "id": "mindmap",
+      "packageName": "@file-viewer/renderer-mindmap",
+      "description": "Standalone XMind and mind map renderer plugin for File Viewer with modern/classic XMind parsing, draggable canvas, zoom, sheet navigation, and node outline support.",
+      "packageDir": "packages/renderers/mindmap",
+      "repository": "file-viewer-renderer-mindmap",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-mindmap",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-mindmap",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

@@ -89,7 +89,7 @@ export const rendererModularizationLines = [
     group: 'engineering',
     targetPackage: '@file-viewer/renderer-mindmap',
     phase: 3,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['mindmap'],
     dependencies: ['@ljheee/xmind-parser'],
   },
