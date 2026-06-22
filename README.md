@@ -70,15 +70,9 @@
 
 ## 效果截图
 
-| 场景 | 效果 |
-| --- | --- |
-| 官方首页 / 专业门户 | <img src="docs/_images/home-hero-premium.jpg" width="720" alt="Flyfish Viewer 官方首页视觉" /> |
-| 主 Demo / 多格式预览 | <img src="docs/_images/demo-main.png" width="720" alt="Flyfish Viewer 主 Demo" /> |
-| 文档预览 / Office 与 PDF 阅读面 | <img src="docs/_images/demo-doc.png" width="720" alt="Flyfish Viewer 文档预览效果" /> |
-| 纯 Web / script 标签接入 | <img src="docs/_images/demo-iframe.png" width="720" alt="Flyfish Viewer 纯 Web 接入效果" /> |
-| 官网大屏展示 | <img src="docs/_images/demo1.png" width="720" alt="Flyfish Viewer 官网展示效果" /> |
-| 联系与支持入口 | <img src="docs/_images/contact.jpg" width="420" alt="Flyfish Viewer 联系与支持入口" /> |
-| 公众号信息条 | <img src="docs/_images/mp.png" width="420" alt="飞鱼开源 WorkShop 公众号信息" /> |
+| 主 Demo / 多格式预览 | 文档预览 / Office 与 PDF 阅读面 | 纯 Web / script 标签接入 |
+| --- | --- | --- |
+| <img src="docs/_images/demo-main.png" width="360" alt="Flyfish Viewer 主 Demo 多格式预览效果" /> | <img src="docs/_images/demo-doc.png" width="360" alt="Flyfish Viewer 文档预览效果" /> | <img src="docs/_images/demo-iframe.png" width="360" alt="Flyfish Viewer 纯 Web 接入预览效果" /> |
 
 ## 当前 npm 生态
 

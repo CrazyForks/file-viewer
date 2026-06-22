@@ -68,15 +68,9 @@ The viewer is organized around preview pipelines rather than one-off file extens
 
 ## Screenshots
 
-| Scenario | Preview |
-| --- | --- |
-| Official website / product portal | <img src="docs/_images/home-hero-premium.jpg" width="720" alt="Flyfish Viewer official website visual" /> |
-| Main demo / multi-format preview | <img src="docs/_images/demo-main.png" width="720" alt="Flyfish Viewer main demo" /> |
-| Document preview / Office and PDF reading surface | <img src="docs/_images/demo-doc.png" width="720" alt="Flyfish Viewer document preview" /> |
-| Pure Web / script tag integration | <img src="docs/_images/demo-iframe.png" width="720" alt="Flyfish Viewer Pure Web integration" /> |
-| Website wide-screen showcase | <img src="docs/_images/demo1.png" width="720" alt="Flyfish Viewer website showcase" /> |
-| Contact and support entry | <img src="docs/_images/contact.jpg" width="420" alt="Flyfish Viewer contact and support entry" /> |
-| Official account strip | <img src="docs/_images/mp.png" width="420" alt="Flyfish Open Source WorkShop official account strip" /> |
+| Main demo / multi-format preview | Document preview / Office and PDF reading surface | Pure Web / script tag integration |
+| --- | --- | --- |
+| <img src="docs/_images/demo-main.png" width="360" alt="Flyfish Viewer main demo multi-format preview" /> | <img src="docs/_images/demo-doc.png" width="360" alt="Flyfish Viewer document preview" /> | <img src="docs/_images/demo-iframe.png" width="360" alt="Flyfish Viewer Pure Web integration preview" /> |
 
 ## Current npm Ecosystem
 
