@@ -4,7 +4,7 @@
 
 ## 当前主线 XMind、EDA 版图与表格列宽体验补齐
 
-- 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget` 与 `verify:renderer-contracts`，后续以清理 core 直接重依赖为 2.x 主治理线
+- 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts` 与 `verify:renderer-assets`，后续以清理 core 直接重依赖为 2.x 主治理线
 - 支持格式矩阵提升到 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
 - `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、拖拽平移、适配画布、搜索、缩放、打印和 HTML 导出
 - 优化 XMind 画布平移体验，鼠标、触摸和节点卡片拖拽统一走 pointer capture，禁用浏览器原生拖图/拖链接，并把边界约束改为画布式保留可见边缘，避免复杂脑图无法拖动或只能移动很小距离
