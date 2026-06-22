@@ -241,6 +241,8 @@ export interface FileViewerCadOptions {
   canvasOptions?: Record<string, unknown>;
 }
 
+export type FileViewerRendererMode = 'extend' | 'replace';
+
 export interface FileViewerSearchOptions {
   enabled?: boolean;
   caseSensitive?: boolean;
@@ -261,6 +263,15 @@ export interface FileViewerAiOptions {
 
 export interface FileViewerOptions {
   theme?: FileViewerThemeMode;
+  /**
+   * Optional renderer plugins or presets installed into this viewer instance.
+   *
+   * `extend` mode keeps the bundled renderer matrix and appends custom
+   * renderers. `replace` mode starts from an empty registry so applications can
+   * build a truly lightweight viewer from selected renderer packages.
+   */
+  rendererMode?: FileViewerRendererMode;
+  renderers?: FileViewerRendererPluginInput;
   watermark?: boolean | FileViewerWatermarkOptions;
   toolbar?: boolean | FileViewerToolbarOptions;
   search?: boolean | FileViewerSearchOptions;
@@ -606,6 +617,11 @@ export interface FileViewerRendererPreset<Handler = FileRenderHandler> {
   label?: string;
   renderers: readonly FileViewerRendererPlugin<Handler>[];
 }
+
+export type FileViewerRendererPluginInput<Handler = FileRenderHandler> =
+  | FileViewerRendererPlugin<Handler>
+  | FileViewerRendererPreset<Handler>
+  | readonly FileViewerRendererPluginInput<Handler>[];
 
 export interface FileViewerInstance {
   readonly container: HTMLElement;

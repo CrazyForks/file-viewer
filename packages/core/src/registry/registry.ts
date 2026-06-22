@@ -2,7 +2,9 @@ import { DEFAULT_RENDERER_DEFINITIONS } from './formats';
 import { normalizeFileExtension } from '../source';
 import type {
   FileViewerRendererHandlerRegistration,
+  FileViewerRendererPluginInput,
   FileViewerRendererPlugin,
+  FileViewerRendererPreset,
   RendererDefinition,
   RendererRegistry,
 } from '../contracts/types';
@@ -79,6 +81,31 @@ export interface InstallFileViewerRendererPluginsOptions<Handler = unknown> {
   plugins: Iterable<FileViewerRendererPlugin<Handler>>;
   registerHandler?: (registration: FileViewerRendererHandlerRegistration<Handler>) => void;
 }
+
+const isRendererPreset = <Handler>(
+  input: FileViewerRendererPluginInput<Handler>
+): input is FileViewerRendererPreset<Handler> => {
+  return !!input && typeof input === 'object' && !Array.isArray(input) &&
+    Array.isArray((input as { renderers?: unknown }).renderers);
+};
+
+export const collectFileViewerRendererPlugins = <Handler = unknown>(
+  input?: FileViewerRendererPluginInput<Handler> | null
+): FileViewerRendererPlugin<Handler>[] => {
+  if (!input) {
+    return [];
+  }
+
+  if (Array.isArray(input)) {
+    return input.flatMap(item => collectFileViewerRendererPlugins(item));
+  }
+
+  if (isRendererPreset(input)) {
+    return collectFileViewerRendererPlugins(input.renderers);
+  }
+
+  return [input as FileViewerRendererPlugin<Handler>];
+};
 
 export const installFileViewerRendererPlugins = async <Handler = unknown>({
   registry,

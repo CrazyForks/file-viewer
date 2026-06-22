@@ -177,6 +177,7 @@ export type {
   ResolveFileViewerOperationActionErrorMessageInput,
 } from './viewer/operations';
 export {
+  collectFileViewerRendererPlugins,
   createRendererRegistry,
   installFileViewerRendererPlugins,
 } from './registry/registry';
@@ -851,6 +852,7 @@ export type {
   FileViewerPrintOptions,
   FileViewerPublicApi,
   FileViewerRenderedInstance,
+  FileViewerRendererMode,
   FileViewerRendererPluginAssetKind,
   FileViewerRendererPluginAssetManifest,
   FileViewerRendererPluginAssetEntry,
@@ -859,6 +861,7 @@ export type {
   FileViewerRendererHandlerRegistration,
   FileViewerRendererInstallContext,
   FileViewerRendererPlugin,
+  FileViewerRendererPluginInput,
   FileViewerRendererPreset,
   FileViewerSearchMatch,
   FileViewerSearchOptions,

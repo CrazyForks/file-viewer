@@ -35,8 +35,8 @@ const setRect = (element: Element, rect: Partial<DOMRect>) => {
 };
 
 describe('@file-viewer/core registry', () => {
-  it('keeps the current public format matrix at 194 extensions', () => {
-    expect(DEFAULT_SUPPORTED_EXTENSIONS).toHaveLength(194);
+  it('keeps the current public format matrix at 198 extensions', () => {
+    expect(DEFAULT_SUPPORTED_EXTENSIONS).toHaveLength(198);
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('pdf');
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('docx');
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('dwf');
@@ -191,6 +191,83 @@ describe('@file-viewer/core registry', () => {
       'unload-start:1:component-unmount',
       'unload-complete:1:component-unmount',
     ]);
+  });
+
+  it('installs renderer plugins in replace mode for lightweight viewers', async () => {
+    const { document } = parseHTML('<main id="viewer"></main>');
+    const container = document.getElementById('viewer') as HTMLElement;
+    const viewer = createViewer(container, {
+      options: {
+        rendererMode: 'replace',
+        renderers: {
+          id: 'fixture-plugin',
+          definitions: [{
+            id: 'fixture-plugin-renderer',
+            label: 'Fixture Plugin',
+            category: 'document',
+            extensions: ['lite'],
+            capabilities: { download: true, print: false, exportHtml: false, zoom: false, search: false },
+          }],
+          handlers: [{
+            rendererId: 'fixture-plugin-renderer',
+            handler: async (_buffer, target, type) => {
+              target.dataset.pluginRenderer = type || '';
+              return {
+                unmount() {
+                  target.dataset.pluginDestroyed = 'true';
+                },
+              };
+            },
+          }],
+        },
+      },
+    });
+
+    await viewer.load({ buffer: new ArrayBuffer(1), filename: 'demo.lite' });
+
+    expect(container.dataset.pluginRenderer).toBe('lite');
+    expect(viewer.getRenderer('lite')?.id).toBe('fixture-plugin-renderer');
+    expect(viewer.getRenderer('pdf')).toBeUndefined();
+
+    await viewer.destroy();
+
+    expect(container.dataset.pluginDestroyed).toBe('true');
+  });
+
+  it('extends the bundled renderer matrix with renderer presets by default', async () => {
+    const { document } = parseHTML('<main id="viewer"></main>');
+    const container = document.getElementById('viewer') as HTMLElement;
+    const viewer = createViewer(container, {
+      options: {
+        renderers: [{
+          id: 'fixture-preset',
+          label: 'Fixture preset',
+          renderers: [{
+            id: 'fixture-extend-plugin',
+            definitions: [{
+              id: 'fixture-extend-renderer',
+              label: 'Fixture Extend',
+              category: 'document',
+              extensions: ['plus'],
+              capabilities: { download: true, print: false, exportHtml: false, zoom: false, search: false },
+            }],
+            handlers: [{
+              rendererId: 'fixture-extend-renderer',
+              handler: async (_buffer, target, type) => {
+                target.dataset.extendedRenderer = type || '';
+                return { unmount() {} };
+              },
+            }],
+          }],
+        }],
+      },
+    });
+
+    await viewer.load({ buffer: new ArrayBuffer(1), filename: 'demo.plus' });
+
+    expect(container.dataset.extendedRenderer).toBe('plus');
+    expect(viewer.getRenderer('plus')?.id).toBe('fixture-extend-renderer');
+    expect(viewer.getRenderer('pdf')?.load).toBeTypeOf('function');
   });
 
   it('exposes framework-neutral viewer interaction APIs', async () => {

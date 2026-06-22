@@ -32,6 +32,11 @@ describe('@file-viewer/core option serialization helpers', () => {
         workerUrl: new URL('https://viewer.example.com/cad-worker.js'),
         dxfEncoding: 'gbk'
       },
+      rendererMode: 'replace',
+      renderers: {
+        id: 'runtime-only-renderer',
+        definitions: [],
+      },
       hooks: {
         onLoadStart: vi.fn()
       },
@@ -47,6 +52,8 @@ describe('@file-viewer/core option serialization helpers', () => {
     })
     expect(options.archive.cache).toBe(true)
     expect(options.cad.workerUrl).toBe('https://viewer.example.com/cad-worker.js')
+    expect(options.rendererMode).toBeUndefined()
+    expect(options.renderers).toBeUndefined()
     expect(options.hooks).toBeUndefined()
     expect(options.beforeOperation).toBeUndefined()
   })

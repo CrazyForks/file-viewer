@@ -29,16 +29,23 @@ import {
   runFileViewerBeforeOperation,
   runFileViewerLifecycleHook,
 } from '../lifecycle/operations';
-import { createRendererRegistry } from '../registry/registry';
 import {
+  collectFileViewerRendererPlugins,
+  createRendererRegistry,
+  installFileViewerRendererPlugins,
+} from '../registry/registry';
+import {
+  createFileRenderHandlerLoader,
   applyFileViewerRenderSurfaceState,
   createFileViewerRenderSurfaceState,
 } from '../rendering/handler';
+import { createFileViewerCoreRendererRegistry } from '../renderers/index';
 import { createFileViewerRequestScope } from '../source/loading';
 import { normalizeSource } from '../source';
 import { buildFileViewerWatermarkInlineStyle } from '../features/watermark';
 import type {
   FileRenderExportAdapter,
+  FileRenderHandler,
   FileViewerAiOptions,
   FileViewerDocumentAnchor,
   FileViewerDownloadOptions,
@@ -87,18 +94,74 @@ const emitLifecycle = async (
   onEvent?.({ type: phase, payload: context });
 };
 
+const createBaseRendererRegistry = (
+  createOptions: CreateViewerOptions,
+  options: FileViewerOptions
+) => {
+  if (options.rendererMode === 'replace') {
+    return createRendererRegistry([]);
+  }
+  if (createOptions.registry) {
+    return createOptions.registry;
+  }
+  return createFileViewerCoreRendererRegistry().registry;
+};
+
 export const createViewer = (
   container: HTMLElement,
   createOptions: CreateViewerOptions = {}
 ): FileViewerInstance => {
-  const registry = createOptions.registry || createRendererRegistry();
   let options = createOptions.options || {};
+  let registry = createBaseRendererRegistry(createOptions, options);
+  let installedRendererInput: FileViewerOptions['renderers'] | undefined = undefined;
+  let installedRendererMode = options.rendererMode || 'extend';
   let currentSource: NormalizedFileViewerSource | null = null;
   const renderSurfaceState = createFileViewerRenderSurfaceState<RendererSession>();
   const requestScope = createFileViewerRequestScope();
   const documentTarget = {
     anchors: { value: [] as FileViewerDocumentAnchor[] },
     state: createEmptyFileViewerSearchState(),
+  };
+
+  const ensureRendererPluginsInstalled = async () => {
+    const nextMode = options.rendererMode || 'extend';
+    const nextRendererInput = options.renderers;
+    if (nextMode === installedRendererMode && nextRendererInput === installedRendererInput) {
+      return;
+    }
+
+    registry = createBaseRendererRegistry(createOptions, options);
+    installedRendererMode = nextMode;
+    installedRendererInput = nextRendererInput;
+
+    const plugins = collectFileViewerRendererPlugins(nextRendererInput);
+    if (!plugins.length) {
+      return;
+    }
+
+    const registerHandler = (registration: {
+      rendererId: string;
+      handler: FileRenderHandler;
+    }) => {
+      const definition = registry.getById(registration.rendererId);
+      if (!definition) {
+        return;
+      }
+
+      registry.register({
+        ...definition,
+        load: createFileRenderHandlerLoader({
+          handler: registration.handler,
+          getTarget: context => context.surface.container as HTMLDivElement,
+        }),
+      });
+    };
+
+    await installFileViewerRendererPlugins({
+      registry,
+      plugins,
+      registerHandler,
+    });
   };
 
   const buildCurrentLifecycleContext = () => {
@@ -201,6 +264,7 @@ export const createViewer = (
     container,
     async load(source: FileViewerSource) {
       await destroyCurrent('replace');
+      await ensureRendererPluginsInstalled();
 
       const normalized = normalizeSource(source);
       currentSource = normalized;
