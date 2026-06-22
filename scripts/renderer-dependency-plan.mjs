@@ -134,7 +134,7 @@ export const rendererModularizationLines = [
     group: 'archiveEmailEbook',
     targetPackage: '@file-viewer/renderer-ebook',
     phase: 3,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['epub'],
     dependencies: ['epubjs'],
   },

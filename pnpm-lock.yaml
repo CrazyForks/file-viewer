@@ -526,6 +526,9 @@ importers:
       '@file-viewer/renderer-cad':
         specifier: workspace:^2.0.11
         version: link:../../renderers/cad
+      '@file-viewer/renderer-ebook':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/ebook
       '@file-viewer/renderer-email':
         specifier: workspace:^2.0.11
         version: link:../../renderers/email
@@ -567,6 +570,19 @@ importers:
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/ebook:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      epubjs:
+        specifier: ^0.3.93
+        version: 0.3.93
     devDependencies:
       typescript:
         specifier: ^6.0.3

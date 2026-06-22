@@ -62,7 +62,7 @@
 | XMind 脑图 | `xmind` | 基于 `@ljheee/xmind-parser` 解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，离线渲染多 sheet 脑图、节点、标签、备注、链接、标记、图片和目录树，支持拖拽平移、适配画布、搜索、打印、HTML 导出和缩放 | 脑图、项目规划、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | 基于官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` 输出只读预览 | 白板草图、流程草稿、产品沟通图 |
 | draw.io | `drawio`、`dio` | 基于官方 diagrams.net `GraphViewer` 预览 mxGraphModel / mxfile | 流程图、架构图、业务泳道图 |
-| 电子书 | `epub` | 基于 `epubjs` 解析目录和章节资源，使用兼容性更好的滚动阅读 | 电子书、培训手册、长篇阅读材料 |
+| 电子书 | `epub` | `@file-viewer/renderer-ebook` 基于 `epubjs` 解析目录和章节资源，使用兼容性更好的滚动阅读 | 电子书、培训手册、长篇阅读材料 |
 | 电子书 | `umd` | 按 UMD 移动电子书结构解析元数据、目录和 zlib 压缩正文 | 旧移动电子书、历史小说附件 |
 | Markdown | `md`、`markdown` | Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、说明文档 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl` | 原生图片浏览；HEIC/HEIF 命中时按需使用 `heic2any` 转换 | 图片附件、设计稿、Logo、移动端照片 |
@@ -79,14 +79,14 @@
 
 ## 当前 npm 生态
 
-当前版本以 npm registry 的 `latest` dist-tag 为准，共维护 22 个 npm 发布目标: 17 个标准组件/核心/renderer/preset 包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
+当前版本以 npm registry 的 `latest` dist-tag 为准，共维护 23 个 npm 发布目标: 18 个标准组件/核心/renderer/preset 包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
 
 | 场景 | 推荐 npm 包 | 历史兼容包 | 版本策略 | 说明 |
 | --- | --- | --- | --- | --- |
 | Core 底座 | [`@file-viewer/core`](https://www.npmjs.com/package/@file-viewer/core) | 无 | `latest` | 框架无关的格式矩阵、预览能力、资源加载、生命周期事件、搜索、缩放、打印、导出和操作 API |
 | PPTX 原生引擎 | [`@file-viewer/pptx`](https://www.npmjs.com/package/@file-viewer/pptx) | 无 | `latest` | 从 Flyfish 历史稳定实现拆出的独立 PPTX 渲染引擎，Worker 渐进解析并可由 core 按需加载 |
-| 全量 renderer preset | [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all) | 无 | `latest` | 一次装配 PDF、CAD、Typst、XMind、压缩包、邮件、PPTX 和 core 其余完整格式能力 |
-| 独立 renderer 包 | [`@file-viewer/renderer-pdf`](https://www.npmjs.com/package/@file-viewer/renderer-pdf)、[`@file-viewer/renderer-cad`](https://www.npmjs.com/package/@file-viewer/renderer-cad)、[`@file-viewer/renderer-typst`](https://www.npmjs.com/package/@file-viewer/renderer-typst)、[`@file-viewer/renderer-archive`](https://www.npmjs.com/package/@file-viewer/renderer-archive)、[`@file-viewer/renderer-email`](https://www.npmjs.com/package/@file-viewer/renderer-email)、[`@file-viewer/renderer-mindmap`](https://www.npmjs.com/package/@file-viewer/renderer-mindmap) | 无 | `latest` | 用于按需安装重链路，避免业务只看轻量格式时安装 PDF/CAD/Typst/压缩包/邮件/XMind 依赖 |
+| 全量 renderer preset | [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all) | 无 | `latest` | 一次装配 PDF、CAD、Typst、XMind、压缩包、邮件、电子书、PPTX 和 core 其余完整格式能力 |
+| 独立 renderer 包 | [`@file-viewer/renderer-pdf`](https://www.npmjs.com/package/@file-viewer/renderer-pdf)、[`@file-viewer/renderer-cad`](https://www.npmjs.com/package/@file-viewer/renderer-cad)、[`@file-viewer/renderer-typst`](https://www.npmjs.com/package/@file-viewer/renderer-typst)、[`@file-viewer/renderer-archive`](https://www.npmjs.com/package/@file-viewer/renderer-archive)、[`@file-viewer/renderer-email`](https://www.npmjs.com/package/@file-viewer/renderer-email)、[`@file-viewer/renderer-ebook`](https://www.npmjs.com/package/@file-viewer/renderer-ebook)、[`@file-viewer/renderer-mindmap`](https://www.npmjs.com/package/@file-viewer/renderer-mindmap) | 无 | `latest` | 用于按需安装重链路，避免业务只看轻量格式时安装 PDF/CAD/Typst/压缩包/邮件/EPUB/XMind 依赖 |
 | Vanilla JS / Pure Web / script 标签 | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `latest` | `mountViewer(container, options)`、Custom Element、IIFE、资源复制 CLI、Worker/WASM 自托管工具 |
 | Vue3 | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3) | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3)、[`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `latest` | Vue3 原生组件、插件安装、props、事件、ref/controller 和完整类型 |
 | Vue2.7 | [`@file-viewer/vue2.7`](https://www.npmjs.com/package/@file-viewer/vue2.7) | [`@flyfish-group/file-viewer`](https://www.npmjs.com/package/@flyfish-group/file-viewer) | `latest` | Vue2.7 原生组件，能力和 Vue3 保持一致 |

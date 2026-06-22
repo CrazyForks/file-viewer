@@ -1,14 +1,15 @@
 {
-  "name": "@file-viewer/preset-all",
+  "name": "@file-viewer/renderer-ebook",
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "All renderer preset for Flyfish File Viewer, preserving the full format matrix while renderer packages are split out.",
+  "description": "Standalone EPUB ebook renderer plugin for Flyfish File Viewer powered by epubjs.",
   "keywords": [
     "file-viewer",
-    "renderer-preset",
-    "document-preview",
-    "on-demand-renderer"
+    "renderer",
+    "ebook",
+    "epub",
+    "document-preview"
   ],
   "publishConfig": {
     "access": "public",
@@ -20,12 +21,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-preset-all.git",
-    "directory": "packages/presets/all"
+    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-ebook.git",
+    "directory": "packages/renderers/ebook"
   },
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-preset-all/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer-renderer-ebook/issues"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -50,13 +51,7 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:^2.0.11",
-    "@file-viewer/renderer-archive": "workspace:^2.0.11",
-    "@file-viewer/renderer-cad": "workspace:^2.0.11",
-    "@file-viewer/renderer-ebook": "workspace:^2.0.11",
-    "@file-viewer/renderer-email": "workspace:^2.0.11",
-    "@file-viewer/renderer-mindmap": "workspace:^2.0.11",
-    "@file-viewer/renderer-pdf": "workspace:^2.0.11",
-    "@file-viewer/renderer-typst": "workspace:^2.0.11"
+    "epubjs": "^0.3.93"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

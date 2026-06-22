@@ -48,7 +48,7 @@
 | XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏、拖拽平移、Ctrl/Command 滚轮锚点缩放、键盘平移、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@excalidraw/excalidraw` | core 共享绘图渲染器按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | 官方 diagrams.net `GraphViewer` 离线预览；内置 SVG fallback | core 共享绘图渲染器默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
-| 电子书 | `epub` | `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
+| 电子书 | `epub` | `@file-viewer/renderer-ebook` + `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
 | 电子书 | `umd` | UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
 | Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl` | 图片渲染器 | 原生图片浏览；HEIC/HEIF 命中时按需使用 `heic2any` 转成浏览器可展示图片 | 图片附件、设计稿、截图、Logo、移动端照片 |
@@ -152,7 +152,7 @@
 
 ### 电子书
 
-- `epub` 使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录和章节资源。
+- EPUB 链路已拆为 `@file-viewer/renderer-ebook` 独立包；内部使用 `epubjs`，由成熟开源库处理 EPUB zip 包、OPF、目录和章节资源。
 - EPUB 预览提供目录窗格、上一章/下一章式导航和阅读进度。正文区域使用滚动文档模式，避免部分浏览器在超宽分页布局下出现白板。为了安全，阅读器不会允许书内脚本执行。
 - `umd` 是早期移动阅读器常见的电子书封装。当前没有可靠维护的前端 UMD 阅读库，组件按公开文件结构解析文件头、元数据、章节偏移、章节标题和正文数据块，正文 zlib 解压交给 `pako`。
 - UMD 文本正文按 UTF-16LE 解码，保留章节目录和换行；图片/漫画类 UMD 会尽量按图像数据块展示，但复杂混排文件建议用真实样本补充回归。
