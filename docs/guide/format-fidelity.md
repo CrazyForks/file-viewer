@@ -16,6 +16,17 @@
 | 结构可读预览 | 能安全读取目录、元数据、文本、对象候选或几何子集，但不能承诺专业工具级还原 | 明确标注为结构预览/附件初筛 |
 | 需要独立内核 | 格式复杂、生态缺少稳定浏览器库、或需要 C++/Rust/WASM 才能达到完整可视 | 拆成独立包持续维护，不塞进 core |
 
+## 2026-06 生态复核
+
+| 格式线 | 复核结论 | 当前落点 |
+| --- | --- | --- |
+| XMind | `.xmind` 仍以 ZIP 包结构为主，现代文件常见 `content.json`，XMind 8 / Classic 常见 `content.xml`；浏览器端成熟方案都是“解析包结构 + 自有只读画布”。`@ljheee/xmind-parser` 最新 npm 版本为 `1.1.3`，覆盖 XMind 8 XML 与 XMind 2020+ JSON。 | 保持 `@file-viewer/renderer-mindmap` 独立维护，并增强 Pointer / 鼠标 / 触摸拖拽、按帧合并平移、Ctrl/Command 滚轮锚点缩放、键盘平移和双击适配视图。 |
+| Typst | 官方 Typst 编译器是 Rust 开源编译器，浏览器稳定路线仍是 WASM 编译后输出 SVG/PDF；`@myriaddreamin/typst.ts` 与 compiler/renderer WASM 最新 npm 版本为 `0.7.0`。 | 保持 `@file-viewer/renderer-typst`，直接读取源 `.typ` / `.typst`，按页 SVG 预览，不做 sidecar PDF 替换。 |
+| Archive | `libarchive.js` 是 libarchive 的 browser / WASM port，最新 npm 版本为 `2.0.2`，继续是多压缩包格式最稳的离线方向。 | 保持 `@file-viewer/renderer-archive` 的 Worker + WASM 优先策略，并保留 ZIP/TAR/GZIP 兼容降级。 |
+| Email | `postal-mime` 最新 npm 版本为 `2.7.4`，支持 Node、browser、Web Worker 和 serverless；`@kenjiuno/msgreader` 最新 npm 版本为 `1.28.0`，适合作为 MSG 读取层。 | 保持 `@file-viewer/renderer-email` 分别处理 EML/MBOX 与 MSG，正文沙箱化，附件继续复用统一预览器。 |
+| OLB / DRA | Cadence / Allegro 相关格式公开规格不完整，未发现可直接开箱即用的官方 Web viewer SDK。公开可持续路线仍是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器 WASM 化，或按真实样本逐步 TS 移植。 | 当前只声明结构预览；高保真符号/封装图形应拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护，不塞进 core。 |
+| Draw.io / Excalidraw | diagrams.net 官方仓库和离线 viewer 仍是 draw.io 最佳只读预览来源；Excalidraw 官方 `restore` + `exportToSvg` 仍是最兼容真实 `.excalidraw` 文件的链路。 | 保持 `@file-viewer/renderer-drawing` 的离线 vendor 分发和官方导出优先策略，失败时才走安全 SVG 兜底。 |
+
 ## 已确认的完整链路
 
 | 格式 | 当前策略 | 结论 |

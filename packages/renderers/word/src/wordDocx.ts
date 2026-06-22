@@ -3,26 +3,21 @@ import type JSZip from 'jszip'
 import {
   resolveFileViewerDocxWorkerJsZipUrl,
   resolveFileViewerDocxWorkerUrl,
-} from '../platform/assets'
+} from '@file-viewer/core/assets'
+
 import {
   applyPrintPageSize,
   buildPrintPageStyle,
+  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   formatCssPixels,
   getElementPrintPageSize,
-  type PrintPageSize
-} from '../output/printLayout'
-import {
-  createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
-} from '../features/document/zoom'
-import type {
-  FileRenderContext,
-  FileViewerRenderedInstance as AppWrapper,
-  FileViewerZoomState
-} from '../contracts/types'
-import {
   registerFileViewerZoomProvider,
-  unregisterFileViewerZoomProvider
-} from '../features/document/dom'
+  unregisterFileViewerZoomProvider,
+  type FileRenderContext,
+  type FileViewerRenderedInstance as AppWrapper,
+  type FileViewerZoomState,
+  type PrintPageSize,
+} from '@file-viewer/core'
 
 const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
   width: 794,

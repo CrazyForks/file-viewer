@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const require = createRequire(import.meta.url)
-const coreRequire = createRequire(resolve(root, 'packages/core/package.json'))
+const wordRendererRequire = createRequire(resolve(root, 'packages/renderers/word/package.json'))
 const resolveViteEntrypoint = () => {
   try {
     return require.resolve('vite')
@@ -33,7 +33,7 @@ const outputDir = resolve(
 )
 
 const docxVendorDir = resolve(outputDir, 'vendor/docx')
-const docxPackageDir = dirname(coreRequire.resolve('@file-viewer/docx/package.json'))
+const docxPackageDir = dirname(wordRendererRequire.resolve('@file-viewer/docx/package.json'))
 await mkdir(docxVendorDir, { recursive: true })
 await copyFile(
   resolve(docxPackageDir, 'dist/docx-preview.worker.js'),

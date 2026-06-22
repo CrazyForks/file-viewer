@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 
 const rootRequire = createRequire(import.meta.url)
 const coreRequire = createRequire(path.resolve('packages/core/package.json'))
+const wordRendererRequire = createRequire(path.resolve('packages/renderers/word/package.json'))
 
 const ORIGINAL_READ_SECTOR = `function readSectorAbsolute(bytes, sectorSize, sid) {
     const start = 512 + sid * sectorSize;
@@ -31,9 +32,13 @@ const PATCHED_READ_SECTOR = `function readSectorAbsolute(bytes, sectorSize, sid)
 function resolveCfbPath() {
   let packageJsonPath
   try {
-    packageJsonPath = coreRequire.resolve('msdoc-viewer/package.json')
+    packageJsonPath = wordRendererRequire.resolve('msdoc-viewer/package.json')
   } catch {
-    packageJsonPath = rootRequire.resolve('msdoc-viewer/package.json')
+    try {
+      packageJsonPath = rootRequire.resolve('msdoc-viewer/package.json')
+    } catch {
+      packageJsonPath = coreRequire.resolve('msdoc-viewer/package.json')
+    }
   }
   return path.join(path.dirname(packageJsonPath), 'dist/core/cfb.js')
 }

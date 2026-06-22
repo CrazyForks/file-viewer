@@ -31,7 +31,8 @@ const options = {
 - Supports `.xmind`.
 - Supports XMind 2020+ `content.json` and XMind 8 / Classic `content.xml`.
 - Supports multiple sheets, hierarchy, labels, notes, hyperlinks, image resource hints, summaries, callouts, and floating-topic states.
-- Supports toolbar zoom, fit-to-canvas, Pointer / mouse / touch drag panning, `Ctrl` / `Command` + wheel pointer zoom, and arrow-key panning.
+- Supports toolbar zoom, fit-to-canvas, Pointer / mouse / touch drag panning, requestAnimationFrame-coalesced pan updates, `Ctrl` / `Command` + wheel pointer zoom, and arrow-key panning.
+- Mouse and touch panning include document-level fallback listeners for mobile WebViews, embedded browsers, and unstable Pointer Capture release behavior.
 
 ## Migration Note
 

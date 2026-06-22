@@ -69,8 +69,8 @@ npx file-viewer-copy-assets ./public/vendor/file-viewer
 
 不一样。
 
-- `docx` 使用自研 `@file-viewer/docx`
-- `doc` 使用 `msdoc-viewer`
+- `docx` 由 `@file-viewer/renderer-word` 调用自研 `@file-viewer/docx`
+- `doc` 由 `@file-viewer/renderer-word` 调用 `msdoc-viewer`
 
 另外，`.doc` 还额外套了一层 Word 风格页面容器，让页面在灰色背景中居中展示。
 

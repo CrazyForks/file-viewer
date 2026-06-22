@@ -137,6 +137,14 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
     chunkName: 'file-viewer-presentation'
   },
   {
+    id: 'word',
+    packageName: '@file-viewer/renderer-word',
+    exportName: 'wordRenderer',
+    formats: ['word', 'doc', 'docx', 'docm', 'dot', 'dotx', 'dotm', 'odt', 'odp', 'rtf'],
+    rendererIds: ['office-word-openxml', 'office-word-binary', 'open-document'],
+    chunkName: 'file-viewer-word'
+  },
+  {
     id: 'drawing',
     packageName: '@file-viewer/renderer-drawing',
     exportName: 'drawingRenderer',
@@ -244,7 +252,6 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'sql',
       'proto',
       'tex',
-      'dot',
       'graphviz',
       'http',
       'ipynb'
@@ -350,12 +357,6 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
 ]
 
 const plannedRenderers: readonly PlannedRendererDescriptor[] = [
-  {
-    id: 'word',
-    targetPackage: '@file-viewer/renderer-word',
-    formats: ['doc', 'docx', 'docm', 'dot', 'dotx', 'dotm', 'odt', 'rtf', 'wps'],
-    note: 'Word/OpenDocument renderer is still provided by @file-viewer/core compatibility and will be split into @file-viewer/renderer-word.'
-  },
   {
     id: 'spreadsheet',
     targetPackage: '@file-viewer/renderer-spreadsheet',

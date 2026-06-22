@@ -32,6 +32,7 @@
 | --- | --- | --- |
 | Core 底座 | `@file-viewer/core` | 无 |
 | PPTX 原生引擎 | `@file-viewer/pptx` | 无 |
+| Word renderer | `@file-viewer/renderer-word` | 无 |
 | 演示文稿 renderer | `@file-viewer/renderer-presentation` | 无 |
 | 绘图 renderer | `@file-viewer/renderer-drawing` | 无 |
 | 3D 模型 renderer | `@file-viewer/renderer-3d` | 无 |
@@ -57,6 +58,7 @@ pnpm add @file-viewer/vue2.7
 pnpm add @file-viewer/react
 pnpm add @file-viewer/jquery
 pnpm add @file-viewer/svelte
+pnpm add @file-viewer/renderer-word
 ```
 
 Vanilla JS / Pure Web:
@@ -129,6 +131,7 @@ npm install ./artifacts/file-viewer-react-legacy-*.tgz
 npm install ./artifacts/file-viewer-web-*.tgz
 npm install ./artifacts/file-viewer-jquery-*.tgz
 npm install ./artifacts/file-viewer-svelte-*.tgz
+npm install ./artifacts/file-viewer-renderer-word-*.tgz
 npm install ./artifacts/file-viewer-renderer-presentation-*.tgz
 npm install ./artifacts/file-viewer-preset-all-*.tgz
 npm install ./artifacts/file-viewer-pptx-*.tgz
@@ -200,7 +203,7 @@ pnpm release:ecosystem:publish:dry-run
 pnpm release:ecosystem:publish
 ```
 
-`release:ecosystem:pack` 会先构建 core、独立 renderer、preset、PPTX 原生引擎、标准组件包和历史兼容包，再统一打包当前 29 个 npm 目标。发布前请确认 tarball 中包含必要的 viewer assets、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
+`release:ecosystem:pack` 会先构建 core、独立 renderer、preset、PPTX 原生引擎、标准组件包和历史兼容包，再统一打包当前 35 个 npm 目标。发布前请确认 tarball 中包含必要的 viewer assets、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
 
 开源总仓库使用私有 Gitea `main` 完整聚合仓生成，发布前执行:
 

@@ -433,9 +433,7 @@ const allowedCoreDevDependencies = new Set([
   '@types/tinycolor2',
   '@types/pako'
 ])
-const allowedCoreRendererDependencies = new Set([
-  '@file-viewer/docx'
-])
+const allowedCoreRendererDependencies = new Set([])
 const forbiddenCoreDependencyPrefixes = [
   'vue',
   '@vue/',

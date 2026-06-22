@@ -139,7 +139,7 @@ function viewerOptionRows(locale) {
       ['`ai`', '控制文本结构采集、分块大小和最大文本长度，为溯源、定位、向量化和外部 AI 流程提供基础。'],
       ['`archive`', '配置压缩包 Worker/WASM、超时、缓存、包体限制和压缩包内单文件预览大小。'],
       ['`pdf`', '配置 PDF.js Worker、导航栏、目录、缩略图、旋转、流式读取、Range chunk 和凭据。'],
-      ['`docx` / `spreadsheet`', 'DOCX 使用自研 @file-viewer/docx，默认 Worker 解析、连续流式阅读和异步分批渲染，可按需显式开启视觉分页；表格默认保真主线程渲染，Worker 和表头拖拽调列宽均可按需显式开启。'],
+      ['`docx` / `spreadsheet`', 'DOCX 由 @file-viewer/renderer-word 承接并使用自研 @file-viewer/docx，默认 Worker 解析、连续流式阅读和异步分批渲染，可按需显式开启视觉分页；表格默认保真主线程渲染，Worker 和表头拖拽调列宽均可按需显式开启。'],
       ['`typst` / `data` / `cad`', '配置 Typst、SQLite、CAD/DWG/DXF/DWF 等 WASM、Worker、编码和渲染策略。'],
       ['`hooks` / `beforeOperation`', '统一生命周期 hooks 和操作前置校验，可用于审计、权限、埋点和安全控制。']
     ]
@@ -152,7 +152,7 @@ function viewerOptionRows(locale) {
     ['`ai`', 'Text collection, chunk size, and max text length for provenance, location, vectorization, and external AI workflows.'],
     ['`archive`', 'Archive Worker/WASM URLs, timeout, cache, archive limits, and nested entry preview limits.'],
     ['`pdf`', 'PDF.js worker, navigation pane, outline, thumbnails, rotation, streaming, range chunk size, and credentials.'],
-    ['`docx` / `spreadsheet`', 'DOCX uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with opt-in Worker loading and opt-in header drag column resizing.'],
+    ['`docx` / `spreadsheet`', 'DOCX is provided by @file-viewer/renderer-word and uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with opt-in Worker loading and opt-in header drag column resizing.'],
     ['`typst` / `data` / `cad`', 'Typst, SQLite, CAD/DWG/DXF/DWF WASM, worker, encoding, and rendering strategy options.'],
     ['`hooks` / `beforeOperation`', 'Shared lifecycle hooks and operation preflight checks for audit, permission, telemetry, and safety controls.']
   ]
@@ -405,7 +405,7 @@ function generatedWrapperBlock(locale) {
       wrapperMarkers.start,
       `## ${template.wrapperEcosystemHeading}`,
       '',
-      '所有标准组件包都只共享 `@file-viewer/core` 这个总底座，不依赖其他框架组件实现。core 内部负责格式矩阵、资源解析、browser/renderers、事件、操作 API、搜索、缩放、打印和导出；各框架组件包自己维护本地 controller、组件生命周期、类型出口和生态交互。',
+      '所有标准组件包都只共享 `@file-viewer/core` 这个总底座，不依赖其他框架组件实现。core 负责格式矩阵、资源解析、renderer 协议、事件、操作 API、搜索、缩放、打印和导出；PDF、Word、PPTX、CAD、Typst 等重型链路通过独立 renderer 或 preset 显式装配；各框架组件包自己维护本地 controller、组件生命周期、类型出口和生态交互。',
       '',
       markdownTable(
         template.wrapperMatrixHeaders,
@@ -414,7 +414,7 @@ function generatedWrapperBlock(locale) {
       '',
       `## ${template.wrapperFormatHeading}`,
       '',
-      `共享 core 当前覆盖 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。所有格式都按需异步加载，组件层只做生态适配，不互相嵌套。`,
+      `共享格式矩阵当前覆盖 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。完整能力通过 renderer / preset 按需装配，组件层只做生态适配，不互相嵌套。`,
       '',
       markdownTable(
         template.formatMatrixHeaders,
@@ -472,7 +472,7 @@ function generatedWrapperBlock(locale) {
     wrapperMarkers.start,
     `## ${template.wrapperEcosystemHeading}`,
     '',
-    'Every standard component package shares `@file-viewer/core` as the only common foundation, and no framework component package depends on another framework implementation. Core owns format metadata, source loading, browser/renderers, events, operation APIs, search, zoom, print, and export; each framework package owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.',
+    'Every standard component package shares `@file-viewer/core` as the only common foundation, and no framework component package depends on another framework implementation. Core owns format metadata, source loading, the renderer protocol, events, operation APIs, search, zoom, print, and export. Heavy PDF, Word, PPTX, CAD, Typst, and similar pipelines are assembled explicitly through renderer packages or presets; each framework package owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.',
     '',
     markdownTable(
       template.wrapperMatrixHeaders,
@@ -481,7 +481,7 @@ function generatedWrapperBlock(locale) {
     '',
     `## ${template.wrapperFormatHeading}`,
     '',
-    `The shared core currently covers ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Renderers stay lazy-loaded, and component packages only adapt their own ecosystem without nesting through another framework implementation.`,
+    `The shared format matrix currently covers ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Full capability is assembled through renderer packages or presets, while component packages only adapt their own ecosystem without nesting through another framework implementation.`,
     '',
     markdownTable(
       template.formatMatrixHeaders,
@@ -563,7 +563,7 @@ function generatedPublicBlock(locale) {
       '',
       markdownTable(['工具栏配置', '说明'], toolbarOptionRows('zh')),
       '',
-      `共享 core 当前声明 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。完整格式说明见本文“支持格式”和官方文档: https://doc.file-viewer.app/guide/formats`,
+      `共享格式矩阵当前声明 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。完整能力通过 renderer / preset 按需装配，格式说明见本文“支持格式”和官方文档: https://doc.file-viewer.app/guide/formats`,
       publicMarkers.end
     ].join('\n')
   }
@@ -591,7 +591,7 @@ function generatedPublicBlock(locale) {
     '',
     markdownTable(['Toolbar config', 'Description'], toolbarOptionRows('en')),
     '',
-    `The shared core currently declares ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats`,
+    `The shared format matrix currently declares ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Full capability is assembled through renderer packages or presets. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats`,
     publicMarkers.end
   ].join('\n')
 }

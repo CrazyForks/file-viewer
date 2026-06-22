@@ -29,6 +29,12 @@ importers:
       javascript-obfuscator:
         specifier: ^5.4.3
         version: 5.4.3
+      linkedom:
+        specifier: ^0.18.12
+        version: 0.18.12
+      msdoc-viewer:
+        specifier: ^0.2.0
+        version: 0.2.0
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
@@ -396,9 +402,6 @@ importers:
       '@excalidraw/excalidraw':
         specifier: ^0.18.1
         version: 0.18.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@file-viewer/docx':
-        specifier: ^0.3.12
-        version: 0.3.12
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)
@@ -423,9 +426,6 @@ importers:
       '@tonejs/midi':
         specifier: ^2.0.28
         version: 2.0.28
-      '@xmldom/xmldom':
-        specifier: ^0.9.10
-        version: 0.9.10
       ag-psd:
         specifier: ^30.1.1
         version: 30.1.1
@@ -459,15 +459,9 @@ importers:
       libarchive.js:
         specifier: ^2.0.2
         version: 2.0.2
-      linkedom:
-        specifier: ^0.18.12
-        version: 0.18.12
       marked:
         specifier: ^18.0.5
         version: 18.0.5
-      msdoc-viewer:
-        specifier: ^0.2.0
-        version: 0.2.0
       ofd-xml-parser:
         specifier: ^0.0.6
         version: 0.0.6
@@ -483,9 +477,6 @@ importers:
       roughjs:
         specifier: ^4.6.6
         version: 4.6.6
-      rtf.js:
-        specifier: ^3.0.9
-        version: 3.0.9
       shpjs:
         specifier: ^6.2.0
         version: 6.2.0
@@ -571,6 +562,9 @@ importers:
       '@file-viewer/renderer-typst':
         specifier: workspace:^2.0.11
         version: link:../../renderers/typst
+      '@file-viewer/renderer-word':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/word
     devDependencies:
       typescript:
         specifier: ^6.0.3
@@ -877,6 +871,28 @@ importers:
       '@myriaddreamin/typst.ts':
         specifier: 0.7.0
         version: 0.7.0(@myriaddreamin/typst-ts-renderer@0.7.0)(@myriaddreamin/typst-ts-web-compiler@0.7.0)
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/word:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      '@file-viewer/docx':
+        specifier: ^0.3.12
+        version: 0.3.12
+      jszip:
+        specifier: ^3.10.1
+        version: 3.10.1
+      msdoc-viewer:
+        specifier: ^0.2.0
+        version: 0.2.0
+      rtf.js:
+        specifier: ^3.0.9
+        version: 3.0.9
     devDependencies:
       typescript:
         specifier: ^6.0.3

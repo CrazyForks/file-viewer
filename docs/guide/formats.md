@@ -30,9 +30,9 @@
 
 | 分类 | 扩展名 | 渲染链路 | 当前表现 | 更适合的场景 |
 | --- | --- | --- | --- | --- |
-| Word | `docx`、`docm`、`dotx`、`dotm` | 自研 `@file-viewer/docx` | 白色文档面显示在灰色阅读底中，支持宽度自适应；默认使用 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
-| Word | `doc`、`dot` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、Word 97-2003 模板、历史附件回溯 |
-| 兼容文档 | `rtf`、`odt` | `rtf.js` / OpenDocument `content.xml` | RTF 走 RTFJS 生成只读 HTML，ODT 读取 ODF 包内正文并套用纸张阅读面 | RTF 富文本、OpenDocument 文本文档 |
+| Word | `docx`、`docm`、`dotx`、`dotm` | `@file-viewer/renderer-word` + 自研 `@file-viewer/docx` | 白色文档面显示在灰色阅读底中，支持宽度自适应；默认使用 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
+| Word | `doc`、`dot` | `@file-viewer/renderer-word` + `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、Word 97-2003 模板、历史附件回溯 |
+| 兼容文档 | `rtf`、`odt` | `@file-viewer/renderer-word` + `rtf.js` / OpenDocument `content.xml` | RTF 走 RTFJS 生成只读 HTML，ODT 读取 ODF 包内正文并套用纸张阅读面 | RTF 富文本、OpenDocument 文本文档 |
 | Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 支持虚拟滚动、列宽/行高、合并单元格、常见样式、workbook drawing 图片和可选表头拖拽调整列宽；默认主线程解析以避开 Worker 部署兼容问题，静态 Worker 需显式开启；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
 | Excel 兼容格式 | `xlsm`、`xlsb`、`xls`、`xlt`、`xltm`、`csv`、`ods`、`fods`、`numbers` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 统一读取数据、尺寸和可用样式，默认主线程渐进还原，部署环境确认可用时再开启 Worker | 老表格、跨平台导出的表格 |
 | PowerPoint | `pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`、`odp` | `@file-viewer/renderer-presentation` + `@file-viewer/pptx` / OpenDocument 兼容预览 | OOXML 演示文稿走独立 renderer 插件，内部复用 `@file-viewer/pptx` Worker 渐进解析并按页输出，支持统一缩放、打印和导出 HTML；ODP 读取 OpenDocument 幻灯片文本和页面结构 | 汇报材料、说明文档、培训课件、演示模板 |
@@ -61,7 +61,8 @@
 
 ### Word 文档
 
-- `docx`、`docm`、`dotx`、`dotm` 使用自研 `@file-viewer/docx`，适合正文、表格、图片、目录字段和常规版式较多的现代 Word 文档与模板。当前预览层会恢复白色文档面和灰色阅读底，并根据可用宽度自动缩放；宏内容只作为只读文档结构预览，不执行宏。
+- `docx`、`docm`、`dotx`、`dotm` 由 `@file-viewer/renderer-word` 按需装配，并在命中格式时加载自研 `@file-viewer/docx`，适合正文、表格、图片、目录字段和常规版式较多的现代 Word 文档与模板。当前预览层会恢复白色文档面和灰色阅读底，并根据可用宽度自动缩放；宏内容只作为只读文档结构预览，不执行宏。
+- 如果你只安装 `@file-viewer/core` 或轻量组件包，Word 能力不会被默认拉进依赖树；生产项目请显式装配 `@file-viewer/renderer-word`，完整 Demo 和全格式场景可直接使用 `@file-viewer/preset-all`。
 - DOCX 默认使用 `@file-viewer/docx` 的 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，优先保证复杂目录、长表格、制表符、页眉页脚、字段和样式继承稳定；私有静态资源路径特殊时可配置 `options.docx.workerUrl` 和 `options.docx.workerJsZipUrl`。
 - `doc`、`dot` 使用 `msdoc-viewer`，并额外套用 Word 风格页面容器。构建前会通过包管理器无关的补丁脚本增强 CFB 局部 sector 容错，它不只是“把内容吐出来”，而是尽量保留文档阅读时的页面感。
 - `rtf` 使用 RTFJS 读取富文本结构并生成安全的只读 HTML；`odt` 读取 OpenDocument 包内 `content.xml`，提取正文块并套用纸张阅读面。它们适合跨平台导出文档的快速查看，但复杂页眉页脚、域代码或宏能力仍建议转换为 DOCX/PDF 后验收。
@@ -99,7 +100,7 @@
 - `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。当前 PDF 视图提供顶部缩放工具栏、页码状态、旋转页兼容、可显隐导航窗格、页面/目录树切换、可选懒加载页面缩略图和宽度自适应。同源 URL 会默认使用 PDF.js 的 URL 渐进读取；文件服务支持 Range 时会自动分片加载，避免大文件必须整包下载后才出现首屏。
 - PDF.js worker、CMap、WASM 和 standard fonts 默认随 viewer assets 分发到 `vendor/pdf/`，不会访问公共 CDN。静态目录特殊时可通过 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl` 和 `options.pdf.standardFontDataUrl` 指向自托管地址。
 - PDF 的打印与导出 HTML 会通过专属导出适配器逐页生成完整页面，不依赖当前滚动位置、当前可见页或已经渲染的 canvas，也不会被导航窗格、预览容器或全局样式截断，适合正式归档和审批留痕。
-- `ofd` 走 core 内的 framework-neutral browser renderer，按需加载 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，并保留解析缓存、resize 重排、缩放、打印和 HTML 导出。
+- `ofd` 走 `@file-viewer/renderer-ofd` 独立 renderer，按需加载 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，并保留解析缓存、resize 重排、缩放、打印和 HTML 导出。
 - `typ` / `typst` 始终按源文件直接预览，不会自动探测或替换为同名 PDF。组件会在命中 Typst 时按需加载 `@myriaddreamin/typst.ts` 的浏览器 WASM 编译与 SVG 渲染链路。
 - 组件会读取 Typst 输出里的页面尺寸元数据，把整文档拆成按页 SVG 预览，打印和导出 HTML 时只输出文档页面，不带 Demo 外壳。compiler / renderer WASM 默认随 viewer assets 分发到 `wasm/typst/`，也可以通过 `options.typst.compilerWasmUrl` 和 `options.typst.rendererWasmUrl` 指向私有化部署地址；运行时不会访问官方 npm CDN，也不会切换为源码预览。WASM 缺失或 `options.typst.renderTimeoutMs` 超时时会给出明确错误，避免误判为预览成功。
 - Typst 适合技术报告、论文草稿、工程文档模板和需要保留排版语言源文件的场景。如果文档引用本地图片或拆分文件，建议在业务侧先把资源打包进压缩包，保留完整项目结构。

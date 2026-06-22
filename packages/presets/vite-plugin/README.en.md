@@ -8,7 +8,7 @@ Vite plugin for Flyfish File Viewer on-demand renderer assembly. It generates `v
 pnpm add @file-viewer/vue3 @file-viewer/vite-plugin @file-viewer/renderer-pdf
 ```
 
-Install additional renderer packages when you need more formats, such as `@file-viewer/renderer-ofd`, `@file-viewer/renderer-presentation`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-drawing`, `@file-viewer/renderer-3d`, `@file-viewer/renderer-data`, `@file-viewer/renderer-eda`, `@file-viewer/renderer-typst`, or `@file-viewer/renderer-archive`.
+Install additional renderer packages when you need more formats, such as `@file-viewer/renderer-word`, `@file-viewer/renderer-ofd`, `@file-viewer/renderer-presentation`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-drawing`, `@file-viewer/renderer-3d`, `@file-viewer/renderer-data`, `@file-viewer/renderer-eda`, `@file-viewer/renderer-typst`, or `@file-viewer/renderer-archive`.
 
 ## vite.config.ts
 

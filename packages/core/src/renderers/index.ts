@@ -79,13 +79,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'open-document',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string) => {
-      const { default: renderOpenDocument } = await import('./openDocument');
-      return renderOpenDocument(buffer, target, type);
-    },
-  },
-  {
     rendererId: 'ofd',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { default: renderOfd } = await import('./ofd');
@@ -97,20 +90,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
       const { default: renderPdf } = await import('./pdf');
       return renderPdf(buffer, target, context);
-    },
-  },
-  {
-    rendererId: 'office-word-openxml',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
-      const { default: renderWordDocx } = await import('./wordDocx');
-      return renderWordDocx(buffer, target, context);
-    },
-  },
-  {
-    rendererId: 'office-word-binary',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, _type?: string, context?: FileRenderContext) => {
-      const { default: renderWordDoc } = await import('./wordDoc');
-      return renderWordDoc(buffer, target, context);
     },
   },
   {

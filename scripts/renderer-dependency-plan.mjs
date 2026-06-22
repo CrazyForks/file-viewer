@@ -4,7 +4,7 @@ export const rendererModularizationLines = [
     group: 'office',
     targetPackage: '@file-viewer/renderer-word',
     phase: 2,
-    status: 'planned',
+    status: 'extracted',
     renderers: ['office-word-openxml', 'office-word-binary', 'open-document'],
     dependencies: ['@file-viewer/docx', 'msdoc-viewer', 'rtf.js', 'jszip', 'linkedom'],
   },
@@ -179,7 +179,7 @@ export const rendererModularizationLines = [
     group: 'smallShared',
     targetPackage: '@file-viewer/renderer-word',
     phase: 2,
-    status: 'planned',
+    status: 'extracted',
     renderers: ['office-word-openxml'],
     dependencies: ['@xmldom/xmldom'],
   },
@@ -206,5 +206,8 @@ export const dependencyToRendererLines = rendererModularizationLines.reduce((res
 }, new Map());
 
 export const dependencyToRendererLine = new Map(
-  Array.from(dependencyToRendererLines.entries()).map(([dependency, lines]) => [dependency, lines[0]])
+  Array.from(dependencyToRendererLines.entries()).map(([dependency, lines]) => [
+    dependency,
+    lines.find(line => line.status !== 'extracted') || lines[0],
+  ])
 );

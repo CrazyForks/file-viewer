@@ -240,8 +240,8 @@ export type FileViewerOptions = CoreFileViewerOptions;
 /**
  * DOCX 渲染配置。
  *
- * 继承 core 的 DOCX 配置：默认使用 `@file-viewer/docx` 的 Worker
- * 完成 ZIP/XML 解析，并在主线程按连续流式阅读渲染真实页面 DOM。
+ * 继承共享 DOCX 配置；完整 Word 预览由 `@file-viewer/renderer-word`
+ * 使用 `@file-viewer/docx` Worker 完成 ZIP/XML 解析，并在主线程按连续流式阅读渲染真实页面 DOM。
  * 如业务确实需要页式预览，可显式开启 `visualPagination`。
  * 组件层继续负责挂载、缩放、打印和导出适配，保证生态体验一致。
  */

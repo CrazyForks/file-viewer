@@ -6,6 +6,7 @@
 
 - 新增 `@file-viewer/renderer-presentation` 独立 renderer 包，基于 `@file-viewer/pptx` 提供 PPTX / PPTM / POTX / POTM / PPSX / PPSM 按需预览、缩放、打印和 HTML 导出；`@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 已优先聚合该包，ODP 继续走 OpenDocument 兼容链路
 - `@file-viewer/core` 移除 `@file-viewer/pptx` 直接依赖和内置 PPTX handler，PowerPoint 完整预览统一通过 `@file-viewer/renderer-presentation` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 37 降到 36
+- 新增 `@file-viewer/renderer-word` 独立 renderer 包，承接 DOCX / DOCM / DOTX / DOTM、DOC / DOT、RTF 和 ODT 预览链路；`@file-viewer/core` 移除 `@file-viewer/docx`、`msdoc-viewer`、`rtf.js`、`linkedom` 和 `@xmldom/xmldom` 直接依赖，Word 完整预览统一通过 `@file-viewer/renderer-word` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 36 降到 31
 - 新增 `@file-viewer/renderer-drawing` 独立 renderer 包，覆盖 Draw.io / diagrams.net 离线 viewer、Excalidraw 官方 SVG 导出、rough.js 兜底、统一缩放、打印和 HTML 导出，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-3d` 独立 renderer 包，基于 Three.js loaders 承接 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、USD/USDZ、点云和 VTK 等 WebGL 预览，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-data` 独立 renderer 包，承接字体、PSD、AI/EPS、SQLite、Parquet、Avro、WASM 和 WebArchive 的安全结构预览，SQLite WASM 由 `@file-viewer/vite-plugin` 复制到离线 assets

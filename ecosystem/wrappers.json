@@ -49,6 +49,17 @@
       "publicSource": true
     },
     {
+      "id": "word",
+      "packageName": "@file-viewer/renderer-word",
+      "description": "Standalone Word and compatible document renderer plugin for File Viewer with @file-viewer/docx, msdoc-viewer, RTF, ODT, worker assets, zoom, print, and export support.",
+      "packageDir": "packages/renderers/word",
+      "repository": "file-viewer-renderer-word",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-word",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-word",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "drawing",
       "packageName": "@file-viewer/renderer-drawing",
       "description": "Standalone Draw.io and Excalidraw renderer plugin for File Viewer with official Excalidraw SVG export, diagrams.net offline viewer support, zoom, print, and HTML export.",

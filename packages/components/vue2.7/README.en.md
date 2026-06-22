@@ -52,7 +52,8 @@ viewer.destroy()
 
 ## Capabilities
 
-`@file-viewer/vue2.7` shares the same `@file-viewer/core` capabilities, core browser engine, and format matrix as the other standard component packages, including PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets.
+`@file-viewer/vue2.7` shares the same core contract and renderer/preset assembly model with the other standard component packages; full capability can be assembled with on-demand renderers or `@file-viewer/preset-all`, including PDF, Word, Excel, PowerPoint, OFD, CAD/DWG/DXF/DWF, EPUB/UMD, archives, email, Markdown, highlighted code, images, audio, video, 3D models, geospatial files, and structured data assets. See the complete format matrix and option reference at https://doc.file-viewer.app/guide/formats
+
 
 See the official documentation for the full format matrix, options, lifecycle hooks, beforeOperation, theme, watermark, search, zoom, print, and export APIs: https://doc.file-viewer.app/
 
@@ -61,7 +62,7 @@ Chinese README: [README.md](./README.md).
 <!-- FILE_VIEWER_GENERATED:START -->
 ## Ecosystem Matrix
 
-Every standard component package shares `@file-viewer/core` as the only common foundation, and no framework component package depends on another framework implementation. Core owns format metadata, source loading, browser/renderers, events, operation APIs, search, zoom, print, and export; each framework package owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.
+Every standard component package shares `@file-viewer/core` as the only common foundation, and no framework component package depends on another framework implementation. Core owns format metadata, source loading, the renderer protocol, events, operation APIs, search, zoom, print, and export. Heavy PDF, Word, PPTX, CAD, Typst, and similar pipelines are assembled explicitly through renderer packages or presets; each framework package owns its local controller, component lifecycle, type exports, and ecosystem-specific interaction layer.
 
 | Framework | Standard npm package | Entrypoints | GitHub | Gitee | Historical aliases |
 | --- | --- | --- | --- | --- | --- |
@@ -76,7 +77,7 @@ Every standard component package shares `@file-viewer/core` as the only common f
 
 ## Format Support Matrix
 
-The shared core currently covers 24 preview pipelines and 198 file extensions. Renderers stay lazy-loaded, and component packages only adapt their own ecosystem without nesting through another framework implementation.
+The shared format matrix currently covers 24 preview pipelines and 198 file extensions. Full capability is assembled through renderer packages or presets, while component packages only adapt their own ecosystem without nesting through another framework implementation.
 
 | Preview pipeline | Category | Extensions | Capabilities | Loading |
 | --- | --- | --- | --- | --- |
@@ -144,7 +145,7 @@ The table below lists the real props, event channel, and customization entry for
 | `ai` | Text collection, chunk size, and max text length for provenance, location, vectorization, and external AI workflows. |
 | `archive` | Archive Worker/WASM URLs, timeout, cache, archive limits, and nested entry preview limits. |
 | `pdf` | PDF.js worker, navigation pane, outline, thumbnails, rotation, streaming, range chunk size, and credentials. |
-| `docx` / `spreadsheet` | DOCX uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with opt-in Worker loading and opt-in header drag column resizing. |
+| `docx` / `spreadsheet` | DOCX is provided by @file-viewer/renderer-word and uses the self-maintained @file-viewer/docx engine with Worker parsing, continuous flow reading, and async rendering by default; visual pagination is opt-in. Spreadsheet keeps fidelity-first main-thread parsing with opt-in Worker loading and opt-in header drag column resizing. |
 | `typst` / `data` / `cad` | Typst, SQLite, CAD/DWG/DXF/DWF WASM, worker, encoding, and rendering strategy options. |
 | `hooks` / `beforeOperation` | Shared lifecycle hooks and operation preflight checks for audit, permission, telemetry, and safety controls. |
 

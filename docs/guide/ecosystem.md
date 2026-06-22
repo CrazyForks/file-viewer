@@ -28,6 +28,7 @@
 | --- | --- | --- | --- |
 | 底层能力 | `@file-viewer/core` | 自研组件、二次封装、框架适配 | 纯 TypeScript 预览能力、格式矩阵、事件、搜索、缩放、打印、导出和共享类型 |
 | PPTX 引擎 | `@file-viewer/pptx` | 单独优化或验证 PPTX 渲染 | 独立原生 PPTX renderer、Worker 渐进解析和样式文件 |
+| Word renderer | `@file-viewer/renderer-word` | 只需要 DOCX/DOC/RTF/ODT 的业务 | 标准 renderer 插件，按需加载自研 DOCX、老 DOC 和 RTF/OpenDocument 链路 |
 | Vanilla JS / Pure Web | `@file-viewer/web` | 无框架页面、微前端壳、传统系统 | `<flyfish-file-viewer>` 原生组件、`mountViewer(container, options)`、IIFE script 标签包、资源复制 CLI |
 | Vue 3 | `@file-viewer/vue3` | Vue 3.3+ | Vue 插件、`<file-viewer>` 组件、props、事件、ref/controller 和完整类型 |
 | Vue 2.7 | `@file-viewer/vue2.7` | Vue 2.7 项目 | `Vue.use(FileViewer)` 插件式注册，能力与 Vue 3 线保持一致 |

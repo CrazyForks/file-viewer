@@ -3,12 +3,6 @@ declare module 'shpjs' {
   export default shp;
 }
 
-declare module 'rtf.js/dist/RTFJS.bundle.js' {
-  export const RTFJS: any;
-  const bundle: any;
-  export default bundle;
-}
-
 declare module '@kenjiuno/msgreader' {
   const MsgReader: any;
   export default MsgReader;

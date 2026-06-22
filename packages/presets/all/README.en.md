@@ -28,7 +28,7 @@ const options = {
 }
 ```
 
-This version first aggregates the extracted `@file-viewer/renderer-pdf`, `@file-viewer/renderer-ofd`, `@file-viewer/renderer-presentation`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-drawing`, `@file-viewer/renderer-3d`, `@file-viewer/renderer-data`, `@file-viewer/renderer-eda`, `@file-viewer/renderer-typst`, `@file-viewer/renderer-archive`, `@file-viewer/renderer-email`, `@file-viewer/renderer-ebook`, `@file-viewer/renderer-text`, `@file-viewer/renderer-image`, `@file-viewer/renderer-media`, `@file-viewer/renderer-mindmap`, and `@file-viewer/renderer-geo` packages. Renderers that have not been split out yet are still filled in by `@file-viewer/core` for compatibility. As Word and Excel renderers move out, this preset remains the full aggregation layer.
+This version first aggregates the extracted `@file-viewer/renderer-word`, `@file-viewer/renderer-pdf`, `@file-viewer/renderer-ofd`, `@file-viewer/renderer-presentation`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-drawing`, `@file-viewer/renderer-3d`, `@file-viewer/renderer-data`, `@file-viewer/renderer-eda`, `@file-viewer/renderer-typst`, `@file-viewer/renderer-archive`, `@file-viewer/renderer-email`, `@file-viewer/renderer-ebook`, `@file-viewer/renderer-text`, `@file-viewer/renderer-image`, `@file-viewer/renderer-media`, `@file-viewer/renderer-mindmap`, and `@file-viewer/renderer-geo` packages. Renderers that have not been split out yet are still filled in by `@file-viewer/core` for compatibility. As the remaining Excel and Office-compatible paths move out, this preset remains the full aggregation layer.
 
 ## Documentation
 

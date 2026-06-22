@@ -329,8 +329,12 @@ export const renderFileViewerOpenDocument = async (
   target: HTMLDivElement,
   type?: string
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderOpenDocument } = await import('./renderers/openDocument');
-  return renderOpenDocument(buffer, target, type);
+  void buffer;
+  void target;
+  void type;
+  throw new Error(
+    'OpenDocument/RTF rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-word, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerPdf = async (
   buffer: ArrayBuffer,
@@ -384,16 +388,24 @@ export const renderFileViewerWordDoc = async (
   target: HTMLDivElement,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderWordDoc } = await import('./renderers/wordDoc');
-  return renderWordDoc(buffer, target, context);
+  void buffer;
+  void target;
+  void context;
+  throw new Error(
+    'DOC rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-word, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerWordDocx = async (
   buffer: ArrayBuffer,
   target: HTMLDivElement,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderWordDocx } = await import('./renderers/wordDocx');
-  return renderWordDocx(buffer, target, context);
+  void buffer;
+  void target;
+  void context;
+  throw new Error(
+    'DOCX rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-word, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerSpreadsheet = async (
   buffer: ArrayBuffer,

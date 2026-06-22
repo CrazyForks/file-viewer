@@ -12,6 +12,7 @@
 | Stack | Standard package | Notes |
 | --- | --- | --- |
 | Core foundation | `@file-viewer/core` | Framework-neutral contracts, browser engine, renderer registry, events, search, zoom, print, export, and asset manifests |
+| Word renderer | `@file-viewer/renderer-word` | DOCX/DOC/RTF/ODT renderer plugin that lazy-loads Word engines outside core |
 | Full renderer preset | `@file-viewer/preset-all` | Registers the full lazy renderer set |
 | Vite on-demand plugin | `@file-viewer/vite-plugin` | Generates renderer imports for selected formats |
 | Web Component / Vanilla JS | `@file-viewer/web` | `<flyfish-file-viewer>`, `mountViewer`, IIFE bundle, and asset copy CLI |
@@ -28,6 +29,7 @@
 Heavy renderers are split so applications can install only what they need:
 
 - `@file-viewer/renderer-pdf`
+- `@file-viewer/renderer-word`
 - `@file-viewer/renderer-ofd`
 - `@file-viewer/renderer-presentation`
 - `@file-viewer/renderer-cad`
