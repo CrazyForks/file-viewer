@@ -1,10 +1,18 @@
 export {
   createViewerControllerHandle,
+  defineFileViewerElement,
+  FileViewerElement,
+  FILE_VIEWER_ELEMENT_TAG,
   mountViewer,
 } from '@file-viewer/web'
 
 export type {
   FileRef,
+  FileViewerElementErrorDetail,
+  FileViewerElementEventName,
+  FileViewerElementReadyDetail,
+  FileViewerElementSource,
+  FileViewerElementStateChangeDetail,
   ViewerAiOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,

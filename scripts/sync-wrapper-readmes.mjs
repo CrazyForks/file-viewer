@@ -193,9 +193,9 @@ function componentSurfaceRows(locale) {
       ],
       [
         'Pure Web `@file-viewer/web`',
-        '`mountViewer(container, ViewerMountOptions, ViewerCoreOptions?)`',
-        '`onEvent`、`onStateChange`、`controller.subscribe()`',
-        '返回 `ViewerController`；同时提供 ESM、IIFE script 标签包和 `file-viewer-copy-assets`。'
+        '`<flyfish-file-viewer>` 属性 `src/url`、`filename/name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options`；也支持 `mountViewer(...)`',
+        '`viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`、`onEvent`、`onStateChange`、`controller.subscribe()`',
+        'Custom Element 实例暴露完整 controller handle；IIFE script 标签会自动注册元素，同时保留 `mountViewer` 命令式挂载和资源复制 CLI。'
       ],
       [
         'jQuery `@file-viewer/jquery`',
@@ -245,9 +245,9 @@ function componentSurfaceRows(locale) {
     ],
     [
       'Pure Web `@file-viewer/web`',
-      '`mountViewer(container, ViewerMountOptions, ViewerCoreOptions?)`',
-      '`onEvent`, `onStateChange`, `controller.subscribe()`',
-      'Returns `ViewerController`; also ships ESM, script-tag IIFE, and the `file-viewer-copy-assets` CLI.'
+      '`<flyfish-file-viewer>` attributes: `src/url`, `filename/name`, `type`, `size`, `theme`, `toolbar`, `toolbar-position`, `watermark`, `search`, `options`; also supports `mountViewer(...)`',
+      '`viewer-ready`, `viewer-event`, `viewer-state-change`, `viewer-error`, `onEvent`, `onStateChange`, `controller.subscribe()`',
+      'The Custom Element instance exposes the full controller handle; the IIFE script auto-registers it while keeping imperative `mountViewer` and the asset copy CLI.'
     ],
     [
       'jQuery `@file-viewer/jquery`',
@@ -291,7 +291,7 @@ function customToolbarRows(locale) {
       ['Vue 3', '传 `:options="{ toolbar: false }"` 隐藏内置工具栏，通过模板 `ref` 调用 `downloadOriginalFile()`、`printRenderedHtml()`、`exportRenderedHtml()`、`zoomIn()`、`zoomOut()`、`resetZoom()`；用 `@operation-availability-change` 和 `@zoom-change` 同步按钮显隐与比例。'],
       ['Vue 2.7 / 2.6', '同样设置 `toolbar:false`，通过 `$refs.viewer` 调用实例方法；监听 `@viewer-event`，在 `event.type === "operation-availability-change"` 或 `event.type === "zoom-change"` 时更新外部工具栏。'],
       ['React / React Legacy', '推荐 `useFileViewer({ options:{ toolbar:false } })`，把 `viewer.props` 传给组件，把按钮绑定到 `viewer.handle`，并读取 `viewer.state.availability` / `viewer.state.zoom` 控制禁用状态。'],
-      ['Pure Web', '`const controller = mountViewer(container, { options:{ toolbar:false }, onStateChange })`；外部 DOM 按钮调用 controller 方法，复杂场景可用 `controller.subscribe()` 做状态同步。'],
+      ['Pure Web', '`<flyfish-file-viewer toolbar="false">` 或 `mountViewer(container, { options:{ toolbar:false }, onStateChange })`；外部 DOM 按钮可直接调用元素实例 / controller 的 `zoomIn()`、`printRenderedHtml()`、`searchDocument()` 等方法，复杂场景用 `viewer-state-change` 或 `controller.subscribe()` 同步状态。'],
       ['jQuery', '`$("#viewer").fileViewer({ options:{ toolbar:false } })`；按钮调用 `$("#viewer").fileViewer("zoomIn")` 或通过 `getFileViewerController($("#viewer")).subscribe()` 获取能力状态。'],
       ['Svelte', '`<FileViewer bind:this={viewer} options={{ toolbar:false }} />`；按钮直接调用 `viewer.zoomIn()`、`viewer.printRenderedHtml()`，并用 `on:viewerEvent` / `onStateChange` 同步状态。']
     ]
@@ -300,7 +300,7 @@ function customToolbarRows(locale) {
     ['Vue 3', 'Pass `:options="{ toolbar: false }"`, call `downloadOriginalFile()`, `printRenderedHtml()`, `exportRenderedHtml()`, `zoomIn()`, `zoomOut()`, and `resetZoom()` through the template ref, and sync buttons with `@operation-availability-change` plus `@zoom-change`.'],
     ['Vue 2.7 / 2.6', 'Use `toolbar:false`, call instance methods through `$refs.viewer`, and listen to `@viewer-event` for `operation-availability-change` or `zoom-change`.'],
     ['React / React Legacy', 'Prefer `useFileViewer({ options:{ toolbar:false } })`; pass `viewer.props` to the component, bind custom buttons to `viewer.handle`, and read `viewer.state.availability` / `viewer.state.zoom`.'],
-    ['Pure Web', 'Use `mountViewer(container, { options:{ toolbar:false }, onStateChange })`; custom DOM buttons call controller methods, and `controller.subscribe()` covers more advanced state sync.'],
+    ['Pure Web', 'Use `<flyfish-file-viewer toolbar="false">` or `mountViewer(container, { options:{ toolbar:false }, onStateChange })`; custom DOM buttons can call `zoomIn()`, `printRenderedHtml()`, `searchDocument()`, and other element / controller methods directly. Use `viewer-state-change` or `controller.subscribe()` for advanced state sync.'],
     ['jQuery', 'Use `$("#viewer").fileViewer({ options:{ toolbar:false } })`; buttons can call `$("#viewer").fileViewer("zoomIn")` or read capability state through `getFileViewerController($("#viewer")).subscribe()`.'],
     ['Svelte', 'Use `<FileViewer bind:this={viewer} options={{ toolbar:false }} />`; buttons call `viewer.zoomIn()` / `viewer.printRenderedHtml()`, with `on:viewerEvent` or `onStateChange` for state sync.']
   ]

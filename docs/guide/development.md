@@ -120,7 +120,7 @@ pnpm release:ecosystem:pack
 | Vue2.6 标准组件包 | 当前仓库子工程 | `@file-viewer/vue2.6` | 兼容 Vue2.6 插件式注册 |
 | React 18 / 19 | 当前仓库子工程 | `@file-viewer/react` / `@flyfish-group/file-viewer-react` | `<FileViewer url="/files/demo.pdf" />` |
 | React 16.8 / 17 | 当前仓库子工程 | `@file-viewer/react-legacy` | legacy React 原生组件 |
-| Pure Web | 当前仓库子工程 | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `mountViewer(container, options)` |
+| Pure Web | 当前仓库子工程 | `@file-viewer/web` / `@flyfish-group/file-viewer-web` | `<flyfish-file-viewer>` / `mountViewer(container, options)` |
 | jQuery | 当前仓库子工程 | `@file-viewer/jquery` | `$(el).fileViewer(options)` |
 | Svelte | 当前仓库子工程 | `@file-viewer/svelte` | Svelte component package |
 

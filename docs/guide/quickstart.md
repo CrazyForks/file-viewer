@@ -14,7 +14,7 @@
 | Vue3 组件集成 | Vue 3 项目 | 主推组件体验，完整渲染能力直接进入 Vue 应用 | [Vue3 集成](/guide/quickstart-vue3) |
 | Vue2 组件集成 | Vue2.7 / Vue2.6 项目 | 保留旧业务栈，体验与 Vue3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
 | React 组件集成 | React 16.8 / 17 / 18 / 19 项目 | 原生 React 组件，props、事件和 ref 都能直接调试 | [React 集成](/guide/quickstart-react) |
-| 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | `mountViewer(container, options)` 直接挂载到 DOM | [纯 JS 集成](/guide/quickstart-web) |
+| 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | `<flyfish-file-viewer>` 原生组件，也可用 `mountViewer` 命令式挂载 | [纯 JS 集成](/guide/quickstart-web) |
 | jQuery / Svelte | 老后台、SvelteKit 或轻量页面 | 独立标准组件包，复用同一套 core 和 options | [生态组件总览](/guide/ecosystem) |
 | Core / PPTX 引擎 | 自研组件、深度二开、单独验证 PPTX | framework-neutral 能力与独立 renderer 包 | [生态组件总览](/guide/ecosystem) |
 
@@ -111,19 +111,17 @@ npm install @file-viewer/web
 ```
 
 ```html
-<div id="viewer" style="height: 100vh"></div>
+<flyfish-file-viewer
+  src="/files/demo.pdf"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:100vh"
+></flyfish-file-viewer>
 
 <script type="module">
-  import { mountViewer } from '@file-viewer/web'
+  import { defineFileViewerElement } from '@file-viewer/web'
 
-  mountViewer(document.getElementById('viewer'), {
-    url: '/files/demo.pdf',
-    options: {
-      theme: 'light',
-      toolbar: { position: 'bottom-right' },
-      archive: { cache: true, workerTimeoutMs: 30000 }
-    }
-  })
+  defineFileViewerElement()
 </script>
 ```
 

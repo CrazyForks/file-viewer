@@ -138,7 +138,7 @@ titleTemplate: false
 </a>
 <a class="doc-path-card" href="/guide/quickstart-web">
 <strong>纯 JS 页面</strong>
-<span>安装 @file-viewer/web，用 mountViewer 直接挂载到目标 DOM。</span>
+<span>安装 @file-viewer/web，优先用 &lt;flyfish-file-viewer&gt; 原生组件，也可用 mountViewer 命令式挂载。</span>
 </a>
 <a class="doc-path-card" href="/guide/ecosystem#svelte">
 <strong>Svelte 项目</strong>

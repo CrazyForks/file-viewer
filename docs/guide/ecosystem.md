@@ -32,7 +32,7 @@
 | Vue 2.6 | `@file-viewer/vue2.6` | 仍停留在 Vue 2.6 的老项目 | Vue 2.6 专线，避免强迫业务升级到 2.7 |
 | React 18/19 | `@file-viewer/react` | React 18 / 19，也兼容 React 17 | 原生 React 组件、`useFileViewer`、`useFileViewerState` 和 ref handle |
 | React 16.8/17 | `@file-viewer/react-legacy` | 旧 React hooks 项目 | 面向 React 16.8 / 17 的独立组件包 |
-| Pure Web | `@file-viewer/web` | 无框架页面、微前端壳、传统系统 | `mountViewer(container, options)`、IIFE script 标签包、资源复制 CLI |
+| Pure Web | `@file-viewer/web` | 无框架页面、微前端壳、传统系统 | `<flyfish-file-viewer>` 原生组件、`mountViewer(container, options)`、IIFE script 标签包、资源复制 CLI |
 | jQuery | `@file-viewer/jquery` | 传统后台、jQuery 插件体系 | `$(el).fileViewer(options)` 和插件方法调用 |
 | Svelte | `@file-viewer/svelte` | Svelte / SvelteKit | Svelte 组件、action、事件和 controller 方法 |
 
@@ -57,7 +57,7 @@
 | Vue 2.6 `@file-viewer/vue2.6` | 同 Vue 2.7 | `viewer-event` / `viewerEvent` | 独立 Vue 2.6 构建，不要求业务升级到 Vue 2.7 |
 | React `@file-viewer/react` | `ViewerMountOptions` + `div` 原生属性，如 `className`、`style`、`data-*`、`aria-*` | `onEvent`、`onStateChange` | `ref` 暴露 `FileViewerHandle`；`useFileViewer()` 返回 `ref`、`props`、`state`、`handle` |
 | React Legacy `@file-viewer/react-legacy` | 同 React 标准包 | `onEvent`、`onStateChange` | 面向 React 16.8 / 17 的独立组件包 |
-| Pure Web `@file-viewer/web` | `mountViewer(container, ViewerMountOptions, ViewerCoreOptions?)` | `onEvent`、`onStateChange`、`controller.subscribe()` | 返回 `ViewerController`，同时提供 ESM、IIFE script 标签包和资源复制 CLI |
+| Pure Web `@file-viewer/web` | `<flyfish-file-viewer>` 属性 `src/url`、`filename/name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options`；也支持 `mountViewer(...)` | `viewer-ready`、`viewer-event`、`viewer-state-change`、`viewer-error`、`onEvent`、`onStateChange`、`controller.subscribe()` | Custom Element 实例暴露完整 controller handle；IIFE script 标签自动注册元素，同时保留命令式挂载和资源复制 CLI |
 | jQuery `@file-viewer/jquery` | `$(el).fileViewer(ViewerMountOptions & { replace?: boolean })` | `onEvent`、`onStateChange` 或 `getFileViewerController(el).subscribe()` | 插件方法支持 `zoomIn`、`printRenderedHtml`、`searchDocument` 等；`replace:false` 可原地更新 |
 | Svelte `@file-viewer/svelte` | `ViewerMountOptions` + `className`、`containerStyle` | `on:viewerEvent`、`onEvent`、`onStateChange` | `bind:this` 暴露 controller handle；`use:fileViewer` action 额外支持 `replace` |
 
@@ -160,10 +160,16 @@ export function Preview() {
   <button data-action="print">打印</button>
   <button data-action="zoom-in">放大</button>
 </div>
-<div id="viewer" style="height: 80vh"></div>
+<flyfish-file-viewer id="viewer" style="height: 80vh"></flyfish-file-viewer>
 
 <script type="module">
-  import { mountViewer } from '@file-viewer/web'
+  import { defineFileViewerElement } from '@file-viewer/web'
+
+  defineFileViewerElement()
+
+  const viewer = document.getElementById('viewer')
+  viewer.src = '/files/demo.pdf'
+  viewer.options = { toolbar: false }
 
   const buttons = {
     download: document.querySelector('[data-action="download"]'),
@@ -171,23 +177,20 @@ export function Preview() {
     zoomIn: document.querySelector('[data-action="zoom-in"]')
   }
 
-  const controller = mountViewer(document.getElementById('viewer'), {
-    url: '/files/demo.pdf',
-    options: { toolbar: false },
-    onStateChange(state) {
-      buttons.download.disabled = !state.availability?.download
-      buttons.print.disabled = !state.availability?.print
-      buttons.zoomIn.disabled = !state.availability?.zoomIn
-    }
+  viewer.addEventListener('viewer-state-change', event => {
+    const state = event.detail.state
+    buttons.download.disabled = !state.availability?.download
+    buttons.print.disabled = !state.availability?.print
+    buttons.zoomIn.disabled = !state.availability?.zoomIn
   })
 
-  buttons.download.onclick = () => controller.downloadOriginalFile()
-  buttons.print.onclick = () => controller.printRenderedHtml()
-  buttons.zoomIn.onclick = () => controller.zoomIn()
+  buttons.download.onclick = () => viewer.downloadOriginalFile()
+  buttons.print.onclick = () => viewer.printRenderedHtml()
+  buttons.zoomIn.onclick = () => viewer.zoomIn()
 </script>
 ```
 
-无构建工具时，把 `import { mountViewer }` 换成 `window.FlyfishFileViewerWeb.mountViewer(...)` 即可，其他 controller API 保持一致。
+无构建工具时，引入 IIFE 后直接写 `<flyfish-file-viewer>` 即可；`window.FlyfishFileViewerWeb.mountViewer(...)` 仍可用于完全命令式场景。
 
 ### Vue 2、jQuery 和 Svelte
 
@@ -362,20 +365,20 @@ npm install @file-viewer/web
 ```
 
 ```html
-<div id="viewer" style="height: 100vh"></div>
+<flyfish-file-viewer
+  id="viewer"
+  src="/files/demo.xlsx"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:100vh"
+></flyfish-file-viewer>
 
 <script type="module">
-  import { mountViewer } from '@file-viewer/web'
+  import { defineFileViewerElement } from '@file-viewer/web'
 
-  const controller = mountViewer(document.getElementById('viewer'), {
-    url: '/files/demo.xlsx',
-    options: {
-      theme: 'light',
-      toolbar: { position: 'bottom-right' }
-    }
-  })
+  defineFileViewerElement()
 
-  window.zoomIn = () => controller.zoomIn()
+  window.zoomIn = () => document.getElementById('viewer').zoomIn()
 </script>
 ```
 
@@ -383,14 +386,12 @@ npm install @file-viewer/web
 
 ```html
 <link rel="stylesheet" href="/file-viewer/viewer/style.css" />
-<div id="viewer" style="height: 100vh"></div>
 <script src="/file-viewer/viewer/flyfish-file-viewer-web.iife.js"></script>
-<script>
-  window.FlyfishFileViewerWeb.mountViewer(
-    document.getElementById('viewer'),
-    { url: '/files/demo.pdf', options: { theme: 'light' } }
-  )
-</script>
+<flyfish-file-viewer
+  src="/files/demo.pdf"
+  theme="light"
+  style="display:block;height:100vh"
+></flyfish-file-viewer>
 ```
 
 `@file-viewer/web` 还提供 `file-viewer-copy-assets`，用于把离线资源复制到业务静态目录。

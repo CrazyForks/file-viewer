@@ -92,13 +92,17 @@ export function Preview() {
 
 Pure Web:
 
-```ts
-import { mountViewer } from '@file-viewer/web'
+```html
+<flyfish-file-viewer
+  src="/files/demo.pdf"
+  theme="light"
+  style="display:block;height:100vh"
+></flyfish-file-viewer>
 
-mountViewer(document.getElementById('viewer')!, {
-  url: '/files/demo.pdf',
-  options: { theme: 'light' }
-})
+<script type="module">
+  import { defineFileViewerElement } from '@file-viewer/web'
+  defineFileViewerElement()
+</script>
 ```
 
 Svelte、jQuery、React Legacy、Vue2.6、Core 自定义接入和 script 标签示例见 [生态组件总览](/guide/ecosystem)。React、Pure Web、jQuery 和 Svelte 标准接入不需要配置独立静态页面地址。只有当你希望固定 Worker、WASM 或示例文件的访问路径时，才需要执行 `pnpm exec file-viewer-copy-assets ./public/file-viewer`。复制脚本会写入 `flyfish-viewer-assets.json`，按 core renderer asset manifest 校验 archive、CAD、DOCX、Spreadsheet、Typst、SQLite 等 worker/WASM 静态资源。

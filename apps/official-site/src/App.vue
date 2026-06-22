@@ -517,30 +517,30 @@ export function Preview() {
     label: isZh.value ? '纯 Web' : 'Pure Web',
     packageName: '@file-viewer/web',
     install: 'npm install @file-viewer/web',
-    title: isZh.value ? '无框架页面也能直接挂载' : 'Mount directly in framework-free pages',
+    title: isZh.value ? '无框架页面也有原生组件' : 'Native components for framework-free pages',
     summary: isZh.value
-      ? '适合传统后台、微前端和 script 标签场景，仍然走同一套 core 能力。'
-      : 'Works for classic admin pages, micro-frontends, and script-tag integrations while using the same core.',
-    language: 'TypeScript',
+      ? 'Custom Element、命令式 controller 和 script 标签入口都走同一套 core 能力。'
+      : 'Custom Element, imperative controller, and script-tag entry all share the same core.',
+    language: 'HTML',
     href: `${docsUrl}guide/quickstart-web`,
     tone: 'violet',
     icon: MonitorPlay,
-    code: `${snippetImport("{ mountViewer } from '@file-viewer/web'")}
+    code: `<flyfish-file-viewer
+  id="viewer"
+  src="/files/drawing.dwg"
+  theme="light"
+  toolbar-position="bottom-right"
+></flyfish-file-viewer>
 
-const controller = mountViewer(document.getElementById('viewer')!, {
-  url: '/files/drawing.dwg',
-  options: {
-    theme: 'light',
-    toolbar: { position: 'bottom-right', zoom: true },
-    hooks: {
-      onLoadComplete(context) {
-        console.log('loaded', context.fileName)
-      }
-    }
-  }
+${snippetImport("{ defineFileViewerElement } from '@file-viewer/web'")}
+
+defineFileViewerElement()
+
+const viewer = document.getElementById('viewer')
+viewer.addEventListener('viewer-load-complete', event => {
+  console.log('loaded', event.detail.payload.fileName)
 })
-
-controller.zoomIn()`
+viewer.zoomIn()`
   },
   {
     label: 'jQuery',

@@ -58,8 +58,13 @@
         color: #334155;
       }
 
+      flyfish-file-viewer {
+        display: block;
+      }
+
       #viewer {
         min-height: 0;
+        height: 100%;
         background: #ffffff;
       }
 
@@ -70,11 +75,18 @@
       <header>
         <div>
           <h1>Script Tag / IIFE</h1>
-          <p>普通 <code>&lt;script&gt;</code> 页面使用 <code>window.FlyfishFileViewerWeb.mountViewer</code> 挂载。</p>
+          <p>普通 <code>&lt;script&gt;</code> 页面引入 IIFE 后可直接使用 <code>&lt;flyfish-file-viewer&gt;</code>。</p>
         </div>
         <p id="status">loading</p>
       </header>
-      <div id="viewer" data-testid="iife-viewer-host"></div>
+      <flyfish-file-viewer
+        id="viewer"
+        src="/example/preview.md"
+        filename="preview.md"
+        theme="light"
+        toolbar-position="bottom-right"
+        data-testid="iife-viewer-host"
+      ></flyfish-file-viewer>
     </main>
 
     <script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
@@ -89,23 +101,21 @@
           statusNode.textContent = value
         }
 
-        if (!api || typeof api.mountViewer !== 'function') {
+        if (!api || typeof api.mountViewer !== 'function' || typeof api.defineFileViewerElement !== 'function') {
           setStatus('missing-global')
-          throw new Error('window.FlyfishFileViewerWeb.mountViewer is unavailable')
+          throw new Error('window.FlyfishFileViewerWeb is unavailable')
         }
 
-        api.mountViewer(host, {
-          url: '/example/preview.md',
-          options: {
-            theme: 'light',
-            toolbar: {
-              position: 'bottom-right'
-            }
-          },
-          onEvent: function (event) {
-            if (event && (event.type === 'load-start' || event.type === 'load-complete')) {
-              setStatus(event.type)
-            }
+        host.options = {
+          theme: 'light',
+          toolbar: {
+            position: 'bottom-right'
+          }
+        }
+        host.addEventListener('viewer-event', function (event) {
+          var detail = event.detail
+          if (detail && (detail.type === 'load-start' || detail.type === 'load-complete')) {
+            setStatus(detail.type)
           }
         })
         setStatus('mounted')

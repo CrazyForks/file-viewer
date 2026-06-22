@@ -98,7 +98,7 @@ Word 示例被单独拿出来说明，因为它已经不只是“能打开”，
 
 ## React / 纯 JS 组件 Demo
 
-仓库中的 `apps/component-demo` 会同时挂载 React 组件、Pure Web controller、Vue3 组件、jQuery 组件、Svelte action 和普通 script 标签全局包，用同一份 DOCX 示例验证 组件原生挂载、生命周期事件、文件输入和资源加载。调试时运行:
+仓库中的 `apps/component-demo` 会同时挂载 React 组件、Pure Web controller、`<flyfish-file-viewer>` Custom Element、Vue3 组件、jQuery 组件、Svelte action 和普通 script 标签全局包，用同一份 DOCX 示例验证组件原生挂载、生命周期事件、文件输入和资源加载。调试时运行:
 
 ```bash
 pnpm dev:components
@@ -111,7 +111,7 @@ pnpm build:component-demo
 pnpm --filter @flyfish-group/file-viewer-component-demo preview
 ```
 
-如果开发服务和 build preview 中各个面板都能显示同一份 DOCX 示例，就说明 React 组件、纯 JS `mountViewer`、jQuery、Svelte 和 script 标签全局包都可用。
+如果开发服务和 build preview 中各个面板都能显示同一份 DOCX 示例，就说明 React 组件、纯 JS Custom Element / `mountViewer`、jQuery、Svelte 和 script 标签全局包都可用。
 
 ## 示例文件清单
 

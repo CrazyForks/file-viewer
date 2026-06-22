@@ -209,7 +209,9 @@ const verifyIifeDemo = async (page, baseUrl, failures) => {
       return Boolean(
         api &&
         typeof api.mountViewer === 'function' &&
-        typeof api.createViewerControllerHandle === 'function'
+        typeof api.createViewerControllerHandle === 'function' &&
+        typeof api.defineFileViewerElement === 'function' &&
+        customElements.get('flyfish-file-viewer')
       )
     },
     { timeout }
@@ -292,6 +294,12 @@ const run = async () => {
       path: 'jquery.html'
     }, failures)
     await verifySingleWrapperDemo(page, serverHandle.url, {
+      wrapper: 'custom-element',
+      hostSelector: '[data-testid="custom-element-viewer-host"]',
+      label: 'Vanilla JS custom element wrapper',
+      path: 'custom-element.html'
+    }, failures)
+    await verifySingleWrapperDemo(page, serverHandle.url, {
       wrapper: 'vue3',
       hostSelector: '[data-testid="vue3-viewer-host"]',
       label: 'Vue 3 wrapper',
@@ -310,7 +318,7 @@ const run = async () => {
     await new Promise(resolveClose => serverHandle.server?.close(resolveClose) ?? resolveClose())
   }
 
-  console.log(`[wrapper-browser-smoke] Verified React, Web, Vue 3, jQuery, Svelte action, manual JS, and script tag IIFE native demos at ${serverHandle.url}`)
+  console.log(`[wrapper-browser-smoke] Verified React, Web, Vanilla JS custom element, Vue 3, jQuery, Svelte action, manual JS, and script tag IIFE native demos at ${serverHandle.url}`)
 }
 
 run().catch(error => {

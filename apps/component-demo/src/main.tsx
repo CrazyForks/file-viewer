@@ -38,6 +38,9 @@ function App() {
           <a href="/manual-js.html" target="_blank" rel="noreferrer">
             Manual JS
           </a>
+          <a href="/custom-element.html" target="_blank" rel="noreferrer">
+            Custom element
+          </a>
           <a href="/manual-iife.html" target="_blank" rel="noreferrer">
             Script tag
           </a>

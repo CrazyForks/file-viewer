@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flyfish Viewer Custom Element Demo</title>
+  </head>
+  <body data-wrapper="custom-element">
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Vanilla JS Custom Element</h1>
+          <p>原生 <code>&lt;flyfish-file-viewer&gt;</code> 组件，支持属性、property、事件和完整 controller API。</p>
+        </div>
+        <nav class="topbar-actions" aria-label="Demo links">
+          <a href="/index.html">React / Web</a>
+          <a href="/manual-js.html">Manual JS</a>
+          <a href="/manual-iife.html">Script tag</a>
+        </nav>
+      </header>
+
+      <section class="single-viewer-shell">
+        <flyfish-file-viewer
+          id="custom-element-viewer"
+          class="viewer-host"
+          src="/example/word.docx"
+          filename="word.docx"
+          theme="light"
+          toolbar-position="bottom-right"
+          search="true"
+          data-testid="custom-element-viewer-host"
+        ></flyfish-file-viewer>
+      </section>
+    </main>
+
+    <script type="module" src="/src/custom-element-demo.ts"></script>
+  </body>
+</html>

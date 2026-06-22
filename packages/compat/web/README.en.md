@@ -1,38 +1,43 @@
 # @flyfish-group/file-viewer-web
 
-Pure web file preview package. This package is the historical alias of `@file-viewer/web` and now provides the same native DOM mounting API: it creates the complete Flyfish Viewer inside your target container.
+Pure web file preview package. This package is the historical alias of `@file-viewer/web` and ships the same `<flyfish-file-viewer>` Web Component, imperative `mountViewer` controller, IIFE global bundle, and asset-copy CLI.
 
 ```bash
-npm install @flyfish-group/file-viewer-web@2.0.1
+npm install @flyfish-group/file-viewer-web
+```
+
+```html
+<flyfish-file-viewer
+  id="viewer"
+  src="/files/demo.pdf"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:720px"
+></flyfish-file-viewer>
 ```
 
 ```ts
-import { mountViewer } from '@flyfish-group/file-viewer-web'
+import { defineFileViewerElement } from '@flyfish-group/file-viewer-web'
 
-const controller = mountViewer(document.getElementById('viewer')!, {
-  url: '/files/demo.pdf',
-  options: {
-    theme: 'light',
-    toolbar: { position: 'bottom-right' },
-    search: { maxMatches: 1000 }
-  },
-  onEvent(event) {
-    console.log(event.type, event.event, event.payload)
-  }
+defineFileViewerElement()
+
+const viewer = document.getElementById('viewer')
+viewer.addEventListener('viewer-event', event => {
+  console.log(event.detail.type, event.detail.payload)
 })
-
-controller.reload()
+viewer.reload()
 ```
+
+Use `mountViewer(container, options)` when you need a fully imperative controller.
 
 For authenticated files, download the file in your host application first and pass a `Blob` plus a filename:
 
 ```ts
 const blob = await fetch('/api/files/contract', { credentials: 'include' }).then(res => res.blob())
 
-mountViewer(document.getElementById('viewer')!, {
-  file: blob,
-  name: 'contract.pdf'
-})
+const viewer = document.querySelector('flyfish-file-viewer')
+viewer.file = blob
+viewer.name = 'contract.pdf'
 ```
 
 ## Script Tag Usage
@@ -40,14 +45,12 @@ mountViewer(document.getElementById('viewer')!, {
 No-build projects can self-host the IIFE bundle. It exposes `window.FlyfishFileViewerWeb`:
 
 ```html
-<div id="viewer" style="height: 720px"></div>
 <script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
-<script>
-  window.FlyfishFileViewerWeb.mountViewer(document.getElementById('viewer'), {
-    url: '/files/demo.docx',
-    options: { theme: 'light' }
-  })
-</script>
+<flyfish-file-viewer
+  src="/files/demo.docx"
+  theme="light"
+  style="display:block;height:720px"
+></flyfish-file-viewer>
 ```
 
 Browsers cannot resolve a bare package name such as `@flyfish-group/file-viewer-web` without a build tool. Use a static URL, the IIFE global bundle, or an import map. Workers, WASM files, and examples can be self-hosted with:

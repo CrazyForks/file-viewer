@@ -2,6 +2,14 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.0.11` Vanilla JS 原生组件增强版
+
+- 全生态包版本同步推进到 `2.0.11`，Demo、官网、文档站、组件 README、开源总仓库和 npm 发布统一使用最新 Vanilla JS 入口
+- `@file-viewer/web` 新增 `<flyfish-file-viewer>` 原生 Web Component，支持 `src/url`、`filename/name`、`type`、`size`、`theme`、`toolbar`、`toolbar-position`、`watermark`、`search`、`options` 等属性，并暴露完整 controller 实例方法
+- IIFE script 标签包会自动注册 Custom Element，同时继续暴露 `window.FlyfishFileViewerWeb.mountViewer`，兼顾无构建工具页面和完全命令式接入场景
+- 组件 Demo 新增 Custom Element 独立页面，并把浏览器 smoke 扩展到原生元素、IIFE 自动注册、React、Vue3、jQuery、Svelte 和手写 JS 入口
+- 文档站、官网首页和 README 将纯 JS 默认推荐路径更新为 Web Component，`mountViewer` 作为高级 controller API 保留
+
 ## `v2.0.10` DOCX 自研渲染引擎稳定版
 
 - 全生态包版本同步推进到 `2.0.10`，Demo、组件 Demo、官网、文档站和开源总仓库统一使用当前 DOCX 主链路

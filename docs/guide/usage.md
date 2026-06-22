@@ -294,7 +294,7 @@ await viewerRef.value?.zoomOut()
 await viewerRef.value?.resetZoom()
 ```
 
-各框架的自定义方式略有不同：Vue3 使用模板 `ref` 和独立 emit，Vue2 使用 `$refs` 与 `viewer-event`，React 推荐 `useFileViewer()`，Svelte 使用 `bind:this` 或 action，Pure Web / jQuery 直接使用 controller。完整属性矩阵和每种框架的自定义工具栏示例见 [生态组件总览](/guide/ecosystem#工具栏定制)。
+各框架的自定义方式略有不同：Vue3 使用模板 `ref` 和独立 emit，Vue2 使用 `$refs` 与 `viewer-event`，React 推荐 `useFileViewer()`，Svelte 使用 `bind:this` 或 action，Pure Web 优先使用 `<flyfish-file-viewer>` 元素实例或 controller，jQuery 使用插件方法 / controller。完整属性矩阵和每种框架的自定义工具栏示例见 [生态组件总览](/guide/ecosystem#工具栏定制)。
 
 React、Pure Web、jQuery 和 Svelte 集成可以直接接收同样的生命周期和操作上下文。标准事件入口使用 `onEvent`；Svelte 组件同时会派发 `viewerEvent`。
 

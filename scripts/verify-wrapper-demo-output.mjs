@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path'
 const outputDir = resolve(process.env.WRAPPER_DEMO_OUTPUT_DIR || 'apps/component-demo/dist')
 const requiredFiles = [
   'index.html',
+  'custom-element.html',
   'jquery.html',
   'manual-js.html',
   'manual-iife.html',
@@ -51,12 +52,22 @@ if (!manualIifeHtml.includes('/vendor/file-viewer-web/flyfish-file-viewer-web.ii
 if (!manualIifeHtml.includes('window.FlyfishFileViewerWeb')) {
   fail('manual-iife.html does not use the browser global API.')
 }
+if (!manualIifeHtml.includes('<flyfish-file-viewer')) {
+  fail('manual-iife.html does not exercise the script-tag custom element.')
+}
 if (!manualIifeHtml.includes('/example/preview.md')) {
   fail('manual-iife.html does not use the lightweight markdown smoke sample.')
 }
 
 const iifeBundle = readFileSync(join(outputDir, 'vendor/file-viewer-web/flyfish-file-viewer-web.iife.js'), 'utf8')
-for (const requiredExport of ['FlyfishFileViewerWeb', 'mountViewer', 'createViewerControllerHandle']) {
+for (const requiredExport of [
+  'FlyfishFileViewerWeb',
+  'mountViewer',
+  'createViewerControllerHandle',
+  'defineFileViewerElement',
+  'FileViewerElement',
+  'FILE_VIEWER_ELEMENT_TAG'
+]) {
   if (!iifeBundle.includes(requiredExport)) {
     fail(`IIFE helper bundle is missing ${requiredExport}.`)
   }

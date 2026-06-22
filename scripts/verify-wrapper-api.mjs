@@ -224,7 +224,10 @@ function verifyWebWrapper(source, label) {
   assertConsumesCore(source, label)
   assertTokens(source, [
     'ViewerCoreOptions',
-    'FlyfishFileViewerWeb'
+    'FlyfishFileViewerWeb',
+    'FileViewerElement',
+    'defineFileViewerElement',
+    'FILE_VIEWER_ELEMENT_TAG'
   ], label)
   assertReexportsLocalControllerTypes(source, label)
   assertNoLegacyIframeApi(source, label)

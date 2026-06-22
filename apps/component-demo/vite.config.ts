@@ -25,6 +25,7 @@ export default defineConfig({
       input: {
         index: resolve(demoRoot, 'index.html'),
         jquery: resolve(demoRoot, 'jquery.html'),
+        'custom-element': resolve(demoRoot, 'custom-element.html'),
         'manual-js': resolve(demoRoot, 'manual-js.html'),
         'manual-iife': resolve(demoRoot, 'manual-iife.html'),
         'svelte-action': resolve(demoRoot, 'svelte-action.html'),
