@@ -328,7 +328,7 @@ fileViewerRenderers({
 
 ### Phase 5：发布与质量门禁
 
-- [x] 新增安装体积预算：`@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/web`、`@file-viewer/preset-all` 的 packed size、unpacked size、文件数、直接依赖数和安装依赖闭包纳入 CI；真实 cold install 秒级计时保留为后续增强。
+- [x] 新增安装体积预算：`@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/web`、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering`、`@file-viewer/preset-all` 的 packed size、unpacked size、文件数、直接依赖数和安装依赖闭包纳入 CI；真实 cold install 秒级计时已由 `verify:cold-install-time` 覆盖。
 - [x] 新增 demo bundle 预算：`index.html` 和 `compare.html` 首屏入口统计 raw/gzip/brotli，PDF、Office、CAD、Typst、Archive、3D、Geo、XMind 等重链路必须保持异步 renderer chunk；lite/office/engineering preset 分项预算保留为后续增强。
 - [x] 新增 release 校验：`verify:renderer-contracts`、`verify:renderer-assets`、`verify:ecosystem-tarballs` 和 `release:ecosystem:list` 会检查 renderer 包 exports、README、发布文件、assets manifest、npm dry-run tarball 和生态 release 清单。
 - [x] 官网、文档站、README 的支持矩阵能区分 core、独立 renderer 包、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 和 `@file-viewer/preset-all`；官网视觉站、文档站、README 和生态总览均已补齐，并由 `verify:ecosystem-readmes` / `site:build` / `docs:build` 纳入回归。
@@ -383,6 +383,7 @@ pnpm verify:on-demand-boundaries
 pnpm verify:vite-plugin-auto-scan
 pnpm verify:renderer-standalone-smoke
 pnpm verify:install-budget
+pnpm verify:cold-install-time
 pnpm verify:bundle-budget
 pnpm verify:format-support
 pnpm verify:ecosystem-versions
@@ -401,8 +402,8 @@ pnpm build-only
 - `verify:vite-plugin-auto-scan`：已落地。构建 Vite 插件后用临时源码项目验证 `fileViewerFormats`、`data-file-viewer-formats`、`accept` 和注释 hint 能自动映射到对应 renderer 包。
 - `verify:renderer-standalone-smoke`：已落地全 renderer plugin 独立安装 smoke。它用本地 tarball 构造隔离业务项目，安装 core、Vite 插件、19 个独立 renderer plugin 以及 `@file-viewer/pptx` 等本地依赖闭包；逐个验证 renderer 注册、handler 挂载、Vite selection 映射和 virtual module 只导入当前 renderer 包。后续可扩展为 wrapper 矩阵与真实样例渲染 smoke。
 - `verify:install-budget`：已落地。检查关键包和 renderer/wrapper 默认预算的 npm packed size、unpacked size、文件数、直接 runtime dependencies、外部依赖闭包和本地生态包闭包，防止安装面继续膨胀。
+- `verify:cold-install-time`：已落地。它会把当前工作区的 core、Vue3 组件、lite / office / engineering / all preset 及其本地依赖闭包打成本地 tarball，在隔离临时目录中执行 `npm install --install-strategy=shallow`，记录真实冷安装耗时、参与安装的本地包数量和 `node_modules` 体积。默认覆盖 `core`、`vue3`、`vue3-lite`、`vue3-office`、`vue3-engineering`、`vue3-all` 六条路线；日常快速回归可运行 `pnpm verify:cold-install-time:fast`，专项排查可用 `pnpm verify:cold-install-time -- --target=vue3-office`。
 - `verify:bundle-budget`：已落地。检查官方 demo 与文档比对入口的 raw/gzip/brotli 首屏体积，确认完整格式能力仍被拆到异步 renderer chunk，避免 Office/CAD/Typst/Archive/3D 等重链路污染入口包。
-- `verify:cold-install-time`：计划中。在隔离临时目录中安装本地 tarball，记录 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 和 `@file-viewer/preset-all` 的真实冷安装耗时。
 
 ## 外部参考
 

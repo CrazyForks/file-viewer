@@ -101,6 +101,8 @@
     "verify:vite-plugin-auto-scan": "pnpm --filter @file-viewer/vite-plugin build && node scripts/verify-vite-plugin-auto-scan.mjs",
     "verify:renderer-standalone-smoke": "pnpm --filter @file-viewer/core build && pnpm --filter './packages/renderers/**' build && pnpm --filter @file-viewer/vite-plugin build && node scripts/verify-renderer-standalone-smoke.mjs --all",
     "verify:install-budget": "node scripts/verify-install-budget.mjs",
+    "verify:cold-install-time": "node scripts/verify-cold-install-time.mjs",
+    "verify:cold-install-time:fast": "node scripts/verify-cold-install-time.mjs --target=core --target=vue3 --target=vue3-lite",
     "verify:bundle-budget": "node scripts/verify-bundle-budget.mjs",
     "verify:migration-gates": "pnpm type-check && pnpm type-check:core && pnpm build-only && pnpm docs:build && pnpm verify:format-support && pnpm verify:ecosystem-readmes && pnpm verify:offline-assets && pnpm verify:smoke-matrix && pnpm verify:experience-baseline && pnpm verify:branch-roles && pnpm verify:core-api && pnpm verify:core-framework-neutral && pnpm verify:core-dependency-budget && pnpm verify:renderer-contracts && pnpm verify:renderer-assets && pnpm verify:on-demand-boundaries && pnpm verify:vite-plugin-auto-scan && pnpm verify:renderer-standalone-smoke && pnpm verify:install-budget && pnpm verify:bundle-budget && pnpm components:verify --source-only && pnpm verify:wrapper-api && pnpm verify:wrapper-options && pnpm verify:compatibility-api && pnpm verify:compatibility-readmes && pnpm verify:ecosystem-versions && pnpm verify:ecosystem-tarballs && pnpm release:ecosystem:list",
     "branch:cutover:prepare": "node scripts/prepare-branch-cutover.mjs",
