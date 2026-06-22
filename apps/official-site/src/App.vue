@@ -146,7 +146,7 @@ const copy = {
       '从 OA 审批到工程图纸，从客服工单到 AI 文档工作台，File Viewer 更关注真实文件、复杂网络、私有化部署和用户每天都会遇到的细节。',
     ecosystemTitle: 'Core 负责底层预览能力，标准组件负责原生体验。',
     ecosystemIntro:
-      '2.x 架构不再以 iframe 作为核心路径。每个标准组件都只依赖 @file-viewer/core，并提供对应生态里的 props、hooks、ref/controller、事件和完整类型。',
+      '一个组件，一行代码，快速集成。2.x 架构不再以 iframe 作为核心路径。每个标准组件都只依赖 @file-viewer/core，并提供对应生态里的 props、hooks、ref/controller、事件和完整类型。',
     demoTitle: '无需跳转，直接在官网体验完整 Demo。',
     demoIntro:
       'Demo 站与产品主页同属 file-viewer.app 域名体系，支持示例矩阵、上传预览、文档比对和生产构建验证。需要深入接入时，再进入文档站查看 API 与部署说明。',
@@ -194,7 +194,7 @@ const copy = {
       'From approvals to engineering drawings, support tickets, and AI document workflows, File Viewer focuses on real files, private networks, self-hosted delivery, and the details users meet every day.',
     ecosystemTitle: 'Core owns preview capability. Standard components own native framework experience.',
     ecosystemIntro:
-      'The 2.x architecture no longer treats iframe integration as the primary path. Every standard component depends only on @file-viewer/core and exposes idiomatic props, hooks, refs/controllers, events, and complete types for its ecosystem.',
+      'One component, one line of code, fast integration. The 2.x architecture no longer treats iframe integration as the primary path. Every standard component depends only on @file-viewer/core and exposes idiomatic props, hooks, refs/controllers, events, and complete types for its ecosystem.',
     demoTitle: 'Try the complete demo without leaving the product site.',
     demoIntro:
       'The demo and product portal share the file-viewer.app domain family. It includes the sample matrix, upload preview, document comparison, and production build verification. Use the docs when you are ready to integrate deeply.',

@@ -5,6 +5,7 @@
 <p class="doc-lead">
   如果你现在最想做的事情是“尽快看到效果”，这一页就是最快路径。
   先选接入路线，再复制一段最小示例，十几分钟内你就能把预览器跑起来。
+  一个组件，一行代码，快速集成。
 </p>
 
 ## 先选接入路线
@@ -19,7 +20,7 @@
 | Core / PPTX 引擎 | 自研组件、深度二开、单独验证 PPTX | framework-neutral 能力与独立 renderer 包 | [生态组件总览](/guide/ecosystem) |
 
 <div class="doc-callout">
-  <strong>推荐经验:</strong> core 只负责底层预览能力和 API；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包负责各自生态的原生接入体验。所有标准组件包都使用同一套 options、事件、搜索、缩放、打印和导出语义。
+  <strong>推荐经验:</strong> 一个组件，一行代码，快速集成。core 只负责底层预览能力和 API；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包负责各自生态的原生接入体验。所有标准组件包都使用同一套 options、事件、搜索、缩放、打印和导出语义。
 </div>
 
 ## 运行环境

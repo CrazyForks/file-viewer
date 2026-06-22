@@ -8,6 +8,8 @@
 
 它不依赖后端转码服务，适合接入 OA、知识库、附件中心、流程系统和需要离线能力的业务场景。这个项目的目标很直接: 让文档预览不再像临时拼出来的功能，而是像一个可以放心交付、能独立演示、能持续维护的产品模块。
 
+接入主张很简单: **一个组件，一行代码，快速集成**。先选择对应技术栈的标准组件包，再用同一套 options、事件、搜索、缩放、打印、导出和水印能力完成业务接入。
+
 - 标准 npm 包: `@file-viewer/core`、`@file-viewer/pptx`、`@file-viewer/web`、`@file-viewer/vue3`、`@file-viewer/vue2.7`、`@file-viewer/vue2.6`、`@file-viewer/react`、`@file-viewer/react-legacy`、`@file-viewer/jquery`、`@file-viewer/svelte`
 - 历史兼容 npm 包: `@flyfish-group/file-viewer3`、`file-viewer3`、`@flyfish-group/file-viewer`、`@flyfish-group/file-viewer-react`、`@flyfish-group/file-viewer-web`
 - 官方网站: [file-viewer.app](https://file-viewer.app)
@@ -212,6 +214,8 @@ Flyfish Viewer 会持续保持 Apache-2.0 开源。开源版适合通用 Web 预
 商业版来自 Flyfish Office 产品线，面向严肃企业场景提供自研原生 Office 文档引擎，重点解决 Word、Excel、PowerPoint 在复杂版式、大文件、分页布局、高保真渲染和稳定性能上的更高要求。开源版会继续维护，商业支持主要用于更快响应、私有化评估和定制交付。
 
 ## 接入路线
+
+一个组件，一行代码，快速集成。无论是 Vanilla JS、Vue、React、jQuery 还是 Svelte，都优先选择对应的标准组件包，让底层格式能力保持一致、上层接入方式保持原生。
 
 ### 1. Vanilla JS / Pure Web 集成
 
