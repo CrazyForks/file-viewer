@@ -143,7 +143,7 @@ export const rendererModularizationLines = [
     group: 'mediaAndData',
     targetPackage: '@file-viewer/renderer-text',
     phase: 3,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['code', 'markdown'],
     dependencies: ['highlight.js', 'marked'],
   },

@@ -538,6 +538,9 @@ importers:
       '@file-viewer/renderer-pdf':
         specifier: workspace:^2.0.11
         version: link:../../renderers/pdf
+      '@file-viewer/renderer-text':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/text
       '@file-viewer/renderer-typst':
         specifier: workspace:^2.0.11
         version: link:../../renderers/typst
@@ -660,6 +663,22 @@ importers:
       esbuild:
         specifier: ^0.27.2
         version: 0.27.7
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/text:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
+      marked:
+        specifier: ^18.0.5
+        version: 18.0.5
+    devDependencies:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

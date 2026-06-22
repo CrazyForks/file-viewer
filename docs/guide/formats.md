@@ -50,9 +50,9 @@
 | draw.io | `drawio`、`dio` | 官方 diagrams.net `GraphViewer` 离线预览；内置 SVG fallback | core 共享绘图渲染器默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `@file-viewer/renderer-ebook` + `epubjs` | 解析 EPUB 包、目录和章节资源，使用滚动阅读避免超宽分页白板 | 电子书、培训手册、长篇阅读材料 |
 | 电子书 | `umd` | UMD 结构解析 + `pako` | 解析老移动电子书的元数据、章节偏移、章节标题和 zlib 压缩正文 | 历史小说附件、旧移动阅读文件 |
-| Markdown | `md`、`markdown` | Markdown 渲染器 | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
+| Markdown | `md`、`markdown` | `@file-viewer/renderer-text` | 保留 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、开发说明 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl` | 图片渲染器 | 原生图片浏览；HEIC/HEIF 命中时按需使用 `heic2any` 转成浏览器可展示图片 | 图片附件、设计稿、截图、Logo、移动端照片 |
-| 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`sh`、`bash`、`sql`、`go`、`rs`、`rb`、`swift`、`kt`、`react`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本；Notebook、JSONC/JSON5、TOML、Proto、HTTP、Graphviz 等按最接近语言映射展示 | 配置文件、日志、代码片段、接口响应、Notebook 和工程配置 |
+| 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`js`、`mjs`、`cjs`、`css`、`java`、`py`、`html`、`htm`、`jsx`、`ts`、`tsx`、`xml`、`log`、`vue`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`sh`、`bash`、`sql`、`go`、`rs`、`rb`、`swift`、`kt`、`react`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`diff` | `@file-viewer/renderer-text` + `highlight.js` | 按源码方式展示并轻量高亮，不执行脚本；Notebook、JSONC/JSON5、TOML、Proto、HTTP、Graphviz 等按最接近语言映射展示 | 配置文件、日志、代码片段、接口响应、Notebook 和工程配置 |
 | 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`、`midi`、`mid` | 浏览器原生 `<audio>` / `@tonejs/midi` | 常见音频使用原生控件播放，MIDI 展示轨道、时长、PPQ 和音符摘要 | 录音、播客、语音附件、音效素材、MIDI 文件 |
 | 视频 | `mp4`、`webm`、`m3u8` | 浏览器原生视频播放器 / `hls.js` | MP4/WEBM 原生播放，HLS 清单优先用浏览器能力，必要时按需加载 `hls.js` | 演示视频、录屏材料、HLS 流 |
 | 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive` | core 资产/数据预览器 | 字体用 FontFace 展示样张，PSD 解析画布与图层摘要，AI/PDF-backed 文件交给 PDF 或安全摘要，SQLite/Parquet/Avro/WASM/WebArchive 展示结构和少量样例数据；SQLite WASM 可通过 `options.data.sqlWasmUrl` 指向私有化地址 | 字体、设计资产、本地数据库、列式数据、二进制包和 Web 归档 |
@@ -160,8 +160,8 @@
 
 ### Markdown、代码与文本
 
-- `md` 和 `markdown` 会按 Markdown 阅读样式展示，适合项目说明、知识文档和内部手册。Markdown 属于预览器自有阅读面，会跟随系统明暗模式切换；PDF、Word、Excel 这类带原始版式的文件则保持独立纸张或表格背景，避免全局主题破坏源文件视觉。
-- 代码和文本文件会使用 `highlight.js` 做轻量高亮，按扩展名匹配语言，不命中时会自动退回纯文本。新增的 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 和 React 片段都走同一条轻量链路，不引入编辑器级大依赖。
+- `md` 和 `markdown` 由 `@file-viewer/renderer-text` 按 Markdown 阅读样式展示，适合项目说明、知识文档和内部手册。Markdown 属于预览器自有阅读面，会跟随系统明暗模式切换；PDF、Word、Excel 这类带原始版式的文件则保持独立纸张或表格背景，避免全局主题破坏源文件视觉。
+- 代码和文本文件由 `@file-viewer/renderer-text` 使用 `highlight.js` 做轻量高亮，按扩展名匹配语言，不命中时会自动退回纯文本。新增的 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 和 React 片段都走同一条轻量链路，不引入编辑器级大依赖。
 - 这里有一个很重要的边界：`html` 文件会被当作源码看，而不是在预览器里当网页执行。这是更安全、也更可控的默认策略。
 
 ### 图片、音频与视频

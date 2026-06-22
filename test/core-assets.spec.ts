@@ -83,20 +83,20 @@ describe('@file-viewer/core asset URL helpers', () => {
   })
 
   it('resolves Typst compiler WASM URL from explicit, override, then default sources', () => {
-    expect(resolveFileViewerTypstCompilerWasmUrl({ compilerWasmUrl: '/typst/compiler.wasm' })).toBe('/typst/compiler.wasm')
-    expect(resolveFileViewerTypstCompilerWasmUrl(undefined, [undefined, '/env/compiler.wasm'])).toBe('/env/compiler.wasm')
-    expect(resolveFileViewerTypstCompilerWasmUrl()).toBe(DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL)
+    expect(resolveFileViewerTypstCompilerWasmUrl({ compilerWasmUrl: '/typst/compiler.wasm' })).toBe('http://localhost/typst/compiler.wasm')
+    expect(resolveFileViewerTypstCompilerWasmUrl(undefined, [undefined, '/env/compiler.wasm'])).toBe('http://localhost/env/compiler.wasm')
+    expect(resolveFileViewerTypstCompilerWasmUrl()).toBe(`http://localhost/${DEFAULT_FILE_VIEWER_TYPST_COMPILER_WASM_URL}`)
   })
 
   it('resolves Typst renderer WASM URL from explicit, override, then default sources', () => {
-    expect(resolveFileViewerTypstRendererWasmUrl({ rendererWasmUrl: '/typst/renderer.wasm' })).toBe('/typst/renderer.wasm')
-    expect(resolveFileViewerTypstRendererWasmUrl(undefined, [undefined, '/env/renderer.wasm'])).toBe('/env/renderer.wasm')
-    expect(resolveFileViewerTypstRendererWasmUrl()).toBe(DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL)
+    expect(resolveFileViewerTypstRendererWasmUrl({ rendererWasmUrl: '/typst/renderer.wasm' })).toBe('http://localhost/typst/renderer.wasm')
+    expect(resolveFileViewerTypstRendererWasmUrl(undefined, [undefined, '/env/renderer.wasm'])).toBe('http://localhost/env/renderer.wasm')
+    expect(resolveFileViewerTypstRendererWasmUrl()).toBe(`http://localhost/${DEFAULT_FILE_VIEWER_TYPST_RENDERER_WASM_URL}`)
   })
 
   it('resolves data asset SQL WASM URL from explicit, override, then default sources', () => {
-    expect(resolveFileViewerDataSqlWasmUrl({ sqlWasmUrl: '/sql/sql-wasm.wasm' })).toBe('/sql/sql-wasm.wasm')
-    expect(resolveFileViewerDataSqlWasmUrl(undefined, [undefined, '/env/sql-wasm.wasm'])).toBe('/env/sql-wasm.wasm')
-    expect(resolveFileViewerDataSqlWasmUrl()).toBe(DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL)
+    expect(resolveFileViewerDataSqlWasmUrl({ sqlWasmUrl: '/sql/sql-wasm.wasm' })).toBe('http://localhost/sql/sql-wasm.wasm')
+    expect(resolveFileViewerDataSqlWasmUrl(undefined, [undefined, '/env/sql-wasm.wasm'])).toBe('http://localhost/env/sql-wasm.wasm')
+    expect(resolveFileViewerDataSqlWasmUrl()).toBe(`http://localhost/${DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL}`)
   })
 })

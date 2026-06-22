@@ -94,6 +94,8 @@ const CANVAS_PADDING = 44;
 const MAX_RENDER_NODES = 1800;
 const PAN_CLICK_THRESHOLD = 5;
 const PAN_BOUNDARY_MARGIN = 96;
+const PAN_MIN_VISIBLE_RATIO = 0.18;
+const PAN_MIN_VISIBLE_PX = 96;
 const WHEEL_ZOOM_STEP = 0.12;
 
 const xmindStyle = `
@@ -109,8 +111,9 @@ const xmindStyle = `
 .xmind-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}.xmind-stats div{border-radius:12px;background:#fff;padding:10px;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}.xmind-stats span{display:block;color:#718096;font-size:12px}.xmind-stats strong{display:block;margin-top:4px;font-size:18px;color:#172033}
 .xmind-outline{display:flex;flex-direction:column;gap:6px}.xmind-outline button{display:block;width:100%;min-height:32px;border:0;border-radius:9px;background:transparent;color:#334155;cursor:pointer;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xmind-outline button:hover{background:rgba(33,163,102,.1);color:#0f766e}
 .xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
+.xmind-stage *{touch-action:none}
 .xmind-stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(59,130,246,.42)}
-.xmind-stage.is-panning{cursor:grabbing;user-select:none}
+.xmind-stage.is-panning,.xmind-stage.is-panning *{cursor:grabbing!important;user-select:none}
 .xmind-zoom-box{position:absolute;inset:0;transform-origin:top left;will-change:transform}.xmind-surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
 .xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab}
 .xmind-stage.is-panning .xmind-node{cursor:grabbing}
@@ -499,14 +502,19 @@ export default async function renderXMind(
     const resolveBounds = (viewportSize: number, contentSize: number) => {
       if (contentSize <= viewportSize) {
         const centered = (viewportSize - contentSize) / 2;
+        const slack = Math.max(PAN_BOUNDARY_MARGIN, viewportSize * 0.45);
         return {
-          min: centered - PAN_BOUNDARY_MARGIN,
-          max: centered + PAN_BOUNDARY_MARGIN,
+          min: centered - slack,
+          max: centered + slack,
         };
       }
+      const visibleEdge = Math.min(
+        Math.max(PAN_MIN_VISIBLE_PX, viewportSize * PAN_MIN_VISIBLE_RATIO),
+        Math.max(PAN_MIN_VISIBLE_PX, contentSize * 0.5)
+      );
       return {
-        min: viewportSize - contentSize - PAN_BOUNDARY_MARGIN,
-        max: PAN_BOUNDARY_MARGIN,
+        min: visibleEdge - contentSize,
+        max: viewportSize - visibleEdge,
       };
     };
 
@@ -811,6 +819,10 @@ export default async function renderXMind(
     event.preventDefault();
   };
 
+  const onStageDragStart = (event: DragEvent) => {
+    event.preventDefault();
+  };
+
   stage.addEventListener('pointerdown', onPanStart);
   stage.addEventListener('pointermove', onPanMove);
   stage.addEventListener('pointerup', onPanEnd);
@@ -818,6 +830,7 @@ export default async function renderXMind(
   stage.addEventListener('lostpointercapture', onLostPointerCapture);
   stage.addEventListener('wheel', onStageWheel, { passive: false });
   stage.addEventListener('keydown', onStageKeyDown);
+  stage.addEventListener('dragstart', onStageDragStart);
   ownerWindow.addEventListener('pointermove', onPanMove);
   ownerWindow.addEventListener('pointerup', onPanEnd);
   ownerWindow.addEventListener('pointercancel', onPanEnd);
@@ -839,6 +852,7 @@ export default async function renderXMind(
       stage.removeEventListener('lostpointercapture', onLostPointerCapture);
       stage.removeEventListener('wheel', onStageWheel);
       stage.removeEventListener('keydown', onStageKeyDown);
+      stage.removeEventListener('dragstart', onStageDragStart);
       ownerWindow.removeEventListener('pointermove', onPanMove);
       ownerWindow.removeEventListener('pointerup', onPanEnd);
       ownerWindow.removeEventListener('pointercancel', onPanEnd);

@@ -36,15 +36,32 @@
 | OAS/OASIS | 当前做安全二进制索引、可读字符串、结构候选和诊断 | OASIS 需要低层 record parser、重复结构展开、压缩块处理和版图实例渲染，适合拆 `@file-viewer/eda-layout` |
 | STEP/IGES/IFC/3DM | 已保留 3D 入口，但完整几何解析依赖专业内核 | STEP/IGES 走 OpenCascade WASM，IFC 走 `web-ifc`，3DM 走 `rhino3dm`，均应按需拆包 |
 
+## 当前落地策略
+
+| 格式线 | 浏览器端可行方案 | Flyfish Viewer 当前动作 |
+| --- | --- | --- |
+| XMind | `.xmind` 本质是 ZIP，现代 XMind 使用 `content.json`，经典 XMind 8 使用 `content.xml`；成熟 viewer 都以“解析包结构 + 可拖拽缩放画布”为体验基线 | 保留 `@ljheee/xmind-parser`，独立 `@file-viewer/renderer-mindmap` 负责解析和交互；当前拖拽边界已放宽为画布式平移，鼠标、触摸、滚轮、键盘统一处理 |
+| OLB / DRA / PSM | Cadence 格式没有稳定官方 Web SDK；公开可用路线主要是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器，后续可以 Emscripten/WASM 化或按样本逐步 TS 移植 | 当前只声明为结构预览，不虚标完整图形；后续像 PPTX 一样拆 `@file-viewer/eda-orcad` / `@file-viewer/eda-allegro` 长期维护 |
+| GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合 WebGL 或 WASM | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，后续拆 `@file-viewer/eda-layout` 做 WebGL/增量渲染 |
+| STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` | 保留 3D 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
+| Draw.io / Excalidraw | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容 | 继续离线 vendor 分发，禁止依赖公共 CDN；失败时才走安全 SVG 兜底 |
+| Typst | 官方 Rust 编译器生态已可通过 `typst.ts` 在浏览器 WASM 编译并渲染为 SVG/PDF | 保持 `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、超时和资源错误提示 |
+
 ## 外部调研依据
 
 - Typst 官方生态中，`typst.ts` 明确定位为把 Typst 编译/渲染带到 JavaScript 和浏览器 WASM 环境: <https://github.com/myriad-dreamin/typst.ts>
 - diagrams.net 官方文档推荐把 `viewer-static.min.js` 从仓库复制到企业可访问位置自托管，适合内网离线场景: <https://www.drawio.com/docs/integrations/atlassian/confluence/customise/configure-javascript-viewer-drawio-confluence-server/>
+- diagrams.net 官方集成文档说明 embed/viewer 模式通过 iframe/window 和 HTML5 Messaging API 控制，企业离线部署应自托管官方静态资源: <https://jgraph.github.io/drawio-integration/>
 - XMind 官方 SDK 支持 Node.js，Browser 标注为 not fully supported，因此 viewer 继续使用解析器 + 自有只读渲染更稳: <https://github.com/xmindltd/xmind-sdk-js>
+- SimpleMindMap 文档也确认 `.xmind` 可以按 ZIP 解包并读取 `content.json` 转换为脑图数据: <https://wanglin2.github.io/mind-map-docs/en/api/xmind.html>
 - Mind Elixir 是成熟的交互式脑图内核，适合作为未来“更强交互/编辑级阅读”的候选，但不直接替代当前 XMind 文件解析链路: <https://www.npmjs.com/package/mind-elixir>
 - GDS2WebGL 证明 GDSII 可以在浏览器里做 WebGL pan/zoom 查看，适合成为后续 GDS/OASIS 独立 renderer 的参考: <https://github.com/s-holst/GDS2WebGL>
+- GDSJam 证明 GDSII/DXF 可以做客户端 WebGL viewer，适合为大版图交互性能设定基线: <https://github.com/jwt625/gdsjam>
 - OASIS 公开生态里存在低层解析器，但不是完整 Web viewer，需要在解析层之上自行构建几何模型和渲染层: <https://github.com/EDDRSoftware/oasFileParser>
 - OpenOrCadParser 是 OrCAD DSN/OLB 二进制解析的 C++ 开源实现，说明 OLB 完整解析可行，但工程量和样本覆盖都应独立维护: <https://github.com/Werni2A/OpenOrCadParser>
+- OpenAllegroParser 是 Allegro 二进制解析的 C++ 开源路线，适合作为 DRA / PSM / PAD 后续 WASM 内核参考: <https://github.com/Werni2A/OpenAllegroParser>
+- OpenCascade / `occt-import-js` 证明 STEP / IGES / BREP 可以在浏览器 WASM 中导入，再交给 Three.js 渲染: <https://github.com/kovacsv/occt-import-js>
+- That Open `web-ifc` 生态提供 IFC 的 WASM 读取能力，适合独立 BIM renderer，而不是进入默认 core: <https://github.com/thatopen/engine_web-ifc>
 
 ## 后续验收 checklist
 

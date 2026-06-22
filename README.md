@@ -64,9 +64,9 @@
 | draw.io | `drawio`、`dio` | 基于官方 diagrams.net `GraphViewer` 预览 mxGraphModel / mxfile | 流程图、架构图、业务泳道图 |
 | 电子书 | `epub` | `@file-viewer/renderer-ebook` 基于 `epubjs` 解析目录和章节资源，使用兼容性更好的滚动阅读 | 电子书、培训手册、长篇阅读材料 |
 | 电子书 | `umd` | 按 UMD 移动电子书结构解析元数据、目录和 zlib 压缩正文 | 旧移动电子书、历史小说附件 |
-| Markdown | `md`、`markdown` | Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、说明文档 |
+| Markdown | `md`、`markdown` | `@file-viewer/renderer-text` 提供 Markdown 阅读样式，支持明暗主题阅读面 | README、知识文档、说明文档 |
 | 图片 | `gif`、`jpg`、`jpeg`、`bmp`、`tiff`、`tif`、`png`、`svg`、`webp`、`avif`、`ico`、`heic`、`heif`、`jxl` | 原生图片浏览；HEIC/HEIF 命中时按需使用 `heic2any` 转换 | 图片附件、设计稿、Logo、移动端照片 |
-| 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`js`、`mjs`、`cjs`、`jsx`、`ts`、`tsx`、`vue`、`react`、`css`、`html`、`htm`、`xml`、`log`、`java`、`py`、`go`、`rs`、`rb`、`swift`、`kt`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`sh`、`bash`、`sql`、`diff` | 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段、接口响应 |
+| 代码/文本 | `txt`、`json`、`jsonc`、`json5`、`ipynb`、`yaml`、`yml`、`toml`、`ini`、`proto`、`hcl`、`tex`、`gv`、`http`、`js`、`mjs`、`cjs`、`jsx`、`ts`、`tsx`、`vue`、`react`、`css`、`html`、`htm`、`xml`、`log`、`java`、`py`、`go`、`rs`、`rb`、`swift`、`kt`、`php`、`c`、`cpp`、`cc`、`h`、`hpp`、`cs`、`sh`、`bash`、`sql`、`diff` | `@file-viewer/renderer-text` 使用 `highlight.js` 轻量高亮，HTML 按源码展示 | 日志、配置、代码片段、接口响应 |
 | 音频 | `mp3`、`mpeg`、`wav`、`ogg`、`oga`、`opus`、`m4a`、`aac`、`flac`、`weba`、`midi`、`mid` | 浏览器原生音频播放；MIDI 使用 `@tonejs/midi` 展示轨道结构 | 录音、播客、语音附件、音效素材、MIDI 文件 |
 | 视频 | `mp4`、`webm`、`m3u8` | 浏览器原生视频播放；HLS 清单按需加载 `hls.js` | 演示视频、录屏、HLS 流 |
 | 字体/设计/数据 | `ttf`、`otf`、`woff`、`woff2`、`psd`、`ai`、`eps`、`sqlite`、`wasm`、`parquet`、`avro`、`webarchive` | core 共享 data renderer，基于 FontFace、`ag-psd`、`sql.js`、`hyparquet`、`avsc`、WebAssembly Module 和安全摘要；SQLite WASM 支持私有化配置 | 字体、设计资产、数据库、列式数据和 Web 归档 |
@@ -79,14 +79,14 @@
 
 ## 当前 npm 生态
 
-当前版本以 npm registry 的 `latest` dist-tag 为准，共维护 23 个 npm 发布目标: 18 个标准组件/核心/renderer/preset 包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
+当前版本以 npm registry 的 `latest` dist-tag 为准，共维护 24 个 npm 发布目标: 19 个标准组件/核心/renderer/preset 包 + 5 个历史兼容 alias。新项目建议优先使用 `@file-viewer/*` 标准包名；旧项目继续使用 `@flyfish-group/*` 或 `file-viewer3` 时也会拿到同版本能力。
 
 | 场景 | 推荐 npm 包 | 历史兼容包 | 版本策略 | 说明 |
 | --- | --- | --- | --- | --- |
 | Core 底座 | [`@file-viewer/core`](https://www.npmjs.com/package/@file-viewer/core) | 无 | `latest` | 框架无关的格式矩阵、预览能力、资源加载、生命周期事件、搜索、缩放、打印、导出和操作 API |
 | PPTX 原生引擎 | [`@file-viewer/pptx`](https://www.npmjs.com/package/@file-viewer/pptx) | 无 | `latest` | 从 Flyfish 历史稳定实现拆出的独立 PPTX 渲染引擎，Worker 渐进解析并可由 core 按需加载 |
-| 全量 renderer preset | [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all) | 无 | `latest` | 一次装配 PDF、CAD、Typst、XMind、压缩包、邮件、电子书、PPTX 和 core 其余完整格式能力 |
-| 独立 renderer 包 | [`@file-viewer/renderer-pdf`](https://www.npmjs.com/package/@file-viewer/renderer-pdf)、[`@file-viewer/renderer-cad`](https://www.npmjs.com/package/@file-viewer/renderer-cad)、[`@file-viewer/renderer-typst`](https://www.npmjs.com/package/@file-viewer/renderer-typst)、[`@file-viewer/renderer-archive`](https://www.npmjs.com/package/@file-viewer/renderer-archive)、[`@file-viewer/renderer-email`](https://www.npmjs.com/package/@file-viewer/renderer-email)、[`@file-viewer/renderer-ebook`](https://www.npmjs.com/package/@file-viewer/renderer-ebook)、[`@file-viewer/renderer-mindmap`](https://www.npmjs.com/package/@file-viewer/renderer-mindmap) | 无 | `latest` | 用于按需安装重链路，避免业务只看轻量格式时安装 PDF/CAD/Typst/压缩包/邮件/EPUB/XMind 依赖 |
+| 全量 renderer preset | [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all) | 无 | `latest` | 一次装配 PDF、CAD、Typst、XMind、压缩包、邮件、电子书、代码/Markdown、PPTX 和 core 其余完整格式能力 |
+| 独立 renderer 包 | [`@file-viewer/renderer-pdf`](https://www.npmjs.com/package/@file-viewer/renderer-pdf)、[`@file-viewer/renderer-cad`](https://www.npmjs.com/package/@file-viewer/renderer-cad)、[`@file-viewer/renderer-typst`](https://www.npmjs.com/package/@file-viewer/renderer-typst)、[`@file-viewer/renderer-archive`](https://www.npmjs.com/package/@file-viewer/renderer-archive)、[`@file-viewer/renderer-email`](https://www.npmjs.com/package/@file-viewer/renderer-email)、[`@file-viewer/renderer-ebook`](https://www.npmjs.com/package/@file-viewer/renderer-ebook)、[`@file-viewer/renderer-text`](https://www.npmjs.com/package/@file-viewer/renderer-text)、[`@file-viewer/renderer-mindmap`](https://www.npmjs.com/package/@file-viewer/renderer-mindmap) | 无 | `latest` | 用于按需安装重链路和文本阅读链路，避免业务只看轻量格式时安装 PDF/CAD/Typst/压缩包/邮件/EPUB/XMind/代码高亮依赖 |
 | Vanilla JS / Pure Web / script 标签 | [`@file-viewer/web`](https://www.npmjs.com/package/@file-viewer/web) | [`@flyfish-group/file-viewer-web`](https://www.npmjs.com/package/@flyfish-group/file-viewer-web) | `latest` | `mountViewer(container, options)`、Custom Element、IIFE、资源复制 CLI、Worker/WASM 自托管工具 |
 | Vue3 | [`@file-viewer/vue3`](https://www.npmjs.com/package/@file-viewer/vue3) | [`@flyfish-group/file-viewer3`](https://www.npmjs.com/package/@flyfish-group/file-viewer3)、[`file-viewer3`](https://www.npmjs.com/package/file-viewer3) | `latest` | Vue3 原生组件、插件安装、props、事件、ref/controller 和完整类型 |
 | Vue2.7 | [`@file-viewer/vue2.7`](https://www.npmjs.com/package/@file-viewer/vue2.7) | [`@flyfish-group/file-viewer`](https://www.npmjs.com/package/@flyfish-group/file-viewer) | `latest` | Vue2.7 原生组件，能力和 Vue3 保持一致 |

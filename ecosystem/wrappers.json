@@ -93,6 +93,17 @@
       "publicSource": true
     },
     {
+      "id": "text",
+      "packageName": "@file-viewer/renderer-text",
+      "description": "Standalone code, text, and Markdown renderer plugin for File Viewer with highlight.js language chunks, safe source rendering, Markdown reading surfaces, and unified zoom support.",
+      "packageDir": "packages/renderers/text",
+      "repository": "file-viewer-renderer-text",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-text",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-text",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

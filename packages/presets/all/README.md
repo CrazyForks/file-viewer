@@ -28,7 +28,7 @@ const options = {
 }
 ```
 
-当前版本仍复用 `@file-viewer/core` 中的完整 renderer 实现。随着 PDF、Office、CAD、Typst、Archive 等链路拆成独立包，本 preset 会逐步改为聚合那些独立 renderer 包。
+当前版本会优先聚合已经拆出的 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-cad`、`@file-viewer/renderer-typst`、`@file-viewer/renderer-archive`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook`、`@file-viewer/renderer-text` 和 `@file-viewer/renderer-mindmap`，剩余尚未拆包的链路暂由 `@file-viewer/core` 兼容补齐。随着 Office、OFD、绘图、3D、Geo、EDA、媒体、图片和数据资产继续独立，本 preset 会保持作为全量聚合层。
 
 ## 文档
 

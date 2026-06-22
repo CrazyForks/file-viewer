@@ -77,7 +77,7 @@
 - 3D 模型走 Three.js，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 默认走随 viewer assets 分发的官方 diagrams.net 离线 viewer，异常时回退内置 SVG。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开，MIDI 会展示轨道和时长信息，HLS 视频按需加载 `hls.js`。
-- 代码和文本使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；HTML 会按源码展示。
+- 代码和文本由 `@file-viewer/renderer-text` 使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；HTML 会按源码展示。
 - 字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro 和 WebArchive 走资产/数据预览链路，优先展示结构摘要、字体样张、图层或数据预览，不执行不可信内容。
 - 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位，适合上线前核对两份附件的视觉差异。
 

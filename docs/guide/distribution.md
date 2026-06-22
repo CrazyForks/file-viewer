@@ -190,7 +190,7 @@ pnpm release:ecosystem:publish:dry-run
 pnpm release:ecosystem:publish
 ```
 
-`release:ecosystem:pack` 会先构建 core、独立 renderer、preset、PPTX 原生引擎、标准组件包和历史兼容包，再统一打包当前 23 个 npm 目标。发布前请确认 tarball 中包含必要的 viewer assets、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
+`release:ecosystem:pack` 会先构建 core、独立 renderer、preset、PPTX 原生引擎、标准组件包和历史兼容包，再统一打包当前 24 个 npm 目标。发布前请确认 tarball 中包含必要的 viewer assets、`dist/*`、README / README.en.md，且没有 `.DS_Store`。
 
 开源总仓库使用私有 Gitea `main` 完整聚合仓生成，发布前执行:
 

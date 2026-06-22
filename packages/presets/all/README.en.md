@@ -28,7 +28,7 @@ const options = {
 }
 ```
 
-This version still reuses the complete renderer implementation from `@file-viewer/core`. As PDF, Office, CAD, Typst, Archive, and other heavy paths move into standalone renderer packages, this preset will become the aggregation layer over those packages.
+This version first aggregates the extracted `@file-viewer/renderer-pdf`, `@file-viewer/renderer-cad`, `@file-viewer/renderer-typst`, `@file-viewer/renderer-archive`, `@file-viewer/renderer-email`, `@file-viewer/renderer-ebook`, `@file-viewer/renderer-text`, and `@file-viewer/renderer-mindmap` packages. Renderers that have not been split out yet are still filled in by `@file-viewer/core` for compatibility. As Office, OFD, drawing, 3D, Geo, EDA, media, image, and data-asset renderers move out, this preset remains the full aggregation layer.
 
 ## Documentation
 
