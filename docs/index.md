@@ -12,6 +12,7 @@ titleTemplate: false
 <p>
 纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、Typst、压缩包、邮件、OLB/DRA、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码、图片、音视频、字体、设计资产和结构化数据预览能力放进浏览器端，
 同时提供 Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 原生集成路径。
+一个组件，一行代码，快速集成。
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
@@ -121,6 +122,10 @@ titleTemplate: false
 <span>Choose Your Path</span>
 <h2>按你的接入场景开始</h2>
 <p>先选路线，再进入对应文档。每条路线都给出最短示例和真实项目里的注意事项。</p>
+</div>
+
+<div class="doc-callout">
+<strong>接入亮点:</strong> 一个组件，一行代码，快速集成。Vanilla JS、Vue、React、jQuery 和 Svelte 都使用标准组件包接入，底层能力一致，上层体验保持各自生态的原生方式。
 </div>
 
 <div class="doc-path-grid">

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-22T07:59:44.758Z",
+  "generatedAt": "2026-06-22T08:16:40.233Z",
   "version": "2.0.11",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -8,23 +8,23 @@
     "repository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "policy": "private-complete-original-workspace",
-    "authoritativeCommit": "6d08a9a834c49f05e9c3ed41384a96afbd16110f",
+    "authoritativeCommit": "eda765b538ad820c66a19528a167de63b8d9444c",
     "localBranch": "main",
-    "localCommit": "1f2b9a3e9932a75d9c544d91967ba50370c966d3",
-    "inSync": false,
+    "localCommit": "eda765b538ad820c66a19528a167de63b8d9444c",
+    "inSync": true,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "main",
-    "commit": "1f2b9a3e9932a75d9c544d91967ba50370c966d3",
-    "shortCommit": "1f2b9a3e",
+    "commit": "eda765b538ad820c66a19528a167de63b8d9444c",
+    "shortCommit": "eda765b5",
     "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "ok": true,
-    "hash": "6d08a9a834c49f05e9c3ed41384a96afbd16110f",
+    "hash": "eda765b538ad820c66a19528a167de63b8d9444c",
     "error": ""
   },
   "openSourceMain": {
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "359475bc40c8927844454815b1c1ebcf8122fce3",
+      "hash": "5741550abebdaff5d65282d97c1a9d6295e2edaf",
       "error": ""
     },
     "gitee": {
@@ -43,11 +43,11 @@
       "error": ""
     },
     "inSync": false,
-    "syncMode": "unchecked",
-    "treeChecked": false,
-    "referenceTree": "57d8a70f3b667ca133f5e868e2290e3eb65c7598",
-    "giteeTree": "",
-    "treeError": "local public repository dc99aa86d40b does not match GitHub 359475bc40c8",
+    "syncMode": "stale",
+    "treeChecked": true,
+    "referenceTree": "06bdc977dd3367fdd767304e73a40c188b12fc8b",
+    "giteeTree": "62b18f03808005d7045f6bcb1c078889de3cdff4",
+    "treeError": "",
     "reportHashNote": "This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
   },
   "githubRelease": {
@@ -331,31 +331,16 @@
       "error": ""
     }
   ],
-  "gaps": [
-    "local HEAD 1f2b9a3e does not match origin/main 6d08a9a834c4"
-  ],
+  "gaps": [],
   "gapSummary": {
-    "total": 1,
+    "total": 0,
     "externalBlockers": 0,
-    "localActionable": 1,
-    "byChannel": {
-      "source-worktree": 1
-    },
+    "localActionable": 0,
+    "byChannel": {},
     "externalBlockerChannels": [],
-    "localActionableChannels": [
-      "source-worktree"
-    ]
+    "localActionableChannels": []
   },
-  "gapDetails": [
-    {
-      "id": "source-worktree-local-head-1f2b9a3e-does-not-match-origin-main-6d08a9a834c4",
-      "channel": "source-worktree",
-      "scope": "local",
-      "externalBlocker": false,
-      "message": "local HEAD 1f2b9a3e does not match origin/main 6d08a9a834c4",
-      "nextAction": "Commit or clean the local source worktree, then rerun the release audit."
-    }
-  ],
+  "gapDetails": [],
   "nextActions": [
     "Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.",
     "After npm publish, run `pnpm verify:npm-registry-release`."

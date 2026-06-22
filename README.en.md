@@ -8,6 +8,8 @@ Bring Word, Excel, PowerPoint, PDF, Typst, archives, email, audio/video, ebooks,
 
 The viewer does not require a backend conversion service. It is designed for OA systems, knowledge bases, attachment centers, workflow platforms, customer support portals, document approval flows, intranet systems, and offline-capable deployments where file preview should feel like a maintained product module rather than a temporary feature.
 
+The integration promise is simple: **one component, one line of code, fast integration**. Pick the standard package for your stack, then use the same options, events, search, zoom, print, export, and watermark capabilities everywhere.
+
 - Standard npm packages: `@file-viewer/core`, `@file-viewer/pptx`, `@file-viewer/web`, `@file-viewer/vue3`, `@file-viewer/vue2.7`, `@file-viewer/vue2.6`, `@file-viewer/react`, `@file-viewer/react-legacy`, `@file-viewer/jquery`, `@file-viewer/svelte`
 - Historical compatibility packages: `@flyfish-group/file-viewer3`, `file-viewer3`, `@flyfish-group/file-viewer`, `@flyfish-group/file-viewer-react`, `@flyfish-group/file-viewer-web`
 - Official website: [file-viewer.app](https://file-viewer.app)
@@ -222,6 +224,8 @@ Flyfish Viewer remains Apache-2.0 open source. The open-source edition is design
 The commercial edition comes from the Flyfish Office product line. It provides a self-developed native Office document engine for serious enterprise Word, Excel, and PowerPoint scenarios, with stronger fidelity for complex layout, large files, pagination, high-quality rendering, and stable performance. The open-source edition will continue to evolve; commercial support is mainly for faster maintainer response, private deployment evaluation, and custom delivery.
 
 ## Vanilla JavaScript Integration
+
+One component, one line of code, fast integration. Whether you use Vanilla JavaScript, Vue, React, jQuery, or Svelte, start from the standard component package for your ecosystem so the preview capability stays consistent while the host integration remains native.
 
 Use this path for framework-free pages, micro-frontend shells, classic admin systems, low-code platforms, and any product that wants a native Custom Element or imperative controller without Vue, React, or jQuery.
 
