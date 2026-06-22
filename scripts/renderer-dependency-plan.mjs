@@ -116,16 +116,16 @@ export const rendererModularizationLines = [
     group: 'archiveEmailEbook',
     targetPackage: '@file-viewer/renderer-archive',
     phase: 2,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['archive'],
-    dependencies: ['libarchive.js', 'pako', 'jszip'],
+    dependencies: ['libarchive.js', 'jszip'],
   },
   {
     id: 'email',
     group: 'archiveEmailEbook',
     targetPackage: '@file-viewer/renderer-email',
     phase: 3,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['email'],
     dependencies: ['postal-mime', '@kenjiuno/msgreader'],
   },
@@ -134,9 +134,18 @@ export const rendererModularizationLines = [
     group: 'archiveEmailEbook',
     targetPackage: '@file-viewer/renderer-ebook',
     phase: 3,
-    status: 'partially-extracted',
+    status: 'extracted',
     renderers: ['epub'],
     dependencies: ['epubjs'],
+  },
+  {
+    id: 'ebook-umd-core',
+    group: 'coreNative',
+    targetPackage: '@file-viewer/core',
+    phase: 0,
+    status: 'retained',
+    renderers: ['umd'],
+    dependencies: ['pako'],
   },
   {
     id: 'code-markdown',
@@ -186,7 +195,7 @@ export const rendererModularizationLines = [
 ];
 
 export const rendererDependencyGroups = rendererModularizationLines.reduce((result, line) => {
-  if (line.status === 'extracted') {
+  if (line.status === 'extracted' || line.status === 'retained') {
     return result;
   }
   result[line.group] ||= [];
@@ -208,6 +217,10 @@ export const dependencyToRendererLines = rendererModularizationLines.reduce((res
 export const dependencyToRendererLine = new Map(
   Array.from(dependencyToRendererLines.entries()).map(([dependency, lines]) => [
     dependency,
-    lines.find(line => line.status !== 'extracted') || lines[0],
+    lines.find(line => line.status !== 'extracted' && line.status !== 'retained') || lines[0],
   ])
 );
+
+export const modularizedRendererLines = rendererModularizationLines.filter(line => line.status !== 'retained');
+
+export const retainedCoreDependencyLines = rendererModularizationLines.filter(line => line.status === 'retained');

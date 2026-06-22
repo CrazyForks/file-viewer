@@ -263,7 +263,7 @@ fileViewerRenderers({
 
 ### Phase 2：第一批重链路拆包
 
-- [ ] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD/archive 直接依赖。
+- [ ] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD 等剩余重链路直接依赖。
 - [x] 建立 `@file-viewer/renderer-pdf` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 PDF renderer。
 - [x] 建立 `@file-viewer/renderer-word` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 DOCX / DOC / RTF / ODT renderer。
 - [x] 建立 `@file-viewer/renderer-ofd` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 OFD renderer。
@@ -273,6 +273,9 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-archive` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 archive renderer。
 - [x] 建立 `@file-viewer/renderer-email` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EML / MSG / MBOX renderer。
 - [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
+- [x] `@file-viewer/core` 已移除 archive 兼容入口和 `libarchive.js` 直接依赖，压缩包完整能力统一通过 `@file-viewer/renderer-archive` 或 preset 装配；`jszip` 当前仍因 OFD vendor 暂留 core，UMD 仍在 core 保留 `pako` 作为轻量原生解析依赖。
+- [x] `@file-viewer/core` 已移除 email 兼容入口和 `postal-mime` / `@kenjiuno/msgreader` 直接依赖，邮件完整能力统一通过 `@file-viewer/renderer-email` 或 preset 装配。
+- [x] `@file-viewer/core` 已移除 EPUB 兼容入口和 `epubjs` 直接依赖，电子书完整能力统一通过 `@file-viewer/renderer-ebook` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [x] `@file-viewer/core` 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，XMind 完整能力统一通过 `@file-viewer/renderer-mindmap` 或 preset 装配。
 - [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 回归确认画布可拖拽平移；通用浏览器冒烟脚本也会对 `.xmind` 执行拖拽断言。
@@ -293,7 +296,7 @@ fileViewerRenderers({
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
-- [ ] 安装 `@file-viewer/vue3` 不再安装 `pdfjs-dist`、`@flyfish-dev/cad-viewer`、`@myriaddreamin/*`、`libarchive.js`。
+- [ ] 安装 `@file-viewer/vue3` 不再安装 `pdfjs-dist`、`@flyfish-dev/cad-viewer`、`@myriaddreamin/*` 等剩余重型渲染依赖。
 
 ### Phase 3：体验与自动化
 
@@ -327,13 +330,28 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 27 个渲染依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 16 个运行时依赖：
 
-- Phase 2 还有 14 个依赖留在 core，其中 Presentation 和 Word 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、PDF、OFD 或剩余 Office 兼容链路，继续减少默认安装面。
-- Phase 3 还有 10 个依赖留在 core，其中 XMind、Geo 和 HEIC 图片转换已完成 core 直接依赖摘除；普通图片仍作为 lite 原生能力保留，后续继续拆 Drawing、3D、Email、Ebook、Text 和 Media 兼容入口。
+- Phase 2 还有 10 个依赖留在 core，其中 Presentation、Word、Archive 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、PDF、OFD、Typst 或 CAD 兼容链路，继续减少默认安装面。
+- Phase 3 已无重型体验链路依赖留在 core；XMind、Geo、HEIC、Drawing、3D、Email、Ebook、Text 和 Media 均通过独立 renderer 或 preset 装配。
 - Phase 4 还有 5 个依赖留在 core，其中 Data Asset 与 EDA 已分别建立 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立包；下一步是清理 core 兼容入口里的 `ag-psd`、`sql.js`、`hyparquet`、`avsc` 和 `cfb` 直接依赖。
 
 这说明 renderer 包和 `preset-all` 已经具备雏形，但“默认安装轻量化”尚未完成。短期先保留 `preset-all` 兼容完整能力，长期验收标准是组件包默认安装不再拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
+
+## 新增格式解析策略
+
+新增格式不再默认塞进 core。能找到成熟浏览器离线库或 WASM 的链路，优先独立 renderer 包维护；只有体积小、协议简单、跨格式复用明确的解析工具才允许留在 core。
+
+| 格式族 | 当前策略 | 后续演进 |
+| --- | --- | --- |
+| XMind | `.xmind` 按 ZIP 容器读取，现代文件优先解析 `content.json`，经典文件解析 `content.xml`；交互由 `@file-viewer/renderer-mindmap` 维护。 | 继续补多结构布局、更多 marker 图标和复杂图片资源还原，交互回归覆盖 Pointer / 鼠标 / 触摸 / WebView。 |
+| Archive | `@file-viewer/renderer-archive` 使用 `libarchive.js` Worker + WASM，Worker 不可用时降级 ZIP/TAR/GZIP。 | 保持 Worker 超时、IndexedDB 缓存和体积上限，不把压缩包依赖带回 core。 |
+| Email | `@file-viewer/renderer-email` 使用 `postal-mime` 和 `@kenjiuno/msgreader`，邮件附件复用统一嵌套预览。 | 增强 MSG 边界样例和附件安全策略。 |
+| EPUB/UMD | EPUB 使用 `@file-viewer/renderer-ebook` + `epubjs`；UMD 仍作为 core 轻量解析链路，保留 `pako`。 | EPUB 继续独立维护阅读体验；如果 UMD 复杂度继续上升，再拆出独立 ebook 内核。 |
+| OLB/DRA | `@file-viewer/renderer-eda` 当前基于 CFB 和二进制线索做安全结构树、实体候选、属性、字符串和诊断展示。 | OrCAD/Allegro 属于专业私有工程格式，完整几何/电气语义会像 PPTX 一样拆独立引擎长期维护，必要时引入自研 WASM。 |
+| GDS/OASIS | GDSII 已做记录级解析并输出 SVG 版图预览；OASIS 先做安全结构索引和诊断。 | 大文件版图后续走 WebGL/WASM，不进入 core 首屏链路。 |
+| DWF/DWFx/CAD | CAD 能力由 `@file-viewer/renderer-cad` 和 `@flyfish-dev/cad-viewer` 承接，WASM/Worker 资源通过资产 manifest 自托管。 | 随 cad-viewer 持续升级 DWF/DWFx、DWG/DXF 体验，core 只保留协议和资源发现。 |
+| Typst | `@file-viewer/renderer-typst` 按需加载 Typst WASM 编译和 SVG 渲染。 | 保持离线 WASM 配置入口，后续评估更轻量只读渲染内核。 |
 
 ## 终态验收门禁
 

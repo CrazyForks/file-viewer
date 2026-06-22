@@ -65,13 +65,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'email',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderEmail } = await import('./email');
-      return renderEmail(buffer, target, type, context);
-    },
-  },
-  {
     rendererId: 'eda',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderEda } = await import('./eda');
@@ -93,24 +86,10 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'epub',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement) => {
-      const { default: renderEpub } = await import('./epub');
-      return renderEpub(buffer, target);
-    },
-  },
-  {
     rendererId: 'data-asset',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderDataAsset } = await import('./data');
       return renderDataAsset(buffer, target, type, context);
-    },
-  },
-  {
-    rendererId: 'archive',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderArchive } = await import('./archive');
-      return renderArchive(buffer, target, type, context);
     },
   },
 ];

@@ -57,4 +57,4 @@ const options = {
 
 ## 迁移说明
 
-当前 `@file-viewer/core` 仍保留内置 archive renderer 以兼容历史全量包。后续会把 core 的压缩包入口切换到本包，并从 core 直接依赖中移除 `libarchive.js`、`jszip` 等重依赖。
+`@file-viewer/core` 已不再内置 archive renderer，也不再为压缩包链路直接安装 `libarchive.js`。ZIP/TAR/GZIP fallback、`jszip`、缓存和 Worker 逻辑由本包维护；core 在 OFD 完全拆出前可能仍会因 OFD vendor 临时保留 `jszip`。需要压缩包预览时，请显式安装本包，或直接使用 `@file-viewer/preset-all` 聚合能力。

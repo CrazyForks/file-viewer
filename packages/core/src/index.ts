@@ -225,8 +225,13 @@ export const renderFileViewerArchive = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderArchive } = await import('./renderers/archive');
-  return renderArchive(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'Archive rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-archive, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerCad = async (
   buffer: ArrayBuffer,
@@ -287,15 +292,23 @@ export const renderFileViewerEmail = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderEmail } = await import('./renderers/email');
-  return renderEmail(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'Email rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-email, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerEpub = async (
   buffer: ArrayBuffer,
   target: HTMLDivElement
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderEpub } = await import('./renderers/epub');
-  return renderEpub(buffer, target);
+  void buffer;
+  void target;
+  throw new Error(
+    'EPUB rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-ebook, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerGeo = async (
   buffer: ArrayBuffer,

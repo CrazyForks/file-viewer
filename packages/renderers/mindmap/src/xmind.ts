@@ -1012,6 +1012,8 @@ export default async function renderXMind(
       return;
     }
     if (panState || touchGesture) {
+      event.preventDefault();
+      event.stopPropagation();
       return;
     }
     const touch = primaryTouch(event.touches);

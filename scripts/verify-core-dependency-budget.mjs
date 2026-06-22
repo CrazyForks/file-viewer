@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import {
   dependencyToRendererLine,
   dependencyToRendererLines,
-  rendererModularizationLines
+  modularizedRendererLines
 } from './renderer-dependency-plan.mjs'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -14,11 +14,11 @@ const args = process.argv.slice(2)
 const strict = args.includes('--strict')
 
 const baseline = {
-  maxDirectDependencies: 20,
-  maxRendererDependencies: 20,
+  maxDirectDependencies: 16,
+  maxRendererDependencies: 15,
   maxPhaseDependencies: {
-    2: 14,
-    3: 3,
+    2: 10,
+    3: 0,
     4: 5
   }
 }
@@ -38,10 +38,11 @@ const numberArg = (name, fallback) => {
 
 const corePackage = readJson('packages/core/package.json')
 const dependencies = Object.keys(corePackage.dependencies || {}).sort()
-const rendererDependencies = dependencies.filter(name => dependencyToRendererLine.has(name))
+const isRetainedDependency = name => dependencyToRendererLine.get(name)?.status === 'retained'
+const rendererDependencies = dependencies.filter(name => dependencyToRendererLine.has(name) && !isRetainedDependency(name))
 const unclassifiedDependencies = dependencies.filter(name => !dependencyToRendererLine.has(name))
 
-const phaseDependencySets = rendererModularizationLines.reduce((result, line) => {
+const phaseDependencySets = modularizedRendererLines.reduce((result, line) => {
   result[line.phase] ||= new Set()
   line.dependencies
     .filter(name => dependencies.includes(name))

@@ -57,4 +57,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps the bundled archive renderer for backward compatibility. A later migration will switch the core archive entry to this package and remove `libarchive.js`, `jszip`, and related heavy dependencies from core direct dependencies.
+The core package no longer bundles the archive renderer and no longer installs `libarchive.js` for the archive pipeline. ZIP/TAR/GZIP fallback, `jszip`, cache, and Worker logic are owned by this package; core may still temporarily retain `jszip` for the OFD vendor path until OFD is fully extracted. Install this renderer explicitly, or use `@file-viewer/preset-all`, when archive preview is required.

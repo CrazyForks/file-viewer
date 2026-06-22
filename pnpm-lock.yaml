@@ -402,9 +402,6 @@ importers:
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)
-      '@kenjiuno/msgreader':
-        specifier: ^1.28.0
-        version: 1.28.0
       '@myriaddreamin/typst-ts-renderer':
         specifier: 0.7.0
         version: 0.7.0
@@ -426,18 +423,12 @@ importers:
       e-virt-table:
         specifier: ^1.3.26
         version: 1.3.26
-      epubjs:
-        specifier: ^0.3.93
-        version: 0.3.93
       hyparquet:
         specifier: ^1.26.0
         version: 1.26.0
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
-      libarchive.js:
-        specifier: ^2.0.2
-        version: 2.0.2
       ofd-xml-parser:
         specifier: ^0.0.6
         version: 0.0.6
@@ -447,9 +438,6 @@ importers:
       pdfjs-dist:
         specifier: ^6.0.227
         version: 6.0.227
-      postal-mime:
-        specifier: ^2.7.4
-        version: 2.7.4
       sql.js:
         specifier: ^1.14.1
         version: 1.14.1

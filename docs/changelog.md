@@ -23,6 +23,7 @@
 - 代码与 Markdown 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `highlight.js` 和 `marked`；完整文本预览统一由 `@file-viewer/renderer-text` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 27 降到 25，Phase 3 依赖预算从 10 降到 8
 - 音视频预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `hls.js` 和 `@tonejs/midi`；MP3/WAV/OGG/MIDI/MP4/WEBM/HLS 完整媒体能力统一由 `@file-viewer/renderer-media` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 25 降到 23，Phase 3 依赖预算从 8 降到 6
 - 3D 模型与绘图预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `three`、`@excalidraw/excalidraw` 和 `roughjs`；GLB/GLTF/STL/OBJ/FBX/DAE/3MF/VTK 等模型由 `@file-viewer/renderer-3d` 装配，Draw.io / Excalidraw 由 `@file-viewer/renderer-drawing` 装配，core 直接渲染依赖从 23 降到 20，Phase 3 依赖预算从 6 降到 3
+- 压缩包、邮件和 EPUB 预览从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `libarchive.js`、`postal-mime`、`@kenjiuno/msgreader` 和 `epubjs`；Archive / Email / EPUB 完整能力统一由 `@file-viewer/renderer-archive`、`@file-viewer/renderer-email`、`@file-viewer/renderer-ebook` 或 `@file-viewer/preset-all` 装配，core 直接运行时依赖从 20 降到 16，Phase 3 依赖预算从 3 降到 0；`jszip` 暂因 OFD vendor 仍留在 core，待 OFD 完全拆包后继续移除
 - `.gds` 新增标准 GDSII 记录解析和 SVG 版图预览，能够展示 structure、boundary、path、text、reference、层信息和坐标边界；`.oas`、`.oasis` 保持纯前端安全结构索引、可读字符串、实体候选、二进制线索和诊断，避免把专业 EDA 文件误当普通文本或空白二进制
 - 邮件预览迁移为 `@file-viewer/renderer-email` 独立 renderer 包，继续支持 EML / MSG / MBOX、正文/头信息切换、附件下载和附件嵌套预览，并由 `@file-viewer/preset-all` 自动聚合
 - OFD 预览迁移为 `@file-viewer/renderer-ofd` 独立 renderer 包，继续基于 `DLTech21/ofd.js` 的纯前端源码链路解析和页面渲染，vendor 随包离线分发，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合

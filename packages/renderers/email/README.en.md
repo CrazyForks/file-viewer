@@ -37,4 +37,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps the bundled email renderer for backward compatibility. A later migration will switch the core email entry to this package and remove `postal-mime`, `@kenjiuno/msgreader`, and related parser dependencies from core direct dependencies.
+The core package no longer bundles the email renderer and no longer installs `postal-mime` / `@kenjiuno/msgreader` directly. Install this renderer explicitly, or use `@file-viewer/preset-all`, when email preview is required.

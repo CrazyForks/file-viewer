@@ -35,11 +35,25 @@ const missingPlannedDependencies = Array.from(plannedDependencies)
   .filter(name => !dependencies.includes(name))
   .sort();
 const phaseSummary = rendererModularizationLines.reduce((result, line) => {
-  result[line.phase] ||= { totalLines: 0, directDependencies: 0 };
+  if (line.status === 'retained' || line.status === 'extracted') {
+    return result;
+  }
+  result[line.phase] ||= { totalLines: 0, directDependencies: new Set() };
   result[line.phase].totalLines += 1;
-  result[line.phase].directDependencies += line.dependencies.filter(name => dependencies.includes(name)).length;
+  line.dependencies
+    .filter(name => dependencies.includes(name))
+    .forEach(name => result[line.phase].directDependencies.add(name));
   return result;
 }, {});
+const printablePhaseSummary = Object.fromEntries(
+  Object.entries(phaseSummary).map(([phase, summary]) => [
+    phase,
+    {
+      totalLines: summary.totalLines,
+      directDependencies: summary.directDependencies.size,
+    },
+  ])
+);
 
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify({
@@ -48,7 +62,8 @@ if (process.argv.includes('--json')) {
     rows,
     rendererLines: rendererModularizationLines,
     missingPlannedDependencies,
-    phaseSummary,
+    phaseSummary: printablePhaseSummary,
+    retainedCoreLines: rendererModularizationLines.filter(line => line.status === 'retained'),
   }, null, 2));
 } else {
   console.log(`@file-viewer/core direct dependencies: ${rows.length}`);
@@ -60,11 +75,18 @@ if (process.argv.includes('--json')) {
     });
   });
   console.log('\n[phase summary]');
-  Object.entries(phaseSummary)
+  Object.entries(printablePhaseSummary)
     .sort(([a], [b]) => Number(a) - Number(b))
     .forEach(([phase, summary]) => {
       console.log(`  - phase ${phase}: ${summary.totalLines} renderer lines, ${summary.directDependencies} dependencies still declared by core`);
     });
+  const retainedRows = rows.filter(row => row.status === 'retained');
+  if (retainedRows.length) {
+    console.log('\n[retained core-native dependencies]');
+    retainedRows.forEach(item => {
+      console.log(`  - ${item.dependency}@${item.version} -> ${item.rendererLine}`);
+    });
+  }
   if (byGroup.unclassified?.length) {
     console.log('\nUnclassified dependencies must be reviewed before renderer modularization gates become blocking.');
   }

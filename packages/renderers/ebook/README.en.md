@@ -36,4 +36,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps the bundled EPUB renderer for backward compatibility. A later migration will switch the core EPUB entry to this package and remove `epubjs` from core direct dependencies.
+The core package no longer bundles the EPUB renderer and no longer installs `epubjs` directly. Install this renderer explicitly, or use `@file-viewer/preset-all`, when EPUB preview is required.
