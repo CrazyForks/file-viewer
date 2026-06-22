@@ -149,6 +149,17 @@ export {
   waitForFileViewerPrintWindowReady,
 } from './output/export';
 export {
+  applyPrintPageSize,
+  buildPrintPageStyle,
+  formatCssPixels,
+  getElementPrintPageSize,
+} from './output/printLayout';
+export type {
+  ApplyPrintPageSizeOptions,
+  BuildPrintPageStyleOptions,
+  PrintPageSize,
+} from './output/printLayout';
+export {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,

@@ -520,6 +520,22 @@ importers:
       '@file-viewer/core':
         specifier: workspace:^2.0.11
         version: link:../../core
+      '@file-viewer/renderer-pdf':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/pdf
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/pdf:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      pdfjs-dist:
+        specifier: ^6.0.227
+        version: 6.0.227
     devDependencies:
       typescript:
         specifier: ^6.0.3

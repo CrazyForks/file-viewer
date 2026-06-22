@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import {
   ChevronDown,
   ChevronUp,
@@ -38,7 +38,7 @@ const controlPanelRef = ref<HTMLElement | null>(null)
 const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
 const sampleMenuMaxHeight = ref('min(52vh, 520px)')
 const watermarkEnabled = ref(false)
-const runtimeOptions = ref<FileViewerOptions>({})
+const runtimeOptions = shallowRef<FileViewerOptions>({})
 const mobileControlsOpen = ref(false)
 const mobileActionsOpen = ref(false)
 const viewerSearchOpen = ref(false)
@@ -637,32 +637,36 @@ const viewerSearchSummary = computed(() => {
   return state.total ? `${state.currentIndex + 1}/${state.total}` : '0/0'
 })
 
-const viewerOptions = computed<FileViewerOptions>(() => ({
-  archive: {
+const viewerOptions = computed((): FileViewerOptions => {
+  const runtime = runtimeOptions.value
+  const options = { ...(runtime as Record<string, unknown>) } as FileViewerOptions
+
+  options.archive = {
     workerUrl: `/${DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH}`,
     cache: true,
-    ...runtimeOptions.value.archive
-  },
-  ...runtimeOptions.value,
-  spreadsheet: {
+    ...runtime.archive
+  }
+  options.spreadsheet = {
     resizableColumns: true,
-    ...runtimeOptions.value.spreadsheet
-  },
-  toolbar: hidden.value ? runtimeOptions.value.toolbar ?? true : false,
-  watermark: watermarkEnabled.value
+    ...runtime.spreadsheet
+  }
+  options.toolbar = hidden.value ? runtime.toolbar ?? true : false
+  options.watermark = watermarkEnabled.value
     ? {
         text: 'Flyfish Viewer',
         opacity: 0.16,
         rotate: -24,
         color: '#1f7a58',
         ...(
-          typeof runtimeOptions.value.watermark === 'object'
-            ? runtimeOptions.value.watermark
+          typeof runtime.watermark === 'object' && runtime.watermark
+            ? runtime.watermark
             : {}
         )
       }
-    : runtimeOptions.value.watermark
-}))
+    : runtime.watermark
+
+  return options
+})
 
 function triggerViewerAction(action: ViewerAction) {
   mobileActionsOpen.value = false

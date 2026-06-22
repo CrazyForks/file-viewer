@@ -31,7 +31,7 @@ export const rendererModularizationLines = [
     group: 'document',
     targetPackage: '@file-viewer/renderer-pdf',
     phase: 2,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['pdf'],
     dependencies: ['pdfjs-dist'],
   },

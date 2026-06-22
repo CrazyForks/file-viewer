@@ -151,6 +151,18 @@ export const pdfRenderer: FileViewerRendererPlugin = {
 | Phase 4 | EDA、GDSII/OASIS、OrCAD/Allegro、复杂数据资产 | `@file-viewer/renderer-eda`、`@file-viewer/eda-layout`、`@file-viewer/eda-orcad`、`@file-viewer/renderer-data` |
 | Phase 5 | Vite 插件、自动 sample smoke matrix、安装体积预算、release pipeline 分发 | `@file-viewer/vite-plugin`、release scripts |
 
+## 复杂格式方案边界
+
+| 格式线 | 当前优先方案 | 后续拆包方向 |
+| --- | --- | --- |
+| Typst | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。 | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。 |
+| Draw.io / diagrams.net | 以 diagrams.net 离线发布包和 XML/SVG 解析链路为基准，优先保证离线预览，不依赖公网 CDN。 | `@file-viewer/renderer-drawing` 统一 drawio、excalidraw、Mermaid 类绘图资产。 |
+| OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。 | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。 |
+| XMind | 解析现代 `content.json` 和经典 `content.xml`，渲染层提供可拖拽、缩放、定位的画布。 | `@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
+| EDA / 工程二进制 | 简单结构先做安全解析和树形浏览；复杂图形不硬塞进 core。 | 参考 PPTX 独立内核路线，必要时拆 `@file-viewer/eda-*` 并引入 WASM/增量渲染。 |
+
+调研结论是：能用成熟官方或事实标准开源链路的格式不手搓；规格复杂、二进制重、需要长期迭代的能力，应该像 PPTX 一样拆成独立内核和独立 renderer 包持续维护。
+
 ## 验收 checklist
 
 ### Phase 1：协议与装配
@@ -166,6 +178,7 @@ export const pdfRenderer: FileViewerRendererPlugin = {
 ### Phase 2：第一批重链路拆包
 
 - [ ] `@file-viewer/core` 移除 PDF/Office/OFD/Typst/CAD/archive 直接依赖。
+- [x] 建立 `@file-viewer/renderer-pdf` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 PDF renderer。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。

@@ -16,6 +16,17 @@
   },
   "renderers": [
     {
+      "id": "pdf",
+      "packageName": "@file-viewer/renderer-pdf",
+      "description": "Standalone PDF renderer plugin for File Viewer with PDF.js page rendering, navigation, search, zoom, print, export, worker, CMap, WASM, and font asset support.",
+      "packageDir": "packages/renderers/pdf",
+      "repository": "file-viewer-renderer-pdf",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-pdf",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-pdf",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",
