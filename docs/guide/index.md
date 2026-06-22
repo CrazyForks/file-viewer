@@ -16,6 +16,7 @@
   <a href="/guide/ecosystem">生态接入</a>
   <a href="/guide/formats">支持格式</a>
   <a href="/guide/format-fidelity">格式完整度</a>
+  <a href="/guide/on-demand-renderers">按需渲染架构</a>
   <a href="/guide/usage">组件用法</a>
   <a href="/guide/distribution">发布分发</a>
 </div>
@@ -87,6 +88,7 @@
 | 想最快跑起来 | [快速开始](/guide/quickstart) |
 | 想确认所有格式 | [支持格式](/guide/formats) |
 | 想确认复杂格式能否完整预览 | [格式完整度](/guide/format-fidelity) |
+| 想降低安装依赖和首屏体积 | [按需渲染架构](/guide/on-demand-renderers) |
 | 想看示例文件和回归建议 | [Demo 说明](/guide/demo) |
 | 想并排比对两份文件 | [Demo 说明: 文档比对页](/guide/demo#文档比对页) |
 | 想在非框架页面中接入 | [纯 JS / Pure Web 集成](/guide/quickstart-web) |

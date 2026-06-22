@@ -560,6 +560,53 @@ export interface RendererRegistry {
   listExtensions(): string[];
 }
 
+export type FileViewerRendererPluginAssetKind =
+  | 'worker'
+  | 'wasm'
+  | 'script'
+  | 'style'
+  | 'font'
+  | 'vendor'
+  | 'data';
+
+export interface FileViewerRendererPluginAssetEntry {
+  id: string;
+  kind: FileViewerRendererPluginAssetKind;
+  source: string;
+  optional?: boolean;
+}
+
+export interface FileViewerRendererPluginAssetManifest {
+  packageName: string;
+  rendererId: string;
+  assets: readonly FileViewerRendererPluginAssetEntry[];
+}
+
+export interface FileViewerRendererHandlerRegistration<Handler = FileRenderHandler> {
+  rendererId: string;
+  handler: Handler;
+}
+
+export interface FileViewerRendererInstallContext<Handler = FileRenderHandler> {
+  registry: RendererRegistry;
+  registerHandler?: (registration: FileViewerRendererHandlerRegistration<Handler>) => void;
+}
+
+export interface FileViewerRendererPlugin<Handler = FileRenderHandler> {
+  id: string;
+  label?: string;
+  definitions?: readonly RendererDefinition[];
+  handlers?: readonly FileViewerRendererHandlerRegistration<Handler>[];
+  assets?: readonly FileViewerRendererPluginAssetManifest[];
+  install?: (context: FileViewerRendererInstallContext<Handler>) => void | Promise<void>;
+}
+
+export interface FileViewerRendererPreset<Handler = FileRenderHandler> {
+  id: string;
+  label?: string;
+  renderers: readonly FileViewerRendererPlugin<Handler>[];
+}
+
 export interface FileViewerInstance {
   readonly container: HTMLElement;
   load(source: FileViewerSource): Promise<RendererSession | null>;

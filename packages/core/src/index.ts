@@ -176,7 +176,10 @@ export type {
   FileViewerPublicOperationActionHandlers,
   ResolveFileViewerOperationActionErrorMessageInput,
 } from './viewer/operations';
-export { createRendererRegistry } from './registry/registry';
+export {
+  createRendererRegistry,
+  installFileViewerRendererPlugins,
+} from './registry/registry';
 export {
   coreBrowserRendererHandlers,
   createFileViewerCoreRendererRegistry,
@@ -766,6 +769,9 @@ export type {
   FileViewerSerializableToolbarOptions,
 } from './config/options';
 export type {
+  InstallFileViewerRendererPluginsOptions,
+} from './registry/registry';
+export type {
   CreateFileViewerRendererDispatcherOptions,
   FileViewerRendererDispatcher,
   FileViewerRendererHandlerEntry,
@@ -845,8 +851,15 @@ export type {
   FileViewerPrintOptions,
   FileViewerPublicApi,
   FileViewerRenderedInstance,
+  FileViewerRendererPluginAssetKind,
+  FileViewerRendererPluginAssetManifest,
+  FileViewerRendererPluginAssetEntry,
   FileViewerRenderStateKind,
   FileViewerRendererCategory,
+  FileViewerRendererHandlerRegistration,
+  FileViewerRendererInstallContext,
+  FileViewerRendererPlugin,
+  FileViewerRendererPreset,
   FileViewerSearchMatch,
   FileViewerSearchOptions,
   FileViewerSearchProvider,

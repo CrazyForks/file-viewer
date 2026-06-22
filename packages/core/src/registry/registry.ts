@@ -1,6 +1,11 @@
 import { DEFAULT_RENDERER_DEFINITIONS } from './formats';
 import { normalizeFileExtension } from '../source';
-import type { RendererDefinition, RendererRegistry } from '../contracts/types';
+import type {
+  FileViewerRendererHandlerRegistration,
+  FileViewerRendererPlugin,
+  RendererDefinition,
+  RendererRegistry,
+} from '../contracts/types';
 
 const normalizeDefinition = (definition: RendererDefinition): RendererDefinition => ({
   ...definition,
@@ -67,4 +72,30 @@ export const createRendererRegistry = (
       return Array.from(byExtension.keys()).sort();
     },
   };
+};
+
+export interface InstallFileViewerRendererPluginsOptions<Handler = unknown> {
+  registry: RendererRegistry;
+  plugins: Iterable<FileViewerRendererPlugin<Handler>>;
+  registerHandler?: (registration: FileViewerRendererHandlerRegistration<Handler>) => void;
+}
+
+export const installFileViewerRendererPlugins = async <Handler = unknown>({
+  registry,
+  plugins,
+  registerHandler,
+}: InstallFileViewerRendererPluginsOptions<Handler>) => {
+  for (const plugin of plugins) {
+    plugin.definitions?.forEach(definition => {
+      registry.register(definition);
+    });
+
+    plugin.handlers?.forEach(registration => {
+      registerHandler?.(registration);
+    });
+
+    await plugin.install?.({ registry, registerHandler });
+  }
+
+  return registry;
 };

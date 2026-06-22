@@ -67,6 +67,7 @@ export default defineConfig({
           items: [
             { text: '支持格式', link: '/guide/formats' },
             { text: '格式完整度', link: '/guide/format-fidelity' },
+            { text: '按需渲染架构', link: '/guide/on-demand-renderers' },
             { text: '常见问题', link: '/guide/faq' }
           ]
         },
