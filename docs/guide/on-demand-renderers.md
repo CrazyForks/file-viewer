@@ -17,11 +17,30 @@
 | 自动化友好 | 提供 preset、Vite 插件、资产复制 CLI 和校验脚本，让用户可以“一行装配”，也能精确控制企业内网部署资源。 |
 | 渐进兼容 | 先支持 `@file-viewer/preset-all` 维持完整能力，再逐步把默认安装切到 lightweight preset，避免一次性破坏现有客户。 |
 
+## 架构决策
+
+最终方案采用“轻 core + 独立 renderer + preset 编排 + 构建插件自动装配”的四层模型。
+
+| 层级 | 责任 | 不允许做的事 |
+| --- | --- | --- |
+| Core | 文件源加载、格式识别、renderer registry、生命周期、搜索/定位、缩放、打印导出、统一 options 和事件 API | 直接依赖 PDF.js、Office、CAD、Typst、WASM、地图、3D、压缩包等重库 |
+| Renderer package | 单条格式链路的解析、渲染、worker/wasm/vendor assets、样例、smoke 测试和 README | 把 Vue/React/Svelte 组件逻辑塞进 renderer；依赖其它 wrapper 的实现 |
+| Preset package | 把多个 renderer 组合成 `lite`、`office`、`engineering`、`all` 等业务能力包 | 隐式修改用户 options；在默认组件里偷偷安装全量依赖 |
+| Component package | Vue3、React、Svelte、jQuery、Vanilla JS 等原生组件体验，接收同一套 options 和 renderer/preset | 使用 iframe 作为主链路；复制 renderer 逻辑；制造不同框架的参数差异 |
+
+关键原则：
+
+- **默认轻量**：安装 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 只得到 core 和组件能力，不得到全部重渲染依赖。
+- **显式能力**：用户要 PDF、Office、CAD、Typst、Archive、3D 等能力时，通过 renderer 或 preset 显式引入。
+- **导入即装配**：业务代码 import 了哪个 renderer/preset，构建工具才有机会把对应依赖纳入产物；没有 import 的能力不进入最终 bundle。
+- **全量仍简单**：需要最完整体验时，`@file-viewer/preset-all` 保留“一行安装、一行装配”的路径，官方 demo 使用它展示完整能力。
+- **资产可追踪**：每个 renderer 的 worker、wasm、字体、vendor 文件必须通过 manifest/CLI 暴露，避免业务方手抄路径。
+
 ## 行业基线
 
-- 使用 ESM `import()` 做运行时拆分。Vite 生产构建基于 Rollup，动态导入会天然形成异步 chunk。
+- 使用 ESM `import()` 做运行时拆分。Vite 8 生产构建可以通过 `build.rolldownOptions.output.codeSplitting` 控制拆分；兼容 Vite 7 / Rollup 生态时继续支持 `build.rollupOptions.output.manualChunks`。
 - 使用 `package.json#exports` 暴露稳定子路径。Node.js 官方文档建议显式定义导出入口，避免用户引用内部文件。
-- 使用 Rollup `manualChunks` 或 Vite `build.rollupOptions.output.manualChunks` 给 demo / 官网这类应用稳定命名大型 renderer chunk。
+- 使用 renderer 级 chunk 命名策略给 demo / 官网这类应用稳定命名大型渲染链路，便于缓存和排查首屏体积。
 - 使用 optional peer / peerDependenciesMeta 时只作为“插件提示”，不把重依赖放回 core；renderer package 自己声明真实依赖。
 
 ## 最终包形态
@@ -36,6 +55,18 @@
 | `@file-viewer/preset-engineering` | CAD、3D、XMind、Draw.io、Excalidraw、Geo、EDA 结构预览 | 工程格式单独安装 |
 | `@file-viewer/preset-all` | 完整能力聚合包 | 需要全格式时一行安装，demo 和全量发行版使用 |
 | `@file-viewer/vite-plugin` | 自动生成 renderer virtual module、复制 assets、设置 manual chunks | 让业务项目按配置自动装配，不需要手写大量 import |
+
+## 用户最佳体验路径
+
+| 场景 | 推荐方式 | 安装体验 | 打包体验 |
+| --- | --- | --- | --- |
+| 只预览常见轻量附件 | 安装组件包 + `@file-viewer/preset-lite` | 最快，依赖最少 | 主包只包含轻量 renderer |
+| 只需要 PDF/Word/Excel | 安装组件包 + `@file-viewer/preset-office` 或单独 renderer | Office 依赖集中在 Office preset | 只会产生 Office 相关异步 chunk |
+| CAD/3D/Typst/Archive 等专项能力 | 安装对应 `@file-viewer/renderer-*` | 哪条链路用到才安装哪条 | worker/wasm 跟随 renderer asset manifest |
+| 企业内网全格式平台 | 安装组件包 + `@file-viewer/preset-all` + asset copy CLI | 一次性完整安装 | chunk 按 renderer 拆分，避免首屏全部执行 |
+| 大型业务前端希望自动化 | `@file-viewer/vite-plugin` 配置 `formats` | 由插件提示缺失 renderer | 自动生成 virtual module 和部署 manifest |
+
+因此“分包”不是让用户手动拼很多碎片，而是把默认能力变轻，把完整能力保留为 preset，把工程化项目交给插件自动装配。
 
 ## 用户接入方式
 
@@ -141,6 +172,56 @@ export const pdfRenderer: FileViewerRendererPlugin = {
 - wrapper 只负责把用户传入的 renderers 安装进 viewer，不复制渲染逻辑。
 - preset 只是 renderer plugin 数组，不再隐藏性地把所有依赖塞进默认组件包。
 
+## Renderer 交付契约
+
+每条独立 renderer 线路必须按同一套标准交付，防止“包拆出来了，但体验和维护反而变差”。
+
+| 项目 | 必须交付 |
+| --- | --- |
+| Package manifest | `package.json` 包含 `exports`、`types`、`files`、`publishConfig`、`repository.directory`、准确 `dependencies`，不引用其它 wrapper。 |
+| Public API | 默认导出 renderer plugin，同时命名导出 `xxxRenderer`、`xxxRendererDefinition` 和必要的低阶 `renderFileViewerXxx()`。 |
+| Lazy boundary | renderer 入口只注册定义和 handler；真实重库必须在 handler 内部 `import()`，避免装配时立即执行重逻辑。 |
+| Assets | worker/wasm/vendor/fonts 通过 manifest 或 copy helper 暴露；不能要求用户猜测 `node_modules` 内部路径。 |
+| Offline | 所有运行时资源可从 npm 包或 demo public 目录复制，不能依赖第三方 CDN。 |
+| Samples | 每个主要扩展名至少一个真实样例；复杂格式注明“结构预览 / 完整可视预览 / 需要商业转换链路”的边界。 |
+| Tests | `type-check`、`build`、format registry smoke、至少一个浏览器 smoke；WASM/worker renderer 需要资产存在校验。 |
+| Documentation | 中文/英文 README、文档站接入示例、支持格式矩阵、故障排查和内网部署说明。 |
+| Release | npm tarball 校验、公开源码仓同步、root README 和生态矩阵同步。 |
+
+## 自动装配设计
+
+`@file-viewer/vite-plugin` 是最终的工程化入口，目标不是替代显式 import，而是把显式 import 自动生成。
+
+```ts
+fileViewerRenderers({
+  formats: ['pdf', 'docx', 'xlsx', 'dwg', 'typst'],
+  preset: 'custom',
+  copyAssets: true,
+  chunkStrategy: 'renderer',
+  missingRenderer: 'error',
+})
+```
+
+插件需要完成：
+
+- 根据 `formats` 查 `renderer manifest`，生成 `virtual:file-viewer-renderers`。
+- 如果用户选择 `preset: 'all' | 'office' | 'engineering' | 'lite'`，自动 import 对应 preset。
+- 检查 package 是否已安装；缺失时给出明确安装命令，而不是运行时报错。
+- 复制 worker/wasm/vendor assets，并生成部署清单，服务于 Cloudflare Pages、Vercel、Docker、内网静态部署。
+- 为 Vite 8 生成 Rolldown code splitting 配置；为 Vite 7/Rollup/Rspack/Webpack 提供对应 adapter 或文档 fallback。
+- 产出 bundle 预算报告，让用户知道每条 renderer 带来的安装和打包成本。
+
+## 分阶段实施路线
+
+| 波次 | 目标 | 关键动作 | 完成证据 |
+| --- | --- | --- | --- |
+| Wave 0 | 建立依赖账本 | `audit:renderer-deps` 输出 core 直接重依赖、目标包、阶段和状态；新增安装体积/bundle 预算脚本 | CI 能报告 core 依赖数、packed size、demo 首屏 chunk |
+| Wave 1 | 完成 Phase 2 重链路拆出 | Word、Spreadsheet、OFD、Presentation、PDF、Typst、CAD、Archive 全部从 core 迁到 renderer 包 | `@file-viewer/core` 不再声明这些依赖；`preset-all` 格式矩阵不掉格式 |
+| Wave 2 | 完成 Phase 3 体验链路拆出 | Drawing、3D、MindMap、Geo、Email、Ebook、Text、Media、Image 独立维护 | 默认组件安装不带相关重库；各 renderer 有独立 smoke |
+| Wave 3 | 完成 Phase 4 专业内核 | EDA/GDS/OASIS/OrCAD/Allegro/Data Asset 独立内核化，复杂格式不挤进 core | 文档明确边界，复杂样例能结构化预览或进入专用内核 |
+| Wave 4 | 工程自动化 | `@file-viewer/vite-plugin`、asset manifest、virtual module、chunk strategy、离线部署校验 | 用户按 `formats` 配置即可自动生成 renderer 装配 |
+| Wave 5 | 默认轻量切换 | 组件包默认 `builtinRenderers: 'lite'` 或 `none`，全量能力改由 preset 显式启用 | 新项目 cold install 明显下降；旧全量 demo 仍完整 |
+
 ## 当前渲染线拆分计划
 
 | 阶段 | 渲染线 | 目标包 |
@@ -228,13 +309,44 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-当前 core 仍直接声明了完整渲染依赖，这是 2.x 后续要持续压缩的主工作线。短期先保留 `preset-all` 兼容，长期让默认组件包回到轻量安装体验。
+截至当前工作区，`@file-viewer/core` 仍直接声明 37 个渲染依赖：
+
+- Phase 2 还有 19 个依赖留在 core。
+- Phase 3 还有 14 个依赖留在 core。
+- Phase 4 还有 5 个依赖留在 core。
+
+这说明 renderer 包和 `preset-all` 已经具备雏形，但“默认安装轻量化”尚未完成。短期先保留 `preset-all` 兼容完整能力，长期验收标准是组件包默认安装不再拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
+
+## 终态验收门禁
+
+完成精细化渲染架构前，以下门禁必须全部通过：
+
+```bash
+pnpm audit:renderer-deps
+pnpm verify:core-framework-neutral
+pnpm verify:core-api
+pnpm verify:format-support
+pnpm verify:ecosystem-versions
+pnpm verify:production-entrypoints
+pnpm renderers:verify
+pnpm docs:build
+pnpm build-only
+```
+
+额外新增门禁：
+
+- `verify:core-dependency-budget`：core 的直接 runtime dependencies 必须只包含共享轻量依赖，重渲染依赖为 0。
+- `verify:renderer-assets`：每个 renderer 的 worker/wasm/vendor assets 都能从 npm tarball 复制出来。
+- `verify:renderer-standalone-smoke`：任意单 renderer + 任意 wrapper 能独立预览对应样例。
+- `verify:bundle-budget`：demo 主入口不包含 Office/CAD/Typst/Archive/3D 等重库，重链路全部落到 renderer chunk。
+- `verify:cold-install-budget`：记录并限制 `@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/preset-all` 的依赖数量和安装耗时。
 
 ## 外部参考
 
-- Vite 生产构建和动态导入 chunk: <https://vite.dev/guide/build>
+- Vite 生产构建、动态导入错误处理和 Vite 8 chunk 策略: <https://vite.dev/guide/build>
 - Rollup `manualChunks` 配置: <https://rollupjs.org/configuration-options/>
 - Node.js package `exports` 与 conditional exports: <https://nodejs.org/api/packages.html>
+- pnpm optional peer metadata: <https://pnpm.io/package_json#peerdependenciesmeta>
 
 <div class="doc-note">
   这个计划的核心不是“拆很多包”本身，而是让用户用到什么才安装什么、打包什么、部署什么。完整能力仍然保留，但默认体验必须轻。
