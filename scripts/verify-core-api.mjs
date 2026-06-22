@@ -335,18 +335,6 @@ const requiredTypeExports = [
   'MutableFileViewerZoomState',
   'FileViewerWatermarkPresentationState',
   'FileViewerWatermarkStyle',
-  'EdaDiagnostic',
-  'EdaDiagnosticLevel',
-  'EdaDomainRole',
-  'EdaEntity',
-  'EdaFileType',
-  'EdaParseResult',
-  'EdaParserMode',
-  'EdaProperty',
-  'EdaStats',
-  'EdaStreamKind',
-  'EdaStreamView',
-  'EdaTreeNode'
 ]
 
 const requiredInstanceMethods = [

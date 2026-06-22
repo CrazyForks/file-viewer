@@ -440,6 +440,7 @@ export default async function renderXMind(
   let suppressNodeClick = false;
   let spacePanning = false;
   let lostPointerCaptureTimer: number | undefined;
+  let mouseButtonReleaseTimer: number | undefined;
   let panFrame: number | undefined;
   let queuedPanPoint: { clientX: number; clientY: number } | null = null;
   let lastPanMoveAt = 0;
@@ -799,6 +800,7 @@ export default async function renderXMind(
       ownerWindow.clearTimeout(lostPointerCaptureTimer);
       lostPointerCaptureTimer = undefined;
     }
+    clearMouseButtonReleaseTimer();
     const moved = panState.moved;
     const pointerId = panState.pointerId;
     if (event && pointerId !== undefined && stage.hasPointerCapture?.(pointerId)) {
@@ -823,6 +825,35 @@ export default async function renderXMind(
     stage.classList.toggle('is-space-panning', enabled);
   };
 
+  const focusStage = () => {
+    try {
+      stage.focus({ preventScroll: true });
+    } catch {
+      try {
+        stage.focus();
+      } catch {
+        // Some embedded WebViews expose focus but reject focus options.
+      }
+    }
+  };
+
+  const clearMouseButtonReleaseTimer = () => {
+    if (mouseButtonReleaseTimer === undefined) {
+      return;
+    }
+    ownerWindow.clearTimeout(mouseButtonReleaseTimer);
+    mouseButtonReleaseTimer = undefined;
+  };
+
+  const scheduleMouseButtonReleaseFallback = () => {
+    clearMouseButtonReleaseTimer();
+    mouseButtonReleaseTimer = ownerWindow.setTimeout(() => {
+      if (panState?.source === 'mouse') {
+        clearPanState();
+      }
+    }, 900);
+  };
+
   const beginPan = (
     clientX: number,
     clientY: number,
@@ -832,7 +863,7 @@ export default async function renderXMind(
     if (status !== 'ready' || (!spacePanning && isPanBlockedTarget(targetValue))) {
       return false;
     }
-    stage.focus({ preventScroll: true });
+    focusStage();
     lastPanMoveAt = Date.now();
     panState = {
       source,
@@ -927,8 +958,9 @@ export default async function renderXMind(
       return;
     }
     if (event.buttons === 0) {
-      clearPanState();
-      return;
+      scheduleMouseButtonReleaseFallback();
+    } else {
+      clearMouseButtonReleaseTimer();
     }
     queuePanPoint(event.clientX, event.clientY);
     event.preventDefault();
@@ -1198,6 +1230,7 @@ export default async function renderXMind(
         ownerWindow.clearTimeout(lostPointerCaptureTimer);
         lostPointerCaptureTimer = undefined;
       }
+      clearMouseButtonReleaseTimer();
       if (panFrame !== undefined) {
         ownerWindow.cancelAnimationFrame(panFrame);
         panFrame = undefined;

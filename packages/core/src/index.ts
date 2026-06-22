@@ -260,8 +260,13 @@ export const renderFileViewerDataAsset = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderDataAsset } = await import('./renderers/data');
-  return renderDataAsset(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'Data asset rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-data, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerDrawing = async (
   buffer: ArrayBuffer,
@@ -283,8 +288,13 @@ export const renderFileViewerEda = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderEda } = await import('./renderers/eda');
-  return renderEda(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'EDA rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-eda, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerEmail = async (
   buffer: ArrayBuffer,
@@ -459,23 +469,16 @@ export const renderFileViewerSpreadsheet = async (
   const { default: renderSpreadsheet } = await import('./renderers/spreadsheet');
   return renderSpreadsheet(buffer, target, type, context);
 };
-export {
-  parseEdaFile,
-} from './renderers/edaParser';
-export type {
-  EdaDiagnostic,
-  EdaDiagnosticLevel,
-  EdaDomainRole,
-  EdaEntity,
-  EdaFileType,
-  EdaParseResult,
-  EdaParserMode,
-  EdaProperty,
-  EdaStats,
-  EdaStreamKind,
-  EdaStreamView,
-  EdaTreeNode,
-} from './renderers/edaParser';
+export const parseEdaFile = async (
+  buffer: ArrayBuffer,
+  type?: string
+): Promise<never> => {
+  void buffer;
+  void type;
+  throw new Error(
+    'EDA parsing has moved out of @file-viewer/core. Import parseEdaFile from @file-viewer/renderer-eda instead.'
+  );
+};
 export {
   ADAPTER_PRINT_REQUIRED_EXTENSIONS,
   createUnsupportedAvailability,

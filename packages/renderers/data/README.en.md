@@ -30,6 +30,10 @@ const options = {
 
 SQLite preview depends on the `sql.js` WASM file. The default URL is still resolved through `@file-viewer/core/assets` as `wasm/data/sql-wasm.wasm`, and applications can override it through `options.data.sqlWasmUrl`.
 
+## Migration Notes
+
+`@file-viewer/core` no longer bundles the data asset renderer and no longer installs `ag-psd`, `sql.js`, `hyparquet`, or `avsc` by default. Install this package explicitly, or use `@file-viewer/preset-all`, when you need PSD, SQLite, Parquet, Avro, WASM, font, AI, EPS, or WebArchive previews.
+
 ## Scope
 
 - PSD uses `ag-psd` for canvas and layer summary previews.

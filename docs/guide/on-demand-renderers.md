@@ -293,6 +293,8 @@ fileViewerRenderers({
 - [x] `@file-viewer/core` 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，地理数据完整能力统一通过 `@file-viewer/renderer-geo` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-data` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 PSD / SQLite / Parquet / Avro / WASM / 字体 / AI / EPS / WebArchive renderer。
 - [x] 建立 `@file-viewer/renderer-eda` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 OLB / DRA / GDSII / OASIS renderer。
+- [x] `@file-viewer/core` 已移除 data-asset 兼容入口和 `ag-psd` / `sql.js` / `hyparquet` / `avsc` 直接依赖，数据资产完整能力统一通过 `@file-viewer/renderer-data` 或 preset 装配；SQLite WASM 资产路径仍由 core manifest 统一发现。
+- [x] `@file-viewer/core` 已移除 EDA 兼容入口和 `cfb` 直接依赖，OLB / DRA / GDSII / OASIS 完整结构预览统一通过 `@file-viewer/renderer-eda` 或 preset 装配。
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
@@ -330,11 +332,11 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 16 个运行时依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 11 个运行时依赖：
 
 - Phase 2 还有 10 个依赖留在 core，其中 Presentation、Word、Archive 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、PDF、OFD、Typst 或 CAD 兼容链路，继续减少默认安装面。
 - Phase 3 已无重型体验链路依赖留在 core；XMind、Geo、HEIC、Drawing、3D、Email、Ebook、Text 和 Media 均通过独立 renderer 或 preset 装配。
-- Phase 4 还有 5 个依赖留在 core，其中 Data Asset 与 EDA 已分别建立 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立包；下一步是清理 core 兼容入口里的 `ag-psd`、`sql.js`、`hyparquet`、`avsc` 和 `cfb` 直接依赖。
+- Phase 4 已无依赖留在 core；Data Asset 与 EDA 已分别由 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立承接，复杂数据和工程二进制的后续内核演进不再污染默认安装面。
 
 这说明 renderer 包和 `preset-all` 已经具备雏形，但“默认安装轻量化”尚未完成。短期先保留 `preset-all` 兼容完整能力，长期验收标准是组件包默认安装不再拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。
 
@@ -352,6 +354,8 @@ pnpm audit:renderer-deps -- --json
 | GDS/OASIS | GDSII 已做记录级解析并输出 SVG 版图预览；OASIS 先做安全结构索引和诊断。 | 大文件版图后续走 WebGL/WASM，不进入 core 首屏链路。 |
 | DWF/DWFx/CAD | CAD 能力由 `@file-viewer/renderer-cad` 和 `@flyfish-dev/cad-viewer` 承接，WASM/Worker 资源通过资产 manifest 自托管。 | 随 cad-viewer 持续升级 DWF/DWFx、DWG/DXF 体验，core 只保留协议和资源发现。 |
 | Typst | `@file-viewer/renderer-typst` 按需加载 Typst WASM 编译和 SVG 渲染。 | 保持离线 WASM 配置入口，后续评估更轻量只读渲染内核。 |
+| Draw.io / Excalidraw | Draw.io 使用 diagrams.net 离线 viewer 与安全 SVG fallback；Excalidraw 使用官方 restore/exportToSvg 链路。 | 保持 vendor 离线随包分发，避免企业内网依赖公共 CDN。 |
+| OpenDocument | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析和 Office renderer 兼容链路。 | 复杂版式继续评估 WebODF / LibreOffice WASM，不进入 core 默认依赖。 |
 
 ## 终态验收门禁
 
@@ -390,6 +394,14 @@ pnpm build-only
 - Rollup `manualChunks` 配置: <https://rollupjs.org/configuration-options/>
 - Node.js package `exports` 与 conditional exports: <https://nodejs.org/api/packages.html>
 - pnpm optional peer metadata: <https://pnpm.io/package_json#peerdependenciesmeta>
+- XMind ZIP / `content.json` 解析事实标准参考: <https://wanglin2.github.io/mind-map-docs/en/api/xmind.html>
+- Typst 浏览器 WASM 渲染链路: <https://github.com/myriad-dreamin/typst.ts>
+- diagrams.net / draw.io 离线 viewer 和 XML 格式参考: <https://github.com/jgraph/drawio>
+- Excalidraw 官方 restore / export utilities: <https://docs.excalidraw.com/docs/@excalidraw/excalidraw/api/utils>
+- libarchive 流式归档格式能力: <https://www.libarchive.org/>
+- WebODF / ODF 浏览器渲染参考: <https://webodf.org/>
+- OrCAD / Allegro 开源解析器路线: <https://github.com/Werni2A/OpenOrCadParser>、<https://github.com/Werni2A/OpenAllegroParser>
+- GDSII 格式与 JS 解析参考: <https://layouteditor.org/layout/file-formats/gdsii>、<https://github.com/TinyTapeout/gdsii>
 
 <div class="doc-note">
   这个计划的核心不是“拆很多包”本身，而是让用户用到什么才安装什么、打包什么、部署什么。完整能力仍然保留，但默认体验必须轻。

@@ -30,6 +30,10 @@ const options = {
 
 SQLite 预览依赖 `sql.js` WASM。默认路径仍由 `@file-viewer/core/assets` 统一解析为 `wasm/data/sql-wasm.wasm`，也可以通过 `options.data.sqlWasmUrl` 指定自托管地址。
 
+## 迁移说明
+
+`@file-viewer/core` 已不再内置数据资产 renderer，也不再默认安装 `ag-psd`、`sql.js`、`hyparquet` 和 `avsc`。需要 PSD / SQLite / Parquet / Avro / WASM / 字体 / AI / EPS / WebArchive 预览时，请显式安装本包，或使用 `@file-viewer/preset-all` 聚合能力。
+
 ## 能力边界
 
 - PSD 使用 `ag-psd` 读取画布和图层摘要。

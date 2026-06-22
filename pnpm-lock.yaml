@@ -411,21 +411,9 @@ importers:
       '@myriaddreamin/typst.ts':
         specifier: 0.7.0
         version: 0.7.0(@myriaddreamin/typst-ts-renderer@0.7.0)(@myriaddreamin/typst-ts-web-compiler@0.7.0)
-      ag-psd:
-        specifier: ^30.1.1
-        version: 30.1.1
-      avsc:
-        specifier: ^5.7.9
-        version: 5.7.9
-      cfb:
-        specifier: ^1.2.2
-        version: 1.2.2
       e-virt-table:
         specifier: ^1.3.26
         version: 1.3.26
-      hyparquet:
-        specifier: ^1.26.0
-        version: 1.26.0
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -438,9 +426,6 @@ importers:
       pdfjs-dist:
         specifier: ^6.0.227
         version: 6.0.227
-      sql.js:
-        specifier: ^1.14.1
-        version: 1.14.1
       styled-exceljs:
         specifier: 0.21.1
         version: 0.21.1

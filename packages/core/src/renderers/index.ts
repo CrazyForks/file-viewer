@@ -65,13 +65,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     },
   },
   {
-    rendererId: 'eda',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderEda } = await import('./eda');
-      return renderEda(buffer, target, type, context);
-    },
-  },
-  {
     rendererId: 'cad',
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderCad } = await import('./cad');
@@ -83,13 +76,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
     handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
       const { default: renderTypst } = await import('./typst');
       return renderTypst(buffer, target, type, context);
-    },
-  },
-  {
-    rendererId: 'data-asset',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderDataAsset } = await import('./data');
-      return renderDataAsset(buffer, target, type, context);
     },
   },
 ];

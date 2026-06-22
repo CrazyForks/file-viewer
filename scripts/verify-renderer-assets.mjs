@@ -29,6 +29,24 @@ const {
 } = await import(pathToFileURL(join(coreEntry.absoluteDir, 'dist', 'platform', 'assets.js')).href)
 
 const coreRequire = createRequire(join(coreEntry.absoluteDir, 'package.json'))
+const rendererEntryByPackageName = new Map(
+  rendererEntries.map(entry => [entry.packageName, entry])
+)
+const rendererEntryByRendererId = new Map()
+for (const entry of rendererEntries) {
+  if (entry.renderer?.id) {
+    rendererEntryByRendererId.set(entry.renderer.id, entry)
+  }
+}
+for (const line of rendererModularizationLines) {
+  const targetEntry = rendererEntryByPackageName.get(line.targetPackage)
+  if (!targetEntry) {
+    continue
+  }
+  for (const rendererId of line.renderers) {
+    rendererEntryByRendererId.set(rendererId, targetEntry)
+  }
+}
 const plannedRendererIds = new Set(
   rendererModularizationLines.flatMap(line => line.renderers)
 )
@@ -234,7 +252,18 @@ function verifyAssetManifestShape() {
       assert(asset.defaultPath || asset.defaultUrl || asset.packagePath, `${asset.id} must declare a default path, URL, or packagePath`)
       assertSafeManifestPath(asset, 'defaultPath', asset.defaultPath)
       if (asset.packagePath) {
-        assertFile(coreRequire.resolve(asset.packagePath), `${asset.id} package asset ${asset.packagePath}`)
+        const assetEntry = rendererEntryByRendererId.get(asset.rendererId) || coreEntry
+        const assetRequire = createRequire(join(assetEntry.absoluteDir, 'package.json'))
+        let resolvedAssetPath
+        try {
+          resolvedAssetPath = assetRequire.resolve(asset.packagePath)
+        } catch (error) {
+          if (assetEntry === coreEntry) {
+            throw error
+          }
+          resolvedAssetPath = coreRequire.resolve(asset.packagePath)
+        }
+        assertFile(resolvedAssetPath, `${asset.id} package asset ${asset.packagePath}`)
       }
     }
   }

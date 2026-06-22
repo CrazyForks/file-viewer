@@ -6,13 +6,28 @@ import { fileURLToPath } from 'node:url'
 
 const require = createRequire(import.meta.url)
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)))
+const packageResolveFallbacks = [
+  'packages/core/package.json',
+  'packages/renderers/cad/package.json',
+  'packages/renderers/typst/package.json',
+  'packages/renderers/data/package.json',
+  'packages/renderers/pdf/package.json',
+  'packages/renderers/archive/package.json',
+  'packages/renderers/drawing/package.json',
+  'packages/renderers/word/package.json'
+].map(path => join(projectRoot, path)).filter(existsSync)
 const resolveFromProject = specifier => {
   try {
     return require.resolve(specifier)
   } catch {
-    const corePackageJson = join(projectRoot, 'packages/core/package.json')
-    const coreRequire = createRequire(corePackageJson)
-    return coreRequire.resolve(specifier)
+    for (const packageJson of packageResolveFallbacks) {
+      try {
+        return createRequire(packageJson).resolve(specifier)
+      } catch {
+        // Keep probing renderer-owned dependencies after core sheds them.
+      }
+    }
+    throw new Error(`[file-viewer] Unable to resolve package asset ${specifier}`)
   }
 }
 const findPackageJsonFromEntry = entry => {

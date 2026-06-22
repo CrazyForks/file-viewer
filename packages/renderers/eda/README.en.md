@@ -33,6 +33,10 @@ const options = {
 - `olb` / `dra` use `cfb` to inspect common compound document containers and expose stream trees, entity candidates, properties, strings, and diagnostics.
 - High-fidelity OrCAD / Allegro / OASIS graphics should evolve as a dedicated WASM or incremental rendering kernel.
 
+## Migration Notes
+
+`@file-viewer/core` no longer bundles the EDA renderer and no longer installs `cfb` by default. Install this package explicitly, or use `@file-viewer/preset-all`, when you need OLB, DRA, GDSII, or OASIS previews. The low-level `parseEdaFile()` API is exported from this package for business-side structure indexing, diagnostics, or future custom WASM engine integration.
+
 ## Offline Deployment
 
 The current EDA renderer does not require extra Worker or WASM assets. It only loads `cfb` and this renderer package when OLB, DRA, GDSII, or OASIS formats are selected.

@@ -33,6 +33,10 @@ const options = {
 - `olb` / `dra` 使用 `cfb` 读取常见复合文档容器，展示结构树、对象候选、属性、可读字符串和诊断。
 - 复杂 OrCAD / Allegro / OASIS 高保真图形能力后续会继续演进为独立 WASM/增量渲染内核。
 
+## 迁移说明
+
+`@file-viewer/core` 已不再内置 EDA renderer，也不再默认安装 `cfb`。需要 OLB / DRA / GDSII / OASIS 预览时，请显式安装本包，或使用 `@file-viewer/preset-all`。底层 `parseEdaFile()` 也从本包导出，适合业务侧做结构索引、诊断和后续自研 WASM 内核对接。
+
 ## 离线部署
 
 当前 EDA renderer 没有额外 Worker/WASM 静态资产。它只在命中 OLB、DRA、GDSII 或 OASIS 格式时加载 `cfb` 和本包解析代码。
