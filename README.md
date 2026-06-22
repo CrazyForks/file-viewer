@@ -150,7 +150,6 @@ GitHub Release 会同步提供完整下载项:
 `file-viewer3` 非 scoped 历史兼容包仍会走 npm 发布链路；开源总仓库下载区使用 `flyfish-group-file-viewer3-*.tgz` 作为 Vue3 兼容 tarball，避免重复存储相同包体。
 
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
-
 ## 标准生态包与公开仓库
 
 下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/registry/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。

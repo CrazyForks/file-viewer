@@ -2,6 +2,13 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.0.10` DOCX 自研渲染引擎稳定版
+
+- 全生态包版本同步推进到 `2.0.10`，Demo、组件 Demo、官网、文档站和开源总仓库统一使用当前 DOCX 主链路
+- `@file-viewer/core` 继续使用自研 `@file-viewer/docx@0.3.10`，默认 Worker 解析、连续流式阅读、目录字段缓存、异步分批渲染和离线 `workerUrl` / `workerJsZipUrl` 资源配置
+- DOCX 默认保持流式布局，避免复杂目录、长表格、制表符、样式继承和中文正式文档在视觉分页中被拆坏；需要页式效果的业务仍可显式开启 `options.docx.visualPagination`
+- 开源 README、文档站、组件 README、Demo 样例与发布产物统一以当前 DOCX 能力为准，便于客户直接升级验证
+
 ## `v2.0.9` 生态文档与定制能力完善版本
 
 - 文档站、README 和各生态组件 README 全量补齐实际支持的 props / options / events / controller API，覆盖 Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte、core 与兼容 alias 包

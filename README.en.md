@@ -160,7 +160,6 @@ GitHub Releases provide all distribution downloads:
 The unscoped `file-viewer3` historical alias remains part of the npm release flow. The open-source main repository uses `flyfish-group-file-viewer3-*.tgz` as the Vue 3 compatibility tarball to avoid storing duplicate package bodies.
 
 <!-- FILE_VIEWER_PUBLIC_GENERATED:START -->
-
 ## Standard Ecosystem Packages and Public Repositories
 
 This section is generated from `ecosystem/wrappers.json` and `packages/core/src/registry/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.

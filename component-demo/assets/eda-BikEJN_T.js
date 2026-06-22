@@ -1,0 +1,80 @@
+import{c as e}from"./styles-CAXI2Pzl.js";var t={root:`根`,library:`库`,symbol:`元件符号`,footprint:`封装`,padstack:`Padstack`,drawing:`图纸`,metadata:`元数据`,property:`属性`,geometry:`几何`,net:`网络`,unknown:`未知`},n={high:`高`,medium:`中`,low:`低`},r=`
+.eda-viewer{position:relative;height:100%;min-height:0;display:flex;flex-direction:column;background:#edf1f5;color:#172033;box-sizing:border-box}
+.eda-viewer *{box-sizing:border-box}
+.eda-header{min-height:84px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 176px 18px 22px;border-bottom:1px solid rgba(23,32,51,.08);background:#fff}
+.eda-header span,.eda-panel-head span{color:#0b7480;font-size:12px;font-weight:900;letter-spacing:0}
+.eda-header h2{margin:4px 0 0;font-size:22px;line-height:1.2}
+.eda-header dl{display:grid;grid-template-columns:repeat(4,minmax(70px,auto));gap:10px;margin:0}
+.eda-header dt,.eda-header dd,.eda-entity-group dl,.eda-entity-group dt,.eda-entity-group dd{margin:0}
+.eda-header dt{color:#718096;font-size:12px}
+.eda-header dd{color:#172033;font-weight:900}
+.eda-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,32%) minmax(0,1fr)}
+.eda-sidebar{min-height:0;display:flex;flex-direction:column;gap:12px;padding:16px;border-right:1px solid rgba(23,32,51,.08);background:rgba(255,255,255,.74)}
+.eda-summary,.eda-warning,.eda-panel,.eda-error{border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}
+.eda-summary,.eda-warning{padding:12px}
+.eda-summary strong{display:block;color:#172033}
+.eda-summary p,.eda-warning p,.eda-empty p,.eda-entity-group p{margin:6px 0 0;color:#64748b;line-height:1.55}
+.eda-mini-grid,.eda-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.eda-mini-grid div,.eda-stat-grid div{min-width:0;padding:10px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}
+.eda-mini-grid span,.eda-stat-grid span{display:block;color:#718096;font-size:12px}
+.eda-mini-grid strong,.eda-stat-grid strong{display:block;margin-top:4px;overflow:hidden;color:#172033;font-size:18px;text-overflow:ellipsis;white-space:nowrap}
+.eda-warning{background:#fff7e8;color:#8a4b00}
+.eda-search{height:42px;padding:0 12px;border-radius:12px;border:1px solid rgba(23,32,51,.1);outline:none;background:#fff;font:inherit}
+.eda-stream-list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.eda-stream{min-height:78px;display:grid;grid-template-columns:74px minmax(0,1fr);gap:8px 10px;align-items:center;padding:10px;border:1px solid rgba(23,32,51,.08);border-radius:13px;background:#fff;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.eda-stream:hover,.eda-stream.active,.eda-tree button:hover,.eda-tree button.active,.eda-entity-group button:hover{border-color:rgba(11,116,128,.3);box-shadow:0 10px 22px rgba(23,32,51,.08)}
+.eda-stream span{grid-row:span 3;min-height:40px;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;border-radius:10px;background:rgba(11,116,128,.12);color:#0b7480;font-size:11px;font-weight:900}
+.eda-stream span[data-role='symbol']{background:rgba(34,134,90,.14);color:#1d7a52}
+.eda-stream span[data-role='footprint'],.eda-stream span[data-role='padstack']{background:rgba(111,87,190,.14);color:#5c47a5}
+.eda-stream strong,.eda-stream em,.eda-tree strong,.eda-tree em,.eda-tree small,.eda-entity-group strong,.eda-entity-group span,.eda-entity-group dd{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eda-stream em,.eda-stream small{color:#718096;font-size:12px;font-style:normal}
+.eda-preview{min-width:0;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:16px}
+.eda-panel{min-height:0;overflow:hidden}
+.eda-panel-head{min-height:54px;padding:12px 14px;border-bottom:1px solid rgba(23,32,51,.08)}
+.eda-panel-head strong{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eda-panel--compact .eda-panel-head{min-height:auto}
+.eda-stat-grid{padding:14px}
+.eda-stat-grid div{background:#f6f9fb}
+.eda-topology,.eda-bottom{min-height:300px;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:14px}
+.eda-topology>.eda-panel{min-height:360px;max-height:min(58vh,620px);display:flex;flex-direction:column}
+.eda-tree,.eda-entities,.eda-diagnostics,.eda-string-grid{min-height:0;max-height:380px;overflow:auto;overscroll-behavior:contain}
+.eda-tree{flex:1;max-height:none;padding:10px}
+.eda-entities{flex:1;max-height:none;padding:12px}
+.eda-tree button{width:100%;min-height:42px;display:grid;grid-template-columns:minmax(22px,auto) minmax(0,1fr) minmax(72px,auto) minmax(72px,auto);gap:8px;align-items:center;margin-bottom:6px;padding:8px;border:1px solid rgba(23,32,51,.06);border-radius:10px;background:#f8fafc;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.eda-tree span{color:#0b7480;font-weight:900}
+.eda-tree em,.eda-tree small{color:#718096;font-size:12px;font-style:normal}
+.eda-entity-group+.eda-entity-group{margin-top:16px}
+.eda-entity-group h3{margin:0 0 8px;color:#172033;font-size:14px}
+.eda-entity-group button{width:100%;display:block;margin-bottom:8px;padding:12px;border:1px solid rgba(23,32,51,.08);border-radius:12px;background:#f8fafc;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.eda-entity-group button>span{display:block;margin-top:4px;color:#718096;font-size:12px}
+.eda-entity-group dl{display:grid;gap:6px;margin-top:10px}
+.eda-entity-group dl div{min-width:0;display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px;color:#475569;font-size:12px}
+.eda-entity-group dt{color:#718096;font-weight:800}
+.eda-selected-meta,.eda-property-grid,.eda-local-strings{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px 0}
+.eda-selected-meta span,.eda-property-grid div,.eda-local-strings span{min-width:0;display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#eef6f7;color:#0b7480;font-size:12px;font-weight:800}
+.eda-selected-meta span,.eda-local-strings span{padding:6px 10px}
+.eda-property-grid div{max-width:100%;padding:6px 10px}
+.eda-property-grid span{color:#64748b;font-weight:700}
+.eda-property-grid strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eda-panel pre{min-height:220px;max-height:440px;margin:12px 0 0;overflow:auto;padding:16px;border-top:1px solid rgba(23,32,51,.08);background:#101725;color:#d9e7ff;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.eda-empty{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.eda-string-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));align-content:start;gap:8px;padding:14px}
+.eda-string-grid span{min-width:0;padding:8px 10px;border-radius:10px;background:#f6f9fb;color:#334155;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eda-diagnostics{padding:14px}
+.eda-diagnostics p{margin:0 0 8px;padding:10px;border-radius:10px;background:#f6f9fb;color:#475569;line-height:1.5}
+.eda-diagnostics p[data-level='warning']{background:#fff7e8;color:#8a4b00}
+.eda-diagnostics span{display:inline-flex;margin-right:8px;color:#0b7480;font-size:11px;font-weight:900;text-transform:uppercase}
+.eda-local-strings{padding-bottom:14px}
+.eda-local-strings strong{width:100%;color:#172033;font-size:13px}
+.eda-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(237,241,245,.9);z-index:2}
+.eda-state span{width:32px;height:32px;border-radius:999px;border:3px solid rgba(11,116,128,.16);border-top-color:#0b7480;animation:eda-spin .9s linear infinite}
+.eda-error{position:absolute;right:18px;bottom:18px;width:min(440px,calc(100% - 36px));padding:14px;background:#fff7e8;color:#8a4b00;z-index:3}
+@keyframes eda-spin{to{transform:rotate(360deg)}}
+.file-viewer[data-viewer-theme='dark'] .eda-viewer{background:#172033;color:#e5eef8}
+.file-viewer[data-viewer-theme='dark'] .eda-header,.file-viewer[data-viewer-theme='dark'] .eda-summary,.file-viewer[data-viewer-theme='dark'] .eda-panel,.file-viewer[data-viewer-theme='dark'] .eda-sidebar{background:#fff;color:#172033}
+@media (prefers-color-scheme:dark){.file-viewer[data-viewer-theme='system'] .eda-viewer{background:#172033;color:#e5eef8}.file-viewer[data-viewer-theme='system'] .eda-header,.file-viewer[data-viewer-theme='system'] .eda-summary,.file-viewer[data-viewer-theme='system'] .eda-panel,.file-viewer[data-viewer-theme='system'] .eda-sidebar{background:#fff;color:#172033}}
+@media (max-width:980px){.eda-header,.eda-body,.eda-topology,.eda-bottom{grid-template-columns:1fr}.eda-header{align-items:flex-start;flex-direction:column;padding-right:22px}.eda-body{display:flex;flex-direction:column}.eda-sidebar{max-height:42vh;border-right:0;border-bottom:1px solid rgba(23,32,51,.08)}}
+@media (max-width:640px){.eda-header dl,.eda-mini-grid,.eda-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.eda-tree button{grid-template-columns:minmax(22px,auto) minmax(0,1fr)}.eda-tree em,.eda-tree small{display:none}}
+`,i=e=>{if(!Number.isFinite(e)||e<0)return`-`;if(e<1024)return`${e} B`;let t=e/1024/1024;return t>=1?`${t.toFixed(+(t<10))} MB`:`${(e/1024).toFixed(+(e<10*1024))} KB`},a=e=>t[e]||e,o=e=>e===`storage`?`目录`:e===`text`?`文本`:`二进制`,s=e=>e.replace(/^\/+/,``).toLowerCase(),c=(e,t=0)=>e.flatMap(e=>[{...e,depth:t},...c(e.children,t+1)]),l=()=>{let e=document.createElement(`style`);return e.textContent=r,e},u=(e,t,n)=>{let r=document.createElement(e);return t&&(r.className=t),n!==void 0&&(r.textContent=n),r},d=(e,t,n)=>{let r=document.createElement(`div`);r.append(u(`dt`,void 0,t),u(`dd`,void 0,n)),e.append(r)},f=(e,t,n)=>{let r=u(`div`,`eda-panel-head`);r.append(u(`span`,void 0,t),u(`strong`,void 0,n)),e.append(r)},ee=e=>{let t=e.stats;return[{label:`文本流`,value:t.textStreams},{label:`二进制流`,value:t.binaryStreams},{label:`目录`,value:t.storageEntries},{label:`属性`,value:t.propertyCount},{label:`符号`,value:t.symbolCount},{label:`封装`,value:t.footprintCount},{label:`Padstack`,value:t.padstackCount},{label:`可信度`,value:n[t.confidence]}]},p=e=>{let t=[{role:`symbol`,label:`元件符号`,items:[]},{role:`footprint`,label:`封装图形`,items:[]},{role:`padstack`,label:`Padstack`,items:[]},{role:`drawing`,label:`图纸信息`,items:[]}];return t.forEach(t=>{t.items=e.filter(e=>e.role===t.role)}),t.filter(e=>e.items.length)},m=(e,t,n)=>{let r=u(`div`,n);t.forEach(e=>{let t=document.createElement(`div`);t.append(u(`span`,void 0,e.label),u(`strong`,void 0,String(e.value))),r.append(t)}),e.append(r)},h=(e,t)=>{let n=u(`div`,`eda-empty`);return n.append(u(`strong`,void 0,e),u(`p`,void 0,t)),n};async function g(t,r,g=`olb`,_){let v=g===`dra`?`dra`:`olb`,y=_?.filename||`preview.${v}`,b=u(`section`,`eda-viewer`),x=l(),S=[],C=null;r.replaceChildren(x,b);let w=(e,t,n)=>{e.addEventListener(t,n),S.push(()=>e.removeEventListener(t,n))},T=()=>{let e=u(`div`,`eda-state`);return e.append(u(`span`),u(`strong`,void 0,`正在解析 ${v.toUpperCase()}...`)),b.append(e),e},E=e=>{let t=u(`div`,`eda-error`);t.append(u(`strong`,void 0,`EDA 预览提示`),u(`p`,void 0,e)),b.append(t)},D=e=>{C=e.streams.find(e=>e.properties.length)||e.streams.find(e=>e.kind===`text`)||e.streams[0]||null;let t=ee(e),r=c(e.tree),l=p(e.entities);b.replaceChildren();let g=u(`header`,`eda-header`),_=document.createElement(`div`);_.append(u(`span`,void 0,e.parser===`cfb`?`CFB STRUCTURE VIEWER`:`BINARY STRUCTURE VIEWER`),u(`h2`,void 0,y));let v=document.createElement(`dl`);d(v,`格式`,e.type.toUpperCase()),d(v,`大小`,i(e.byteLength)),d(v,`条目`,String(e.streamCount)),d(v,`可信度`,n[e.stats.confidence]),g.append(_,v);let x=u(`div`,`eda-body`),S=u(`aside`,`eda-sidebar`),T=u(`div`,`eda-summary`);if(T.append(u(`strong`,void 0,e.title),u(`p`,void 0,`OLB / DRA 属于 OrCAD / Allegro 生态的私有设计数据。预览器优先解析 CFB 结构、对象候选、属性和可读文本，并在纯前端安全退化。`)),S.append(T),m(S,t.slice(0,4),`eda-mini-grid`),e.warnings.length){let t=u(`div`,`eda-warning`);e.warnings.forEach(e=>t.append(u(`p`,void 0,e))),S.append(t)}let E=u(`input`,`eda-search`);E.type=`search`,E.placeholder=`筛选路径、角色、属性或文本`,S.append(E);let D=u(`div`,`eda-stream-list`),O=u(`main`,`eda-preview`),k=[],A=u(`section`,`eda-panel`),j=u(`div`,`eda-panel-head`),M=u(`span`,void 0,`当前条目`),N=u(`strong`,void 0,`未选择`);j.append(M,N);let P=u(`div`,`eda-selected-meta`),F=u(`div`,`eda-property-grid`),I=document.createElement(`div`);A.append(j,P,F,I);let L=u(`div`,`eda-local-strings`),R=()=>{if(k.forEach(({path:e,button:t})=>{t.classList.toggle(`active`,s(e)===s(C?.path||``))}),N.textContent=C?.path||`未选择`,P.replaceChildren(),F.replaceChildren(),I.replaceChildren(),L.replaceChildren(),!C){I.append(h(`目录条目`,`该节点用于组织下级流，没有可直接展示的文本或十六进制片段。`));return}P.append(u(`span`,void 0,a(C.role)),u(`span`,void 0,o(C.kind)),u(`span`,void 0,i(C.size))),C.properties.forEach(e=>{let t=document.createElement(`div`);t.append(u(`span`,void 0,e.key),u(`strong`,void 0,e.value)),F.append(t)});let e=C.sample||C.hex||``;e?I.append(u(`pre`,void 0,e)):I.append(h(`目录条目`,`该节点用于组织下级流，没有可直接展示的文本或十六进制片段。`)),C.strings.length&&(L.append(u(`strong`,void 0,`当前条目字符串`)),C.strings.forEach(e=>L.append(u(`span`,void 0,e))))},z=e=>{C=e,R()},B=t=>{let n=s(t.path),r=e.streams.find(e=>s(e.path)===n);r&&z(r)},V=t=>{let n=s(t.path),r=e.streams.find(e=>{let t=s(e.path);return t===n||t.startsWith(`${n}/`)});r&&z(r)},H=(e,t)=>{if(!t)return!0;let n=e.properties.map(e=>`${e.key}=${e.value}`).join(`
+`);return`${e.path}\n${e.name}\n${e.kind}\n${e.role}\n${e.sample||``}\n${e.strings.join(`
+`)}\n${n}`.toLowerCase().includes(t)},U=()=>{let t=E.value.trim().toLowerCase();D.replaceChildren(),k=[],e.streams.filter(e=>H(e,t)).forEach(e=>{let t=u(`button`,`eda-stream`);t.type=`button`;let n=u(`span`,void 0,a(e.role));n.dataset.role=e.role,t.append(n,u(`strong`,void 0,e.name||e.path),u(`em`,void 0,e.path),u(`small`,void 0,`${o(e.kind)} · ${i(e.size)}`)),w(t,`click`,()=>z(e)),k.push({path:e.path,button:t}),D.append(t)}),R()};w(E,`input`,U),S.append(D);let W=u(`section`,`eda-panel eda-panel--compact`);f(W,`解析概览`,`${e.parser.toUpperCase()} · ${i(e.totalStreamBytes)}`),m(W,t,`eda-stat-grid`);let G=u(`section`,`eda-topology`),K=u(`div`,`eda-panel`);f(K,`结构树`,`${r.length} 节点`);let q=u(`div`,`eda-tree`);r.forEach(e=>{let t=u(`button`);t.type=`button`;let n=u(`span`,void 0,e.children.length?`▸`:`•`);n.style.paddingLeft=`${e.depth*14}px`,t.append(n,u(`strong`,void 0,e.name),u(`em`,void 0,a(e.role)),u(`small`,void 0,e.size?i(e.size):o(e.kind))),w(t,`click`,()=>B(e)),q.append(t)}),K.append(q);let J=u(`div`,`eda-panel`);if(f(J,`EDA 对象`,`${e.entities.length} 项`),l.length){let e=u(`div`,`eda-entities`);l.forEach(t=>{let n=u(`div`,`eda-entity-group`);n.append(u(`h3`,void 0,t.label)),t.items.forEach(e=>{let t=u(`button`);t.type=`button`,t.append(u(`strong`,void 0,e.name),u(`span`,void 0,`${i(e.byteLength)} · ${e.streamCount} 条目`)),e.description&&t.append(u(`p`,void 0,e.description));let r=document.createElement(`dl`),a=(e,t)=>{let n=Array.isArray(t)?t.join(`, `):t;n&&d(r,e,n)};a(`Footprint`,e.footprint),a(`Pins`,e.pins),a(`Layers`,e.layers),a(`Keywords`,e.keywords),t.append(r),w(t,`click`,()=>V(e)),n.append(t)}),e.append(n)}),J.append(e)}else J.append(h(`没有明确对象候选`,`仍可从结构树、属性和字符串索引中查看可读内容。`));G.append(K,J);let Y=u(`section`,`eda-bottom`),X=u(`div`,`eda-panel`);f(X,`可读字符串`,`${e.strings.length} 项`);let Z=u(`div`,`eda-string-grid`);e.strings.forEach(e=>Z.append(u(`span`,void 0,e))),X.append(Z);let Q=u(`div`,`eda-panel`);f(Q,`诊断`,`${e.diagnostics.length} 条`);let $=u(`div`,`eda-diagnostics`);e.diagnostics.forEach(e=>{let t=u(`p`);t.dataset.level=e.level,t.append(u(`span`,void 0,e.level),document.createTextNode(e.message)),$.append(t)}),Q.append($,L),Y.append(X,Q),O.append(W,G,A,Y),x.append(S,O),b.append(g,x),U()},O=T();try{D(await e(t,v))}catch(e){console.error(e),b.replaceChildren(),E(e instanceof Error?e.message:String(e))}finally{O.remove()}return{$el:b,unmount(){S.splice(0).forEach(e=>e()),C=null,r.replaceChildren()}}}export{g as default};
