@@ -402,15 +402,6 @@ importers:
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)
-      '@myriaddreamin/typst-ts-renderer':
-        specifier: 0.7.0
-        version: 0.7.0
-      '@myriaddreamin/typst-ts-web-compiler':
-        specifier: 0.7.0
-        version: 0.7.0
-      '@myriaddreamin/typst.ts':
-        specifier: 0.7.0
-        version: 0.7.0(@myriaddreamin/typst-ts-renderer@0.7.0)(@myriaddreamin/typst-ts-web-compiler@0.7.0)
       e-virt-table:
         specifier: ^1.3.26
         version: 1.3.26

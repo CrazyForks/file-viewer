@@ -273,6 +273,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-presentation` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 OOXML 演示文稿 renderer。
 - [x] 建立 `@file-viewer/renderer-cad` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 CAD renderer。
 - [x] 建立 `@file-viewer/renderer-typst` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Typst renderer。
+- [x] `@file-viewer/core` 已移除 Typst 兼容入口和 `@myriaddreamin/*` 直接依赖，Typst 真实 WASM 预览统一通过 `@file-viewer/renderer-typst` 或 preset 装配；compiler / renderer WASM 资产路径仍由 core manifest 统一发现。
 - [x] 建立 `@file-viewer/renderer-archive` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 archive renderer。
 - [x] 建立 `@file-viewer/renderer-email` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EML / MSG / MBOX renderer。
 - [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
@@ -301,7 +302,7 @@ fileViewerRenderers({
 - [ ] 每个 renderer 包有独立 `package.json#exports`、README、assets manifest、type-check、build、browser smoke。
 - [ ] demo 使用 `preset-all`，业务组件 README 默认展示 lite/office/cad 按需安装示例。
 - [ ] 全量 preset 和历史兼容包仍能覆盖原来的格式矩阵。
-- [ ] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer`、`@myriaddreamin/*` 和 Spreadsheet 等剩余重型渲染依赖；PDF.js 和 OFD 解析依赖已随独立 renderer 从默认 core 安装面移出。
+- [ ] 安装 `@file-viewer/vue3` 不再安装 `@flyfish-dev/cad-viewer` 和 Spreadsheet 等剩余重型渲染依赖；PDF.js、OFD 解析依赖和 Typst `@myriaddreamin/*` 已随独立 renderer 从默认 core 安装面移出。
 
 ### Phase 3：体验与自动化
 
@@ -335,9 +336,9 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 8 个运行时依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 5 个运行时依赖：
 
-- Phase 2 还有 7 个依赖留在 core，其中 Presentation、Word、PDF、OFD、Archive 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、Typst 或 CAD 兼容链路，继续减少默认安装面。
+- Phase 2 还有 4 个依赖留在 core，其中 Presentation、Word、PDF、OFD、Typst、Archive 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet 或 CAD 兼容链路，继续减少默认安装面。
 - Phase 3 已无重型体验链路依赖留在 core；XMind、Geo、HEIC、Drawing、3D、Email、Ebook、Text 和 Media 均通过独立 renderer 或 preset 装配。
 - Phase 4 已无依赖留在 core；Data Asset 与 EDA 已分别由 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立承接，复杂数据和工程二进制的后续内核演进不再污染默认安装面。
 

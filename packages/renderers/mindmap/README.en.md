@@ -1,6 +1,6 @@
 # @file-viewer/renderer-mindmap
 
-Standalone XMind and mind map renderer package for Flyfish File Viewer. It parses modern `content.json` and classic `content.xml` XMind files, then renders an interactive canvas with pointer/mouse/touch pan, mobile pinch zoom, keyboard panning, unified toolbar state sync, sheet tabs, and node navigation.
+Standalone XMind and mind map renderer package for Flyfish File Viewer. It parses modern `content.json` and classic `content.xml` XMind files, then renders an interactive canvas with pointer/mouse/touch pan, mobile pinch zoom, keyboard panning, responsive viewport fitting, unified toolbar state sync, sheet tabs, and node navigation.
 
 ## Usage
 
@@ -32,6 +32,7 @@ const options = {
 - Supports XMind 2020+ `content.json` and XMind 8 / Classic `content.xml`.
 - Supports multiple sheets, hierarchy, labels, notes, hyperlinks, image resource hints, summaries, callouts, and floating-topic states.
 - Supports toolbar zoom, fit-to-canvas, Pointer / mouse / touch drag panning, requestAnimationFrame-coalesced pan updates, `Ctrl` / `Command` + wheel pointer zoom, arrow-key panning, and embedded WebView cases where PointerEvent `buttons` is reported unreliably.
+- Auto-fits the canvas on first render and host resize; after a user pans, wheels, or zooms manually, the renderer preserves the current view and only clamps unsafe bounds.
 - Mouse and touch panning include document-level fallback listeners for mobile WebViews, embedded browsers, and unstable Pointer Capture release behavior.
 
 ## Migration Note

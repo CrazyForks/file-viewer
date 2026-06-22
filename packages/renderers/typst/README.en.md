@@ -45,4 +45,4 @@ For private deployments, override them with `options.typst.compilerWasmUrl` and 
 
 ## Migration Note
 
-The core package still keeps the bundled Typst renderer for backward compatibility. A later migration will switch the core Typst entry to this package and remove `@myriaddreamin/*` from core direct dependencies.
+Typst rendering has moved out of `@file-viewer/core` into this package. Core only keeps the `renderFileViewerTypst()` compatibility export with a clear installation error, and no longer installs `@myriaddreamin/*` by default. Install this renderer explicitly, or use `@file-viewer/preset-all`, when real Typst preview is required.

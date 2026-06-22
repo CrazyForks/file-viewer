@@ -439,8 +439,10 @@ export default async function renderXMind(
   let sheets: SheetView[] = [];
   let suppressNodeClick = false;
   let spacePanning = false;
+  let userAdjustedViewport = false;
   let lostPointerCaptureTimer: number | undefined;
   let mouseButtonReleaseTimer: number | undefined;
+  let resizeFrame: number | undefined;
   let panFrame: number | undefined;
   let queuedPanPoint: { clientX: number; clientY: number } | null = null;
   let lastPanMoveAt = 0;
@@ -562,6 +564,7 @@ export default async function renderXMind(
   };
 
   const setZoom = (scale: number) => {
+    userAdjustedViewport = true;
     zoom = clampZoom(scale);
     applyZoom();
     zoomEmitter.emit();
@@ -574,6 +577,7 @@ export default async function renderXMind(
       return getZoomState();
     }
 
+    userAdjustedViewport = true;
     const rect = stage.getBoundingClientRect();
     const viewportX = clientX - rect.left;
     const viewportY = clientY - rect.top;
@@ -592,12 +596,13 @@ export default async function renderXMind(
     return setZoomAtPoint(scale, rect.left + rect.width / 2, rect.top + rect.height / 2);
   };
 
-  const fitSheetToStage = () => {
+  const fitSheetToStage = (markAsUserReset = false) => {
     const sheet = sheets[activeSheetIndex];
     if (!sheet) {
       return getZoomState();
     }
 
+    userAdjustedViewport = markAsUserReset ? false : userAdjustedViewport;
     const availableWidth = Math.max(1, stage.clientWidth - CANVAS_PADDING);
     const availableHeight = Math.max(1, stage.clientHeight - CANVAS_PADDING);
     const fitScale = Math.min(1, availableWidth / sheet.width, availableHeight / sheet.height);
@@ -610,6 +615,7 @@ export default async function renderXMind(
   };
 
   const scrollToNode = (node: MindNodeView) => {
+    userAdjustedViewport = true;
     panX = stage.clientWidth / 2 - (node.x + node.width / 2) * zoom;
     panY = stage.clientHeight / 2 - (node.y + node.height / 2) * zoom;
     applyZoom();
@@ -648,6 +654,7 @@ export default async function renderXMind(
       return;
     }
     surface.replaceChildren();
+    userAdjustedViewport = false;
     surface.style.width = `${sheet.width}px`;
     surface.style.height = `${sheet.height}px`;
 
@@ -723,7 +730,7 @@ export default async function renderXMind(
   registerFileViewerZoomProvider(root, {
     zoomIn: () => setZoomAtStageCenter(zoom + 0.15),
     zoomOut: () => setZoomAtStageCenter(zoom - 0.15),
-    resetZoom: () => fitSheetToStage(),
+    resetZoom: () => fitSheetToStage(true),
     setZoom,
     getState: getZoomState,
     subscribe: zoomEmitter.subscribe,
@@ -759,6 +766,7 @@ export default async function renderXMind(
     const deltaY = clientY - panState.startY;
     if (Math.abs(deltaX) + Math.abs(deltaY) > PAN_CLICK_THRESHOLD) {
       panState.moved = true;
+      userAdjustedViewport = true;
     }
     lastPanMoveAt = Date.now();
     panX = panState.startPanX + deltaX;
@@ -1104,6 +1112,7 @@ export default async function renderXMind(
     }
     event.preventDefault();
     if (!event.ctrlKey && !event.metaKey) {
+      userAdjustedViewport = true;
       panX -= event.deltaX;
       panY -= event.deltaY;
       applyZoom();
@@ -1125,15 +1134,19 @@ export default async function renderXMind(
       return;
     }
     if (event.key === 'ArrowLeft') {
+      userAdjustedViewport = true;
       panX += step;
     } else if (event.key === 'ArrowRight') {
+      userAdjustedViewport = true;
       panX -= step;
     } else if (event.key === 'ArrowUp') {
+      userAdjustedViewport = true;
       panY += step;
     } else if (event.key === 'ArrowDown') {
+      userAdjustedViewport = true;
       panY -= step;
     } else if ((event.key === '0' || event.key === 'Home') && (event.ctrlKey || event.metaKey)) {
-      fitSheetToStage();
+      fitSheetToStage(true);
       event.preventDefault();
       return;
     } else {
@@ -1155,7 +1168,7 @@ export default async function renderXMind(
     if (status !== 'ready' || isPanBlockedTarget(event.target)) {
       return;
     }
-    fitSheetToStage();
+    fitSheetToStage(true);
     event.preventDefault();
   };
 
@@ -1187,6 +1200,34 @@ export default async function renderXMind(
       stopPanInteractions();
     }
   };
+
+  const refreshViewport = () => {
+    if (disposed || status !== 'ready') {
+      return;
+    }
+    if (userAdjustedViewport) {
+      applyZoom();
+      zoomEmitter.emit();
+      return;
+    }
+    fitSheetToStage();
+  };
+
+  const scheduleViewportRefresh = () => {
+    if (resizeFrame !== undefined) {
+      ownerWindow.cancelAnimationFrame(resizeFrame);
+    }
+    resizeFrame = ownerWindow.requestAnimationFrame(() => {
+      resizeFrame = undefined;
+      refreshViewport();
+    });
+  };
+
+  const resizeObserver = typeof ownerWindow.ResizeObserver === 'function'
+    ? new ownerWindow.ResizeObserver(scheduleViewportRefresh)
+    : null;
+  resizeObserver?.observe(stage);
+  ownerWindow.addEventListener('resize', scheduleViewportRefresh);
 
   stage.addEventListener('pointerdown', onPanStart, true);
   stage.addEventListener('pointermove', onPanMove);
@@ -1223,7 +1264,7 @@ export default async function renderXMind(
   ownerDocument.addEventListener('visibilitychange', onDocumentVisibilityChange);
   zoomOutButton.addEventListener('click', () => setZoomAtStageCenter(zoom - 0.15));
   zoomInButton.addEventListener('click', () => setZoomAtStageCenter(zoom + 0.15));
-  resetButton.addEventListener('click', () => fitSheetToStage());
+  resetButton.addEventListener('click', () => fitSheetToStage(true));
   syncState();
   void load();
 
@@ -1240,7 +1281,12 @@ export default async function renderXMind(
         ownerWindow.cancelAnimationFrame(panFrame);
         panFrame = undefined;
       }
+      if (resizeFrame !== undefined) {
+        ownerWindow.cancelAnimationFrame(resizeFrame);
+        resizeFrame = undefined;
+      }
       queuedPanPoint = null;
+      resizeObserver?.disconnect();
       unregisterFileViewerZoomProvider(root);
       stage.removeEventListener('pointerdown', onPanStart, true);
       stage.removeEventListener('pointermove', onPanMove);
@@ -1273,6 +1319,7 @@ export default async function renderXMind(
       ownerDocument.removeEventListener('touchend', onTouchEnd, true);
       ownerDocument.removeEventListener('touchcancel', onTouchEnd, true);
       ownerWindow.removeEventListener('keyup', onStageKeyUp);
+      ownerWindow.removeEventListener('resize', scheduleViewportRefresh);
       ownerWindow.removeEventListener('blur', stopPanInteractions);
       ownerDocument.removeEventListener('visibilitychange', onDocumentVisibilityChange);
       target.replaceChildren();

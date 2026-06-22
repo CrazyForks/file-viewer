@@ -420,8 +420,13 @@ export const renderFileViewerTypst = async (
   type?: string,
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> => {
-  const { default: renderTypst } = await import('./renderers/typst');
-  return renderTypst(buffer, target, type, context);
+  void buffer;
+  void target;
+  void type;
+  void context;
+  throw new Error(
+    'Typst rendering has moved out of @file-viewer/core. Install and pass @file-viewer/renderer-typst, or use @file-viewer/preset-all.'
+  );
 };
 export const renderFileViewerUmd = async (
   buffer: ArrayBuffer,

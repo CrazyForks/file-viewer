@@ -57,13 +57,6 @@ export const coreBrowserRendererHandlers: readonly CoreBrowserRendererHandlerEnt
       return renderCad(buffer, target, type, context);
     },
   },
-  {
-    rendererId: 'typst',
-    handler: async (buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext) => {
-      const { default: renderTypst } = await import('./typst');
-      return renderTypst(buffer, target, type, context);
-    },
-  },
 ];
 
 export const CORE_LITE_RENDERER_IDS = [

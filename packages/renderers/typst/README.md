@@ -45,4 +45,4 @@ const options = {
 
 ## 迁移说明
 
-当前 core 仍保留内置 Typst renderer 以兼容历史全量包。后续会把 core 的 Typst 入口切换到本包，并从 core 直接依赖中移除 `@myriaddreamin/*`。
+Typst 渲染已经从 `@file-viewer/core` 迁移到本包。core 只保留 `renderFileViewerTypst()` 兼容导出并给出明确安装提示，不再默认安装 `@myriaddreamin/*`。需要 Typst 真实预览时，请显式安装本包，或直接使用 `@file-viewer/preset-all`。
