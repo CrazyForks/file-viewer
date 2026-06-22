@@ -71,6 +71,17 @@
       "publicSource": true
     },
     {
+      "id": "email",
+      "packageName": "@file-viewer/renderer-email",
+      "description": "Standalone email renderer plugin for File Viewer with EML, MSG, MBOX, HTML/text/header views, attachments, download, and nested attachment previews.",
+      "packageDir": "packages/renderers/email",
+      "repository": "file-viewer-renderer-email",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-email",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-email",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

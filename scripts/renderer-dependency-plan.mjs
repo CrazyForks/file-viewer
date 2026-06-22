@@ -125,7 +125,7 @@ export const rendererModularizationLines = [
     group: 'archiveEmailEbook',
     targetPackage: '@file-viewer/renderer-email',
     phase: 3,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['email'],
     dependencies: ['postal-mime', '@kenjiuno/msgreader'],
   },

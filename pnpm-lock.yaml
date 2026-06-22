@@ -526,6 +526,9 @@ importers:
       '@file-viewer/renderer-cad':
         specifier: workspace:^2.0.11
         version: link:../../renderers/cad
+      '@file-viewer/renderer-email':
+        specifier: workspace:^2.0.11
+        version: link:../../renderers/email
       '@file-viewer/renderer-mindmap':
         specifier: workspace:^2.0.11
         version: link:../../renderers/mindmap
@@ -564,6 +567,22 @@ importers:
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
         version: 0.6.4(three@0.184.0)
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/email:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.0.11
+        version: link:../../core
+      '@kenjiuno/msgreader':
+        specifier: ^1.28.0
+        version: 1.28.0
+      postal-mime:
+        specifier: ^2.7.4
+        version: 2.7.4
     devDependencies:
       typescript:
         specifier: ^6.0.3
