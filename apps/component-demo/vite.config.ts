@@ -3,8 +3,17 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const demoRoot = fileURLToPath(new URL('.', import.meta.url))
+const excalidrawStub = resolve(demoRoot, '../../scripts/excalidraw-iife-stub.ts')
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // The component demo publishes script-tag and framework examples together.
+      // Keep its production build independent from Excalidraw's React peers and
+      // let core render .excalidraw through the built-in offline SVG fallback.
+      '@excalidraw/excalidraw': excalidrawStub
+    }
+  },
   server: {
     host: '127.0.0.1'
   },
