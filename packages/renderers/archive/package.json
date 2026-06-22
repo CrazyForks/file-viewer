@@ -1,14 +1,18 @@
 {
-  "name": "@file-viewer/preset-all",
+  "name": "@file-viewer/renderer-archive",
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "All renderer preset for Flyfish File Viewer, preserving the full format matrix while renderer packages are split out.",
+  "description": "Standalone archive renderer plugin for Flyfish File Viewer with libarchive worker, ZIP/TAR fallback, IndexedDB cache, and nested previews.",
   "keywords": [
     "file-viewer",
-    "renderer-preset",
-    "document-preview",
-    "on-demand-renderer"
+    "renderer",
+    "archive",
+    "zip",
+    "rar",
+    "7z",
+    "tar",
+    "document-preview"
   ],
   "publishConfig": {
     "access": "public",
@@ -20,12 +24,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-preset-all.git",
-    "directory": "packages/presets/all"
+    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-archive.git",
+    "directory": "packages/renderers/archive"
   },
   "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-preset-all/issues"
+    "url": "https://github.com/flyfish-dev/file-viewer-renderer-archive/issues"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -50,11 +54,8 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:^2.0.11",
-    "@file-viewer/renderer-archive": "workspace:^2.0.11",
-    "@file-viewer/renderer-cad": "workspace:^2.0.11",
-    "@file-viewer/renderer-mindmap": "workspace:^2.0.11",
-    "@file-viewer/renderer-pdf": "workspace:^2.0.11",
-    "@file-viewer/renderer-typst": "workspace:^2.0.11"
+    "jszip": "^3.10.1",
+    "libarchive.js": "^2.0.2"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

@@ -60,6 +60,17 @@
       "publicSource": true
     },
     {
+      "id": "archive",
+      "packageName": "@file-viewer/renderer-archive",
+      "description": "Standalone archive renderer plugin for File Viewer with libarchive worker, ZIP/TAR/GZIP fallback, IndexedDB caching, nested document previews, memory limits, and offline WASM assets.",
+      "packageDir": "packages/renderers/archive",
+      "repository": "file-viewer-renderer-archive",
+      "github": "https://github.com/flyfish-dev/file-viewer-renderer-archive",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-renderer-archive",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "pptx",
       "packageName": "@file-viewer/pptx",
       "description": "Native PPTX preview engine for File Viewer with worker-based PowerPoint parsing, slide rendering, themes, media, and charts.",

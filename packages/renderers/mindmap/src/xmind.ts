@@ -91,6 +91,7 @@ const SIBLING_GAP = 24;
 const CANVAS_PADDING = 44;
 const MAX_RENDER_NODES = 1800;
 const PAN_CLICK_THRESHOLD = 5;
+const PAN_BOUNDARY_MARGIN = 96;
 const WHEEL_ZOOM_STEP = 0.12;
 
 const xmindStyle = `
@@ -105,10 +106,10 @@ const xmindStyle = `
 .xmind-sidebar{min-height:0;overflow:auto;border-right:1px solid rgba(23,32,51,.08);background:rgba(255,255,255,.72);padding:14px}
 .xmind-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}.xmind-stats div{border-radius:12px;background:#fff;padding:10px;box-shadow:inset 0 0 0 1px rgba(23,32,51,.06)}.xmind-stats span{display:block;color:#718096;font-size:12px}.xmind-stats strong{display:block;margin-top:4px;font-size:18px;color:#172033}
 .xmind-outline{display:flex;flex-direction:column;gap:6px}.xmind-outline button{display:block;width:100%;min-height:32px;border:0;border-radius:9px;background:transparent;color:#334155;cursor:pointer;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xmind-outline button:hover{background:rgba(33,163,102,.1);color:#0f766e}
-.xmind-stage{position:relative;min-width:0;min-height:0;overflow:auto;cursor:grab;touch-action:none;overscroll-behavior:contain;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
+.xmind-stage{position:relative;min-width:0;min-height:0;overflow:hidden;cursor:grab;touch-action:none;overscroll-behavior:contain;background:linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(15,23,42,.04) 1px,transparent 1px),#f3f7fb;background-size:32px 32px;outline:none}
 .xmind-stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(59,130,246,.42)}
 .xmind-stage.is-panning{cursor:grabbing;user-select:none}
-.xmind-zoom-box{position:relative;transform-origin:top left}.xmind-surface{position:relative;transform-origin:top left}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
+.xmind-zoom-box{position:absolute;inset:0;transform-origin:top left;will-change:transform}.xmind-surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}.xmind-edges{position:absolute;inset:0;overflow:visible}.xmind-edges path{fill:none;stroke:#9db2c7;stroke-width:2.2;stroke-linecap:round}
 .xmind-node{position:absolute;width:236px;min-height:58px;border:1px solid rgba(15,23,42,.1);border-radius:14px;padding:12px 12px 10px;background:#fff;box-shadow:0 12px 28px rgba(23,32,51,.11);color:#172033;cursor:grab}
 .xmind-stage.is-panning .xmind-node{cursor:grabbing}
 .xmind-node.root{width:260px;border-color:rgba(33,163,102,.28);background:linear-gradient(135deg,#effdf5,#fff);box-shadow:0 18px 38px rgba(33,163,102,.16)}
@@ -420,6 +421,8 @@ export default async function renderXMind(
   let status: XMindStatus = 'loading';
   let errorMessage = '';
   let zoom = 1;
+  let panX = 0;
+  let panY = 0;
   let disposed = false;
   let activeSheetIndex = 0;
   let sheets: SheetView[] = [];
@@ -429,8 +432,8 @@ export default async function renderXMind(
     pointerType: string;
     startX: number;
     startY: number;
-    startScrollLeft: number;
-    startScrollTop: number;
+    startPanX: number;
+    startPanY: number;
     moved: boolean;
   } | null = null;
 
@@ -475,19 +478,52 @@ export default async function renderXMind(
     label: `${Math.round(zoom * 100)}%`,
     canZoomIn: zoom < 2.5,
     canZoomOut: zoom > 0.25,
-    canReset: zoom !== 1,
+    canReset: zoom !== 1 || panX !== 0 || panY !== 0,
     minScale: 0.25,
     maxScale: 2.5,
   });
 
+  const clampPan = () => {
+    const sheet = sheets[activeSheetIndex];
+    if (!sheet) {
+      return;
+    }
+
+    const viewportWidth = Math.max(1, stage.clientWidth);
+    const viewportHeight = Math.max(1, stage.clientHeight);
+    const scaledWidth = sheet.width * zoom;
+    const scaledHeight = sheet.height * zoom;
+
+    const resolveBounds = (viewportSize: number, contentSize: number) => {
+      if (contentSize <= viewportSize) {
+        const centered = (viewportSize - contentSize) / 2;
+        return {
+          min: centered - PAN_BOUNDARY_MARGIN,
+          max: centered + PAN_BOUNDARY_MARGIN,
+        };
+      }
+      return {
+        min: viewportSize - contentSize - PAN_BOUNDARY_MARGIN,
+        max: PAN_BOUNDARY_MARGIN,
+      };
+    };
+
+    const xBounds = resolveBounds(viewportWidth, scaledWidth);
+    const yBounds = resolveBounds(viewportHeight, scaledHeight);
+    panX = Math.min(xBounds.max, Math.max(xBounds.min, panX));
+    panY = Math.min(yBounds.max, Math.max(yBounds.min, panY));
+  };
+
   const applyZoom = () => {
     const sheet = sheets[activeSheetIndex];
     if (sheet) {
-      zoomBox.style.width = `${sheet.width * zoom}px`;
-      zoomBox.style.height = `${sheet.height * zoom}px`;
+      zoomBox.style.width = '100%';
+      zoomBox.style.height = '100%';
       surface.style.width = `${sheet.width}px`;
       surface.style.height = `${sheet.height}px`;
     }
+    clampPan();
+    zoomBox.style.transform = `translate3d(${panX}px, ${panY}px, 0)`;
     surface.style.transform = `scale(${zoom})`;
     zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
   };
@@ -508,12 +544,12 @@ export default async function renderXMind(
     const rect = stage.getBoundingClientRect();
     const viewportX = clientX - rect.left;
     const viewportY = clientY - rect.top;
-    const logicalX = (stage.scrollLeft + viewportX) / zoom;
-    const logicalY = (stage.scrollTop + viewportY) / zoom;
+    const logicalX = (viewportX - panX) / zoom;
+    const logicalY = (viewportY - panY) / zoom;
     zoom = nextZoom;
+    panX = viewportX - logicalX * zoom;
+    panY = viewportY - logicalY * zoom;
     applyZoom();
-    stage.scrollLeft = Math.max(0, logicalX * zoom - viewportX);
-    stage.scrollTop = Math.max(0, logicalY * zoom - viewportY);
     zoomEmitter.emit();
     return getZoomState();
   };
@@ -527,23 +563,18 @@ export default async function renderXMind(
     const availableWidth = Math.max(1, stage.clientWidth - CANVAS_PADDING);
     const availableHeight = Math.max(1, stage.clientHeight - CANVAS_PADDING);
     const fitScale = Math.min(1, availableWidth / sheet.width, availableHeight / sheet.height);
-    setZoom(fitScale);
-    requestAnimationFrame(() => {
-      stage.scrollTo({
-        left: Math.max(0, (sheet.width * zoom - stage.clientWidth) / 2),
-        top: Math.max(0, (sheet.height * zoom - stage.clientHeight) / 2),
-        behavior: 'smooth',
-      });
-    });
+    zoom = clampZoom(fitScale);
+    panX = (stage.clientWidth - sheet.width * zoom) / 2;
+    panY = (stage.clientHeight - sheet.height * zoom) / 2;
+    applyZoom();
+    zoomEmitter.emit();
     return getZoomState();
   };
 
   const scrollToNode = (node: MindNodeView) => {
-    stage.scrollTo({
-      left: Math.max(0, node.x * zoom - stage.clientWidth / 2 + node.width * zoom / 2),
-      top: Math.max(0, node.y * zoom - stage.clientHeight / 2 + node.height * zoom / 2),
-      behavior: 'smooth',
-    });
+    panX = stage.clientWidth / 2 - (node.x + node.width / 2) * zoom;
+    panY = stage.clientHeight / 2 - (node.y + node.height / 2) * zoom;
+    applyZoom();
   };
 
   const renderSidebar = (sheet: SheetView) => {
@@ -696,8 +727,8 @@ export default async function renderXMind(
       pointerType: event.pointerType,
       startX: event.clientX,
       startY: event.clientY,
-      startScrollLeft: stage.scrollLeft,
-      startScrollTop: stage.scrollTop,
+      startPanX: panX,
+      startPanY: panY,
       moved: false,
     };
     stage.classList.add('is-panning');
@@ -722,8 +753,9 @@ export default async function renderXMind(
     if (Math.abs(deltaX) + Math.abs(deltaY) > PAN_CLICK_THRESHOLD) {
       panState.moved = true;
     }
-    stage.scrollLeft = panState.startScrollLeft - deltaX;
-    stage.scrollTop = panState.startScrollTop - deltaY;
+    panX = panState.startPanX + deltaX;
+    panY = panState.startPanY + deltaY;
+    applyZoom();
     event.preventDefault();
   };
 
@@ -739,10 +771,16 @@ export default async function renderXMind(
   };
 
   const onStageWheel = (event: WheelEvent) => {
-    if (status !== 'ready' || (!event.ctrlKey && !event.metaKey)) {
+    if (status !== 'ready') {
       return;
     }
     event.preventDefault();
+    if (!event.ctrlKey && !event.metaKey) {
+      panX -= event.deltaX;
+      panY -= event.deltaY;
+      applyZoom();
+      return;
+    }
     const direction = event.deltaY > 0 ? -1 : 1;
     setZoomAtPoint(zoom + direction * WHEEL_ZOOM_STEP, event.clientX, event.clientY);
   };
@@ -753,18 +791,21 @@ export default async function renderXMind(
     }
     const step = event.shiftKey ? 96 : 42;
     if (event.key === 'ArrowLeft') {
-      stage.scrollLeft -= step;
+      panX += step;
     } else if (event.key === 'ArrowRight') {
-      stage.scrollLeft += step;
+      panX -= step;
     } else if (event.key === 'ArrowUp') {
-      stage.scrollTop -= step;
+      panY += step;
     } else if (event.key === 'ArrowDown') {
-      stage.scrollTop += step;
+      panY -= step;
     } else if ((event.key === '0' || event.key === 'Home') && (event.ctrlKey || event.metaKey)) {
       fitSheetToStage();
+      event.preventDefault();
+      return;
     } else {
       return;
     }
+    applyZoom();
     event.preventDefault();
   };
 

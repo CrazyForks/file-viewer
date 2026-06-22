@@ -116,7 +116,7 @@ export const rendererModularizationLines = [
     group: 'archiveEmailEbook',
     targetPackage: '@file-viewer/renderer-archive',
     phase: 2,
-    status: 'planned',
+    status: 'partially-extracted',
     renderers: ['archive'],
     dependencies: ['libarchive.js', 'pako', 'jszip'],
   },
