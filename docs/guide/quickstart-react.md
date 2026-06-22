@@ -34,7 +34,7 @@ export function Preview() {
       <FileViewer
         url="/files/demo.docx"
         onEvent={(event) => {
-          console.log(event.type, event.event, event.payload)
+          console.log(event.type, event.payload)
         }}
         options={{
           theme: 'light',

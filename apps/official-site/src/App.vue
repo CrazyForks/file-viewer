@@ -79,6 +79,19 @@ type QrItem = {
   image: string
 }
 
+type QuickStartItem = {
+  label: string
+  packageName: string
+  install: string
+  title: string
+  summary: string
+  language: string
+  code: string
+  href: string
+  tone: string
+  icon: Component
+}
+
 const docsUrl = 'https://doc.file-viewer.app/'
 const demoUrl = 'https://demo.file-viewer.app/'
 const compareUrl = 'https://demo.file-viewer.app/compare.html'
@@ -93,8 +106,12 @@ const commercialDemoUrl = 'https://office.flyfish.dev/'
 const locale = ref<Locale>('zh')
 const heroCanvas = ref<HTMLCanvasElement | null>(null)
 const demoReveal = ref<HTMLElement | null>(null)
+const quickStartSection = ref<HTMLElement | null>(null)
+const quickStartTrack = ref<HTMLElement | null>(null)
 const demoRevealActive = ref(false)
 const demoFrameLoaded = ref(false)
+const quickStartSectionActive = ref(false)
+const activeQuickStartIndex = ref(0)
 const isZh = computed(() => locale.value === 'zh')
 const nextLocaleLabel = computed(() => (isZh.value ? 'EN' : '中文'))
 
@@ -399,6 +416,195 @@ const ecosystem = [
   '@file-viewer/svelte'
 ]
 
+function snippetImport(statement: string) {
+  return `im${'port'} ${statement}`
+}
+
+const quickStartItems = computed<QuickStartItem[]>(() => [
+  {
+    label: isZh.value ? 'Vue 3' : 'Vue 3',
+    packageName: '@file-viewer/vue3',
+    install: 'npm install vue @file-viewer/vue3',
+    title: isZh.value ? '插件安装后直接使用原生组件' : 'Install the plugin and use the native component',
+    summary: isZh.value
+      ? '适合 Vue 3 业务系统，props、事件、ref/controller 和完整类型都保持原生体验。'
+      : 'For Vue 3 products with native props, events, refs/controllers, and complete types.',
+    language: 'Vue SFC',
+    href: `${docsUrl}guide/quickstart-vue3`,
+    tone: 'green',
+    icon: PanelTop,
+    code: `${snippetImport("{ createApp } from 'vue'")}
+${snippetImport("FileViewer from '@file-viewer/vue3'")}
+${snippetImport("'@file-viewer/vue3/dist/file-viewer3.css'")}
+
+createApp(App).use(FileViewer).mount('#app')
+
+<file-viewer
+  url="/files/contract.pdf"
+  :options="{
+    theme: 'light',
+    toolbar: { position: 'bottom-right', zoom: true },
+    watermark: { text: 'Internal Preview' }
+  }"
+  @load-complete="handleLoadComplete"
+/>`
+  },
+  {
+    label: isZh.value ? 'Vue 2' : 'Vue 2',
+    packageName: '@file-viewer/vue2.7 / vue2.6',
+    install: 'npm install vue@2.7 @file-viewer/vue2.7',
+    title: isZh.value ? 'Vue.use 接入，能力与 Vue3 对齐' : 'Use Vue.use with the same capability set as Vue 3',
+    summary: isZh.value
+      ? 'Vue 2.7 与 Vue 2.6 分线维护，适合仍在运行的传统后台和存量业务系统。'
+      : 'Separate Vue 2.7 and Vue 2.6 packages for legacy business systems that still need the full viewer.',
+    language: 'Vue 2',
+    href: `${docsUrl}guide/quickstart-vue2`,
+    tone: 'blue',
+    icon: Layers3,
+    code: `${snippetImport("Vue from 'vue'")}
+${snippetImport("FileViewerPlugin from '@file-viewer/vue2.7'")}
+
+Vue.use(FileViewerPlugin)
+
+export default {
+  methods: {
+    handleViewerEvent(event) {
+      console.log(event.type, event.payload)
+    }
+  }
+}
+
+<FileViewer
+  ref="viewer"
+  url="/files/report.docx"
+  :options="{ theme: 'light', toolbar: { position: 'bottom-right' } }"
+  @viewer-event="handleViewerEvent"
+/>`
+  },
+  {
+    label: 'React',
+    packageName: '@file-viewer/react',
+    install: 'npm install react react-dom @file-viewer/react',
+    title: isZh.value ? 'React 组件与 ref API 原生可控' : 'Native React component with ref APIs',
+    summary: isZh.value
+      ? 'React 18/19 使用标准包，React 16.8/17 使用 legacy 包，业务侧无需 Vue 或 iframe 转接。'
+      : 'Use the standard package for React 18/19 and the legacy package for React 16.8/17 without Vue or iframe bridges.',
+    language: 'TSX',
+    href: `${docsUrl}guide/quickstart-react`,
+    tone: 'cyan',
+    icon: Boxes,
+    code: `${snippetImport("{ useRef } from 'react'")}
+${snippetImport("FileViewer, { type FileViewerHandle } from '@file-viewer/react'")}
+
+export function Preview() {
+  const viewerRef = useRef<FileViewerHandle>(null)
+
+  return (
+    <section style={{ height: '100vh' }}>
+      <FileViewer
+        ref={viewerRef}
+        url="/files/quarterly.pptx"
+        options={{
+          theme: 'light',
+          toolbar: { position: 'bottom-right', zoom: true }
+        }}
+      />
+    </section>
+  )
+}`
+  },
+  {
+    label: isZh.value ? '纯 Web' : 'Pure Web',
+    packageName: '@file-viewer/web',
+    install: 'npm install @file-viewer/web',
+    title: isZh.value ? '无框架页面也能直接挂载' : 'Mount directly in framework-free pages',
+    summary: isZh.value
+      ? '适合传统后台、微前端和 script 标签场景，仍然走同一套 core 能力。'
+      : 'Works for classic admin pages, micro-frontends, and script-tag integrations while using the same core.',
+    language: 'TypeScript',
+    href: `${docsUrl}guide/quickstart-web`,
+    tone: 'violet',
+    icon: MonitorPlay,
+    code: `${snippetImport("{ mountViewer } from '@file-viewer/web'")}
+
+const controller = mountViewer(document.getElementById('viewer')!, {
+  url: '/files/drawing.dwg',
+  options: {
+    theme: 'light',
+    toolbar: { position: 'bottom-right', zoom: true },
+    hooks: {
+      onLoadComplete(context) {
+        console.log('loaded', context.fileName)
+      }
+    }
+  }
+})
+
+controller.zoomIn()`
+  },
+  {
+    label: 'jQuery',
+    packageName: '@file-viewer/jquery',
+    install: 'npm install jquery @file-viewer/jquery',
+    title: isZh.value ? '传统系统保持插件式调用' : 'Plugin-style API for classic systems',
+    summary: isZh.value
+      ? '保留 jQuery 项目熟悉的调用方式，同时底层不牺牲搜索、缩放、打印和导出能力。'
+      : 'Keeps the familiar jQuery API while preserving search, zoom, print, and export support.',
+    language: 'jQuery',
+    href: `${docsUrl}guide/ecosystem#jquery`,
+    tone: 'amber',
+    icon: Wrench,
+    code: `${snippetImport("$ from 'jquery'")}
+${snippetImport("{ installJQueryFileViewer } from '@file-viewer/jquery'")}
+
+installJQueryFileViewer($)
+
+$('#viewer').fileViewer({
+  url: '/files/archive.zip',
+  options: {
+    theme: 'light',
+    toolbar: { position: 'bottom-right' }
+  }
+})
+
+$('#viewer').fileViewer('update', {
+  url: '/files/mail.eml'
+})`
+  },
+  {
+    label: 'Svelte',
+    packageName: '@file-viewer/svelte',
+    install: 'npm install @file-viewer/svelte',
+    title: isZh.value ? '组件和 action 两种原生入口' : 'Native component and action entry points',
+    summary: isZh.value
+      ? 'Svelte 项目可以用组件，也可以用 action 挂载到已有 DOM，SSR 下只在浏览器端运行。'
+      : 'Use either the component or the action; SSR projects mount only in the browser.',
+    language: 'Svelte',
+    href: `${docsUrl}guide/ecosystem#svelte`,
+    tone: 'rose',
+    icon: FileCode2,
+    code: `<script lang="ts">
+  ${snippetImport("FileViewer from '@file-viewer/svelte'")}
+
+  let viewer: FileViewer
+${'<'}\/script>
+
+<section style="height: 100vh">
+  <FileViewer
+    bind:this={viewer}
+    url="/files/manual.ofd"
+    options={{ theme: 'light', toolbar: { position: 'bottom-right' } }}
+    on:viewerEvent={(event) => console.log(event.detail.payload)}
+  />
+</section>`
+  }
+])
+
+const activeQuickStart = computed(() => {
+  const items = quickStartItems.value
+  return items[activeQuickStartIndex.value] ?? items[0]!
+})
+
 const commercialFeatures = computed<Capability[]>(() =>
   isZh.value
     ? [
@@ -429,25 +635,94 @@ const qrItems = computed<QrItem[]>(() =>
       ]
 )
 
-const codeSample = computed(() =>
-  `import FileViewer from '@file-viewer/vue3'
-
-app.use(FileViewer)
-
-<file-viewer
-  url="/contracts/demo.pdf"
-  :options="{
-    theme: 'light',
-    toolbar: { position: 'bottom-right', zoom: true },
-    watermark: { text: 'Internal Preview' }
-  }"
-/>`
-)
-
 const currentCopy = computed(() => copy[locale.value])
 
 function toggleLocale() {
   locale.value = isZh.value ? 'en' : 'zh'
+}
+
+function selectQuickStart(index: number) {
+  activeQuickStartIndex.value = index
+  const track = quickStartTrack.value
+  const target = track?.children.item(index) as HTMLElement | null
+  if (!track || !target) return
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  track.scrollTo({
+    left: target.offsetLeft - track.offsetLeft,
+    behavior: reduceMotion ? 'auto' : 'smooth'
+  })
+}
+
+let quickStartScrollFrame = 0
+
+function syncQuickStartFromScroll() {
+  const track = quickStartTrack.value
+  if (!track) return
+
+  window.cancelAnimationFrame(quickStartScrollFrame)
+  quickStartScrollFrame = window.requestAnimationFrame(() => {
+    const panels = Array.from(track.children) as HTMLElement[]
+    const trackCenter = track.scrollLeft + track.clientWidth / 2
+    let nextIndex = activeQuickStartIndex.value
+    let nearestDistance = Number.POSITIVE_INFINITY
+
+    panels.forEach((panel, index) => {
+      const panelCenter = panel.offsetLeft + panel.offsetWidth / 2
+      const distance = Math.abs(panelCenter - trackCenter)
+      if (distance < nearestDistance) {
+        nearestDistance = distance
+        nextIndex = index
+      }
+    })
+
+    activeQuickStartIndex.value = nextIndex
+  })
+}
+
+function handleQuickStartKeydown(event: KeyboardEvent, index: number) {
+  const lastIndex = quickStartItems.value.length - 1
+  if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+    event.preventDefault()
+    selectQuickStart(Math.max(0, index - 1))
+  } else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+    event.preventDefault()
+    selectQuickStart(Math.min(lastIndex, index + 1))
+  } else if (event.key === 'Home') {
+    event.preventDefault()
+    selectQuickStart(0)
+  } else if (event.key === 'End') {
+    event.preventDefault()
+    selectQuickStart(lastIndex)
+  }
+}
+
+function scrollInitialHashIntoView() {
+  const hashId = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : ''
+  const target = hashId ? document.getElementById(hashId) : null
+  if (!target) return
+
+  window.requestAnimationFrame(() => {
+    if (hashId === 'ecosystem') {
+      quickStartSectionActive.value = true
+    }
+    const top = target.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top, behavior: 'auto' })
+  })
+}
+
+function scrollToSection(event: MouseEvent, id: string) {
+  event.preventDefault()
+  const target = document.getElementById(id)
+  if (!target) return
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const top = target.getBoundingClientRect().top + window.scrollY
+  if (id === 'ecosystem') {
+    quickStartSectionActive.value = true
+  }
+  window.history.replaceState(null, '', `#${id}`)
+  window.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' })
 }
 
 const GitHubMark = {
@@ -669,9 +944,14 @@ async function initHeroScene() {
 let disposeHeroScene: (() => void) | undefined
 let heroSceneDisposed = false
 let demoRevealObserver: IntersectionObserver | undefined
+let quickStartObserver: IntersectionObserver | undefined
 
 onMounted(async () => {
   await nextTick()
+  if (window.location.hash === '#ecosystem') {
+    quickStartSectionActive.value = true
+  }
+  scrollInitialHashIntoView()
   if (demoReveal.value) {
     demoRevealObserver = new IntersectionObserver(
       ([entry]) => {
@@ -689,6 +969,20 @@ onMounted(async () => {
     demoRevealObserver.observe(demoReveal.value)
   }
 
+  if (quickStartSection.value) {
+    quickStartObserver = new IntersectionObserver(
+      ([entry]) => {
+        quickStartSectionActive.value =
+          window.location.hash === '#ecosystem' || (entry.isIntersecting && entry.intersectionRatio > 0.16)
+      },
+      {
+        rootMargin: '-14% 0px -18% 0px',
+        threshold: [0, 0.16, 0.42, 0.72]
+      }
+    )
+    quickStartObserver.observe(quickStartSection.value)
+  }
+
   const dispose = await initHeroScene()
   if (heroSceneDisposed) {
     dispose()
@@ -700,6 +994,8 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   heroSceneDisposed = true
   demoRevealObserver?.disconnect()
+  quickStartObserver?.disconnect()
+  window.cancelAnimationFrame(quickStartScrollFrame)
   disposeHeroScene?.()
 })
 </script>
@@ -707,17 +1003,17 @@ onBeforeUnmount(() => {
 <template>
   <main class="site-shell" :lang="locale">
     <nav class="topbar" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="Flyfish File Viewer">
+      <a class="brand" href="#top" aria-label="Flyfish File Viewer" @click="scrollToSection($event, 'top')">
         <img src="/logo.png" alt="" />
         <span>File Viewer</span>
       </a>
       <div class="topbar-links">
-        <a href="#formats">{{ currentCopy.nav.formats }}</a>
-        <a href="#solutions">{{ currentCopy.nav.solutions }}</a>
-        <a href="#ecosystem">{{ currentCopy.nav.ecosystem }}</a>
-        <a href="#commercial">{{ currentCopy.nav.commercial }}</a>
-        <a href="#delivery">{{ currentCopy.nav.delivery }}</a>
-        <a href="#support">{{ currentCopy.nav.support }}</a>
+        <a href="#formats" @click="scrollToSection($event, 'formats')">{{ currentCopy.nav.formats }}</a>
+        <a href="#solutions" @click="scrollToSection($event, 'solutions')">{{ currentCopy.nav.solutions }}</a>
+        <a href="#ecosystem" @click="scrollToSection($event, 'ecosystem')">{{ currentCopy.nav.ecosystem }}</a>
+        <a href="#commercial" @click="scrollToSection($event, 'commercial')">{{ currentCopy.nav.commercial }}</a>
+        <a href="#delivery" @click="scrollToSection($event, 'delivery')">{{ currentCopy.nav.delivery }}</a>
+        <a href="#support" @click="scrollToSection($event, 'support')">{{ currentCopy.nav.support }}</a>
       </div>
       <div class="topbar-actions">
         <a class="nav-icon-button" :href="githubUrl" target="_blank" rel="noreferrer" aria-label="GitHub repository">
@@ -882,7 +1178,13 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <section id="ecosystem" class="band ecosystem-section" aria-labelledby="ecosystem-title">
+    <section
+      id="ecosystem"
+      ref="quickStartSection"
+      class="band ecosystem-section"
+      :class="{ 'quickstart-active': quickStartSectionActive }"
+      aria-labelledby="ecosystem-title"
+    >
       <div class="ecosystem-copy">
         <p class="section-kicker">Native components</p>
         <h2 id="ecosystem-title">{{ currentCopy.ecosystemTitle }}</h2>
@@ -890,15 +1192,85 @@ onBeforeUnmount(() => {
         <div class="ecosystem-tags">
           <span v-for="item in ecosystem" :key="item">{{ item }}</span>
         </div>
-      </div>
-      <div class="code-panel" aria-label="Usage example">
-        <div class="code-toolbar">
-          <span />
-          <span />
-          <span />
-          <strong>{{ isZh ? '原生组件接入' : 'native component' }}</strong>
+        <div class="quickstart-tabs" role="tablist" aria-label="Ecosystem quick start examples">
+          <button
+            v-for="(item, index) in quickStartItems"
+            :id="`quickstart-tab-${index}`"
+            :key="item.packageName"
+            class="quickstart-tab"
+            :class="[`quickstart-tab-${item.tone}`, { 'is-active': index === activeQuickStartIndex }]"
+            :style="{ transitionDelay: `${index * 55}ms` }"
+            type="button"
+            role="tab"
+            :aria-selected="index === activeQuickStartIndex"
+            :aria-controls="`quickstart-panel-${index}`"
+            :tabindex="index === activeQuickStartIndex ? 0 : -1"
+            @click="selectQuickStart(index)"
+            @keydown="handleQuickStartKeydown($event, index)"
+          >
+            <span class="quickstart-tab-icon">
+              <component :is="item.icon" :size="17" />
+            </span>
+            <span class="quickstart-tab-copy">
+              <strong>{{ item.label }}</strong>
+              <em>{{ item.packageName }}</em>
+            </span>
+          </button>
         </div>
-        <pre><code>{{ codeSample }}</code></pre>
+      </div>
+
+      <div class="quickstart-workbench" aria-label="Ecosystem quick start code">
+        <div class="quickstart-header">
+          <div>
+            <span>{{ activeQuickStart.install }}</span>
+            <strong>{{ activeQuickStart.title }}</strong>
+          </div>
+          <a :href="activeQuickStart.href" target="_blank" rel="noreferrer">
+            {{ isZh ? '完整文档' : 'Full docs' }}
+            <ArrowRight :size="15" />
+          </a>
+        </div>
+
+        <div
+          ref="quickStartTrack"
+          class="quickstart-track"
+          tabindex="0"
+          aria-live="polite"
+          @scroll.passive="syncQuickStartFromScroll"
+        >
+          <article
+            v-for="(item, index) in quickStartItems"
+            :id="`quickstart-panel-${index}`"
+            :key="item.packageName"
+            class="code-panel quickstart-panel"
+            :class="`quickstart-panel-${item.tone}`"
+            role="tabpanel"
+            :aria-labelledby="`quickstart-tab-${index}`"
+            :aria-hidden="index !== activeQuickStartIndex"
+          >
+            <div class="code-toolbar">
+              <span />
+              <span />
+              <span />
+              <strong>{{ item.language }}</strong>
+            </div>
+            <pre><code>{{ item.code }}</code></pre>
+          </article>
+        </div>
+
+        <div class="quickstart-footer">
+          <span>{{ activeQuickStart.summary }}</span>
+          <div class="quickstart-dots" aria-label="Quick start slides">
+            <button
+              v-for="(item, index) in quickStartItems"
+              :key="`dot-${item.packageName}`"
+              type="button"
+              :class="{ 'is-active': index === activeQuickStartIndex }"
+              :aria-label="`${isZh ? '切换到' : 'Show'} ${item.label}`"
+              @click="selectQuickStart(index)"
+            />
+          </div>
+        </div>
       </div>
     </section>
 

@@ -46,6 +46,197 @@
 - Office、PDF、OFD、Typst、CAD、压缩包、邮件、3D、绘图、数据文件等重型链路按格式异步加载，未命中的格式不会进入首屏。
 - 私有化或内网部署时，运行 `file-viewer-copy-assets` 复制 Worker、WASM、PDF.js、Draw.io、Typst、CAD、SQLite、压缩包和 Office 静态资源，运行时默认不依赖公共 CDN。
 
+## 组件属性与定制入口
+
+下面是各标准组件包当前实际暴露的属性、事件和控制入口。需要 `buffer`、`name`、`type`、`size` 这类命令式挂载参数时，优先使用 React、Pure Web、Svelte、jQuery 或 Vue2 组件；Vue3 声明式组件保持 `url` / `file` / `options` 的轻入口，二进制来源建议包装成带扩展名的 `File` 后传入。
+
+| 组件 | 实际属性 / 入口 | 事件入口 | 控制与定制入口 |
+| --- | --- | --- | --- |
+| Vue 3 `@file-viewer/vue3` | `url`、`file`、`options` | `load-start`、`load-complete`、`unload-start`、`unload-complete`、`operation-before`、`operation-cancel`、`operation-availability-change`、`search-change`、`location-change`、`zoom-change` | 模板 `ref` 暴露 `FileViewerExpose`，可调用下载、打印、导出、缩放、搜索、定位和文本切片 API |
+| Vue 2.7 `@file-viewer/vue2.7` | `url`、`file`、`buffer`、`name`、`filename`、`type`、`size`、`options`、`containerClass`、`containerStyle` | `viewer-event` / `viewerEvent` | 组件实例暴露 controller handle 全量方法 |
+| Vue 2.6 `@file-viewer/vue2.6` | 同 Vue 2.7 | `viewer-event` / `viewerEvent` | 独立 Vue 2.6 构建，不要求业务升级到 Vue 2.7 |
+| React `@file-viewer/react` | `ViewerMountOptions` + `div` 原生属性，如 `className`、`style`、`data-*`、`aria-*` | `onEvent`、`onStateChange` | `ref` 暴露 `FileViewerHandle`；`useFileViewer()` 返回 `ref`、`props`、`state`、`handle` |
+| React Legacy `@file-viewer/react-legacy` | 同 React 标准包 | `onEvent`、`onStateChange` | 面向 React 16.8 / 17 的独立组件包 |
+| Pure Web `@file-viewer/web` | `mountViewer(container, ViewerMountOptions, ViewerCoreOptions?)` | `onEvent`、`onStateChange`、`controller.subscribe()` | 返回 `ViewerController`，同时提供 ESM、IIFE script 标签包和资源复制 CLI |
+| jQuery `@file-viewer/jquery` | `$(el).fileViewer(ViewerMountOptions & { replace?: boolean })` | `onEvent`、`onStateChange` 或 `getFileViewerController(el).subscribe()` | 插件方法支持 `zoomIn`、`printRenderedHtml`、`searchDocument` 等；`replace:false` 可原地更新 |
+| Svelte `@file-viewer/svelte` | `ViewerMountOptions` + `className`、`containerStyle` | `on:viewerEvent`、`onEvent`、`onStateChange` | `bind:this` 暴露 controller handle；`use:fileViewer` action 额外支持 `replace` |
+
+## 工具栏定制
+
+内置工具栏适合大多数后台和附件中心场景；如果业务需要权限按钮、审计提示、设计系统菜单或移动端悬浮操作区，可以关闭内置工具栏，改用各生态原生 UI 调用同一套 controller API。
+
+| 配置 | 说明 |
+| --- | --- |
+| `toolbar: false` | 隐藏内置工具栏，但不关闭下载、打印、导出、缩放等 API，适合完全自定义工具栏 |
+| `toolbar: true` | 使用默认工具栏，按钮仍按当前格式能力动态显隐 |
+| `toolbar.download` / `print` / `exportHtml` / `zoom` | 表达业务是否允许展示对应按钮；最终还会结合文件类型、渲染完成状态、导出适配器和缩放 provider 计算真实可用性 |
+| `toolbar.position` | `auto`、`top`、`bottom-right`。默认 `auto`，PDF 自动悬浮右下角，避免和 PDF 自身页码 / 目录工具栏冲突 |
+| `toolbar.beforeOperation` | 工具栏层统一前置校验，会在 `options.beforeOperation` 后执行 |
+| `toolbar.beforeDownload` / `beforePrint` / `beforeExportHtml` | 单按钮前置校验，适合下载权限、打印审计和导出确认 |
+
+自定义工具栏不要在预览器外层套 `transform: scale()`。PDF、Excel、CAD、canvas 和文本层格式都要通过内部缩放 provider 保持坐标正确。外部按钮应读取 `operation-availability-change` / `onStateChange` / `subscribe()` 的能力状态，动态禁用不可用操作。
+
+### Vue 3 自定义工具栏
+
+```vue
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import type { FileViewerExpose, FileViewerOperationAvailability } from '@file-viewer/vue3'
+
+const viewer = ref<FileViewerExpose | null>(null)
+const availability = ref<FileViewerOperationAvailability | null>(null)
+const canPrint = computed(() => !!availability.value?.print)
+
+async function checkPrintPermission(filename: string) {
+  return window.confirm(`确认打印 ${filename}？`)
+}
+
+const options = {
+  theme: 'light',
+  toolbar: false,
+  async beforeOperation(context) {
+    if (context.operation === 'print') {
+      return await checkPrintPermission(context.filename)
+    }
+    return true
+  }
+}
+</script>
+
+<template>
+  <div class="preview-shell">
+    <div class="business-toolbar">
+      <button @click="viewer?.downloadOriginalFile()" :disabled="!availability?.download">下载</button>
+      <button @click="viewer?.printRenderedHtml()" :disabled="!canPrint">打印</button>
+      <button @click="viewer?.exportRenderedHtml()" :disabled="!availability?.exportHtml">HTML</button>
+      <button @click="viewer?.zoomOut()" :disabled="!availability?.zoomOut">-</button>
+      <button @click="viewer?.resetZoom()" :disabled="!availability?.zoomReset">100%</button>
+      <button @click="viewer?.zoomIn()" :disabled="!availability?.zoomIn">+</button>
+    </div>
+
+    <file-viewer
+      ref="viewer"
+      url="/files/report.pdf"
+      :options="options"
+      @operation-availability-change="availability = $event"
+    />
+  </div>
+</template>
+```
+
+### React 自定义工具栏
+
+```tsx
+import FileViewer, { useFileViewer } from '@file-viewer/react'
+
+export function Preview() {
+  const viewer = useFileViewer({
+    url: '/files/report.docx',
+    options: { theme: 'light', toolbar: false }
+  })
+  const availability = viewer.state.availability
+
+  return (
+    <section className="preview-shell">
+      <div className="business-toolbar">
+        <button disabled={!availability?.download} onClick={() => viewer.handle.downloadOriginalFile()}>下载</button>
+        <button disabled={!availability?.print} onClick={() => viewer.handle.printRenderedHtml()}>打印</button>
+        <button disabled={!availability?.exportHtml} onClick={() => viewer.handle.exportRenderedHtml()}>HTML</button>
+        <button disabled={!availability?.zoomOut} onClick={() => viewer.handle.zoomOut()}>-</button>
+        <button disabled={!availability?.zoomReset} onClick={() => viewer.handle.resetZoom()}>100%</button>
+        <button disabled={!availability?.zoomIn} onClick={() => viewer.handle.zoomIn()}>+</button>
+      </div>
+      <FileViewer ref={viewer.ref} {...viewer.props} />
+    </section>
+  )
+}
+```
+
+### Pure Web / Script 标签
+
+```html
+<div id="toolbar">
+  <button data-action="download">下载</button>
+  <button data-action="print">打印</button>
+  <button data-action="zoom-in">放大</button>
+</div>
+<div id="viewer" style="height: 80vh"></div>
+
+<script type="module">
+  import { mountViewer } from '@file-viewer/web'
+
+  const buttons = {
+    download: document.querySelector('[data-action="download"]'),
+    print: document.querySelector('[data-action="print"]'),
+    zoomIn: document.querySelector('[data-action="zoom-in"]')
+  }
+
+  const controller = mountViewer(document.getElementById('viewer'), {
+    url: '/files/demo.pdf',
+    options: { toolbar: false },
+    onStateChange(state) {
+      buttons.download.disabled = !state.availability?.download
+      buttons.print.disabled = !state.availability?.print
+      buttons.zoomIn.disabled = !state.availability?.zoomIn
+    }
+  })
+
+  buttons.download.onclick = () => controller.downloadOriginalFile()
+  buttons.print.onclick = () => controller.printRenderedHtml()
+  buttons.zoomIn.onclick = () => controller.zoomIn()
+</script>
+```
+
+无构建工具时，把 `import { mountViewer }` 换成 `window.FlyfishFileViewerWeb.mountViewer(...)` 即可，其他 controller API 保持一致。
+
+### Vue 2、jQuery 和 Svelte
+
+```vue
+<!-- Vue 2.7 / 2.6 -->
+<file-viewer
+  ref="viewer"
+  url="/files/report.pdf"
+  :options="{ toolbar: false }"
+  @viewer-event="handleViewerEvent"
+/>
+```
+
+```ts
+// jQuery
+import { getFileViewerController } from '@file-viewer/jquery'
+
+$('#viewer').fileViewer({
+  url: '/files/report.xlsx',
+  options: { toolbar: false }
+})
+
+$('#zoomIn').on('click', () => $('#viewer').fileViewer('zoomIn'))
+getFileViewerController($('#viewer'))?.subscribe((state) => {
+  $('#zoomIn').prop('disabled', !state.availability?.zoomIn)
+})
+```
+
+```svelte
+<script lang="ts">
+  import FileViewer from '@file-viewer/svelte'
+
+  let viewer
+  let availability
+</script>
+
+<button disabled={!availability?.print} on:click={() => viewer.printRenderedHtml()}>打印</button>
+<FileViewer
+  bind:this={viewer}
+  url="/files/report.pdf"
+  options={{ toolbar: false }}
+  on:viewerEvent={(event) => {
+    if (event.detail.type === 'operation-availability-change') {
+      availability = event.detail.payload
+    }
+  }}
+/>
+```
+
 <span id="vue3"></span>
 
 ## Vue 3
@@ -127,7 +318,7 @@ export function Preview() {
         ref={viewerRef}
         url="/files/demo.pdf"
         options={{ theme: 'light', toolbar: { position: 'bottom-right' } }}
-        onEvent={(event) => console.log(event.type, event.context)}
+        onEvent={(event) => console.log(event.type, event.payload)}
       />
     </div>
   )

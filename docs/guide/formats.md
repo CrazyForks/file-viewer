@@ -30,7 +30,7 @@
 
 | 分类 | 扩展名 | 渲染链路 | 当前表现 | 更适合的场景 |
 | --- | --- | --- | --- | --- |
-| Word | `docx`、`docm`、`dotx`、`dotm` | `docx-preview` + 可选静态 Worker | 白色纸张显示在灰色页面底中，支持宽度自适应；默认使用真实浏览器 DOM 完整渲染以保护目录、制表符、页眉页脚和样式继承，Worker、渐进挂载和长文档视觉分页均为显式 opt-in，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
+| Word | `docx`、`docm`、`dotx`、`dotm` | 自研 `@file-viewer/docx` | 白色文档面显示在灰色阅读底中，支持宽度自适应；默认使用 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，模板/宏格式按只读预览处理 | 新生成的 Word 文档、正式公文、Word 模板 |
 | Word | `doc`、`dot` | `msdoc-viewer` | 使用 Word 风格页面容器，页面居中显示在灰色工作台中，增强 CFB 容错和表格布局 | 存量老文档、Word 97-2003 模板、历史附件回溯 |
 | 兼容文档 | `rtf`、`odt` | `rtf.js` / OpenDocument `content.xml` | RTF 走 RTFJS 生成只读 HTML，ODT 读取 ODF 包内正文并套用纸张阅读面 | RTF 富文本、OpenDocument 文本文档 |
 | Excel | `xlsx`、`xltx` | `styled-exceljs` + `e-virt-table` + 可选静态 Worker | 支持虚拟滚动、列宽/行高、合并单元格、常见样式和 workbook drawing 图片；默认主线程解析以避开 Worker 部署兼容问题，静态 Worker 需显式开启；打印按钮按能力隐藏 | 大表格预览、报表、Excel 模板 |
@@ -60,12 +60,12 @@
 
 ### Word 文档
 
-- `docx`、`docm`、`dotx`、`dotm` 使用 `docx-preview`，适合正文、表格、图片和常规版式较多的现代 Word 文档与模板。当前预览层会恢复白色纸张和灰色页面底，并根据可用宽度自动缩放；宏内容只作为只读文档结构预览，不执行宏。
-- DOCX 默认使用真实浏览器 DOM 中的 `docx-preview` 完整渲染，优先保证目录、制表符、页眉页脚、字段和样式继承稳定。静态 Worker、分批挂载和超长 section 视觉分页仍保留为显式 opt-in 能力，可通过 `options.docx.worker: true`、`options.docx.progressive: true` 和 `options.docx.visualPagination: true` 开启；私有静态资源路径特殊时再配置 `options.docx.workerUrl`。
+- `docx`、`docm`、`dotx`、`dotm` 使用自研 `@file-viewer/docx`，适合正文、表格、图片、目录字段和常规版式较多的现代 Word 文档与模板。当前预览层会恢复白色文档面和灰色阅读底，并根据可用宽度自动缩放；宏内容只作为只读文档结构预览，不执行宏。
+- DOCX 默认使用 `@file-viewer/docx` 的 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，优先保证复杂目录、长表格、制表符、页眉页脚、字段和样式继承稳定；私有静态资源路径特殊时可配置 `options.docx.workerUrl` 和 `options.docx.workerJsZipUrl`。
 - `doc`、`dot` 使用 `msdoc-viewer`，并额外套用 Word 风格页面容器。构建前会通过包管理器无关的补丁脚本增强 CFB 局部 sector 容错，它不只是“把内容吐出来”，而是尽量保留文档阅读时的页面感。
 - `rtf` 使用 RTFJS 读取富文本结构并生成安全的只读 HTML；`odt` 读取 OpenDocument 包内 `content.xml`，提取正文块并套用纸张阅读面。它们适合跨平台导出文档的快速查看，但复杂页眉页脚、域代码或宏能力仍建议转换为 DOCX/PDF 后验收。
-- Word 打印和导出 HTML 使用独立导出适配器，只带文档页面和必要 Word 样式，不带 Demo 布局、滚动容器和缩放状态，长文档会按完整页序输出。
-- 如果源文档缺少显式分页，且业务确认可以接受预览层拆分超长 section，可显式开启 `options.docx.visualPagination`；默认保持 docx-preview 原始结构，避免复杂目录和样式被二次拆分影响。
+- Word 打印和导出 HTML 使用独立导出适配器，只带文档内容和必要 Word 样式，不带 Demo 布局、滚动容器和缩放状态，长文档会完整输出。
+- DOCX 默认不分页；只有业务明确需要页式预览时再设置 `options.docx.visualPagination: true`，这会启用 Word 保存分页和预览层兜底分页。
 - 如果你的业务能控制导出格式，优先推荐 `docx`；如果你面对的是存量老文档，当前 `.doc` 已经可以作为正式能力对外说明。
 
 <div class="doc-shot">

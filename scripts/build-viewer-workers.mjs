@@ -1,10 +1,11 @@
-import { mkdir } from 'node:fs/promises'
+import { copyFile, mkdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const require = createRequire(import.meta.url)
+const coreRequire = createRequire(resolve(root, 'packages/core/package.json'))
 const resolveViteEntrypoint = () => {
   try {
     return require.resolve('vite')
@@ -31,13 +32,20 @@ const outputDir = resolve(
     'apps/viewer-demo/dist'
 )
 
+const docxVendorDir = resolve(outputDir, 'vendor/docx')
+const docxPackageDir = dirname(coreRequire.resolve('@file-viewer/docx/package.json'))
+await mkdir(docxVendorDir, { recursive: true })
+await copyFile(
+  resolve(docxPackageDir, 'dist/docx-preview.worker.js'),
+  resolve(docxVendorDir, 'docx.worker.js')
+)
+await copyFile(
+  resolve(docxPackageDir, 'dist/jszip.min.js'),
+  resolve(docxVendorDir, 'jszip.min.js')
+)
+console.log(`[file-viewer] Copied @file-viewer/docx worker assets to ${docxVendorDir}`)
+
 const workerBuilds = [
-  {
-    label: 'docx',
-    entry: resolve(root, 'packages/core/src/renderers/wordDocx.worker.ts'),
-    outDir: resolve(outputDir, 'vendor/docx'),
-    fileName: 'docx.worker.js'
-  },
   {
     label: 'spreadsheet',
     entry: resolve(root, 'packages/core/src/renderers/spreadsheet/worker/sheetjs/sheet.worker.ts'),

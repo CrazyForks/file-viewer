@@ -140,6 +140,32 @@ Core foundation package: `@file-viewer/core`. Core source is public: https://git
 | jQuery | `@file-viewer/jquery` | ESM, type declarations | [file-viewer-jquery](https://github.com/flyfish-dev/file-viewer-jquery) | [file-viewer-jquery](https://gitee.com/flyfish-dev/file-viewer-jquery) | none |
 | Svelte | `@file-viewer/svelte` | Svelte component, ESM, type declarations | [file-viewer-svelte](https://github.com/flyfish-dev/file-viewer-svelte) | [file-viewer-svelte](https://gitee.com/flyfish-dev/file-viewer-svelte) | none |
 
+### Component Props and Toolbar Customization Summary
+
+Every ecosystem package exposes a native integration surface. Vue 3 keeps a compact declarative prop API; React, Pure Web, Svelte, jQuery, and Vue 2 are better when you need imperative mount fields such as `buffer`, `name`, `type`, and `size`. See the full examples in the official documentation: https://doc.file-viewer.app/guide/ecosystem
+
+| Component | Actual props / entry | Event channel | Customization entry |
+| --- | --- | --- | --- |
+| Vue 3 `@file-viewer/vue3` | `url`, `file`, `options` | `load-start`, `load-complete`, `unload-start`, `unload-complete`, `operation-before`, `operation-cancel`, `operation-availability-change`, `search-change`, `location-change`, `zoom-change` | Template refs expose `FileViewerExpose`. For `Blob` / `ArrayBuffer`, prefer wrapping it as a named `File` so extension detection stays deterministic. |
+| Vue 2.7 `@file-viewer/vue2.7` | `url`, `file`, `buffer`, `name`, `filename`, `type`, `size`, `options`, `containerClass`, `containerStyle` | `viewer-event` / `viewerEvent` | The component instance exposes the full controller handle. This is the Vue 2.7 line behind the historical `@flyfish-group/file-viewer` package. |
+| Vue 2.6 `@file-viewer/vue2.6` | Same as Vue 2.7 | `viewer-event` / `viewerEvent` | Separate Vue 2.6 build for long-lived applications that cannot move to Vue 2.7. |
+| React `@file-viewer/react` | `ViewerMountOptions` plus native `div` props such as `className`, `style`, `data-*`, and `aria-*` | `onEvent`, `onStateChange` | `ref` exposes `FileViewerHandle`; `useFileViewer()` returns `ref`, `props`, `state`, and `handle` for custom toolbars. |
+| React Legacy `@file-viewer/react-legacy` | Same as the React package | `onEvent`, `onStateChange` | Targets React 16.8 / 17 with a legacy-friendly component export. |
+| Pure Web `@file-viewer/web` | `mountViewer(container, ViewerMountOptions, ViewerCoreOptions?)` | `onEvent`, `onStateChange`, `controller.subscribe()` | Returns `ViewerController`; also ships ESM, script-tag IIFE, and the `file-viewer-copy-assets` CLI. |
+| jQuery `@file-viewer/jquery` | `$(el).fileViewer(ViewerMountOptions & { replace?: boolean })` | `onEvent`, `onStateChange`, or `getFileViewerController(el).subscribe()` | Plugin methods include `zoomIn`, `printRenderedHtml`, and `searchDocument`; `replace:false` updates the same node in place. |
+| Svelte `@file-viewer/svelte` | `ViewerMountOptions` plus `className` and `containerStyle` | `on:viewerEvent`, `onEvent`, `onStateChange` | `bind:this` exposes the controller handle; the `use:fileViewer` action is also available and adds `replace`. |
+
+The built-in toolbar can be used as-is, or hidden with `toolbar:false` so your own UI can call the same ref, hook, controller, action, or jQuery plugin APIs.
+
+| Toolbar config | Description |
+| --- | --- |
+| `toolbar: false` | Hides the built-in toolbar without disabling controller APIs such as download, print, export, and zoom. Use this for a fully custom business toolbar. |
+| `toolbar: true` | Uses the default built-in toolbar. Download, print, HTML export, and zoom buttons are still shown only when the active renderer supports them. |
+| `download` / `print` / `exportHtml` / `zoom` | Expresses whether the host allows a button. Final availability is still computed from file type, render readiness, export adapter, and zoom provider state. |
+| `position` | `auto`, `top`, or `bottom-right`. The default `auto` floats PDF actions at bottom right to avoid conflicting with the PDF page / outline toolbar. |
+| `beforeOperation` | Toolbar-level preflight that runs after `options.beforeOperation`. Returning `false` or throwing cancels the operation. |
+| `beforeDownload` / `beforePrint` / `beforeExportHtml` | Operation-specific preflight for download permission, print audit, export confirmation, and similar business rules. |
+
 The shared core currently declares 23 preview pipelines and 194 file extensions. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
@@ -165,7 +191,7 @@ The viewer is organized around preview pipelines rather than one-off file extens
 
 | Category | Extensions | Rendering pipeline | Typical use |
 | --- | --- | --- | --- |
-| Word | `docx`, `docm`, `dotx`, `dotm` | `docx-preview`, read-only page preview, print and HTML export | Modern Word documents and templates |
+| Word | `docx`, `docm`, `dotx`, `dotm` | Self-maintained `@file-viewer/docx` with Worker parsing, continuous flow reading, cached TOC fields, async rendering, print, and HTML export; visual pagination is opt-in | Modern Word documents and templates |
 | Legacy Word | `doc`, `dot` | `msdoc-viewer` with Word-like paper surface and CFB tolerance fixes | Old Word 97-2003 files |
 | Compatible documents | `rtf`, `odt` | RTFJS or OpenDocument package parsing with a paper-like reading surface | RTF exports and OpenDocument text documents |
 | Excel | `xlsx`, `xltx` | `styled-exceljs` with virtual table rendering, merged cells, styles, auto text color, workbook images, fidelity-first main-thread parsing by default, and an explicit opt-in static Worker | Business spreadsheets and templates |
@@ -295,8 +321,8 @@ export function Preview() {
           toolbar: { position: 'bottom-right' },
           watermark: { text: 'Internal Preview', opacity: 0.14 }
         }}
-        onViewerEvent={(event) => {
-          console.log(event.type, event.event, event.payload)
+        onEvent={(event) => {
+          console.log(event.type, event.payload)
         }}
       />
     </div>
@@ -325,7 +351,7 @@ npm install @file-viewer/web
       toolbar: { position: 'bottom-right' },
       archive: { cache: true, workerTimeoutMs: 30000 }
     },
-    onViewerEvent(event) {
+    onEvent(event) {
       console.log(event.type, event.payload)
     }
   })
@@ -353,22 +379,23 @@ npx file-viewer-copy-assets ./public/file-viewer
 | `archive.cache` | Enables IndexedDB cache for extracted archive entries. |
 | `archive.maxArchiveSize` | Maximum archive size allowed for directory parsing. |
 | `archive.maxEntryPreviewSize` | Maximum extracted entry size allowed for online preview. |
-| `docx.worker` | Enables the optional DOCX Worker path. Defaults to `false`; the default DOCX path uses real browser DOM with `docx-preview` for maximum outline, tab stop, header/footer, and style fidelity. |
+| `docx.worker` | Controls `@file-viewer/docx` Worker parsing. Defaults to `true`; set it to `false` only when Workers are blocked by CSP or the host runtime. |
 | `docx.workerUrl` | Custom DOCX Worker URL. The default candidate is `vendor/docx/docx.worker.js` under the current deployment base. |
-| `docx.progressive` | Explicit opt-in batch mounting for Worker-generated docx-preview pages. Defaults to `false` to avoid disturbing complex style inheritance. |
-| `docx.visualPagination` | Explicit opt-in visual splitting for oversized sections. Defaults to `false`; keep it off for complex outlines and field-heavy documents. |
-| `docx.workerTimeout` | DOCX Worker timeout in milliseconds. Defaults to 15000ms. |
+| `docx.workerJsZipUrl` | Custom JSZip URL loaded by the DOCX Worker. The default candidate is `vendor/docx/jszip.min.js` under the current deployment base. |
+| `docx.progressive` | Controls async page-batch rendering. Defaults to progressive batches for large-document readability. |
+| `docx.visualPagination` | Opt-in visual pagination for DOCX. The default is continuous flow reading for better stability with complex TOCs, tables, and long Chinese documents. |
+| `docx.workerTimeout` | DOCX Worker timeout in milliseconds. Defaults to 120000ms. |
 | `spreadsheet.worker` | Enables the optional spreadsheet Worker path. Defaults to `false`; main-thread parsing avoids local-server, mobile WebView, MIME, or CSP Worker stalls. |
 | `spreadsheet.workerUrl` | Custom Spreadsheet Worker URL. The default candidate is `vendor/xlsx/sheet.worker.js` under the current deployment base. |
 | `pdf.streaming` | PDF URL loading strategy. Same-origin streaming is enabled by default. |
 | `pdf.rangeChunkSize` | PDF.js Range request chunk size. |
-| `pdf.workerUrl` | Custom PDF.js Worker URL for private, offline, or strict-CSP deployments. Defaults to a CDN worker matching the bundled `pdfjs-dist` version. |
+| `pdf.workerUrl` | Custom PDF.js Worker URL for private, offline, or strict-CSP deployments. Defaults to the self-hosted viewer asset path under the current deployment base. |
 | `typst.compilerWasmUrl` | Custom Typst compiler WASM URL. |
 | `typst.rendererWasmUrl` | Custom Typst SVG renderer WASM URL. |
-| `hooks` | Vue component lifecycle hooks for load and unload events. |
-| `beforeOperation` | Vue component guard before download, print, HTML export, or zoom actions. Return `false` to cancel. |
+| `hooks` | Lifecycle hooks for load and unload events. |
+| `beforeOperation` | Guard before download, print, HTML export, or zoom actions. Return `false` to cancel. |
 
-React and vanilla JavaScript integrations use `onViewerEvent` or `onEvent` to receive lifecycle and operation events. Vue packages can also pass function hooks directly through `options`.
+React and vanilla JavaScript integrations use `onEvent` to receive lifecycle and operation events. Svelte also emits `viewerEvent`; Vue packages map the same lifecycle and operation payloads to native component events and can also pass hooks through `options`.
 
 ## Printing, Exporting, and Watermarks
 

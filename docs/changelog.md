@@ -2,7 +2,21 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.0.9` 生态文档与定制能力完善版本
+
+- 文档站、README 和各生态组件 README 全量补齐实际支持的 props / options / events / controller API，覆盖 Vue3、Vue2.7、Vue2.6、React、React Legacy、Pure Web、jQuery、Svelte、core 与兼容 alias 包
+- 工具栏定制能力文档化，统一说明 `options.toolbar`、`toolbar.beforeOperation`、`toolbar.items`、自定义按钮、隐藏默认工具栏和外部自定义工具栏的最佳实践
+- 官网首页补充多框架快速接入代码切换板块，帮助用户在 Vue、React、Svelte、jQuery、Pure Web 和 core API 之间快速定位接入方式
+- 生态发布口径同步刷新到 `2.0.9`，继续保持 core 纯 TypeScript 底座、各框架组件独立实现、离线资源随包分发和生产级 demo / 文档站 / 官网一体上线
+
 ## 当前主线
+
+### 当前主线 DOCX 自研渲染引擎接入
+
+- DOCX / DOCM / DOTX / DOTM 渲染切换为自研 `@file-viewer/docx`，默认启用 Worker ZIP/XML 解析、真实浏览器 DOM 连续流式渲染、目录字段缓存和异步分批渲染；页式预览改为 `options.docx.visualPagination: true` 显式开启
+- 新增 `options.docx.workerJsZipUrl`，与 `options.docx.workerUrl` 一起支持完全离线部署；viewer assets 会复制 `vendor/docx/docx.worker.js` 和 `vendor/docx/jszip.min.js`
+- `options.docx.worker` 默认开启，仅在 CSP 或宿主环境禁用 Worker 时需要关闭；默认超时提升到 120000ms，降低大文档误回退概率
+- 文档站、README、格式矩阵和纯 JS 离线接入说明同步改为 `@file-viewer/docx` 口径
 
 ### 当前主线 生态接入文档全量对齐
 
@@ -54,13 +68,13 @@
 - 移动端 Excel / XLS 预览把工作表名称移到表格上方的横向可滚动标签栏，当前工作表自动滚入可见区域，解决手机上 sheet 名称藏在底部角落、需要技巧才能看到的问题
 - Excel / XLS 多 sheet 场景下，工作表标签改为按内容宽度展示并横向滚动，避免按整体宽度平均压缩导致 sheet 名称完全看不清
 - Excel / XLS 静态 Worker 改为显式 opt-in，默认使用同一套主线程解析器，避免本地服务器、手机 WebView、MIME 或 CSP 环境下停在 Worker 初始化阶段
-- DOCX 默认切回保真优先的真实浏览器 DOM 完整渲染；`docx.worker`、`docx.progressive` 和 `docx.visualPagination` 均改为显式 opt-in，避免复杂目录、制表符、页眉页脚和样式继承被 Worker DOM 或分批挂载扰动
+- DOCX 默认采用真实浏览器 DOM 连续渲染；`docx.worker` 和 `docx.progressive` 保持默认开启以提升大文档响应，`docx.visualPagination` 改为显式 opt-in，避免复杂目录、长表格、制表符和样式继承被分页拆坏
 - README、文档站、React / 纯 JS 接入文档、开源 release 包和 workspace 依赖同步刷新到 `1.0.25`
 
 ### 当前主线 Demo 富样式公开样例升级
 
-- DOCX 渲染链路下沉到 `@file-viewer/core`，移除 Vue3 本地 Word vendor 入口；所有标准组件包共享同一套 `docx-preview` 页面渲染、缩放 provider、打印和 HTML 导出适配器
-- DOCX Worker 保留 `options.docx.workerUrl` 与 `options.docx.workerTimeout` 兜底，静态资源不可用、CSP/MIME 不兼容或超时后会自动回到同一套 `docx-preview` 原生主线程渲染；默认关闭 Worker 以保证复杂 Word 样式稳定
+- DOCX 渲染链路下沉到 `@file-viewer/core`，移除 Vue3 本地 Word vendor 入口；所有标准组件包共享同一套 DOCX 页面渲染、缩放 provider、打印和 HTML 导出适配器
+- DOCX Worker 保留 `options.docx.workerUrl`、`options.docx.workerJsZipUrl` 与 `options.docx.workerTimeout` 兜底，静态资源不可用、CSP/MIME 不兼容或超时后由 DOCX 引擎自动回退
 - CAD 渲染器保持在 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS 统一预览；DWG 默认通过独立 Worker 加载 LibreDWG WASM，DWF/DWFx/XPS 使用 native renderer 渲染 W2D/W3D/XPS 图形
 - 构建脚本会复制 `libredwg-web.js`、`libredwg-web.wasm`、`dwfv-render.wasm`、`dwg-worker.js` 和 worker 依赖 chunk 到 viewer assets 的 `wasm/cad/`
 - Demo 补充 Apache Tika `blocks_and_tables.dwf` 与 Autodesk 官方 Viewer 教程的 `House.dwfx`、`RobotArm1.dwfx` 样例，用于分别验证 DWF、DWFx/XPS、W2D/W3D native renderer 和大图纸按需加载体验
@@ -109,7 +123,7 @@
 - 文档站新增 Cloudflare Pages Direct Upload 脚本和 `docs/public/_headers` 缓存策略，`doc.file-viewer.app` 可切换到 `flyfish-file-viewer-docs.pages.dev` 以改善国内访问速度
 - 新增 `options.theme`，支持 `light`、`dark`、`system`；显式主题优先于浏览器 `prefers-color-scheme`，固定浅色业务 UI 可以传 `light` 避免 Markdown、代码、Typst 等预览区域被系统暗色模式带偏
 - 新增 `toolbar.position`，支持 `auto`、`top`、`bottom-right`；默认 `auto` 下 PDF 通用下载/打印/HTML 操作栏会悬浮到右下角，避免和 PDF 页码、缩放、目录导航栏形成双顶部导航
-- 升级 Vue、Vite、PDF.js、Axios、Marked、React 适配层等第三方依赖到当前 npm latest；`docx-preview` 已确认 npm latest 仍为 `0.3.7`，同步刷新 DOCX 构建 chunk
+- 升级 Vue、Vite、PDF.js、Axios、Marked、React 适配层等第三方依赖到当时 npm latest，并同步刷新 DOCX 构建 chunk
 - DOCX 渲染关闭生产调试告警，兼容 Word 写入的 `autoSpaceDN` / `autoSpaceDE` 等段落属性，避免控制台被 `DOCX: Unknown document element` warning 刷屏
 - README、文档站、React / 纯 JS README、入口缓存策略和 workspace 依赖同步刷新到 `1.0.21`
 

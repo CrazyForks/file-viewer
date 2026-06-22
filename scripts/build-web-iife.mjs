@@ -8,6 +8,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
 const packageDir = resolve(sourceRoot, process.argv[2] || 'packages/compat/web')
 const entry = join(packageDir, 'src', 'global.ts')
+const excalidrawStub = join(scriptDir, 'excalidraw-iife-stub.ts')
 const outDir = join(packageDir, 'dist')
 const fileName = 'flyfish-file-viewer-web.iife.js'
 const requireFromPackage = createRequire(join(packageDir, 'package.json'))
@@ -29,6 +30,12 @@ await build({
     'process.env': JSON.stringify({ NODE_ENV: 'production' })
   },
   resolve: {
+    alias: {
+      // Keep script-tag compatibility bundles framework-free. The official
+      // Excalidraw exporter depends on React peers, while core already has a
+      // built-in SVG fallback for this exact lightweight/offline scenario.
+      '@excalidraw/excalidraw': excalidrawStub
+    },
     dedupe: ['@file-viewer/core']
   },
   build: {

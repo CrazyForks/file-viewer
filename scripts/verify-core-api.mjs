@@ -101,9 +101,11 @@ const requiredValueExports = [
   'DEFAULT_FILE_VIEWER_EXPORT_FILENAME',
   'DEFAULT_FILE_VIEWER_PREVIEW_TITLE',
   'DEFAULT_FILE_VIEWER_DATA_SQL_WASM_URL',
+  'DEFAULT_FILE_VIEWER_DOCX_WORKER_JSZIP_PATH',
   'DEFAULT_FILE_VIEWER_DOCX_WORKER_PATH',
   'DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH',
   'resolveFileViewerDataSqlWasmUrl',
+  'resolveFileViewerDocxWorkerJsZipUrl',
   'resolveFileViewerDocxWorkerUrl',
   'resolveFileViewerSpreadsheetWorkerUrl',
   'createFileViewerOriginalSourceState',
@@ -432,6 +434,7 @@ const allowedCoreDevDependencies = new Set([
   '@types/pako'
 ])
 const allowedCoreRendererDependencies = new Set([
+  '@file-viewer/docx',
   '@file-viewer/pptx'
 ])
 const forbiddenCoreDependencyPrefixes = [

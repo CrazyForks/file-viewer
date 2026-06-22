@@ -32,7 +32,7 @@ const controller = mountViewer(document.getElementById('viewer')!, {
     archive: { cache: true, workerTimeoutMs: 30000 }
   },
   onEvent(event) {
-    console.log(event.type, event.event, event.payload)
+    console.log(event.type, event.payload)
   }
 })
 
@@ -97,7 +97,7 @@ cp ./node_modules/@file-viewer/web/dist/flyfish-file-viewer-web.iife.js ./public
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
-复制命令会写入 `flyfish-viewer-assets.json`，并校验 PDF、archive、DOCX、Excel、Draw.io、CAD、Typst、SQLite 等 worker/WASM/vendor 静态资源是否齐全。预览运行时不会默认访问公共 CDN 或第三方在线资源；部署路径特殊时，可以在 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.drawing.viewerScriptUrl`、`options.archive.workerUrl`、`options.archive.wasmUrl`、`options.docx.workerUrl`、`options.spreadsheet.workerUrl`、`options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.data.sqlWasmUrl` 等参数中指定自托管地址。Draw.io 默认使用随 viewer assets 分发的官方 diagrams.net 离线 viewer，并在官方 viewer 不可用时回退内置 SVG。
+复制命令会写入 `flyfish-viewer-assets.json`，并校验 PDF、archive、DOCX、Excel、Draw.io、CAD、Typst、SQLite 等 worker/WASM/vendor 静态资源是否齐全。预览运行时不会默认访问公共 CDN 或第三方在线资源；部署路径特殊时，可以在 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.drawing.viewerScriptUrl`、`options.archive.workerUrl`、`options.archive.wasmUrl`、`options.docx.workerUrl`、`options.docx.workerJsZipUrl`、`options.spreadsheet.workerUrl`、`options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.data.sqlWasmUrl` 等参数中指定自托管地址。Draw.io 默认使用随 viewer assets 分发的官方 diagrams.net 离线 viewer，并在官方 viewer 不可用时回退内置 SVG。
 
 ## API
 

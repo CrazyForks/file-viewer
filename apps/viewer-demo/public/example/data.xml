@@ -4,7 +4,7 @@
 
   <groups>
     <group id="document" label="Documents">
-      <format extension="docx" renderer="docx-preview" async="true" />
+      <format extension="docx" renderer="@file-viewer/docx" async="true" />
       <format extension="rtf" renderer="rtf.js" async="true" />
       <format extension="odt" renderer="open-document" async="true" />
       <format extension="pdf" renderer="pdfjs-dist" navigation="true" />

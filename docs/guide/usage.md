@@ -188,7 +188,7 @@ const options = {
 | 选项 | 说明 |
 | --- | --- |
 | `theme` | 预览器主题，支持 `light`、`dark`、`system`。默认 `system`，继续跟随浏览器 `prefers-color-scheme`；浅色业务系统建议显式传 `light`，避免操作系统深色模式把预览区、工具栏或支持主题切换的渲染器自动切成深色 |
-| `toolbar` | `true` 或对象；声明是否允许下载原文件、打印完整渲染结果、导出渲染后 HTML 和显示统一缩放按钮。`toolbar.zoom` 可单独关闭缩放按钮；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
+| `toolbar` | `true`、`false` 或对象；声明是否允许下载原文件、打印完整渲染结果、导出渲染后 HTML 和显示统一缩放按钮。传 `false` 会隐藏内置工具栏，但 ref / controller 上的下载、打印、导出、缩放 API 仍可用于自定义业务工具栏。`toolbar.zoom` 可单独关闭缩放按钮；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层或 canvas |
 | `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码、锚点和 label 上下文，业务侧可用于向量化、溯源、来源定位、召回高亮和审计 |
@@ -198,11 +198,12 @@ const options = {
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
 | `archive.maxArchiveSize` | 单个压缩包允许读取目录的最大体积，默认 320MB |
 | `archive.maxEntryPreviewSize` | 压缩包内单文件允许预览的最大体积，默认 64MB |
-| `docx.worker` | 是否启用 DOCX 静态 Worker 尝试，默认 `false`。Word 保真度优先，默认直接使用浏览器真实 DOM 执行 `docx-preview`；只有明确接受 Worker DOM 兼容边界的大文件场景才建议设为 `true` |
+| `docx.worker` | 是否启用 `@file-viewer/docx` Worker 解析，默认 `true`。仅在 CSP 或宿主环境禁用 Worker 时设为 `false` |
 | `docx.workerUrl` | 自定义 DOCX Worker 地址，默认尝试当前部署 base 下的 `vendor/docx/docx.worker.js` |
-| `docx.progressive` | 是否按批次挂载 docx-preview 生成的页面，默认 `false`。复杂目录、页眉页脚、制表符和样式继承敏感的文件建议保持默认完整挂载 |
-| `docx.visualPagination` | 是否对 docx-preview 输出的超长 section 做预览层视觉分页，默认 `false`。只有确认源文件缺少分页且接受预览层拆分时再开启 |
-| `docx.workerTimeout` | DOCX Worker 超时时间，默认 15000ms，超时后自动回退主线程渲染 |
+| `docx.workerJsZipUrl` | 自定义 DOCX Worker 内加载的 JSZip 地址，默认尝试当前部署 base 下的 `vendor/docx/jszip.min.js` |
+| `docx.progressive` | 是否启用异步分批渲染，默认按批次让出主线程，提升大文档首屏和滚动响应 |
+| `docx.visualPagination` | 是否启用页式预览和预览层兜底分页，默认 `false`。默认 DOCX 使用连续流式阅读，避免复杂目录、表格和长段落被分页拆坏；只有业务明确需要页式效果时再设为 `true` |
+| `docx.workerTimeout` | DOCX Worker 超时时间，默认 120000ms，超时后由 `@file-viewer/docx` 自动回退 |
 | `spreadsheet.worker` | 是否启用表格静态 Worker 尝试，默认 `false`；默认使用同一套 `styled-exceljs` 主线程解析以避开本地服务器、手机 WebView、MIME 或 CSP 导致的 Worker 卡住问题 |
 | `spreadsheet.workerUrl` | 自定义 Excel/XLSX Worker 地址，默认尝试当前部署 base 下的 `vendor/xlsx/sheet.worker.js` |
 | `pdf.streaming` | PDF URL 渐进读取策略，默认 `same-origin`；设为 `true` 时跨域也尝试 URL 直连读取，设为 `false` 时完全回到 Blob 下载后预览 |
@@ -293,14 +294,16 @@ await viewerRef.value?.zoomOut()
 await viewerRef.value?.resetZoom()
 ```
 
+各框架的自定义方式略有不同：Vue3 使用模板 `ref` 和独立 emit，Vue2 使用 `$refs` 与 `viewer-event`，React 推荐 `useFileViewer()`，Svelte 使用 `bind:this` 或 action，Pure Web / jQuery 直接使用 controller。完整属性矩阵和每种框架的自定义工具栏示例见 [生态组件总览](/guide/ecosystem#工具栏定制)。
+
 React、Pure Web、jQuery 和 Svelte 集成可以直接接收同样的生命周期和操作上下文。标准事件入口使用 `onEvent`；Svelte 组件同时会派发 `viewerEvent`。
 
 ```ts
 mountViewer(container, {
   url: '/files/demo.pdf',
   onEvent(event) {
-    if (event.type === 'flyfish-viewer:lifecycle') {
-      console.log(event.event, event.payload)
+    if (event.type === 'load-complete') {
+      console.log(event.payload.filename, event.payload.duration)
     }
   }
 })
@@ -350,38 +353,43 @@ function buildAiPayload() {
 
 React、Pure Web、jQuery 和 Svelte 接入时，搜索和定位仍建议由宿主 UI 调用组件或 controller 暴露的标准能力；`onEvent` / `viewerEvent` 会同步搜索状态、页码、行号和溯源信息。需要 AI 摘要、问答、相似段落召回或证据链展示时，业务侧可把 `getDocumentTextChunks()` 返回的文本切片写入自己的向量库或审计系统，再通过 `scrollToAnchor()` / `searchDocument()` 回到原文位置。
 
-## DOCX Worker 渲染
+## DOCX 流式阅读
 
-`.docx`、`.docm`、`.dotx`、`.dotm` 使用 `docx-preview` 做高保真页面渲染。默认链路会在主线程真实浏览器 DOM 中一次性完成 `docx-preview` 渲染，再执行宽度自适应、打印和导出适配，优先保证目录、制表符、页眉页脚、段落样式和继承关系稳定。Worker 和分批挂载仍保留为显式 opt-in 能力，适合业务方确认文件结构简单、且更看重大文件首屏出现速度的场景。
+`.docx`、`.docm`、`.dotx`、`.dotm` 使用自研 `@file-viewer/docx` 做高可读流式渲染。默认链路会用 Worker 完成 ZIP/XML 解析，再在真实浏览器 DOM 中连续输出正文、目录字段缓存、页眉页脚、段落样式和制表符规则，最后执行宽度自适应、打印和导出适配。默认不分页，优先保证复杂目录、长表格、中文公文和正式文档的连续阅读稳定性。
 
 ```vue
 <FileViewer
   url="/files/report.docx"
   :options="{
     docx: {
-      // 默认 false。开启后会在 Worker DOM 中生成 docx-preview HTML，适合结构简单的大文件。
-      worker: false,
+      // 默认 true。Worker 负责 ZIP/XML 解析，主线程负责真实页面 DOM 渲染。
+      worker: true,
       // 默认尝试当前部署 base 下的 vendor/docx/docx.worker.js；自托管子路径部署可显式覆盖。
       workerUrl: '/file-viewer/vendor/docx/docx.worker.js',
-      // 默认 false。开启后按页面分批挂载 Worker 生成的 HTML。
-      progressive: false,
-      // 默认 false。仅当源文件缺少分页且允许预览层拆分超长 section 时开启。
+      // Worker 内部加载 JSZip 的离线地址。
+      workerJsZipUrl: '/file-viewer/vendor/docx/jszip.min.js',
+      // 默认启用异步分批渲染，提升大文档可读性和响应速度。
+      progressive: true,
+      // 默认 false，使用连续流式阅读；只有明确需要页式预览时再开启。
       visualPagination: false,
-      // 默认 15000。Worker 超时后仍回到 docx-preview 原生主线程渲染，避免永久 loading。
-      workerTimeout: 15000
+      // 默认 120000。Worker 超时后自动回退，避免永久 loading。
+      workerTimeout: 120000,
+      strictWordCompatibility: true,
+      preserveComplexFieldResults: true,
+      ignoreLastRenderedPageBreak: true
     }
   }"
 />
 ```
 
-浏览器 Worker 不能直接操作真实页面 DOM，因此 Worker 模式使用轻量 DOM 运行时生成 `docx-preview` HTML，再回到主线程挂载。这个模式可以降低主线程长任务，但目录、复杂制表符、页眉页脚、字段和样式继承会更容易触达 Worker DOM 兼容边界，所以默认关闭。私有化部署时如果确实开启 Worker，且静态目录前缀特殊，请配置 `docx.workerUrl`；结构复杂的 Word 文件建议保持默认主线程完整渲染，或由服务端转为 PDF/OFD 后再做稳定版式预览。
+私有化部署时，`file-viewer-copy-assets` 会复制 `vendor/docx/docx.worker.js` 和 `vendor/docx/jszip.min.js`。如果静态目录前缀特殊，请同时配置 `docx.workerUrl` 和 `docx.workerJsZipUrl`。结构复杂的 Word 文件建议保持 `strictWordCompatibility: true`、`preserveComplexFieldResults: true` 和默认流式布局，这样目录、制表符、页眉页脚、长表格和连续正文更稳定；确实需要页式效果时再设置 `visualPagination: true`。
 
 ## 打印、导出和水印的交付行为
 
 - 下载原文件会保留用户传入的原始二进制内容，不会把渲染后的页面反向写回文件。
 - 打印会生成只包含预览内容和水印的独立打印窗口，不带 Demo 侧边栏、示例选择器或操作工具条。
 - PDF 打印和导出 HTML 使用 PDF 专属导出适配器逐页生成完整页面，和当前滚动位置、当前可见页、导航窗格显隐状态都解耦，避免只输出当前页或被滚动容器截断。
-- Word 打印和导出会清理预览阶段的缩放、绝对定位、滚动容器和 Demo 全局布局样式，把 `.docx` / `.doc` 还原成完整白色页面，避免只打印当前视口或第一页。
+- Word 打印和导出会清理预览阶段的缩放、绝对定位、滚动容器和 Demo 全局布局样式，把 `.docx` / `.doc` 还原成完整白色文档内容，避免只打印当前视口或第一页。
 - 图片、Markdown、代码、PPTX、OFD、CAD、绘图、UMD、OLB/DRA 等可以稳定克隆当前渲染结果的格式会保留打印按钮；Excel 当前使用 `styled-exceljs` + `e-virt-table` 虚拟渲染，完整工作表不会一次性存在于 DOM 中，因此表格、压缩包、邮件、EPUB、音视频、3D / 模型等更适合交互查看或原文件下载的格式会隐藏打印按钮。
 - 导出 HTML 会尽量克隆当前渲染结果，并把 canvas 转成图片，保证图纸、绘图、文档和代码在离线 HTML 中仍有可读内容。
 - 水印会同时参与预览、打印和 HTML 导出。文字水印适合内部资料、审批流和归档场景；图片水印适合品牌 Logo 或业务系统标识。
