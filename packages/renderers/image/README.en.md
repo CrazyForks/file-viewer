@@ -32,4 +32,4 @@ const options = {
 
 ## Migration Note
 
-The core package still keeps a bundled image renderer for backward compatibility. A later migration will switch the core image entry to this package and remove `heic2any` from core direct dependencies.
+`@file-viewer/core` still keeps lightweight native image preview for browser-supported PNG / JPEG / SVG / WebP formats, but it no longer installs `heic2any` by default. Install this package explicitly, or use `@file-viewer/preset-all` / `@file-viewer/preset-lite`, when HEIC / HEIF conversion or the full standalone image renderer is required.

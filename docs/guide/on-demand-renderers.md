@@ -215,7 +215,7 @@ fileViewerRenderers({
 | ------ | ------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Wave 0 | 建立依赖账本              | `audit:renderer-deps` 输出 core 直接重依赖、目标包、阶段和状态；新增安装体积和 bundle 预算脚本 | CI 能报告 core 依赖数、packed size、安装依赖闭包、demo 首屏 chunk   |
 | Wave 1 | 完成 Phase 2 重链路拆出   | Word、Spreadsheet、OFD、Presentation、PDF、Typst、CAD、Archive 全部从 core 迁到 renderer 包    | `@file-viewer/core` 不再声明这些依赖；`preset-all` 格式矩阵不掉格式 |
-| Wave 2 | 完成 Phase 3 体验链路拆出 | Drawing、3D、MindMap、Geo、Email、Ebook、Text、Media、Image 独立维护                           | 默认组件安装不带相关重库；各 renderer 有独立 smoke                  |
+| Wave 2 | 完成 Phase 3 体验链路拆出 | Drawing、3D、MindMap、Geo、Email、Ebook、Text、Media、Image 独立维护                           | 默认组件安装不带相关重库；各 renderer 有独立 smoke；core 只保留普通图片等轻量原生能力 |
 | Wave 3 | 完成 Phase 4 专业内核     | Data Asset 与 EDA 结构预览已先拆出独立 renderer；OASIS 大版图、OrCAD/Allegro 高保真图形继续独立内核化，复杂格式不挤进 core | 文档明确边界，复杂样例能结构化预览或进入专用内核                    |
 | Wave 4 | 工程自动化                | `@file-viewer/vite-plugin`、asset manifest、virtual module、chunk strategy、离线部署校验       | 用户按 `formats` 配置即可自动生成 renderer 装配                     |
 | Wave 5 | 默认轻量切换              | 组件包默认 `builtinRenderers: 'lite'` 或 `none`，全量能力改由 preset 显式启用                  | 新项目 cold install 明显下降；旧全量 demo 仍完整                    |
@@ -256,7 +256,7 @@ fileViewerRenderers({
 - [x] 所有 wrapper 共享的 `FileViewerOptions` / `ViewerOptions` 类型暴露 `renderers` 和 `rendererMode`，可直接接收 renderer plugin 或 preset。
 - [x] `FileViewerOptions.builtinRenderers` 支持 `all`、`lite`、`none`，为默认轻量化和显式全量装配提供稳定开关。
 - [ ] wrapper README 和官网示例补齐 `renderers` / `rendererMode` 的按需装配示例。
-- [ ] Vue3 旧组件渲染面板切换到同一套 renderer plugin/preset 装配链路。
+- [x] Vue3 原生组件渲染面板切换到同一套 renderer plugin/preset 装配链路，`options.renderers`、`rendererMode` 和 `builtinRenderers` 会在组件路径真实生效。
 - [x] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。
 - [x] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
 
@@ -274,10 +274,12 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-ebook` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 EPUB renderer。
 - [x] 建立 `@file-viewer/renderer-mindmap` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 XMind renderer。
 - [x] `@file-viewer/core` 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，XMind 完整能力统一通过 `@file-viewer/renderer-mindmap` 或 preset 装配。
+- [x] 官方 Demo 的 Vue3 入口已验证 `@file-viewer/preset-all` 会真实装配 XMind renderer，并通过浏览器 PointerEvent 回归确认画布可拖拽平移。
 - [x] 建立 `@file-viewer/renderer-drawing` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 Draw.io / Excalidraw renderer。
 - [x] 建立 `@file-viewer/renderer-3d` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合该包的 3D renderer。
 - [x] 建立 `@file-viewer/renderer-text` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的代码 / Markdown renderer。
 - [x] 建立 `@file-viewer/renderer-image` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的图片 / HEIC renderer。
+- [x] `@file-viewer/core` 已移除 HEIC / HEIF 转换依赖 `heic2any`，普通图片继续由 core 轻量原生预览，完整图片链路统一通过 `@file-viewer/renderer-image` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。
 - [x] 建立 `@file-viewer/renderer-geo` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 GeoJSON / KML / GPX / SHP renderer。
 - [x] `@file-viewer/core` 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，地理数据完整能力统一通过 `@file-viewer/renderer-geo` 或 preset 装配。
@@ -320,10 +322,10 @@ pnpm audit:renderer-deps
 pnpm audit:renderer-deps -- --json
 ```
 
-截至当前工作区，`@file-viewer/core` 仍直接声明 28 个渲染依赖：
+截至当前工作区，`@file-viewer/core` 仍直接声明 27 个渲染依赖：
 
 - Phase 2 还有 14 个依赖留在 core，其中 Presentation 和 Word 已完成 core 直接依赖摘除；下一步优先拆 Spreadsheet、PDF、OFD 或剩余 Office 兼容链路，继续减少默认安装面。
-- Phase 3 还有 11 个依赖留在 core，其中 XMind 和 Geo 已完成 core 直接依赖摘除，后续继续拆 Drawing、3D、Email、Ebook、Text、Media 和 Image 兼容入口。
+- Phase 3 还有 10 个依赖留在 core，其中 XMind、Geo 和 HEIC 图片转换已完成 core 直接依赖摘除；普通图片仍作为 lite 原生能力保留，后续继续拆 Drawing、3D、Email、Ebook、Text 和 Media 兼容入口。
 - Phase 4 还有 5 个依赖留在 core，其中 Data Asset 与 EDA 已分别建立 `@file-viewer/renderer-data`、`@file-viewer/renderer-eda` 独立包；下一步是清理 core 兼容入口里的 `ag-psd`、`sql.js`、`hyparquet`、`avsc` 和 `cfb` 直接依赖。
 
 这说明 renderer 包和 `preset-all` 已经具备雏形，但“默认安装轻量化”尚未完成。短期先保留 `preset-all` 兼容完整能力，长期验收标准是组件包默认安装不再拉取 PDF、Office、CAD、Typst、Archive、3D 等重依赖。

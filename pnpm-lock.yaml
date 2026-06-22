@@ -435,9 +435,6 @@ importers:
       epubjs:
         specifier: ^0.3.93
         version: 0.3.93
-      heic2any:
-        specifier: ^0.0.4
-        version: 0.0.4
       highlight.js:
         specifier: ^11.11.1
         version: 11.11.1

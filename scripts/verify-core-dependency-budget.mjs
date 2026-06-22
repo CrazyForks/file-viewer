@@ -14,11 +14,11 @@ const args = process.argv.slice(2)
 const strict = args.includes('--strict')
 
 const baseline = {
-  maxDirectDependencies: 28,
-  maxRendererDependencies: 28,
+  maxDirectDependencies: 27,
+  maxRendererDependencies: 27,
   maxPhaseDependencies: {
     2: 14,
-    3: 11,
+    3: 10,
     4: 5
   }
 }
