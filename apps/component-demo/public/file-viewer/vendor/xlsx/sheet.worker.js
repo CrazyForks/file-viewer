@@ -20242,32 +20242,45 @@ var $_ = {
 	}
 }), nv = (e) => {
 	var t;
+	return ((e == null || (t = e["!drawings"]) == null ? void 0 : t.images) || []).reduce((e, t) => {
+		var n, r, i, a, o, s;
+		let c = t.anchor, l = Number((n = c == null || (r = c.to) == null ? void 0 : r.row) == null ? c == null || (i = c.from) == null ? void 0 : i.row : n), u = Number((a = c == null || (o = c.to) == null ? void 0 : o.col) == null ? c == null || (s = c.from) == null ? void 0 : s.col : a);
+		return {
+			rowCount: Number.isFinite(l) ? Math.max(e.rowCount, l + 1) : e.rowCount,
+			colCount: Number.isFinite(u) ? Math.max(e.colCount, u + 1) : e.colCount
+		};
+	}, {
+		rowCount: 0,
+		colCount: 0
+	});
+}, rv = (e) => {
+	var t;
 	let n = e.workbook;
 	if (!(n != null && n.SheetNames)) return [];
 	let r = ((t = n.Workbook) == null ? void 0 : t.Sheets) || [];
 	return e.sheets = n.SheetNames.reduce((e, t, i) => {
 		var a;
-		let o = n.Sheets[t], s = o == null ? void 0 : o["!ref"];
-		if (!s) return e;
-		let c = Dg.decode_range(s);
+		let o = n.Sheets[t], s = o == null ? void 0 : o["!ref"], c = nv(o);
+		if (!s && !c.rowCount && !c.colCount) return e;
+		let l = s ? Dg.decode_range(s) : Dg.decode_range("A1");
 		return e.push({
 			id: e.length,
 			name: t,
 			hidden: !!((a = r[i]) != null && a.Hidden),
-			rowCount: c.e.r + 1,
-			colCount: c.e.c + 1
+			rowCount: Math.max(l.e.r + 1, c.rowCount),
+			colCount: Math.max(l.e.c + 1, c.colCount)
 		}), e;
 	}, []), [{
 		type: "sheets",
 		payload: { sheets: e.sheets }
 	}];
-}, rv = (e, t) => {
+}, iv = (e, t) => {
 	try {
-		return e.workbook = sg(t, $_), nv(e);
+		return e.workbook = sg(t, $_), rv(e);
 	} catch (e) {
 		return [tv(e)];
 	}
-}, iv = (e, t = {}) => {
+}, av = (e, t = {}) => {
 	let { sheet: n, startRow: r = 0, pageSize: i = 500, sessionId: a = 0 } = t;
 	try {
 		var o;
@@ -20298,22 +20311,22 @@ var $_ = {
 			startRow: r
 		})];
 	}
-}, av = (e, t) => {
+}, ov = (e, t) => {
 	switch (t.type) {
 		case "parseWorkbook":
 			var n;
-			return rv(e, (n = t.payload) == null ? void 0 : n.workbook);
-		case "parseSheet": return iv(e, t.payload);
+			return iv(e, (n = t.payload) == null ? void 0 : n.workbook);
+		case "parseSheet": return av(e, t.payload);
 		default: return [];
 	}
-}, ov = typeof self > "u" ? null : self;
-if (ov) {
+}, sv = typeof self > "u" ? null : self;
+if (sv) {
 	let e = ev();
-	ov.onmessage = async (t) => {
-		av(e, t.data).forEach((e) => {
-			ov.postMessage(e);
+	sv.onmessage = async (t) => {
+		ov(e, t.data).forEach((e) => {
+			sv.postMessage(e);
 		});
-	}, ov.onerror = (e) => {
+	}, sv.onerror = (e) => {
 		console.error(e);
 	};
 }
