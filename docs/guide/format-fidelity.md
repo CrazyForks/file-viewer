@@ -112,7 +112,7 @@
 - [x] 拆出 `@file-viewer/eda-orcad`，专门维护 OLB / DRA / PSM / PAD 二进制检查、后续 C++ WASM/TS 移植和 OrCAD/Allegro 样本回归。
 - [ ] 为 STEP / IGES / IFC / 3DM 建立独立几何内核 renderer 包，避免 OpenCascade / web-ifc / rhino3dm 进入默认 core install path。
 - [x] 在浏览器烟测里加入 XMind pan/zoom 的实际交互断言。
-- [ ] 在浏览器烟测里继续补齐 Typst WASM、Draw.io offline viewer、CAD WASM、GDSII preview 的实际交互断言。
+- [x] 在浏览器烟测里继续补齐 Typst WASM、Draw.io offline viewer、CAD WASM / DWF native canvas、GDSII preview 的实际渲染或交互断言。
 
 <div class="doc-note">
   复杂工程格式不要强行虚标“全量高保真”。能完整渲染的走成熟库和 WASM；目前只能安全解析的格式要明确边界，并把专业内核拆成可独立迭代的 renderer 包。

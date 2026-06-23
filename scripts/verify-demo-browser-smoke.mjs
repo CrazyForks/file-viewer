@@ -392,6 +392,210 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
   }
 }
 
+const verifyTypstRenderInteraction = async (page, samplePath) => {
+  const result = await page.evaluate(() => {
+    const pageShells = [...document.querySelectorAll('.typst-page-shell')]
+    const svgs = [...document.querySelectorAll('.typst-page-shell svg')]
+    const firstPage = pageShells[0]
+    const firstSvg = svgs[0]
+    const pageRect = firstPage?.getBoundingClientRect()
+    const svgRect = firstSvg?.getBoundingClientRect()
+    const statusText = document.querySelector('.typst-toolbar em')?.textContent || ''
+    const hasVectorContent = svgs.some(svg => svg.querySelector('path,text,use,g,rect,circle,ellipse,line,polyline,polygon'))
+
+    return {
+      ok: pageShells.length > 0 &&
+        svgs.length > 0 &&
+        Boolean(pageRect && pageRect.width > 80 && pageRect.height > 80) &&
+        Boolean(svgRect && svgRect.width > 80 && svgRect.height > 80) &&
+        statusText.includes('已渲染') &&
+        hasVectorContent,
+      pageCount: pageShells.length,
+      svgCount: svgs.length,
+      pageRect: pageRect ? {
+        width: Number(pageRect.width.toFixed(2)),
+        height: Number(pageRect.height.toFixed(2))
+      } : null,
+      svgRect: svgRect ? {
+        width: Number(svgRect.width.toFixed(2)),
+        height: Number(svgRect.height.toFixed(2))
+      } : null,
+      statusText,
+      hasVectorContent
+    }
+  })
+
+  if (!result.ok) {
+    throw new Error(`Sample ${samplePath} failed Typst WASM render smoke: ${JSON.stringify(result, null, 2)}`)
+  }
+}
+
+const verifyDrawingRenderInteraction = async (page, samplePath) => {
+  const result = await page.evaluate(async () => {
+    const canvas = document.querySelector('.drawing-canvas')
+    if (!(canvas instanceof HTMLElement)) {
+      return { ok: false, reason: 'missing drawing canvas' }
+    }
+
+    const waitFrame = () => new Promise(resolve => requestAnimationFrame(resolve))
+    await waitFrame()
+    await waitFrame()
+
+    const renderedMode = canvas.dataset.drawingRendered || ''
+    const svg = canvas.querySelector('svg')
+    const mxgraph = canvas.querySelector('.drawing-mxgraph')
+    const svgRect = svg?.getBoundingClientRect()
+    const mxRect = mxgraph?.getBoundingClientRect()
+    const visibleSvg = Boolean(svgRect && svgRect.width > 80 && svgRect.height > 80)
+    const visibleMxGraph = Boolean(mxRect && mxRect.width > 80 && mxRect.height > 80)
+    const hasShapes = Boolean(svg?.querySelector('path,text,rect,circle,ellipse,line,polyline,polygon,use,g')) ||
+      Boolean(mxgraph && mxgraph.children.length > 0)
+    const zoomLabel = document.querySelector('.drawing-actions span')?.textContent || ''
+
+    return {
+      ok: Boolean(renderedMode) &&
+        (visibleSvg || visibleMxGraph) &&
+        hasShapes &&
+        /%$/.test(zoomLabel.trim()),
+      renderedMode,
+      visibleSvg,
+      visibleMxGraph,
+      hasShapes,
+      zoomLabel,
+      svgRect: svgRect ? {
+        width: Number(svgRect.width.toFixed(2)),
+        height: Number(svgRect.height.toFixed(2))
+      } : null,
+      mxRect: mxRect ? {
+        width: Number(mxRect.width.toFixed(2)),
+        height: Number(mxRect.height.toFixed(2))
+      } : null
+    }
+  })
+
+  if (!result.ok) {
+    throw new Error(`Sample ${samplePath} failed drawing render smoke: ${JSON.stringify(result, null, 2)}`)
+  }
+}
+
+const verifyCadRenderInteraction = async (page, samplePath) => {
+  const result = await page.evaluate(async () => {
+    const stage = document.querySelector('.cad-stage')
+    const zoomText = document.querySelector('.cad-zoom')
+    const zoomInButton = [...document.querySelectorAll('.cad-tools button')]
+      .find(button => button.getAttribute('title') === '放大')
+    if (!(stage instanceof HTMLElement) || !(zoomText instanceof HTMLElement) || !(zoomInButton instanceof HTMLButtonElement)) {
+      return {
+        ok: false,
+        reason: 'missing CAD stage, zoom label, or zoom button',
+        hasStage: stage instanceof HTMLElement,
+        hasZoomText: zoomText instanceof HTMLElement,
+        hasZoomInButton: zoomInButton instanceof HTMLButtonElement
+      }
+    }
+
+    const waitFrame = () => new Promise(resolve => requestAnimationFrame(resolve))
+    const readCanvases = () => [...stage.querySelectorAll('canvas')]
+      .map(canvas => {
+        const rect = canvas.getBoundingClientRect()
+        return {
+          width: Number(rect.width.toFixed(2)),
+          height: Number(rect.height.toFixed(2)),
+          backingWidth: canvas.width,
+          backingHeight: canvas.height
+        }
+      })
+      .filter(rect => rect.width > 80 && rect.height > 80)
+    const beforeZoom = zoomText.textContent || ''
+    const beforeCanvases = readCanvases()
+    zoomInButton.click()
+    await waitFrame()
+    await waitFrame()
+    const afterZoom = zoomText.textContent || ''
+    const afterCanvases = readCanvases()
+    const nativeStageActive = Boolean(document.querySelector('.cad-native-stage.is-active,.cad-viewer-native-host.is-active,.dwfv-root'))
+    const hasVisibleCanvas = beforeCanvases.length > 0 || afterCanvases.length > 0
+    const zoomChanged = beforeZoom !== afterZoom
+    const wrapperZoomRequired = !nativeStageActive
+
+    return {
+      ok: hasVisibleCanvas &&
+        beforeZoom.trim() !== '' &&
+        afterZoom.trim() !== '' &&
+        (!wrapperZoomRequired || zoomChanged),
+      beforeZoom,
+      afterZoom,
+      beforeCanvases,
+      afterCanvases,
+      nativeStageActive,
+      wrapperZoomRequired,
+      zoomChanged
+    }
+  })
+
+  if (!result.ok) {
+    throw new Error(`Sample ${samplePath} failed CAD render/zoom smoke: ${JSON.stringify(result, null, 2)}`)
+  }
+}
+
+const verifyGdsLayoutRenderInteraction = async (page, samplePath) => {
+  const result = await page.evaluate(() => {
+    const layoutSvg = document.querySelector('.eda-layout-svg')
+    const tree = document.querySelector('.eda-tree')
+    if (!(layoutSvg instanceof SVGSVGElement) || !(tree instanceof HTMLElement)) {
+      return {
+        ok: false,
+        reason: 'missing GDSII layout SVG or EDA tree',
+        hasLayoutSvg: layoutSvg instanceof SVGSVGElement,
+        hasTree: tree instanceof HTMLElement
+      }
+    }
+
+    const rect = layoutSvg.getBoundingClientRect()
+    const geometryCount = layoutSvg.querySelectorAll('polygon,polyline,circle,text').length
+    const treeRowCount = tree.querySelectorAll('button').length
+    const ariaLabel = layoutSvg.getAttribute('aria-label') || ''
+
+    return {
+      ok: rect.width > 100 &&
+        rect.height > 100 &&
+        geometryCount > 0 &&
+        treeRowCount > 0 &&
+        ariaLabel.includes('GDSII'),
+      rect: {
+        width: Number(rect.width.toFixed(2)),
+        height: Number(rect.height.toFixed(2))
+      },
+      geometryCount,
+      treeRowCount,
+      ariaLabel
+    }
+  })
+
+  if (!result.ok) {
+    throw new Error(`Sample ${samplePath} failed GDSII layout render smoke: ${JSON.stringify(result, null, 2)}`)
+  }
+}
+
+const verifyFormatSpecificInteraction = async (page, samplePath) => {
+  const normalized = samplePath.toLowerCase()
+  if (normalized.endsWith('.xmind')) {
+    await verifyXMindPanInteraction(page, samplePath)
+  }
+  if (normalized.endsWith('.typ') || normalized.endsWith('.typst')) {
+    await verifyTypstRenderInteraction(page, samplePath)
+  }
+  if (normalized.endsWith('.drawio') || normalized.endsWith('.dio')) {
+    await verifyDrawingRenderInteraction(page, samplePath)
+  }
+  if (/\.(?:dwg|dxf|dwf|dwfx|xps)$/.test(normalized)) {
+    await verifyCadRenderInteraction(page, samplePath)
+  }
+  if (normalized.endsWith('.gds')) {
+    await verifyGdsLayoutRenderInteraction(page, samplePath)
+  }
+}
+
 const mimeTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
   ['.gif', 'image/gif'],
@@ -767,9 +971,7 @@ const verifySampleFile = async (page, baseUrl, samplePath, failures) => {
 
   assertNoBrowserFailures(failures, `Sample ${samplePath} emitted browser errors.`)
   failures.length = 0
-  if (samplePath.toLowerCase().endsWith('.xmind')) {
-    await verifyXMindPanInteraction(page, samplePath)
-  }
+  await verifyFormatSpecificInteraction(page, samplePath)
   return state
 }
 
