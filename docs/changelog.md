@@ -2,6 +2,14 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.1.1` GitHub issue 回归修复与发布同步
+
+- Markdown 预览自动剥离文件开头 YAML Frontmatter，避免元数据被当作正文渲染，同时保留正文中的普通分隔线
+- PDF 默认 Worker、cMap、WASM 和标准字体资源改为站点根路径解析，兼容 Vite / Vue Router / React Router 等深层路由部署
+- Excel / XLSX worker 将图片 drawing anchor 纳入虚拟表格尺寸计算，修复图片位于数据区下方时无法继续向下滚动的问题
+- 工具栏新增 `toolbar.items` 与 `toolbar.permissions`，同时保留 `beforeOperation` / `toolbar.beforeOperation` 作为异步鉴权和确认拦截点
+- 全线生态包、Demo、文档站、官网和公开总仓同步推进到 `2.1.1`
+
 ## `v2.1.0` 模块化架构与文档门户专业化
 
 - 全仓 workspace、标准组件包、renderer、preset、兼容 alias、Demo、官网和文档站版本统一推进到 `2.1.0`
