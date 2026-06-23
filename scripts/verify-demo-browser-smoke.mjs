@@ -152,8 +152,8 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       await waitFrame()
       await waitFrame()
     }
-    const dispatchPointer = (type, clientX, clientY, buttons, pointerId, pointerType = 'mouse') => {
-      stage.dispatchEvent(new PointerEvent(type, {
+    const dispatchPointer = (target, type, clientX, clientY, buttons, pointerId, pointerType = 'mouse') => {
+      target.dispatchEvent(new PointerEvent(type, {
         bubbles: true,
         button: 0,
         buttons,
@@ -164,18 +164,18 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
         pointerType
       }))
     }
-    const pointerDrag = async (pointerId, moveButtons = 1) => {
+    const pointerDrag = async (pointerId, moveButtons = 1, startTarget = stage) => {
       await resetView()
       const before = readTransform()
       const beforeNodeRect = readFirstNodeRect()
 
       stage.focus({ preventScroll: true })
-      dispatchPointer('pointerdown', startX, startY, 1, pointerId)
-      dispatchPointer('pointermove', startX + 180, startY + 96, moveButtons, pointerId)
+      dispatchPointer(startTarget, 'pointerdown', startX, startY, 1, pointerId)
+      dispatchPointer(stage, 'pointermove', startX + 180, startY + 96, moveButtons, pointerId)
       await waitFrame()
-      dispatchPointer('pointermove', startX + 220, startY + 118, moveButtons, pointerId)
+      dispatchPointer(stage, 'pointermove', startX + 220, startY + 118, moveButtons, pointerId)
       await waitFrame()
-      dispatchPointer('pointerup', startX + 220, startY + 118, 0, pointerId)
+      dispatchPointer(stage, 'pointerup', startX + 220, startY + 118, 0, pointerId)
       await waitFrame()
       const afterNodeRect = readFirstNodeRect()
 
@@ -216,7 +216,7 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       await resetView()
       const before = readTransform()
       stage.focus({ preventScroll: true })
-      dispatchPointer('pointerdown', startX + 10, startY + 10, 1, 2321, 'mouse')
+      dispatchPointer(stage, 'pointerdown', startX + 10, startY + 10, 1, 2321, 'mouse')
       dispatchMouse('mousemove', startX + 116, startY + 78, 1)
       await waitFrame()
       dispatchMouse('mousemove', startX + 148, startY + 102, 1)
@@ -290,7 +290,7 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       await resetView()
       const before = readTransform()
       stage.focus({ preventScroll: true })
-      dispatchPointer('pointerdown', startX + 16, startY + 16, 1, 2322, 'touch')
+      dispatchPointer(stage, 'pointerdown', startX + 16, startY + 16, 1, 2322, 'touch')
       dispatchTouch('touchmove', startX + 108, startY + 76, true)
       await waitFrame()
       dispatchTouch('touchmove', startX + 142, startY + 104, true)
@@ -325,6 +325,7 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
 
     const normalDrag = await pointerDrag(2319, 1)
     const zeroButtonsDrag = await pointerDrag(2320, 0)
+    const nodeStartDrag = await pointerDrag(2323, 1, document.querySelector('.xmind-node') || stage)
     const mouseFallbackDrag = await mouseDrag()
     const pointerMouseHybridFallbackDrag = await pointerMouseHybridDrag()
     const touchFallbackDrag = await touchDrag()
@@ -339,6 +340,8 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
         normalDrag.nodeMoved &&
         zeroButtonsDrag.before !== zeroButtonsDrag.after &&
         zeroButtonsDrag.nodeMoved &&
+        nodeStartDrag.before !== nodeStartDrag.after &&
+        nodeStartDrag.nodeMoved &&
         mouseFallbackDrag.before !== mouseFallbackDrag.after &&
         pointerMouseHybridFallbackDrag.before !== pointerMouseHybridFallbackDrag.after &&
         touchOk &&
@@ -349,6 +352,7 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       after: wheelFallbackPan.after,
       normalDrag,
       zeroButtonsDrag,
+      nodeStartDrag,
       mouseFallbackDrag,
       pointerMouseHybridFallbackDrag,
       touchFallbackDrag,
@@ -360,9 +364,13 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
         : !normalDrag.nodeMoved
           ? 'XMind node position did not change after normal pointer drag'
         : zeroButtonsDrag.before === zeroButtonsDrag.after
-          ? 'XMind transform did not change after WebView-style zero-buttons pointer drag'
+            ? 'XMind transform did not change after WebView-style zero-buttons pointer drag'
           : !zeroButtonsDrag.nodeMoved
             ? 'XMind node position did not change after WebView-style zero-buttons pointer drag'
+          : nodeStartDrag.before === nodeStartDrag.after
+            ? 'XMind transform did not change after node-start pointer drag'
+          : !nodeStartDrag.nodeMoved
+            ? 'XMind node position did not change after node-start pointer drag'
             : mouseFallbackDrag.before === mouseFallbackDrag.after
               ? 'XMind transform did not change after mouse fallback drag'
               : pointerMouseHybridFallbackDrag.before === pointerMouseHybridFallbackDrag.after

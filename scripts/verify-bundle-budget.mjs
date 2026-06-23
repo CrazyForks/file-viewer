@@ -57,6 +57,41 @@ const heavyRendererGroups = [
   { id: 'umd', pattern: /^umd-/i }
 ]
 
+const presetBundleBudgets = [
+  {
+    id: 'lite',
+    label: 'lite preset async renderer chunks',
+    groups: ['text', 'image', 'media'],
+    maxRawBytes: 2_500_000,
+    maxGzipBytes: 700_000,
+    maxBrotliBytes: 560_000
+  },
+  {
+    id: 'office',
+    label: 'office preset async renderer chunks',
+    groups: ['pdf', 'word', 'spreadsheet', 'presentation', 'ofd'],
+    maxRawBytes: 4_700_000,
+    maxGzipBytes: 1_650_000,
+    maxBrotliBytes: 800_000
+  },
+  {
+    id: 'engineering',
+    label: 'engineering preset async renderer chunks',
+    groups: ['cad', 'model', 'drawing', 'mindmap', 'geo', 'typst', 'archive', 'data', 'eda'],
+    maxRawBytes: 3_000_000,
+    maxGzipBytes: 850_000,
+    maxBrotliBytes: 750_000
+  },
+  {
+    id: 'all',
+    label: 'all preset async renderer chunks',
+    groups: heavyRendererGroups.map((group) => group.id),
+    maxRawBytes: 10_000_000,
+    maxGzipBytes: 3_300_000,
+    maxBrotliBytes: 2_100_000
+  }
+]
+
 const deniedEntryMarkers = [
   'pdfjs-dist',
   '@file-viewer/docx',
@@ -184,6 +219,10 @@ function summarizeAssets(assetPaths) {
   }
 }
 
+function summarizeJsFiles(files) {
+  return summarizeAssets(files.map((file) => join(assetsDir, file)))
+}
+
 function verifyEntry(entryName, budget) {
   const htmlFile = join(outputDir, entryName)
   const html = readText(htmlFile)
@@ -261,16 +300,56 @@ function verifyHeavyRendererChunks() {
     fail(`Missing expected async renderer chunks: ${missingGroups.join(', ')}`)
   }
 
-  return heavyRendererGroups.map((group) => ({
-    id: group.id,
-    files: jsFiles.filter((file) => group.pattern.test(file)).sort()
-  }))
+  return heavyRendererGroups.map((group) => {
+    const files = jsFiles.filter((file) => group.pattern.test(file)).sort()
+    return {
+      id: group.id,
+      files,
+      ...summarizeJsFiles(files)
+    }
+  })
+}
+
+function verifyPresetBundleBudgets(groupReports) {
+  const groupById = new Map(groupReports.map((group) => [group.id, group]))
+
+  return presetBundleBudgets.map((budget) => {
+    const missingGroups = budget.groups.filter((groupId) => !groupById.has(groupId))
+    if (missingGroups.length) {
+      fail(`${budget.label} references unknown renderer groups: ${missingGroups.join(', ')}`)
+    }
+
+    const assets = budget.groups.flatMap((groupId) => groupById.get(groupId).assets)
+    const rawBytes = assets.reduce((sum, asset) => sum + asset.rawBytes, 0)
+    const gzipBytes = assets.reduce((sum, asset) => sum + asset.gzipBytes, 0)
+    const brotliBytes = assets.reduce((sum, asset) => sum + asset.brotliBytes, 0)
+    const chunkCount = assets.length
+
+    if (!chunkCount) {
+      fail(`${budget.label} did not match any async renderer chunks`)
+    }
+
+    assertBudget(budget.label, 'raw size', rawBytes, budget.maxRawBytes)
+    assertBudget(budget.label, 'gzip size', gzipBytes, budget.maxGzipBytes)
+    assertBudget(budget.label, 'brotli size', brotliBytes, budget.maxBrotliBytes)
+
+    return {
+      id: budget.id,
+      label: budget.label,
+      groups: budget.groups,
+      chunkCount,
+      rawBytes,
+      gzipBytes,
+      brotliBytes
+    }
+  })
 }
 
 const entryReports = Object.entries(htmlEntries).map(([entryName, budget]) =>
   verifyEntry(entryName, budget)
 )
 const rendererReports = verifyHeavyRendererChunks()
+const presetReports = verifyPresetBundleBudgets(rendererReports)
 
 console.log('[bundle-budget] Entry budgets')
 for (const report of entryReports) {
@@ -281,5 +360,14 @@ for (const report of entryReports) {
 
 console.log('[bundle-budget] Async renderer chunks')
 for (const report of rendererReports) {
-  console.log(`  - ${report.id}: ${report.files.length}`)
+  console.log(
+    `  - ${report.id}: ${report.files.length} chunks, ${formatBytes(report.rawBytes)} raw / ${formatBytes(report.gzipBytes)} gzip / ${formatBytes(report.brotliBytes)} br`
+  )
+}
+
+console.log('[bundle-budget] Preset async renderer budgets')
+for (const report of presetReports) {
+  console.log(
+    `  - ${report.id}: ${report.chunkCount} chunks across ${report.groups.join(', ')}, ${formatBytes(report.rawBytes)} raw / ${formatBytes(report.gzipBytes)} gzip / ${formatBytes(report.brotliBytes)} br`
+  )
 }

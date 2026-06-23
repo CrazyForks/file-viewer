@@ -329,7 +329,7 @@ fileViewerRenderers({
 ### Phase 5：发布与质量门禁
 
 - [x] 新增安装体积预算：`@file-viewer/core`、`@file-viewer/vue3`、`@file-viewer/web`、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering`、`@file-viewer/preset-all` 的 packed size、unpacked size、文件数、直接依赖数和安装依赖闭包纳入 CI；真实 cold install 秒级计时已由 `verify:cold-install-time` 覆盖。
-- [x] 新增 demo bundle 预算：`index.html` 和 `compare.html` 首屏入口统计 raw/gzip/brotli，PDF、Office、CAD、Typst、Archive、3D、Geo、XMind 等重链路必须保持异步 renderer chunk；lite/office/engineering preset 分项预算保留为后续增强。
+- [x] 新增 demo bundle 预算：`index.html` 和 `compare.html` 首屏入口统计 raw/gzip/brotli，PDF、Office、CAD、Typst、Archive、3D、Geo、XMind 等重链路必须保持异步 renderer chunk；`verify:bundle-budget` 同时按 `lite` / `office` / `engineering` / `all` preset 统计异步 renderer chunk 预算，防止 preset 聚合线重新互相拖重。
 - [x] 新增 release 校验：`verify:renderer-contracts`、`verify:renderer-assets`、`verify:ecosystem-tarballs` 和 `release:ecosystem:list` 会检查 renderer 包 exports、README、发布文件、assets manifest、npm dry-run tarball 和生态 release 清单。
 - [x] 官网、文档站、README 的支持矩阵能区分 core、独立 renderer 包、`@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 和 `@file-viewer/preset-all`；官网视觉站、文档站、README 和生态总览均已补齐，并由 `verify:ecosystem-readmes` / `site:build` / `docs:build` 纳入回归。
 - [x] 迁移完成后 `@file-viewer/core` 的 `dependencies` 只保留真正跨 renderer 的轻量工具，重依赖直接数量接近 0；`verify:core-dependency-budget` 当前要求 core 只有 1 个直接运行时依赖且 0 个 renderer 依赖。
