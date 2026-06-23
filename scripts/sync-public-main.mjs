@@ -444,16 +444,7 @@ async function removeOldArtifacts(artifactsDir) {
         await removePath(join(artifactsDir, entry))
       }
     }
-    if (/^flyfish-group-file-viewer(3|-web|-react)?-.*\.tgz$/.test(entry)) {
-      if (!currentEcosystemTarballs.has(entry)) {
-        await removePath(join(artifactsDir, entry))
-      }
-    }
-    if (
-      currentEcosystemTarballs.has(entry) ||
-      /^(file-viewer3|file-viewer-core)-.*\.tgz$/.test(entry) ||
-      /^file-viewer-(vue3|vue2\.7|vue2\.6|react|react-legacy|web|jquery|svelte|pptx)-.*\.tgz$/.test(entry)
-    ) {
+    if (entry.endsWith('.tgz')) {
       if (!currentEcosystemTarballs.has(entry)) {
         await removePath(join(artifactsDir, entry))
       }
