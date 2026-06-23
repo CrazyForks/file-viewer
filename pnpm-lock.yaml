@@ -671,9 +671,27 @@ importers:
       '@file-viewer/core':
         specifier: workspace:^2.0.11
         version: link:../../core
+      '@file-viewer/eda-layout':
+        specifier: workspace:^2.0.11
+        version: link:../eda-layout
+      '@file-viewer/eda-orcad':
+        specifier: workspace:^2.0.11
+        version: link:../eda-orcad
       cfb:
         specifier: ^1.2.2
         version: 1.2.2
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/eda-layout:
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/eda-orcad:
     devDependencies:
       typescript:
         specifier: ^6.0.3

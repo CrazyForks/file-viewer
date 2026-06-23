@@ -22,7 +22,11 @@ const wrapperPackageNames = new Set([
   ...(packageNamesByKind.compatibility || [])
 ])
 const rendererEntries = entries.filter(entry => entry.kind === 'renderer')
-const pluginEnginePackages = new Set(['@file-viewer/pptx'])
+const pluginEnginePackages = new Set([
+  '@file-viewer/pptx',
+  '@file-viewer/eda-layout',
+  '@file-viewer/eda-orcad'
+])
 
 function assert(condition, message) {
   if (!condition) {

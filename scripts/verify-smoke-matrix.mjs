@@ -8,7 +8,11 @@ const matrixPath = join(sourceRoot, 'ecosystem', 'smoke-matrix.json')
 const wrapperManifestPath = join(sourceRoot, 'ecosystem', 'wrappers.json')
 const examplesRoot = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example')
 const vitePluginSourcePath = join(sourceRoot, 'packages', 'presets', 'vite-plugin', 'src', 'index.ts')
-const pluginEnginePackages = new Set(['@file-viewer/pptx'])
+const pluginEnginePackages = new Set([
+  '@file-viewer/pptx',
+  '@file-viewer/eda-layout',
+  '@file-viewer/eda-orcad'
+])
 
 function fail(message) {
   throw new Error(`[smoke-matrix] ${message}`)

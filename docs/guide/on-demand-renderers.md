@@ -323,7 +323,7 @@ fileViewerRenderers({
 
 - [x] EDA/GDS/OASIS/OrCAD/Allegro 独立 renderer 包建立结构预览入口、README 和解析边界说明。
 - [ ] OASIS/GDSII 大文件走 WebGL 或 WASM，不进入 core 首屏链路。
-- [ ] `@file-viewer/eda-layout` 和 `@file-viewer/eda-orcad` 能独立发布、独立回归。
+- [x] `@file-viewer/eda-layout` 和 `@file-viewer/eda-orcad` 已作为独立 engine package 建立 package manifest、README、类型导出、安装预算和发布合同；`@file-viewer/renderer-eda` 只负责 UI renderer 协议。
 - [x] docs 明确“结构预览”和“完整可视预览”的差异，避免营销口径误导；`format-fidelity` 已按 XMind、Typst、Draw.io、EDA、OASIS、OLB/DRA、OpenDocument 等格式线写明成熟库、WASM 路线和当前边界。
 
 ### Phase 5：发布与质量门禁

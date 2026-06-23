@@ -1,13 +1,27 @@
 import type { CFB$Entry } from 'cfb'
+import {
+  inspectOasisLayout,
+  parseGdsLayout,
+  type EdaLayoutElement,
+  type EdaLayoutPreview,
+} from '@file-viewer/eda-layout'
+import {
+  cleanupOrcadText as cleanupText,
+  collectOrcadStrings as collectStrings,
+  createOrcadHexPreview as hexPreview,
+  decodeOrcadSample as decodeSample,
+  isOrcadCompoundFile,
+  looksLikeOrcadText as looksLikeText,
+} from '@file-viewer/eda-orcad'
 
-const CFB_MAGIC = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]
 const MAX_STREAMS = 200
-const MAX_SAMPLE_BYTES = 4096
-const MAX_HEX_BYTES = 192
-const MAX_STRINGS = 180
 const MAX_STREAM_STRINGS = 24
 const MAX_PROPERTIES = 420
-const MAX_LAYOUT_ELEMENTS = 2500
+
+export type {
+  EdaLayoutElement,
+  EdaLayoutPreview,
+} from '@file-viewer/eda-layout'
 
 export type EdaFileType = 'olb' | 'dra' | 'gds' | 'oas' | 'oasis'
 export type EdaParserMode = 'cfb' | 'binary'
@@ -69,39 +83,6 @@ export interface EdaEntity {
   footprint?: string;
 }
 
-export interface EdaPoint {
-  x: number;
-  y: number;
-}
-
-export interface EdaLayoutElement {
-  kind: 'boundary' | 'path' | 'text' | 'sref' | 'aref';
-  structure: string;
-  layer?: number;
-  datatype?: number;
-  text?: string;
-  reference?: string;
-  width?: number;
-  xy: EdaPoint[];
-}
-
-export interface EdaLayoutPreview {
-  format: 'gdsii';
-  libraryName?: string;
-  userUnit?: number;
-  databaseUnit?: number;
-  structureCount: number;
-  structures: string[];
-  elements: EdaLayoutElement[];
-  bounds?: {
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
-  };
-  warnings: string[];
-}
-
 export interface EdaStats {
   textStreams: number;
   binaryStreams: number;
@@ -140,20 +121,8 @@ export interface EdaParseResult {
 
 const toBytes = (buffer: ArrayBuffer) => new Uint8Array(buffer)
 
-const isCfbFile = (bytes: Uint8Array) => {
-  return CFB_MAGIC.every((value, index) => bytes[index] === value)
-}
-
 const normalizeBytes = (value: CFB$Entry['content']) => {
   return value instanceof Uint8Array ? value : new Uint8Array(value)
-}
-
-const cleanupText = (text: string) => {
-  return text
-    .replace(/\u0000/g, '')
-    .replace(/[^\S\r\n]+/g, ' ')
-    .replace(/\r\n/g, '\n')
-    .trim()
 }
 
 const normalizeSearchText = (value: string) => {
@@ -175,357 +144,6 @@ const uniquePush = (target: string[], value: string, max = Number.POSITIVE_INFIN
     return
   }
   target.push(cleaned)
-}
-
-const looksLikeText = (bytes: Uint8Array) => {
-  if (!bytes.length) {
-    return false
-  }
-  const sample = bytes.slice(0, Math.min(bytes.length, MAX_SAMPLE_BYTES))
-  let printable = 0
-  let zeroBytes = 0
-  for (const byte of sample) {
-    if (byte === 0) {
-      zeroBytes += 1
-    }
-    if (byte === 9 || byte === 10 || byte === 13 || (byte >= 32 && byte <= 126) || byte >= 0x80) {
-      printable += 1
-    }
-  }
-  return printable / sample.length > 0.82 || zeroBytes / sample.length > 0.25
-}
-
-const decodeSample = (bytes: Uint8Array) => {
-  const sample = bytes.slice(0, Math.min(bytes.length, MAX_SAMPLE_BYTES))
-  if (!sample.length) {
-    return ''
-  }
-
-  try {
-    let zeroOdd = 0
-    let zeroEven = 0
-    for (let index = 0; index < sample.length; index += 1) {
-      if (sample[index] !== 0) {
-        continue
-      }
-      if (index % 2 === 0) {
-        zeroEven += 1
-      } else {
-        zeroOdd += 1
-      }
-    }
-
-    const decoder = zeroOdd > sample.length / 5 && zeroOdd > zeroEven * 2
-      ? new TextDecoder('utf-16le', { fatal: false })
-      : new TextDecoder('utf-8', { fatal: false })
-    return cleanupText(decoder.decode(sample))
-  } catch {
-    return ''
-  }
-}
-
-const hexPreview = (bytes: Uint8Array) => {
-  const sample = bytes.slice(0, Math.min(bytes.length, MAX_HEX_BYTES))
-  const lines: string[] = []
-  for (let offset = 0; offset < sample.length; offset += 16) {
-    const row = sample.slice(offset, offset + 16)
-    const hex = Array.from(row).map(byte => byte.toString(16).padStart(2, '0')).join(' ')
-    const ascii = Array.from(row)
-      .map(byte => byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '.')
-      .join('')
-    lines.push(`${offset.toString(16).padStart(8, '0')}  ${hex.padEnd(47)}  ${ascii}`)
-  }
-  return lines.join('\n')
-}
-
-const extractAsciiStrings = (bytes: Uint8Array) => {
-  const result: string[] = []
-  let current = ''
-  for (const byte of bytes) {
-    if (byte >= 32 && byte <= 126) {
-      current += String.fromCharCode(byte)
-      continue
-    }
-    if (current.length >= 4) {
-      result.push(current)
-    }
-    current = ''
-  }
-  if (current.length >= 4) {
-    result.push(current)
-  }
-  return result
-}
-
-const extractUtf16Strings = (bytes: Uint8Array) => {
-  const result: string[] = []
-  let current = ''
-  for (let index = 0; index + 1 < bytes.length; index += 2) {
-    const low = bytes[index]
-    const high = bytes[index + 1]
-    if (high === 0 && low >= 32 && low <= 126) {
-      current += String.fromCharCode(low)
-      continue
-    }
-    if (current.length >= 4) {
-      result.push(current)
-    }
-    current = ''
-  }
-  if (current.length >= 4) {
-    result.push(current)
-  }
-  return result
-}
-
-const collectStrings = (chunks: Uint8Array[], maxStrings = MAX_STRINGS) => {
-  const seen = new Set<string>()
-  const result: string[] = []
-  chunks.forEach(chunk => {
-    const candidates = [...extractAsciiStrings(chunk), ...extractUtf16Strings(chunk)]
-    candidates.forEach(item => {
-      const cleaned = cleanupText(item)
-      if (!cleaned || cleaned.length < 4 || seen.has(cleaned) || result.length >= maxStrings) {
-        return
-      }
-      seen.add(cleaned)
-      result.push(cleaned)
-    })
-  })
-  return result
-}
-
-const GDS_RECORD = {
-  BGNLIB: 0x01,
-  LIBNAME: 0x02,
-  UNITS: 0x03,
-  BGNSTR: 0x05,
-  STRNAME: 0x06,
-  ENDSTR: 0x07,
-  BOUNDARY: 0x08,
-  PATH: 0x09,
-  SREF: 0x0a,
-  AREF: 0x0b,
-  TEXT: 0x0c,
-  LAYER: 0x0d,
-  DATATYPE: 0x0e,
-  WIDTH: 0x0f,
-  XY: 0x10,
-  ENDEL: 0x11,
-  SNAME: 0x12,
-  COLROW: 0x13,
-  TEXTTYPE: 0x16,
-  STRING: 0x19
-} as const
-
-const readGdsInt16 = (bytes: Uint8Array, offset: number) => {
-  const value = (bytes[offset] << 8) | bytes[offset + 1]
-  return value & 0x8000 ? value - 0x10000 : value
-}
-
-const readGdsInt32 = (bytes: Uint8Array, offset: number) => {
-  const value = (
-    (bytes[offset] << 24)
-    | (bytes[offset + 1] << 16)
-    | (bytes[offset + 2] << 8)
-    | bytes[offset + 3]
-  )
-  return value | 0
-}
-
-const readGdsString = (bytes: Uint8Array, offset: number, length: number) => {
-  return cleanupText(new TextDecoder('utf-8', { fatal: false }).decode(bytes.slice(offset, offset + length)).replace(/\u0000+$/g, ''))
-}
-
-const readGdsReal8 = (bytes: Uint8Array, offset: number) => {
-  const first = bytes[offset]
-  if (!first) {
-    return 0
-  }
-  const sign = first & 0x80 ? -1 : 1
-  const exponent = (first & 0x7f) - 64
-  let mantissa = 0
-  for (let index = 1; index < 8; index += 1) {
-    mantissa += bytes[offset + index] / (256 ** index)
-  }
-  return sign * mantissa * (16 ** exponent)
-}
-
-const readGdsPoints = (bytes: Uint8Array, offset: number, length: number): EdaPoint[] => {
-  const points: EdaPoint[] = []
-  for (let cursor = offset; cursor + 7 < offset + length; cursor += 8) {
-    points.push({
-      x: readGdsInt32(bytes, cursor),
-      y: readGdsInt32(bytes, cursor + 4)
-    })
-  }
-  return points
-}
-
-const updateLayoutBounds = (
-  bounds: EdaLayoutPreview['bounds'],
-  points: EdaPoint[]
-): EdaLayoutPreview['bounds'] => {
-  let next = bounds
-  points.forEach(point => {
-    if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) {
-      return
-    }
-    if (!next) {
-      next = { minX: point.x, minY: point.y, maxX: point.x, maxY: point.y }
-      return
-    }
-    next.minX = Math.min(next.minX, point.x)
-    next.minY = Math.min(next.minY, point.y)
-    next.maxX = Math.max(next.maxX, point.x)
-    next.maxY = Math.max(next.maxY, point.y)
-  })
-  return next
-}
-
-const parseGdsLayout = (bytes: Uint8Array): EdaLayoutPreview | undefined => {
-  const structures: string[] = []
-  const elements: EdaLayoutElement[] = []
-  const warnings: string[] = []
-  let libraryName = ''
-  let userUnit: number | undefined
-  let databaseUnit: number | undefined
-  let currentStructure = ''
-  let currentElement: EdaLayoutElement | null = null
-  let bounds: EdaLayoutPreview['bounds']
-
-  const pushElement = () => {
-    if (!currentElement || !currentElement.xy.length) {
-      currentElement = null
-      return
-    }
-    if (elements.length < MAX_LAYOUT_ELEMENTS) {
-      elements.push(currentElement)
-      bounds = updateLayoutBounds(bounds, currentElement.xy)
-    } else if (!warnings.length) {
-      warnings.push(`版图元素超过 ${MAX_LAYOUT_ELEMENTS} 个，仅渲染前 ${MAX_LAYOUT_ELEMENTS} 个以保护浏览器内存。`)
-    }
-    currentElement = null
-  }
-
-  for (let offset = 0; offset + 3 < bytes.length;) {
-    const length = (bytes[offset] << 8) | bytes[offset + 1]
-    const recordType = bytes[offset + 2]
-    if (length < 4 || offset + length > bytes.length) {
-      warnings.push(`GDSII 记录在偏移 ${offset} 处长度异常，已停止几何解析。`)
-      break
-    }
-    const dataOffset = offset + 4
-    const dataLength = length - 4
-
-    switch (recordType) {
-      case GDS_RECORD.BGNLIB:
-        currentStructure = ''
-        break
-      case GDS_RECORD.LIBNAME:
-        libraryName = readGdsString(bytes, dataOffset, dataLength)
-        break
-      case GDS_RECORD.UNITS:
-        if (dataLength >= 16) {
-          userUnit = readGdsReal8(bytes, dataOffset)
-          databaseUnit = readGdsReal8(bytes, dataOffset + 8)
-        }
-        break
-      case GDS_RECORD.BGNSTR:
-        pushElement()
-        currentStructure = ''
-        break
-      case GDS_RECORD.STRNAME:
-        currentStructure = readGdsString(bytes, dataOffset, dataLength)
-        if (currentStructure && !structures.includes(currentStructure)) {
-          structures.push(currentStructure)
-        }
-        break
-      case GDS_RECORD.ENDSTR:
-        pushElement()
-        currentStructure = ''
-        break
-      case GDS_RECORD.BOUNDARY:
-        pushElement()
-        currentElement = { kind: 'boundary', structure: currentStructure || 'STRUCTURE', xy: [] }
-        break
-      case GDS_RECORD.PATH:
-        pushElement()
-        currentElement = { kind: 'path', structure: currentStructure || 'STRUCTURE', xy: [] }
-        break
-      case GDS_RECORD.TEXT:
-        pushElement()
-        currentElement = { kind: 'text', structure: currentStructure || 'STRUCTURE', xy: [] }
-        break
-      case GDS_RECORD.SREF:
-        pushElement()
-        currentElement = { kind: 'sref', structure: currentStructure || 'STRUCTURE', xy: [] }
-        break
-      case GDS_RECORD.AREF:
-        pushElement()
-        currentElement = { kind: 'aref', structure: currentStructure || 'STRUCTURE', xy: [] }
-        break
-      case GDS_RECORD.LAYER:
-        if (currentElement && dataLength >= 2) {
-          currentElement.layer = readGdsInt16(bytes, dataOffset)
-        }
-        break
-      case GDS_RECORD.DATATYPE:
-      case GDS_RECORD.TEXTTYPE:
-        if (currentElement && dataLength >= 2) {
-          currentElement.datatype = readGdsInt16(bytes, dataOffset)
-        }
-        break
-      case GDS_RECORD.WIDTH:
-        if (currentElement && dataLength >= 4) {
-          currentElement.width = Math.abs(readGdsInt32(bytes, dataOffset))
-        }
-        break
-      case GDS_RECORD.XY:
-        if (currentElement) {
-          currentElement.xy = readGdsPoints(bytes, dataOffset, dataLength)
-        }
-        break
-      case GDS_RECORD.SNAME:
-        if (currentElement) {
-          currentElement.reference = readGdsString(bytes, dataOffset, dataLength)
-        }
-        break
-      case GDS_RECORD.STRING:
-        if (currentElement) {
-          currentElement.text = readGdsString(bytes, dataOffset, dataLength)
-        }
-        break
-      case GDS_RECORD.COLROW:
-        if (currentElement && dataLength >= 4) {
-          currentElement.text = `${currentElement.text || ''} ${readGdsInt16(bytes, dataOffset)}x${readGdsInt16(bytes, dataOffset + 2)}`.trim()
-        }
-        break
-      case GDS_RECORD.ENDEL:
-        pushElement()
-        break
-      default:
-        break
-    }
-
-    offset += length
-  }
-  pushElement()
-
-  if (!structures.length && !elements.length && !libraryName) {
-    return undefined
-  }
-  return {
-    format: 'gdsii',
-    libraryName,
-    userUnit,
-    databaseUnit,
-    structureCount: structures.length,
-    structures,
-    elements,
-    bounds,
-    warnings
-  }
 }
 
 const PROPERTY_RE = /^\s*([A-Za-z][A-Za-z0-9_. /#-]{1,56})\s*[:=]\s*(.{1,240})\s*$/
@@ -1022,9 +640,12 @@ const parseBinaryFallback = (buffer: ArrayBuffer, type: EdaFileType): EdaParseRe
   const bytes = toBytes(buffer)
   const stream = buildStreamView(type, `${type}.${type}`, `${type}.${type}`, buffer.byteLength, 'binary', bytes)
   const layout = type === 'gds' ? parseGdsLayout(bytes) : undefined
+  const oasis = type === 'oas' || type === 'oasis' ? inspectOasisLayout(bytes) : undefined
   const warnings = layout
     ? layout.warnings
-    : ['该文件不是标准 CFB 容器，已退化为安全的二进制字符串索引预览。']
+    : oasis
+      ? oasis.warnings
+      : ['该文件不是标准 CFB 容器，已退化为安全的二进制字符串索引预览。']
   return assembleResult(buffer, type, 'binary', 1, [stream], collectStrings([bytes]), warnings, layout)
 }
 
@@ -1035,7 +656,7 @@ export const parseEdaFile = async (buffer: ArrayBuffer, type = 'olb') => {
       ? type
       : 'olb'
   const bytes = toBytes(buffer)
-  if (!isCfbFile(bytes)) {
+  if (!isOrcadCompoundFile(bytes)) {
     return parseBinaryFallback(buffer, normalizedType)
   }
   try {

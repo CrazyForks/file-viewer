@@ -31,6 +31,7 @@ const options = {
 - `gds` reads standard GDSII records, extracts libraries, structures, boundaries, paths, text, references, coordinate bounds, and renders a quick SVG layout preview.
 - `oas` / `oasis` currently provide safe binary indexing, readable strings, structure candidates, and diagnostics rather than claiming full geometry rendering.
 - `olb` / `dra` use `cfb` to inspect common compound document containers and expose stream trees, entity candidates, properties, strings, and diagnostics.
+- GDSII/OASIS primitives now live in `@file-viewer/eda-layout`; OrCAD/Allegro binary inspection primitives now live in `@file-viewer/eda-orcad`. This package focuses on UI presentation and the File Viewer renderer protocol.
 - After a web-wide ecosystem review, the boundary stays explicit: GDSII has mature record parser / WebGL viewer paths and is suitable for official quick preview today; OASIS needs a lower-level parser, repetition expansion, and incremental rendering; OLB / DRA belong to the proprietary OrCAD / Allegro ecosystem, where the sustainable public path is C++ WASM or staged TypeScript ports based on OpenOrCadParser / OpenAllegroParser.
 - High-fidelity OrCAD / Allegro / OASIS graphics should evolve as a dedicated WASM or incremental rendering kernel instead of entering core or the default document first-screen path.
 
@@ -40,4 +41,4 @@ const options = {
 
 ## Offline Deployment
 
-The current EDA renderer does not require extra Worker or WASM assets. It only loads `cfb` and this renderer package when OLB, DRA, GDSII, or OASIS formats are selected.
+The current EDA renderer does not require extra Worker or WASM assets. It only loads `cfb`, `@file-viewer/eda-layout`, `@file-viewer/eda-orcad`, and this UI package when OLB, DRA, GDSII, or OASIS formats are selected.

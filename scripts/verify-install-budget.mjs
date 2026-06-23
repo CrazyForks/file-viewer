@@ -38,7 +38,7 @@ const packageBudgets = {
     maxFiles: 9,
     maxDirectRuntimeDependencies: 20,
     maxExternalDependencyClosure: 39,
-    maxLocalPackageClosure: 22
+    maxLocalPackageClosure: 24
   },
   '@file-viewer/vite-plugin': {
     maxPackedBytes: 30_000,
@@ -54,6 +54,22 @@ const packageBudgets = {
     maxFiles: 24,
     maxDirectRuntimeDependencies: 5,
     maxExternalDependencyClosure: 5,
+    maxLocalPackageClosure: 1
+  },
+  '@file-viewer/eda-layout': {
+    maxPackedBytes: 25_000,
+    maxUnpackedBytes: 90_000,
+    maxFiles: 10,
+    maxDirectRuntimeDependencies: 0,
+    maxExternalDependencyClosure: 0,
+    maxLocalPackageClosure: 1
+  },
+  '@file-viewer/eda-orcad': {
+    maxPackedBytes: 25_000,
+    maxUnpackedBytes: 90_000,
+    maxFiles: 10,
+    maxDirectRuntimeDependencies: 0,
+    maxExternalDependencyClosure: 0,
     maxLocalPackageClosure: 1
   },
   '@file-viewer/renderer-ofd': {

@@ -109,7 +109,7 @@ export const rendererModularizationLines = [
     phase: 4,
     status: 'extracted',
     renderers: ['eda'],
-    dependencies: ['cfb'],
+    dependencies: ['cfb', '@file-viewer/eda-layout', '@file-viewer/eda-orcad'],
   },
   {
     id: 'archive',

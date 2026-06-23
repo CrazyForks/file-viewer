@@ -1,20 +1,20 @@
 {
-  "name": "@file-viewer/renderer-eda",
+  "name": "@file-viewer/eda-orcad",
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "Standalone EDA renderer plugin for Flyfish File Viewer with OLB, DRA, GDSII, and OASIS structure preview.",
+  "description": "Pure TypeScript OrCAD and Allegro binary inspection helpers for Flyfish File Viewer with CFB detection and safe string extraction.",
   "keywords": [
     "file-viewer",
-    "renderer",
     "eda",
-    "gds",
-    "gdsii",
-    "oasis",
+    "orcad",
+    "allegro",
     "olb",
     "dra",
+    "psm",
+    "pad",
+    "wasm",
     "document-preview",
-    "document-viewer",
     "file-preview",
     "self-hosted"
   ],
@@ -28,12 +28,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-eda.git",
-    "directory": "packages/renderers/eda"
+    "url": "git+https://github.com/flyfish-dev/eda-orcad.git",
+    "directory": "packages/renderers/eda-orcad"
   },
   "homepage": "https://doc.file-viewer.app/guide/format-fidelity",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-renderer-eda/issues"
+    "url": "https://github.com/flyfish-dev/eda-orcad/issues"
   },
   "funding": {
     "type": "individual",
@@ -59,12 +59,6 @@
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "type-check": "tsc -b tsconfig.json"
-  },
-  "dependencies": {
-    "@file-viewer/core": "workspace:^2.0.11",
-    "@file-viewer/eda-layout": "workspace:^2.0.11",
-    "@file-viewer/eda-orcad": "workspace:^2.0.11",
-    "cfb": "^1.2.2"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

@@ -11,7 +11,11 @@ import {
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
 const args = process.argv.slice(2)
-const pluginEnginePackages = new Set(['@file-viewer/pptx'])
+const pluginEnginePackages = new Set([
+  '@file-viewer/pptx',
+  '@file-viewer/eda-layout',
+  '@file-viewer/eda-orcad'
+])
 
 const readArg = (name, fallback) => {
   const index = args.indexOf(name)

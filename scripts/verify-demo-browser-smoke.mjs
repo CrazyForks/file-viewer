@@ -120,6 +120,22 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
     }
 
     const readTransform = () => window.getComputedStyle(zoomBox).transform || zoomBox.style.transform
+    const readFirstNodeRect = () => {
+      const node = document.querySelector('.xmind-node')
+      if (!(node instanceof HTMLElement)) {
+        return null
+      }
+      const rect = node.getBoundingClientRect()
+      return {
+        left: Number(rect.left.toFixed(2)),
+        top: Number(rect.top.toFixed(2))
+      }
+    }
+    const rectChanged = (beforeRect, afterRect) => Boolean(
+      beforeRect &&
+      afterRect &&
+      (Math.abs(beforeRect.left - afterRect.left) > 8 || Math.abs(beforeRect.top - afterRect.top) > 8)
+    )
     const rect = stage.getBoundingClientRect()
     const startX = rect.left + rect.width * 0.52
     const startY = rect.top + rect.height * 0.48
@@ -151,6 +167,7 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
     const pointerDrag = async (pointerId, moveButtons = 1) => {
       await resetView()
       const before = readTransform()
+      const beforeNodeRect = readFirstNodeRect()
 
       stage.focus({ preventScroll: true })
       dispatchPointer('pointerdown', startX, startY, 1, pointerId)
@@ -160,8 +177,15 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       await waitFrame()
       dispatchPointer('pointerup', startX + 220, startY + 118, 0, pointerId)
       await waitFrame()
+      const afterNodeRect = readFirstNodeRect()
 
-      return { before, after: readTransform() }
+      return {
+        before,
+        after: readTransform(),
+        beforeNodeRect,
+        afterNodeRect,
+        nodeMoved: rectChanged(beforeNodeRect, afterNodeRect)
+      }
     }
 
     const dispatchMouse = (type, clientX, clientY, buttons) => {
@@ -276,45 +300,82 @@ const verifyXMindPanInteraction = async (page, samplePath) => {
       return { skipped: false, before, after: readTransform() }
     }
 
+    const wheelPan = async () => {
+      await resetView()
+      const before = readTransform()
+      const beforeNodeRect = readFirstNodeRect()
+      stage.dispatchEvent(new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        deltaX: 96,
+        deltaY: 48,
+        clientX: startX,
+        clientY: startY
+      }))
+      await waitFrame()
+      const afterNodeRect = readFirstNodeRect()
+      return {
+        before,
+        after: readTransform(),
+        beforeNodeRect,
+        afterNodeRect,
+        nodeMoved: rectChanged(beforeNodeRect, afterNodeRect)
+      }
+    }
+
     const normalDrag = await pointerDrag(2319, 1)
     const zeroButtonsDrag = await pointerDrag(2320, 0)
     const mouseFallbackDrag = await mouseDrag()
     const pointerMouseHybridFallbackDrag = await pointerMouseHybridDrag()
     const touchFallbackDrag = await touchDrag()
     const pointerTouchHybridFallbackDrag = await pointerTouchHybridDrag()
+    const wheelFallbackPan = await wheelPan()
     const touchOk = touchFallbackDrag.skipped || touchFallbackDrag.before !== touchFallbackDrag.after
     const pointerTouchOk = pointerTouchHybridFallbackDrag.skipped ||
       pointerTouchHybridFallbackDrag.before !== pointerTouchHybridFallbackDrag.after
     return {
       ok: nodeCount > 0 &&
         normalDrag.before !== normalDrag.after &&
+        normalDrag.nodeMoved &&
         zeroButtonsDrag.before !== zeroButtonsDrag.after &&
+        zeroButtonsDrag.nodeMoved &&
         mouseFallbackDrag.before !== mouseFallbackDrag.after &&
         pointerMouseHybridFallbackDrag.before !== pointerMouseHybridFallbackDrag.after &&
         touchOk &&
-        pointerTouchOk,
+        pointerTouchOk &&
+        wheelFallbackPan.before !== wheelFallbackPan.after &&
+        wheelFallbackPan.nodeMoved,
       before: normalDrag.before,
-      after: pointerTouchHybridFallbackDrag.after,
+      after: wheelFallbackPan.after,
       normalDrag,
       zeroButtonsDrag,
       mouseFallbackDrag,
       pointerMouseHybridFallbackDrag,
       touchFallbackDrag,
       pointerTouchHybridFallbackDrag,
+      wheelFallbackPan,
       nodeCount,
       reason: normalDrag.before === normalDrag.after
         ? 'XMind transform did not change after normal pointer drag'
+        : !normalDrag.nodeMoved
+          ? 'XMind node position did not change after normal pointer drag'
         : zeroButtonsDrag.before === zeroButtonsDrag.after
           ? 'XMind transform did not change after WebView-style zero-buttons pointer drag'
-          : mouseFallbackDrag.before === mouseFallbackDrag.after
-            ? 'XMind transform did not change after mouse fallback drag'
-            : pointerMouseHybridFallbackDrag.before === pointerMouseHybridFallbackDrag.after
-              ? 'XMind transform did not change after pointerdown + mousemove hybrid drag'
-              : !touchOk
-                ? 'XMind transform did not change after touch fallback drag'
-                : !pointerTouchOk
-                  ? 'XMind transform did not change after pointerdown + touchmove hybrid drag'
-                  : ''
+          : !zeroButtonsDrag.nodeMoved
+            ? 'XMind node position did not change after WebView-style zero-buttons pointer drag'
+            : mouseFallbackDrag.before === mouseFallbackDrag.after
+              ? 'XMind transform did not change after mouse fallback drag'
+              : pointerMouseHybridFallbackDrag.before === pointerMouseHybridFallbackDrag.after
+                ? 'XMind transform did not change after pointerdown + mousemove hybrid drag'
+                : !touchOk
+                  ? 'XMind transform did not change after touch fallback drag'
+                  : !pointerTouchOk
+                    ? 'XMind transform did not change after pointerdown + touchmove hybrid drag'
+                    : wheelFallbackPan.before === wheelFallbackPan.after
+                      ? 'XMind transform did not change after wheel pan'
+                      : !wheelFallbackPan.nodeMoved
+                        ? 'XMind node position did not change after wheel pan'
+                        : ''
     }
   })
 
