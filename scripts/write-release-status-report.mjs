@@ -215,6 +215,12 @@ const componentTargets = [
     github: wrapperManifest.corePackage.github,
     gitee: wrapperManifest.corePackage.gitee
   },
+  ...(wrapperManifest.renderers || []).map(renderer => ({
+    id: renderer.id,
+    packageName: renderer.packageName,
+    github: renderer.github,
+    gitee: renderer.gitee
+  })),
   ...wrapperManifest.wrappers.map(wrapper => ({
     id: wrapper.id,
     packageName: wrapper.packageName,
