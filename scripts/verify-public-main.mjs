@@ -189,8 +189,8 @@ async function assertReleaseStatus(repoDir) {
     'Release status source baseline local commit must match local commit'
   )
   assert(
-    typeof status.openSourceMain?.reportHashNote === 'string' && status.openSourceMain.reportHashNote.includes('metadata-only commit'),
-    'Release status must document the self-referential open-source main hash caveat'
+    typeof status.openSourceMain?.reportHashNote === 'string' && status.openSourceMain.reportHashNote.includes('public commit body'),
+    'Release status must document the public mirror commit traceability caveat'
   )
   assert(typeof status.githubRelease?.hasManifest === 'boolean', 'Release status GitHub Release manifest flag missing')
   assert(typeof status.githubRelease?.hasStatus === 'boolean', 'Release status GitHub Release status flag missing')

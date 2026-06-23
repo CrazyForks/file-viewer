@@ -309,7 +309,7 @@ const report = {
     giteeTree: publicMainTreeStatus.giteeTree,
     treeError: publicMainTreeStatus.error,
     reportHashNote:
-      'This status report is generated before it is committed into the open-source main repository, so the observed open-source main hash can trail the metadata-only commit that carries this file. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads.'
+      'The open-source main repository mirrors the current public source tree and records the private source commit in the public commit body for traceability. The observed remote hash can trail until that mirror commit is pushed. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads.'
   },
   githubRelease: release,
   componentRepositories,
