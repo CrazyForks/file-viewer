@@ -280,6 +280,15 @@ const gaps = [
   ...npmPackages.map(row => !row.ok && `${row.packageName} npm ${row.publishedVersion || 'unpublished'} !== ${row.expectedVersion}`)
 ].filter(Boolean)
 const gapReport = describeReleaseGaps(gaps)
+const nextActions = [
+  gaps.some(gap => gap.includes(' npm ')) &&
+    'Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.',
+  gaps.some(gap => gap.includes('GitHub Release')) &&
+    'Create or update the GitHub Release assets, then rerun `pnpm release:public`.',
+  gaps.some(gap => gap.includes('worktree') || gap.includes('local HEAD')) &&
+    'Commit and push the local source/public repository changes, then regenerate the release status report.',
+  !gaps.length && 'Release channels are aligned. Keep this report attached to the GitHub Release for downstream verification.'
+].filter(Boolean)
 
 const report = {
   schemaVersion: 1,
@@ -317,10 +326,7 @@ const report = {
   gaps,
   gapSummary: gapReport.summary,
   gapDetails: gapReport.details,
-  nextActions: [
-    'Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.',
-    'After npm publish, run `pnpm verify:npm-registry-release`.'
-  ]
+  nextActions
 }
 
 if (existsSync(outFile)) {
