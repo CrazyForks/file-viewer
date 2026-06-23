@@ -101,7 +101,7 @@ const sampleSmokeConfig = {
   allowedNotices: [
     {
       sample: 'model.step',
-      includes: 'STEP 属于 CAD B-Rep'
+      includes: 'STEP / ISO 10303'
     }
   ]
 }

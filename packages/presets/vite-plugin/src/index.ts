@@ -216,7 +216,14 @@ const rendererModules: readonly RendererModuleDescriptor[] = [
       'usda',
       'usdc',
       'usdz',
-      'kmz'
+      'kmz',
+      'step',
+      'stp',
+      'iges',
+      'igs',
+      'ifc',
+      '3dm',
+      'brep'
     ],
     rendererIds: ['model'],
     chunkName: 'file-viewer-3d'

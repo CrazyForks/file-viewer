@@ -575,6 +575,9 @@ importers:
       '@file-viewer/core':
         specifier: workspace:^2.0.11
         version: link:../../core
+      '@file-viewer/geometry-engine':
+        specifier: workspace:^2.0.11
+        version: link:../geometry-engine
       three:
         specifier: ^0.184.0
         version: 0.184.0
@@ -724,6 +727,12 @@ importers:
       shpjs:
         specifier: ^6.2.0
         version: 6.2.0
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/renderers/geometry-engine:
     devDependencies:
       typescript:
         specifier: ^6.0.3

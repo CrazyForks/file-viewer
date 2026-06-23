@@ -11,7 +11,8 @@ const vitePluginSourcePath = join(sourceRoot, 'packages', 'presets', 'vite-plugi
 const pluginEnginePackages = new Set([
   '@file-viewer/pptx',
   '@file-viewer/eda-layout',
-  '@file-viewer/eda-orcad'
+  '@file-viewer/eda-orcad',
+  '@file-viewer/geometry-engine'
 ])
 
 function fail(message) {

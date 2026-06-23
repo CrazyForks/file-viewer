@@ -8,7 +8,7 @@ import {
 } from './lib/format-support.mjs'
 
 const expectedRendererCount = 24
-const expectedExtensionCount = 198
+const expectedExtensionCount = 199
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const sourceRoot = resolve(scriptDir, '..')
 

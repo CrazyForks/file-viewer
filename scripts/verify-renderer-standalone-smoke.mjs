@@ -14,7 +14,8 @@ const args = process.argv.slice(2)
 const pluginEnginePackages = new Set([
   '@file-viewer/pptx',
   '@file-viewer/eda-layout',
-  '@file-viewer/eda-orcad'
+  '@file-viewer/eda-orcad',
+  '@file-viewer/geometry-engine'
 ])
 
 const readArg = (name, fallback) => {

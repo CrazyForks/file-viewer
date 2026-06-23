@@ -73,7 +73,7 @@ export const rendererModularizationLines = [
     phase: 3,
     status: 'extracted',
     renderers: ['model'],
-    dependencies: ['three'],
+    dependencies: ['three', '@file-viewer/geometry-engine'],
   },
   {
     id: 'engineering-drawing',

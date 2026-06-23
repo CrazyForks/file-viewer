@@ -8,7 +8,7 @@ export const ARCHIVE_EXTENSIONS = [
 
 export const MODEL_EXTENSIONS = [
   'glb', 'gltf', 'obj', 'stl', 'ply', 'fbx', 'dae', '3ds', '3mf', 'amf', 'usd', 'usda',
-  'usdc', 'usdz', 'kmz', 'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'pcd', 'wrl',
+  'usdc', 'usdz', 'kmz', 'step', 'stp', 'iges', 'igs', 'ifc', '3dm', 'brep', 'pcd', 'wrl',
   'vrml', 'xyz', 'vtk', 'vtp',
 ] as const;
 

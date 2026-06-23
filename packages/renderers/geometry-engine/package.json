@@ -1,20 +1,20 @@
 {
-  "name": "@file-viewer/renderer-3d",
+  "name": "@file-viewer/geometry-engine",
   "version": "2.0.11",
   "private": false,
   "type": "module",
-  "description": "Standalone 3D model renderer plugin for Flyfish File Viewer powered by Three.js loaders and OrbitControls.",
+  "description": "Framework-neutral geometry kernel boundary package for STEP, IGES, IFC, 3DM, and BREP preview routes in Flyfish File Viewer.",
   "keywords": [
     "file-viewer",
-    "renderer",
-    "3d",
-    "three",
-    "gltf",
-    "glb",
-    "stl",
-    "obj",
+    "geometry",
+    "cad",
+    "bim",
+    "step",
+    "iges",
+    "ifc",
+    "3dm",
+    "wasm",
     "document-preview",
-    "document-viewer",
     "file-preview",
     "self-hosted"
   ],
@@ -28,12 +28,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flyfish-dev/file-viewer-renderer-3d.git",
-    "directory": "packages/renderers/3d"
+    "url": "git+https://github.com/flyfish-dev/geometry-engine.git",
+    "directory": "packages/renderers/geometry-engine"
   },
-  "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
+  "homepage": "https://doc.file-viewer.app/guide/format-fidelity",
   "bugs": {
-    "url": "https://github.com/flyfish-dev/file-viewer-renderer-3d/issues"
+    "url": "https://github.com/flyfish-dev/geometry-engine/issues"
   },
   "funding": {
     "type": "individual",
@@ -60,13 +60,7 @@
     "build": "tsc -b tsconfig.json",
     "type-check": "tsc -b tsconfig.json"
   },
-  "dependencies": {
-    "@file-viewer/core": "workspace:^2.0.11",
-    "@file-viewer/geometry-engine": "workspace:^2.0.11",
-    "three": "^0.184.0"
-  },
   "devDependencies": {
-    "@types/three": "^0.184.1",
     "typescript": "^6.0.3"
   },
   "license": "Apache-2.0"

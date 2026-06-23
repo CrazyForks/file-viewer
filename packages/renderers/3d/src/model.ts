@@ -4,6 +4,11 @@ import type {
   FileRenderContext,
   FileViewerRenderedInstance,
 } from '@file-viewer/core';
+import {
+  formatGeometryKernelNotice,
+  inspectGeometryKernelFile,
+  isGeometryKernelFormat,
+} from '@file-viewer/geometry-engine';
 
 type ModelStatus = 'loading' | 'ready' | 'error';
 
@@ -468,14 +473,11 @@ export default async function renderModel(
   };
 
   const explainEngineeringModel = (modelType: string): never => {
-    const upperType = modelType.toUpperCase();
-    if (modelType === 'ifc') {
-      throw new ModelPreviewNotice('IFC 是 BIM 模型格式，浏览器端完整解析通常依赖 web-ifc 这类 WebAssembly BIM 内核。当前 Apache-2.0 前端包不默认打入这类重型运行时，建议在私有服务端转换为 GLB/GLTF 后预览。');
-    }
-    if (modelType === '3dm') {
-      throw new ModelPreviewNotice('3DM 是 Rhino/OpenNURBS 模型格式，浏览器端解析需要 rhino3dm WebAssembly 运行时。当前前端包未内置该运行时，建议在私有转换链路输出 GLB/GLTF 后预览。');
-    }
-    throw new ModelPreviewNotice(`${upperType} 属于 CAD B-Rep / 工程交换格式，浏览器端完整解析通常需要 OpenCascade 等 WebAssembly 几何内核。当前前端包不默认打入这类重型运行时，建议在私有服务端转换为 GLB/GLTF 或轻量网格格式后预览。`);
+    const inspection = inspectGeometryKernelFile(buffer, modelType);
+    const notice = formatGeometryKernelNotice(inspection.format || modelType);
+    const signature = inspection.signature ? `检测到文件签名: ${inspection.signature}。` : '';
+    const warnings = inspection.warnings.length ? ` ${inspection.warnings.join(' ')}` : '';
+    throw new ModelPreviewNotice(`${signature}${notice}${warnings}`);
   };
 
   const parsePcd = async () => {
@@ -539,6 +541,7 @@ export default async function renderModel(
       case 'igs':
       case 'ifc':
       case '3dm':
+      case 'brep':
         return explainEngineeringModel(modelType);
       case 'pcd':
         return parsePcd();
@@ -551,6 +554,9 @@ export default async function renderModel(
       case 'vtp':
         return parseVtk();
       default:
+        if (isGeometryKernelFormat(modelType)) {
+          return explainEngineeringModel(modelType);
+        }
         throw new Error(`暂不支持 .${modelType} 模型格式`);
     }
   };

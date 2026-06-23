@@ -135,7 +135,7 @@ const copy = {
       primary: '立即体验',
       secondary: '阅读文档',
       commercial: '了解商业版',
-      proof: ['198+ 扩展名', '24 条预览链路', '多框架原生组件', 'Apache-2.0 开源']
+      proof: ['199+ 扩展名', '24 条预览链路', '多框架原生组件', 'Apache-2.0 开源']
     },
     matrixTitle: '覆盖广，不等于粗糙。每条链路都面向真实业务。',
     matrixIntro:
@@ -183,7 +183,7 @@ const copy = {
       primary: 'Try the Demo',
       secondary: 'Read the Docs',
       commercial: 'Commercial Edition',
-      proof: ['198+ extensions', '24 preview pipelines', 'Native component packages', 'Apache-2.0 open source']
+      proof: ['199+ extensions', '24 preview pipelines', 'Native component packages', 'Apache-2.0 open source']
     },
     matrixTitle: 'Broad coverage, without treating fidelity as optional.',
     matrixIntro:
@@ -217,13 +217,13 @@ const copy = {
 const metrics = computed<MetricItem[]>(() =>
   isZh.value
     ? [
-        { title: '文件扩展名', value: '198+', detail: '覆盖业务附件、脑图、工程资产、媒体与数据文件', tone: 'green' },
+        { title: '文件扩展名', value: '199+', detail: '覆盖业务附件、脑图、工程资产、媒体与数据文件', tone: 'green' },
         { title: '预览链路', value: '24', detail: '按格式异步加载，避免首屏被拖慢', tone: 'blue' },
         { title: 'Preset 层级', value: '4', detail: 'lite、office、engineering、all 按产品形态装配', tone: 'violet' },
         { title: '分发形态', value: '4', detail: 'npm、Release、Docker、静态资源私有化', tone: 'amber' }
       ]
     : [
-        { title: 'Extensions', value: '198+', detail: 'Business attachments, mind maps, engineering files, media, and data assets', tone: 'green' },
+        { title: 'Extensions', value: '199+', detail: 'Business attachments, mind maps, engineering files, media, and data assets', tone: 'green' },
         { title: 'Pipelines', value: '24', detail: 'Lazy renderer loading by matched file type', tone: 'blue' },
         { title: 'Preset tiers', value: '4', detail: 'lite, office, engineering, and all product-shaped bundles', tone: 'violet' },
         { title: 'Delivery paths', value: '4', detail: 'npm, GitHub Release, Docker, and static self-hosting', tone: 'amber' }

@@ -3,7 +3,7 @@
 <div class="doc-kicker">Format Truth</div>
 
 <p class="doc-lead">
-  The current core declares 24 preview pipelines and 198 file extensions.
+  The current core declares 24 preview pipelines and 199 file extensions.
   Renderers are loaded on demand, so opening a lightweight text file does not force the browser to load every heavy document engine.
 </p>
 
@@ -19,7 +19,7 @@
 | Email | `eml`, `msg`, `mbox` |
 | Diagrams and mind maps | `xmind`, `drawio`, `dio`, `excalidraw` |
 | CAD and engineering | `dwg`, `dxf`, `dwf`, `dwfx`, `xps`, plus EDA files such as `gds`, `oas`, `oasis`, `olb`, `dra` |
-| 3D and geospatial | `gltf`, `glb`, `obj`, `stl`, `ply`, `step`, `geojson`, `kml`, `gpx`, `shp` |
+| 3D and geospatial | `gltf`, `glb`, `obj`, `stl`, `ply`, `step`, `stp`, `iges`, `ifc`, `3dm`, `brep`, `geojson`, `kml`, `gpx`, `shp` |
 | Text, code, and data | Markdown, source code, logs, JSON, YAML, TOML, SQL, IPYNB, SQLite, WASM, Parquet, Avro |
 | Media and assets | Images, SVG, HEIC, audio, video, HLS, fonts, PSD-style design assets |
 
@@ -29,6 +29,7 @@
 - XMind uses `@file-viewer/renderer-mindmap` with XMind 8 XML and XMind 2020+ JSON package parsing, plus pointer, mouse, touch drag-to-pan from the blank canvas or a node card, mobile pinch zoom, keyboard panning, responsive fit-on-open/host-resize behavior, unified toolbar state sync after pan/navigation, embedded WebView compatibility when PointerEvent `buttons` is reported unreliably, and hybrid `pointerdown` + `mousemove` / `touchmove` gesture fallback.
 - EDA uses `@file-viewer/renderer-eda`. OLB and DRA are safe structure previews over common CFB/OLE2 containers, standard GDSII can render an SVG layout preview, and OASIS remains a safe structure-index preview until the dedicated WASM/WebGL layout kernel is split out.
 - CAD uses `@file-viewer/renderer-cad` and `@flyfish-dev/cad-viewer`; DWG, DWF, and DWFx assets remain self-hostable for offline deployments.
+- STEP, IGES, IFC, 3DM, and BREP use the `@file-viewer/renderer-3d` entry plus the lightweight `@file-viewer/geometry-engine` route package for signature detection and accurate conversion guidance. Full visual decoding still belongs in dedicated OpenCascade / web-ifc / rhino3dm WASM paths, not in core or default component installs.
 
 ## Capability Model
 

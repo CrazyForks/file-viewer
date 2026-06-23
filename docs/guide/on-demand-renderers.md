@@ -260,7 +260,7 @@ fileViewerRenderers({
 - [x] `FileViewerOptions.builtinRenderers` 支持 `all`、`lite`、`none`，为默认轻量化和显式全量装配提供稳定开关。
 - [x] wrapper README 和开源总仓 README 补齐 `renderers` / `rendererMode` / `builtinRenderers` 的按需装配示例，并由 `verify:ecosystem-readmes` 校验 `@file-viewer/vite-plugin`、`virtual:file-viewer-renderers` 和 `configuredFileViewerRenderers` 等关键接入口径。
 - [x] Vue3 原生组件渲染面板切换到同一套 renderer plugin/preset 装配链路，`options.renderers`、`rendererMode` 和 `builtinRenderers` 会在组件路径真实生效。
-- [x] `@file-viewer/preset-all` 能复现当前 198 个扩展名的完整能力。
+- [x] `@file-viewer/preset-all` 能复现当前 199 个扩展名的完整能力。
 - [x] `pnpm audit:renderer-deps` 输出所有 core 直接依赖对应的目标 renderer package，不允许 unclassified。
 - [x] `pnpm verify:on-demand-boundaries` 守住按需加载边界：core 不依赖 renderer/preset/wrapper，标准组件包不依赖 renderer/preset，compat 包只 alias 到目标组件，`preset-lite` / `preset-office` / `preset-engineering` 只能聚合各自白名单 renderer，`preset-all` 才聚合完整 renderer。
 
@@ -324,6 +324,7 @@ fileViewerRenderers({
 - [x] EDA/GDS/OASIS/OrCAD/Allegro 独立 renderer 包建立结构预览入口、README 和解析边界说明。
 - [ ] OASIS/GDSII 大文件走 WebGL 或 WASM，不进入 core 首屏链路。
 - [x] `@file-viewer/eda-layout` 和 `@file-viewer/eda-orcad` 已作为独立 engine package 建立 package manifest、README、类型导出、安装预算和发布合同；`@file-viewer/renderer-eda` 只负责 UI renderer 协议。
+- [x] `@file-viewer/geometry-engine` 已作为独立 geometry engine boundary package 建立 STEP / IGES / IFC / 3DM / BREP 的签名检查、推荐 WASM 内核路线和安装预算；OpenCascade、web-ifc、rhino3dm 不进入 core、标准组件或普通 3D renderer 的默认安装路径。
 - [x] docs 明确“结构预览”和“完整可视预览”的差异，避免营销口径误导；`format-fidelity` 已按 XMind、Typst、Draw.io、EDA、OASIS、OLB/DRA、OpenDocument 等格式线写明成熟库、WASM 路线和当前边界。
 
 ### Phase 5：发布与质量门禁

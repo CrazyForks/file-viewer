@@ -24,7 +24,7 @@ No document conversion backend, no Office server, no iframe-only black box.
 
 <section class="doc-home-metrics" aria-label="Flyfish Viewer key metrics">
 <div>
-<strong>198</strong>
+<strong>199</strong>
 <span>registered extensions</span>
 </div>
 <div>

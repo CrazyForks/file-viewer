@@ -3,13 +3,13 @@
 <div class="doc-kicker">Format Truth</div>
 
 <p class="doc-lead">
-  当前版本内置 <strong>198 个扩展名映射</strong>，覆盖 <strong>24 条预览链路</strong>。
+  当前版本内置 <strong>199 个扩展名映射</strong>，覆盖 <strong>24 条预览链路</strong>。
   这一页不是“计划支持什么”，而是以当前代码里已经注册好的渲染器为准，告诉你项目现在到底能处理哪些格式、分别走哪条渲染链路，以及在真实业务里应该怎么选。
 </p>
 
 <div class="doc-grid">
   <div class="doc-card">
-    <h3>198 个扩展名映射</h3>
+    <h3>199 个扩展名映射</h3>
     <p>覆盖 Office、PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、图片、音视频、代码/文本、字体、设计资产和结构化数据等常见附件类型。</p>
   </div>
   <div class="doc-card">
@@ -141,8 +141,8 @@
 - 3D 模型由 `@file-viewer/renderer-3d` 承接，组件会根据扩展名按需加载对应 Three.js loader，避免普通文档预览被 3D 依赖拖慢。
 - `glb` / `gltf` 是最推荐的 Web 3D 交换格式；`obj`、`stl`、`ply` 适合轻量几何和打印模型；`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd` / `usdz`、`kmz` 适合兼容设计工具导出的历史或工程资产。
 - `pcd`、`xyz`、`vtk`、`vtp` 会按点云或几何模型展示，适合扫描、仿真和工程数据的快速浏览。
-- `step` / `stp`、`iges` / `igs`、`ifc`、`3dm` 已保留入口，但完整解析需要 OpenCascade、web-ifc 或 rhino3dm 这类 WebAssembly 几何内核；组件会展示原因，生产建议在私有服务端转换为 `glb` / `gltf`。
-- 已调研的浏览器内核路线是: STEP / IGES / BREP 使用 `occt-import-js` 或 `occt-wasm` 这类 OpenCascade WASM 包转为 Three.js mesh，IFC 使用 `web-ifc` / `web-ifc-three`，3DM 使用 `rhino3dm`。这些内核体积、初始化和许可证边界都比普通 3D loader 重，后续应拆为独立按需包，而不是默认进入 core。
+- `step` / `stp`、`iges` / `igs`、`ifc`、`3dm`、`brep` 已保留入口，`@file-viewer/geometry-engine` 会做轻量签名识别并展示需要 CAD/BIM/WASM 几何内核的原因；生产建议在私有服务端转换为 `glb` / `gltf`。
+- 已调研的浏览器内核路线是: STEP / IGES / BREP 使用 `occt-import-js` 或 `occt-wasm` 这类 OpenCascade WASM 包转为 Three.js mesh，IFC 使用 `web-ifc` / `web-ifc-three`，3DM 使用 `rhino3dm`。这些内核体积、初始化和许可证边界都比普通 3D loader 重，后续应继续在独立几何包中分层维护，而不是默认进入 core。
 - 如果 `.gltf`、`.dae`、`.fbx` 依赖同目录贴图、材质或 `.bin` 文件，使用 `url` 远程预览时会以原始 URL 的目录作为资源基准继续加载；使用本地单文件上传时，请优先选择 `.glb` 或把资源内联。
 
 ### 绘图文件
@@ -188,7 +188,7 @@
 - 你要看结构化数据或二进制资产：SQLite、Parquet、Avro、WASM、PSD、字体和 WebArchive 都能做快速结构审阅，但不建议把它们当完整编辑器使用。
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先提供 `dwg`、`dxf`、`dwf` 或 `dwfx`；DWG 和 DWF native renderer 会按需加载 Worker/WASM，私有化部署时请确认 viewer assets 中的 `wasm/cad/` 资源可访问。
-- 你要预览 3D 模型：优先沉淀 `glb` / `gltf`，历史模型再用 OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ 等格式接入；STEP、IGES、IFC、3DM 建议先转换。
+- 你要预览 3D 模型：优先沉淀 `glb` / `gltf`，历史模型再用 OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ 等格式接入；STEP、IGES、IFC、3DM、BREP 建议先转换。
 - 你要预览绘图文件：Excalidraw 和 draw.io 都保留源格式入口，前者走官方恢复与导出 SVG，后者默认走官方 diagrams.net 离线 viewer 并在异常时回退内置 SVG。
 - 你要预览电子书或音视频：EPUB / UMD 优先保留源文件，音频优先选择浏览器兼容最稳定的 MP3 / OGG，视频优先选择 MP4 / WEBM；需要流媒体体验时可以提供 M3U8。
 

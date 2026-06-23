@@ -236,6 +236,17 @@
       "publicSource": true
     },
     {
+      "id": "geometry-engine",
+      "packageName": "@file-viewer/geometry-engine",
+      "description": "Framework-neutral geometry kernel boundary package for STEP, IGES, IFC, 3DM, and BREP route detection without bundling OpenCascade, web-ifc, or rhino3dm into core.",
+      "packageDir": "packages/renderers/geometry-engine",
+      "repository": "geometry-engine",
+      "github": "https://github.com/flyfish-dev/geometry-engine",
+      "gitee": "https://gitee.com/flyfish-dev/geometry-engine",
+      "entryFormats": ["esm", "types"],
+      "publicSource": true
+    },
+    {
       "id": "eda",
       "packageName": "@file-viewer/renderer-eda",
       "description": "Standalone EDA renderer plugin for File Viewer with OLB, DRA, GDSII, and OASIS structure previews plus SVG layout preview for standard GDSII.",

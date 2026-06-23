@@ -44,7 +44,7 @@ try {
     join(tempRoot, 'src/App.vue'),
     [
       '<template>',
-      '  <input data-file-viewer-formats="pdf,docx,dwf" accept=".xlsx,.xmind" />',
+      '  <input data-file-viewer-formats="pdf,docx,dwf,step" accept=".xlsx,.xmind,.brep" />',
       '</template>',
       '<script setup lang="ts">',
       "const fileViewerRenderers = ['cad', 'typst']",
@@ -62,7 +62,7 @@ try {
   )
 
   const scanTokens = collectFileViewerRendererScanTokens(tempRoot, true)
-  for (const token of ['pdf', 'docx', 'dwf', 'xlsx', 'xmind', 'cad', 'typst', 'eml', 'epub', 'geojson', 'gds', 'oas', 'parquet']) {
+  for (const token of ['pdf', 'docx', 'dwf', 'step', 'xlsx', 'xmind', 'brep', 'cad', 'typst', 'eml', 'epub', 'geojson', 'gds', 'oas', 'parquet']) {
     assert(scanTokens.includes(token), `source scan missed ${token}`)
   }
 
@@ -73,6 +73,7 @@ try {
     '@file-viewer/renderer-word',
     '@file-viewer/renderer-spreadsheet',
     '@file-viewer/renderer-cad',
+    '@file-viewer/renderer-3d',
     '@file-viewer/renderer-typst',
     '@file-viewer/renderer-mindmap',
     '@file-viewer/renderer-email',

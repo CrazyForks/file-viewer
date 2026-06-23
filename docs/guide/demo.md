@@ -237,7 +237,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 
 上面的清单已经覆盖当前注册的主要样例扩展名。CAD 链路已经切到 `@flyfish-dev/cad-viewer` 0.6.4，支持 DWG / DXF / DWF / DWFx / XPS；DWG 会按需加载 viewer assets 中 `wasm/cad/` 下的 Worker 和 LibreDWG WASM，DWF/DWFx/XPS 会按需加载 native renderer 与 `dwfv-render.wasm`。
 
-3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到 `@file-viewer/renderer-3d`。STEP/IGES/IFC/3DM 会展示转换原因，后续按 OpenCascade / web-ifc 等独立 WASM 包路线接入，建议用客户真实模型补充回归。XMind 样例用于验证多 sheet 脑图、目录、标签、备注、链接、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放和导出链路。
+3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到 `@file-viewer/renderer-3d`。STEP/IGES/IFC/3DM/BREP 会通过 `@file-viewer/geometry-engine` 展示签名识别和转换原因，后续按 OpenCascade / web-ifc / rhino3dm 等独立 WASM 包路线接入，建议用客户真实模型补充回归。XMind 样例用于验证多 sheet 脑图、目录、标签、备注、链接、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放和导出链路。
 
 Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件默认使用随 viewer assets 分发的官方 `GraphViewer` 离线预览，styles、shapes、stencils、img、mxgraph 和 math 资源都来自本地 `vendor/drawio/`。如果官方 viewer 加载异常，会自动回退内置 SVG 预览；内网路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管脚本。
 

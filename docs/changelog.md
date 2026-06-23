@@ -18,7 +18,7 @@
 - 新增 `@file-viewer/eda-layout` 与 `@file-viewer/eda-orcad` 两个 EDA engine package；GDSII/OASIS 版图底层能力、OrCAD/Allegro 二进制检查能力从 UI renderer 中拆出，后续 WebGL/WASM 或逐步 TS 移植可以独立发布、独立回归
 - 复核 XMind、GDSII/OASIS、OLB/DRA 等新增复杂格式的公开生态与 WASM/手写解析路线，明确 GDSII 是当前正式快速预览，OASIS/OLB/DRA 仍属于结构预览和后续独立 WASM 内核路线；同时把 XMind `pan` 写入 smoke matrix 显式断言，真实浏览器 smoke 已覆盖 Pointer、Mouse、Touch 和 WebView 混合事件拖拽路径
 - 按需渲染架构计划补齐为可执行路线图，明确轻 core、独立 renderer、preset 编排、Vite 插件自动装配、renderer 交付契约、core 依赖预算和终态验收门禁；新增 `verify:core-dependency-budget`、`verify:renderer-contracts`、`verify:renderer-assets`、`verify:install-budget` 与 `verify:bundle-budget`，后续以清理 core 直接重依赖和守住首屏入口体积为 2.x 主治理线
-- 支持格式矩阵保持 198 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件
+- 支持格式矩阵保持 199 个扩展名、24 条预览链路，新增 XMind 脑图预览，并将 EDA 安全结构索引扩展到 GDSII / OASIS 版图文件；`brep` 进入 3D 工程模型入口
 - `.xmind` 基于 `@ljheee/xmind-parser` 离线解析 XMind 8 XML 与 XMind 2020+ JSON 包结构，支持多 sheet、节点、标签、备注、链接、标记、图片、目录树、Pointer / 鼠标 / 触摸拖拽平移、移动端双指缩放、适配画布、搜索、缩放、打印和 HTML 导出
 - 优化 XMind 画布平移体验，新增 PointerEvent、MouseEvent、TouchEvent 三层输入兼容、移动端 pinch zoom、Ctrl/Command 滚轮锚点缩放、键盘方向键平移和双击适配视图，拖拽中禁用链接命中并禁用浏览器原生拖图/拖链接，边界约束改为画布式保留可见边缘，并兼容部分 WebView 在 PointerEvent 移动期间把 `buttons` 错报为 `0` 的情况，避免复杂脑图在 WebView、移动端或嵌入页面中无法拖动
 - XMind 继续补齐嵌入式浏览器混合事件兼容：当宿主只派发 `pointerdown`，后续改走 `mousemove` 或 `touchmove` 时，画布仍会保持拖拽平移；浏览器 smoke 已增加 pointer/mouse 与 pointer/touch hybrid 断言
@@ -49,7 +49,7 @@
 - 新增 `@file-viewer/preset-lite`、`@file-viewer/preset-office` 和 `@file-viewer/preset-engineering` 三个标准 preset 包；`@file-viewer/vite-plugin` 支持 `preset: 'lite' | 'office' | 'engineering' | 'all'`，会导入对应 `@file-viewer/preset-*` 包，并可继续用 `formats` 补充 preset 外 renderer，兼容 pnpm 严格依赖模型
 - `verify:renderer-standalone-smoke` 从 PDF-only 升级为全独立 renderer plugin 门禁，使用本地 tarball 构造隔离业务项目，安装 core、Vite 插件、19 个 renderer plugin 以及本地依赖闭包，逐个验证 renderer 注册、handler 挂载、Vite selection 映射和 virtual module 不误引入无关 renderer 包
 - 标准组件 README 与开源总仓 README 新增“工程级按需 renderer 装配”双语片段，统一说明 `@file-viewer/vite-plugin`、`virtual:file-viewer-renderers`、`builtinRenderers:'none'`、`rendererMode:'replace'`、`scan:true`、`copyAssets:true` 和 `@file-viewer/preset-all` 的推荐使用边界，并由 `verify:ecosystem-readmes` 纳入自动校验
-- STEP / IGES / IFC / 3DM 等重型工程格式完成浏览器 WASM 路线调研，后续适合按 OpenCascade、web-ifc、rhino3dm 等独立按需包维护，不进入 core 首屏链路
+- STEP / IGES / IFC / 3DM / BREP 等重型工程格式完成浏览器 WASM 路线调研，并新增 `@file-viewer/geometry-engine` 独立边界包维护签名识别、推荐内核和转换说明；OpenCascade、web-ifc、rhino3dm 等重 WASM 不进入 core 首屏链路
 - 表格预览新增 `options.spreadsheet.resizableColumns` 开关，默认关闭以保持历史交互兼容；官方 Demo 默认开启，方便客户拖拽表头边界查看被截断的长文本
 - Demo 新增 `mindmap.xmind`、`layout.gds`、`layout.oas`、`layout.oasis` 示例，并将样例选择器补充为脑图与绘图、邮件与 EDA 等更清晰分组
 

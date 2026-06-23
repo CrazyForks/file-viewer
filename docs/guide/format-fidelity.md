@@ -49,7 +49,7 @@
 | OLB | `@file-viewer/eda-orcad` 提供 CFB/OLE2 检测、文本采样、字符串抽取和十六进制预览，`@file-viewer/renderer-eda` 负责结构树、属性和元件候选展示 | 参考 OpenOrCadParser 的 C++ 解析路线，后续通过 Emscripten/WASM 或逐步 TS 移植补齐符号图形 |
 | DRA | `@file-viewer/eda-orcad` 提供二进制检查基础能力，`@file-viewer/renderer-eda` 展示封装/padstack/图形候选和可读属性 | DRA/PSM/PAD 属于 Allegro 私有数据库生态，应先积累真实样本，再在独立 engine 包中维护 OrCAD/Allegro parser |
 | OAS/OASIS | `@file-viewer/eda-layout` 当前做 OASIS header 检测和完整渲染边界声明，`@file-viewer/renderer-eda` 做安全二进制索引、可读字符串、结构候选和诊断 | OASIS 需要低层 record parser、重复结构展开、压缩块处理和版图实例渲染，继续在 `@file-viewer/eda-layout` 内演进 |
-| STEP/IGES/IFC/3DM | `@file-viewer/renderer-3d` 已保留 3D 入口，但完整几何解析依赖专业内核 | STEP/IGES/BREP 走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open Fragments，3DM 走 `rhino3dm` / Three.js loader，均应按需拆包 |
+| STEP/IGES/IFC/3DM/BREP | `@file-viewer/renderer-3d` 已保留 3D 入口，`@file-viewer/geometry-engine` 负责轻量签名识别、内核路线和转换说明；完整几何解析仍依赖专业内核 | STEP/IGES/BREP 走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open Fragments，3DM 走 `rhino3dm` / Three.js loader，后续继续在独立几何包内演进 |
 
 ## 当前落地策略
 
@@ -58,7 +58,7 @@
 | XMind | `.xmind` 本质是 ZIP，现代 XMind 使用 `content.json`，经典 XMind 8 使用 `content.xml`；成熟 viewer 都以“解析包结构 + 可拖拽缩放画布”为体验基线 | `@ljheee/xmind-parser` 只保留在独立 `@file-viewer/renderer-mindmap` 内，core 默认安装不再携带脑图解析依赖；当前拖拽边界已放宽为画布式平移，并提供 PointerEvent、MouseEvent、TouchEvent、从空白画布或节点卡片起手拖拽、移动端双指缩放、键盘方向键、Ctrl/Command 滚轮锚点缩放、双击适配视图、容器 resize 自动适配、统一 toolbar 状态同步、部分 WebView `buttons=0` 和 pointer/mouse/touch 混合事件的拖拽兼容 |
 | OLB / DRA / PSM | Cadence 格式没有稳定官方 Web SDK；公开可用路线主要是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器，后续可以 Emscripten/WASM 化或按样本逐步 TS 移植 | 当前只声明为结构预览，不虚标完整图形；底层能力已拆到 `@file-viewer/eda-orcad`，后续像 PPTX 一样长期维护 |
 | GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合参考 KLayout/KWeb 或自研 WebGL/WASM pipeline | GDSII 当前提供 SVG 快速预览；OASIS 继续结构索引，底层能力已拆到 `@file-viewer/eda-layout`，后续做 WebGL/增量渲染 |
-| STEP / IGES / IFC / 3DM | STEP/IGES/BREP 可走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` + Three.js Rhino3dmLoader | 保留 `@file-viewer/renderer-3d` 入口和转换说明，不把这些重量级几何内核放进 core 默认路径 |
+| STEP / IGES / IFC / 3DM / BREP | STEP/IGES/BREP 可走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` + Three.js Rhino3dmLoader | 已拆出 `@file-viewer/geometry-engine` 维护格式签名、推荐内核和提示文本；`@file-viewer/renderer-3d` 只按需消费该轻量边界，不把这些重量级几何内核放进 core 默认路径 |
 | Draw.io / Excalidraw | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容 | 已拆成 `@file-viewer/renderer-drawing` 独立维护，继续离线 vendor 分发，禁止依赖公共 CDN；失败时才走安全 SVG 兜底 |
 | Presentation / PPTX | OOXML 演示文稿的复杂度适合独立 engine + renderer 双层维护，避免 core 被解析器、主题和媒体链路拖重 | `@file-viewer/renderer-presentation` 暴露标准 renderer 插件，`@file-viewer/pptx` 继续作为可单独优化的 native PPTX 内核 |
 | GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 WGS84 GeoJSON | 已拆 `@file-viewer/renderer-geo` 并从 core 直接依赖中移除转换库，后续在该包中继续补投影提示、海量要素抽稀和真实公开样本 |
@@ -104,13 +104,13 @@
 
 - [x] XMind 支持 Pointer / 鼠标 / 触摸拖拽平移、从节点卡片起手拖拽、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘方向键平移、双击适配视图、容器 resize 自适应、用户交互后视角保留、WebView `PointerEvent.buttons` 异常兼容，以及 pointerdown 后续 mousemove/touchmove 的混合事件兜底。
 - [x] 继续保持 Draw.io、Typst、CAD、archive、PDF worker/WASM/vendor 静态资源全部自托管，不依赖公共 CDN。
-- [x] 使用 `pnpm verify:format-support` 校验 198 个扩展名和 24 条 renderer pipeline 口径一致。
+- [x] 使用 `pnpm verify:format-support` 校验 199 个扩展名和 24 条 renderer pipeline 口径一致。
 - [x] 在 smoke matrix 中把 XMind `pan` 列为显式断言，防止只校验打开成功而漏掉画布交互。
 - [ ] 为 XMind 增加真实复杂样本，覆盖多 sheet、标签、备注、图片、链接、折叠节点和大脑图拖拽回归。
 - [ ] 为 GDSII 增加真实公开版图样本，验证层过滤、实例引用、文本和大文件性能。
 - [x] 拆出 `@file-viewer/eda-layout`，专门维护 GDSII / OASIS record parser、WebGL/WASM 边界和后续大版图增量渲染。
 - [x] 拆出 `@file-viewer/eda-orcad`，专门维护 OLB / DRA / PSM / PAD 二进制检查、后续 C++ WASM/TS 移植和 OrCAD/Allegro 样本回归。
-- [ ] 为 STEP / IGES / IFC / 3DM 建立独立几何内核 renderer 包，避免 OpenCascade / web-ifc / rhino3dm 进入默认 core install path。
+- [x] 为 STEP / IGES / IFC / 3DM / BREP 建立独立 `@file-viewer/geometry-engine` 边界包，避免 OpenCascade / web-ifc / rhino3dm 进入默认 core install path；完整 WASM 渲染继续在该几何路线中分层演进。
 - [x] 在浏览器烟测里加入 XMind pan/zoom 的实际交互断言。
 - [x] 在浏览器烟测里继续补齐 Typst WASM、Draw.io offline viewer、CAD WASM / DWF native canvas、GDSII preview 的实际渲染或交互断言。
 

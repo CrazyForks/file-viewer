@@ -38,7 +38,7 @@ const packageBudgets = {
     maxFiles: 9,
     maxDirectRuntimeDependencies: 20,
     maxExternalDependencyClosure: 39,
-    maxLocalPackageClosure: 24
+    maxLocalPackageClosure: 25
   },
   '@file-viewer/vite-plugin': {
     maxPackedBytes: 30_000,
@@ -71,6 +71,22 @@ const packageBudgets = {
     maxDirectRuntimeDependencies: 0,
     maxExternalDependencyClosure: 0,
     maxLocalPackageClosure: 1
+  },
+  '@file-viewer/geometry-engine': {
+    maxPackedBytes: 28_000,
+    maxUnpackedBytes: 110_000,
+    maxFiles: 10,
+    maxDirectRuntimeDependencies: 0,
+    maxExternalDependencyClosure: 0,
+    maxLocalPackageClosure: 1
+  },
+  '@file-viewer/renderer-3d': {
+    maxPackedBytes: 38_000,
+    maxUnpackedBytes: 180_000,
+    maxFiles: 18,
+    maxDirectRuntimeDependencies: 3,
+    maxExternalDependencyClosure: 4,
+    maxLocalPackageClosure: 3
   },
   '@file-viewer/renderer-ofd': {
     maxPackedBytes: 140_000,

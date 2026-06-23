@@ -25,7 +25,8 @@ const rendererEntries = entries.filter(entry => entry.kind === 'renderer')
 const pluginEnginePackages = new Set([
   '@file-viewer/pptx',
   '@file-viewer/eda-layout',
-  '@file-viewer/eda-orcad'
+  '@file-viewer/eda-orcad',
+  '@file-viewer/geometry-engine'
 ])
 
 function assert(condition, message) {

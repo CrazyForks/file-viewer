@@ -29,7 +29,7 @@ The integration promise is simple: **one component, one line of code, fast integ
 ## Why Use It
 
 - **Pure frontend and serverless.** File parsing and rendering happen in the browser. You do not need Office Server, a LibreOffice daemon, or a document conversion backend.
-- **Broad format coverage.** The current release maps 198 extensions across 24 preview pipelines, including Office, PDF, OFD, Typst, XMind mind maps, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio/video, source code, fonts, design assets, and structured data.
+- **Broad format coverage.** The current release maps 199 extensions across 24 preview pipelines, including Office, PDF, OFD, Typst, XMind mind maps, archives, email, EDA files, CAD, geospatial data, 3D models, Excalidraw, draw.io, EPUB, UMD, Markdown, images, audio/video, source code, fonts, design assets, and structured data.
 - **Lazy loaded renderers.** Heavy PDF, Office, OFD, Typst, XMind, archive, email, CAD, geospatial, 3D, ebook, Markdown, HLS, HEIC, data-asset, and code highlighting dependencies are loaded only when the file type needs them.
 - **Production-ready operations.** The viewer includes original file download, full rendered printing, rendered HTML export, watermark options, theme options, lifecycle hooks, native event callbacks, and before-operation guards for permission checks.
 - **Better document reading.** Word and PDF keep a grey workspace, white paper surface, centered reading, width fitting, navigation, zoom, rotation, and complete print / HTML export paths.
@@ -263,7 +263,7 @@ The built-in toolbar can be used as-is, or hidden with `toolbar:false` so your o
 | `beforeOperation` | Toolbar-level preflight that runs after `options.beforeOperation`. Returning `false` or throwing cancels the operation. |
 | `beforeDownload` / `beforePrint` / `beforeExportHtml` | Operation-specific preflight for download permission, print audit, export confirmation, and similar business rules. |
 
-The shared format matrix currently declares 24 preview pipelines and 198 file extensions. Full capability is assembled through renderer packages or presets. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats
+The shared format matrix currently declares 24 preview pipelines and 199 file extensions. Full capability is assembled through renderer packages or presets. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats
 <!-- FILE_VIEWER_PUBLIC_GENERATED:END -->
 
 ## Support, Sponsorship, and Commercial Edition
