@@ -9,6 +9,19 @@
 
 ## Recommended Packages
 
+Standard component packages are intentionally light. Installing `@file-viewer/vue3`, `@file-viewer/react`, `@file-viewer/web`, `@file-viewer/svelte`, `@file-viewer/jquery`, or a Vue 2 package gives you the native ecosystem component, types, controller APIs, and the core foundation. Real format coverage is assembled by presets or individual renderer packages.
+
+| Strategy | Install | Notes |
+| --- | --- | --- |
+| Lightest component entry | `npm i @file-viewer/vue3` | Add format capability only after the component shell is wired |
+| Lightweight attachments | `npm i @file-viewer/vue3 @file-viewer/preset-lite` | Text, Markdown, code, image, audio, video |
+| Office document platform | `npm i @file-viewer/vue3 @file-viewer/preset-office` | PDF, Word, Excel, PowerPoint, OFD, RTF, OpenDocument |
+| Engineering platform | `npm i @file-viewer/vue3 @file-viewer/preset-engineering` | CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, EDA |
+| Full demo capability | `npm i @file-viewer/vue3 @file-viewer/preset-all` | Largest dependency surface; best for demos and internal all-format workbenches |
+| Strict custom cut | `npm i @file-viewer/vue3 @file-viewer/renderer-pdf` | Install one renderer and let the Vite plugin generate exact imports |
+
+`preset-all` is intentionally complete and therefore heavier. The release gate includes a dedicated cold-install target for `vue3 + preset-all`; production apps should normally prefer `preset-lite`, `preset-office`, `preset-engineering`, or individual renderers.
+
 | Stack | Standard package | Notes |
 | --- | --- | --- |
 | Core foundation | `@file-viewer/core` | Framework-neutral contracts, browser engine, renderer registry, events, search, zoom, print, export, and asset manifests |

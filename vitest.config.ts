@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./apps/viewer-demo/src', import.meta.url)),
+      '@file-viewer/core/assets': fileURLToPath(new URL('./packages/core/src/assets.ts', import.meta.url)),
       '@file-viewer/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
       linkedom: coreRequire.resolve('linkedom'),
       pako: coreRequire.resolve('pako'),

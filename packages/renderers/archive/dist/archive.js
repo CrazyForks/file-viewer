@@ -1,6 +1,6 @@
 import { resolveFileViewerArchiveWasmUrl, resolveFileViewerArchiveWorkerUrl, } from '@file-viewer/core/assets';
 import { disposeFileViewerRendered, } from '@file-viewer/core';
-import { createArchiveCacheKey, flattenArchiveObject, formatArchiveBytes, getArchiveEntryExtension, } from './archiveShared.js';
+import { buildArchiveNestedRenderContext, createArchiveCacheKey, flattenArchiveObject, formatArchiveBytes, getArchiveEntryExtension, } from './archiveShared.js';
 import { readArchiveCache, writeArchiveCache } from './archiveCache.js';
 import { loadArchiveEntriesWithoutWorker } from './archiveFallback.js';
 const DEFAULT_MAX_ARCHIVE_SIZE = 320 * 1024 * 1024;
@@ -190,10 +190,6 @@ const resolveWorkerCandidates = async (documentRef, options) => {
     }
     return candidates;
 };
-const buildNestedOptions = (context, archiveOptions) => ({
-    ...((context === null || context === void 0 ? void 0 : context.options) || {}),
-    archive: archiveOptions,
-});
 const renderNestedWithCoreFallback = async (buffer, type, target, context) => {
     const { fileViewerCoreRendererDispatcher } = await import('@file-viewer/core');
     const handler = fileViewerCoreRendererDispatcher.resolve(type);
@@ -452,11 +448,7 @@ export default async function renderArchive(buffer, target, _type, context) {
         await clearNestedPreview();
         const child = createElement(documentRef, 'div', 'archive-nested-content');
         nestedTarget.append(child);
-        const nestedContext = {
-            ...context,
-            filename: entry.name,
-            options: buildNestedOptions(context, archiveOptions),
-        };
+        const nestedContext = buildArchiveNestedRenderContext(context, entry, archiveOptions);
         nestedRendered = (context === null || context === void 0 ? void 0 : context.renderNestedBuffer)
             ? await context.renderNestedBuffer(entryBuffer, entry.extension, child, nestedContext)
             : await renderNestedWithCoreFallback(entryBuffer, entry.extension, child, nestedContext);

@@ -1,16 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { parseHTML } from 'linkedom';
 import {
   DEFAULT_RENDERER_DEFINITIONS,
   DEFAULT_SUPPORTED_EXTENSIONS,
+  clearFileViewerAutoRendererPresets,
   createFileViewerRendererDispatcher,
+  createFileViewerUnsupportedState,
   createFileViewerZoomState,
   createRendererRegistry,
   createViewer,
   getExtension,
   normalizeSource,
   readFileViewerBuffer,
+  registerFileViewerAutoRendererPreset,
   registerFileViewerZoomProvider,
+  resolveFileViewerRendererInstallHint,
   unregisterFileViewerZoomProvider,
   type FileViewerZoomProvider,
   type RendererDefinition,
@@ -36,13 +40,38 @@ const setRect = (element: Element, rect: Partial<DOMRect>) => {
 };
 
 describe('@file-viewer/core registry', () => {
-  it('keeps the current public format matrix at 198 extensions', () => {
-    expect(DEFAULT_SUPPORTED_EXTENSIONS).toHaveLength(198);
+  beforeEach(() => {
+    clearFileViewerAutoRendererPresets();
+  });
+
+  it('keeps the current public format matrix at 206 extensions', () => {
+    expect(DEFAULT_SUPPORTED_EXTENSIONS).toHaveLength(206);
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('pdf');
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('docx');
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('dwf');
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('zip');
     expect(DEFAULT_SUPPORTED_EXTENSIONS).toContain('typst');
+  });
+
+  it('distinguishes missing renderer assembly from truly unsupported formats', () => {
+    const pdfHint = resolveFileViewerRendererInstallHint('pdf');
+    expect(pdfHint).toMatchObject({
+      rendererId: 'pdf',
+      rendererPackage: '@file-viewer/renderer-pdf',
+      presetPackage: '@file-viewer/preset-office',
+      vitePreset: 'office',
+    });
+
+    const missingPdf = createFileViewerUnsupportedState('pdf');
+    expect(missingPdf.title).toBe('需要装配预览能力');
+    expect(missingPdf.message).toContain('已在支持矩阵中');
+    expect(missingPdf.description).toContain('@file-viewer/preset-office');
+    expect(missingPdf.description).toContain('@file-viewer/renderer-pdf');
+
+    const unsupported = createFileViewerUnsupportedState('unknown-format');
+    expect(resolveFileViewerRendererInstallHint('unknown-format')).toBeNull();
+    expect(unsupported.title).toBe('暂不支持在线预览');
+    expect(unsupported.message).toContain('不支持.unknown-format格式');
   });
 
   it('normalizes file names, query strings and explicit type overrides', () => {
@@ -248,7 +277,9 @@ describe('@file-viewer/core registry', () => {
 
     expect(viewer.getRenderer('pdf')).toBeUndefined();
     expect(viewer.getRenderer('png')?.load).toBeTypeOf('function');
-    expect(container.querySelector('.file-viewer-missing-renderer')?.textContent).toContain('PDF');
+    const missingRendererText = container.querySelector('.file-viewer-missing-renderer')?.textContent || '';
+    expect(missingRendererText).toContain('.pdf 格式已在支持矩阵中');
+    expect(missingRendererText).toContain('@file-viewer/preset-office');
   });
 
   it('extends the bundled renderer matrix with renderer presets by default', async () => {
@@ -284,7 +315,61 @@ describe('@file-viewer/core registry', () => {
 
     expect(container.dataset.extendedRenderer).toBe('plus');
     expect(viewer.getRenderer('plus')?.id).toBe('fixture-extend-renderer');
-    expect(viewer.getRenderer('pdf')?.load).toBeTypeOf('function');
+    expect(viewer.getRenderer('pdf')?.id).toBe('pdf');
+    expect(viewer.getRenderer('pdf')?.load).toBeUndefined();
+  });
+
+  it('consumes auto-registered renderer presets while preserving strict manual control', async () => {
+    registerFileViewerAutoRendererPreset({
+      id: 'fixture-auto-preset',
+      label: 'Fixture auto preset',
+      renderers: [{
+        id: 'fixture-auto-plugin',
+        definitions: [{
+          id: 'fixture-auto-renderer',
+          label: 'Fixture Auto',
+          category: 'document',
+          extensions: ['auto'],
+          capabilities: { download: true, print: false, exportHtml: false, zoom: false, search: false },
+        }],
+        handlers: [{
+          rendererId: 'fixture-auto-renderer',
+          handler: async (_buffer, target, type) => {
+            target.dataset.autoRenderer = type || '';
+            return { unmount() {} };
+          },
+        }],
+      }],
+    }, {
+      id: 'fixture-auto',
+      packageName: '@file-viewer/preset-fixture',
+    });
+
+    const { document } = parseHTML('<main id="auto"></main><main id="strict"></main>');
+    const autoContainer = document.getElementById('auto') as HTMLElement;
+    const autoViewer = createViewer(autoContainer, {
+      options: {
+        builtinRenderers: 'none',
+      },
+    });
+
+    await autoViewer.load({ buffer: new ArrayBuffer(1), filename: 'demo.auto' });
+
+    expect(autoContainer.dataset.autoRenderer).toBe('auto');
+    expect(autoViewer.getRenderer('auto')?.id).toBe('fixture-auto-renderer');
+
+    const strictContainer = document.getElementById('strict') as HTMLElement;
+    const strictViewer = createViewer(strictContainer, {
+      options: {
+        builtinRenderers: 'none',
+        autoRenderers: false,
+      },
+    });
+
+    await strictViewer.load({ buffer: new ArrayBuffer(1), filename: 'demo.auto' });
+
+    expect(strictViewer.getRenderer('auto')).toBeUndefined();
+    expect(strictContainer.querySelector('.file-viewer-missing-renderer')?.textContent).toContain('不支持.auto格式');
   });
 
   it('can restore the full format matrix through @file-viewer/preset-all in replace mode', async () => {

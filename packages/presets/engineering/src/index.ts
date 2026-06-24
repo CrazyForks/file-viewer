@@ -3,6 +3,7 @@ import type {
   FileViewerRenderedInstance,
   FileViewerRendererPreset,
 } from '@file-viewer/core';
+import { registerFileViewerAutoRendererPreset } from '@file-viewer/core';
 import { archiveRenderer } from '@file-viewer/renderer-archive';
 import { cadRenderer } from '@file-viewer/renderer-cad';
 import { dataRenderer } from '@file-viewer/renderer-data';
@@ -32,5 +33,10 @@ export const engineeringRenderers: FileViewerRendererPreset<BrowserRendererHandl
 };
 
 export const fileViewerPresetEngineering = engineeringRenderers;
+
+registerFileViewerAutoRendererPreset(engineeringRenderers, {
+  id: 'engineering',
+  packageName: '@file-viewer/preset-engineering',
+});
 
 export default engineeringRenderers;

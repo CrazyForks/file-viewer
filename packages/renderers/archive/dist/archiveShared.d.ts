@@ -1,3 +1,4 @@
+import type { FileRenderContext, FileViewerArchiveOptions } from '@file-viewer/core';
 export declare const ARCHIVE_PREVIEWABLE_EXTENSIONS: readonly string[];
 export interface ArchiveEntryView {
     id: string;
@@ -22,3 +23,4 @@ export declare const isPreviewableArchiveEntry: (name: string) => boolean;
 export declare const formatArchiveBytes: (value: number) => string;
 export declare const flattenArchiveObject: (input: Record<string, unknown>, prefix?: string) => ArchiveEntryView[];
 export declare const createArchiveCacheKey: (archiveName: string, archiveSize: number, entry: ArchiveEntryView) => string;
+export declare const buildArchiveNestedRenderContext: (context: FileRenderContext | undefined, entry: Pick<ArchiveEntryView, "name">, archiveOptions: FileViewerArchiveOptions | undefined) => FileRenderContext;

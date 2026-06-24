@@ -557,8 +557,11 @@ export function collectFileViewerRendererScanTokens(projectRoot, scan) {
     });
     return unique(tokens);
 }
+function resolveManualPreset(preset) {
+    return preset && preset !== 'auto' ? preset : null;
+}
 function selectRenderers(options) {
-    const preset = options.preset ?? null;
+    const preset = resolveManualPreset(options.preset);
     const presetCoveredIds = new Set(preset ? presetRendererIds[preset] : []);
     const selected = new Map();
     const missing = [];
@@ -606,37 +609,55 @@ function expandDescriptorRendererIds(ids) {
         return descriptor ? [...descriptor.rendererIds] : [id];
     }));
 }
-function renderVirtualModule(selection, formats) {
+function renderVirtualModule(selection, formats, autoPresetIds = []) {
     const presetModule = selection.preset ? presetModules[selection.preset] : null;
+    const autoPresetModules = autoPresetIds
+        .filter((id) => id !== selection.preset)
+        .map((id) => presetModules[id]);
     const presetImport = presetModule
         ? `import { ${presetModule.exportName} as presetRenderers } from '${presetModule.packageName}';`
         : null;
+    const autoPresetImports = autoPresetModules.map((preset, index) => `import { ${preset.exportName} as autoPresetRenderers${index} } from '${preset.packageName}';`);
     const rendererImports = selection.descriptors.map((descriptor, index) => `import { ${descriptor.exportName} as renderer${index} } from '${descriptor.packageName}';`);
     const rendererNames = [
         ...(presetModule ? ['presetRenderers'] : []),
+        ...autoPresetModules.map((_preset, index) => `autoPresetRenderers${index}`),
         ...selection.descriptors.map((_descriptor, index) => `renderer${index}`)
     ];
     const rendererIds = unique([
         ...(presetModule ? expandDescriptorRendererIds(presetModule.rendererIds) : []),
+        ...autoPresetModules.flatMap((preset) => expandDescriptorRendererIds(preset.rendererIds)),
         ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
     ]);
     const packages = unique([
         ...(presetModule ? [presetModule.packageName] : []),
+        ...autoPresetModules.map((preset) => preset.packageName),
         ...selection.descriptors.map((descriptor) => descriptor.packageName)
     ]);
     const plan = {
         preset: selection.preset,
+        autoPresets: autoPresetModules.map((preset) => preset.id),
         formats,
         rendererIds,
         packages,
         generatedBy: '@file-viewer/vite-plugin'
     };
+    const autoRegistrationId = selection.descriptors.length
+        ? '@file-viewer/vite-plugin:configured'
+        : selection.preset && !autoPresetModules.length
+            ? selection.preset
+            : !selection.preset && autoPresetModules.length === 1
+                ? autoPresetModules[0].id
+                : '@file-viewer/vite-plugin:configured';
     return [
+        `import { registerFileViewerAutoRendererPreset } from '@file-viewer/core';`,
         ...[presetImport].filter(Boolean),
+        ...autoPresetImports,
         ...rendererImports,
         '',
         `export const configuredFileViewerRenderers = [${rendererNames.join(', ')}];`,
         `export const fileViewerRendererPlan = ${JSON.stringify(plan, null, 2)};`,
+        `registerFileViewerAutoRendererPreset(configuredFileViewerRenderers, { id: ${JSON.stringify(autoRegistrationId)} });`,
         'export default configuredFileViewerRenderers;',
         ''
     ].join('\n');
@@ -648,10 +669,14 @@ function hasManualChunks(config) {
     }
     return Boolean(output?.manualChunks);
 }
-function createManualChunks(selection) {
+function createManualChunks(selection, autoPresetIds = []) {
     const packageToChunk = new Map();
-    if (selection.preset) {
-        const presetModule = presetModules[selection.preset];
+    const presetIds = unique([
+        ...(selection.preset ? [selection.preset] : []),
+        ...autoPresetIds
+    ]);
+    presetIds.forEach((presetId) => {
+        const presetModule = presetModules[presetId];
         packageToChunk.set(presetModule.packageName, presetModule.chunkName);
         presetModule.rendererIds
             .map((id) => descriptorsById.get(id))
@@ -659,7 +684,7 @@ function createManualChunks(selection) {
             .forEach((descriptor) => {
             packageToChunk.set(descriptor.packageName, descriptor.chunkName);
         });
-    }
+    });
     selection.descriptors.forEach((descriptor) => {
         packageToChunk.set(descriptor.packageName, descriptor.chunkName);
     });
@@ -763,6 +788,39 @@ function resolvePackageJson(packageName, anchorPackages = []) {
     }
     return resolveWorkspacePackageJson(packageName);
 }
+function hasExplicitRendererSelection(options) {
+    return Boolean(resolveManualPreset(options.preset) ||
+        options.formats?.length ||
+        options.renderers?.length ||
+        options.scan);
+}
+function shouldAutoDiscoverPresets(options) {
+    if (Array.isArray(options.autoPresets)) {
+        return true;
+    }
+    if (typeof options.autoPresets === 'boolean') {
+        return options.autoPresets;
+    }
+    return options.preset === 'auto' || !hasExplicitRendererSelection(options);
+}
+function resolveAutoPresetIds(options) {
+    if (!shouldAutoDiscoverPresets(options)) {
+        return [];
+    }
+    const candidates = Array.isArray(options.autoPresets)
+        ? options.autoPresets
+        : Object.keys(presetModules);
+    const installed = unique(candidates).filter((presetId) => Boolean(resolvePackageJson(presetModules[presetId].packageName)));
+    return installed.includes('all') ? ['all'] : installed;
+}
+function collectSelectedPackages(selection, autoPresetIds = []) {
+    const presetModule = selection.preset ? presetModules[selection.preset] : null;
+    return unique([
+        ...(presetModule ? [presetModule.packageName] : []),
+        ...autoPresetIds.map((presetId) => presetModules[presetId].packageName),
+        ...selection.descriptors.map((descriptor) => descriptor.packageName)
+    ]);
+}
 function resolvePackageRoot(packageName, anchorPackages = []) {
     const packageJson = resolvePackageJson(packageName, anchorPackages);
     return packageJson ? dirname(packageJson) : null;
@@ -849,10 +907,11 @@ function resolveTargetDir(value, fallback) {
 function copyOptions(value) {
     return typeof value === 'object' ? value : {};
 }
-function collectAssetRendererIds(selection) {
-    const presetIds = selection.preset
-        ? expandDescriptorRendererIds(presetModules[selection.preset].rendererIds)
-        : [];
+function collectAssetRendererIds(selection, autoPresetIds = []) {
+    const presetIds = [
+        ...(selection.preset ? expandDescriptorRendererIds(presetModules[selection.preset].rendererIds) : []),
+        ...autoPresetIds.flatMap((presetId) => expandDescriptorRendererIds(presetModules[presetId].rendererIds))
+    ];
     return unique([
         ...presetIds,
         ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
@@ -890,6 +949,7 @@ export function fileViewerRenderers(options = {}) {
         ...options,
         formats: [...(options.formats || []), ...scanFormats]
     });
+    let autoPresetIds = resolveAutoPresetIds(options);
     let resolvedConfig = null;
     const refreshSelection = (projectRoot) => {
         if (projectRoot) {
@@ -900,7 +960,9 @@ export function fileViewerRenderers(options = {}) {
             ...options,
             formats: [...(options.formats || []), ...scanFormats]
         });
+        autoPresetIds = resolveAutoPresetIds(options);
     };
+    const hasConfiguredRenderers = () => Boolean(selection.preset || selection.descriptors.length || autoPresetIds.length);
     return {
         name: 'file-viewer-renderers',
         enforce: 'pre',
@@ -914,7 +976,7 @@ export function fileViewerRenderers(options = {}) {
                 build: {
                     rollupOptions: {
                         output: {
-                            manualChunks: createManualChunks(selection)
+                            manualChunks: createManualChunks(selection, autoPresetIds)
                         }
                     }
                 }
@@ -926,10 +988,7 @@ export function fileViewerRenderers(options = {}) {
         },
         buildStart() {
             assertMissingRendererPolicy(selection, missingMode);
-            const packages = unique([
-                ...(selection.preset ? [presetModules[selection.preset].packageName] : []),
-                ...selection.descriptors.map((descriptor) => descriptor.packageName)
-            ]);
+            const packages = collectSelectedPackages(selection, autoPresetIds);
             const missingPackages = packages.filter((packageName) => !resolvePackageJson(packageName));
             if (missingPackages.length && missingMode !== 'ignore') {
                 const message = `Missing File Viewer preset/renderer package(s): ${missingPackages.join(', ')}. Install them or remove the matching preset/formats from @file-viewer/vite-plugin.`;
@@ -946,8 +1005,21 @@ export function fileViewerRenderers(options = {}) {
                 return;
             }
             const targetRoot = resolveTargetDir(copyOptions(options.copyAssets).publicDir, resolvedConfig?.publicDir || 'public');
-            const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection));
+            const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection, autoPresetIds));
             reportAssetCopy(results, targetRoot, missingMode);
+        },
+        transformIndexHtml() {
+            if (options.inject === false || !hasConfiguredRenderers()) {
+                return undefined;
+            }
+            return [
+                {
+                    tag: 'script',
+                    attrs: { type: 'module' },
+                    children: `import ${JSON.stringify(moduleId)};`,
+                    injectTo: 'head'
+                }
+            ];
         },
         handleHotUpdate(context) {
             if (!options.scan || !resolvedConfig) {
@@ -978,7 +1050,7 @@ export function fileViewerRenderers(options = {}) {
             }
             const outDir = resolvedConfig?.build.outDir || 'dist';
             const targetRoot = resolveTargetDir(copyOptions(options.copyAssets).outDir, outDir);
-            const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection));
+            const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection, autoPresetIds));
             reportAssetCopy(results, targetRoot, missingMode);
         },
         resolveId(id) {
@@ -989,14 +1061,14 @@ export function fileViewerRenderers(options = {}) {
         },
         load(id) {
             if (id === resolvedModuleId || id === resolvedVirtualModuleId) {
-                return renderVirtualModule(selection, requestedFormats);
+                return renderVirtualModule(selection, requestedFormats, autoPresetIds);
             }
             return undefined;
         }
     };
 }
 export function createFileViewerManualChunks(options = {}) {
-    return createManualChunks(selectRenderers(options));
+    return createManualChunks(selectRenderers(options), resolveAutoPresetIds(options));
 }
 export function resolveFileViewerRendererSelection(options = {}, projectRoot = process.cwd()) {
     const scanFormats = collectFileViewerRendererScanTokens(projectRoot, options.scan);
@@ -1010,17 +1082,19 @@ export function resolveFileViewerRendererSelection(options = {}, projectRoot = p
         formats: [...(options.formats || []), ...scanFormats]
     });
     const presetModule = selection.preset ? presetModules[selection.preset] : null;
-    const packages = unique([
-        ...(presetModule ? [presetModule.packageName] : []),
-        ...selection.descriptors.map((descriptor) => descriptor.packageName)
-    ]);
+    const autoPresetIds = resolveAutoPresetIds(options);
+    const autoPresetModules = autoPresetIds.map((presetId) => presetModules[presetId]);
+    const packages = collectSelectedPackages(selection, autoPresetIds);
     return {
         preset: selection.preset,
         presetPackage: presetModule?.packageName ?? null,
+        autoPresets: autoPresetModules.map((preset) => preset.id),
+        autoPresetPackages: autoPresetModules.map((preset) => preset.packageName),
         formats: requestedFormats,
         packages,
         rendererIds: unique([
             ...(presetModule ? expandDescriptorRendererIds(presetModule.rendererIds) : []),
+            ...autoPresetModules.flatMap((preset) => expandDescriptorRendererIds(preset.rendererIds)),
             ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
         ]),
         renderers: selection.descriptors.map((descriptor) => ({

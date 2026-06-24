@@ -4,7 +4,24 @@
 
 <p class="doc-lead">
   Pick the package that matches your stack, give the viewer container a stable height, and pass a file URL or a real <code>File</code>.
+  One component, one line of code, fast integration.
 </p>
+
+## Pick The Capability Layer First
+
+Installing a standard component package such as `@file-viewer/vue3`, `@file-viewer/react`, or `@file-viewer/web` is the lightest path. It gives you the native framework component, types, controller APIs, and the core foundation; it does not install every heavy PDF, Office, CAD, Typst, archive, or engineering renderer by default.
+
+Add a preset or a single renderer package for the file formats your product actually needs:
+
+| Package | Coverage | Best fit |
+| --- | --- | --- |
+| `@file-viewer/preset-lite` | Text, Markdown, code, image, audio, video | Lightweight attachment preview |
+| `@file-viewer/preset-office` | PDF, Word, Excel, PowerPoint, OFD, RTF, OpenDocument | OA, approvals, knowledge bases, contracts |
+| `@file-viewer/preset-engineering` | CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, EDA | Engineering, R&D, design assets |
+| `@file-viewer/preset-all` | Full official demo matrix | Demos and internal all-format workbenches |
+| Single renderer | For example `@file-viewer/renderer-pdf` or `@file-viewer/renderer-word` | Minimal custom format cuts |
+
+`@file-viewer/vite-plugin` can auto-discover installed presets and inject renderer modules. If a file extension is supported but the required renderer is not assembled, the viewer shows an install-oriented hint instead of a vague unsupported state.
 
 ## Vanilla JavaScript / Web Component
 
@@ -32,7 +49,23 @@ defineFileViewerElement()
 ## Vue 3
 
 ```bash
-npm install @file-viewer/vue3
+npm install @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      preset: 'office',
+      scan: true,
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+}
 ```
 
 ```ts

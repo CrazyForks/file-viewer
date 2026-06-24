@@ -304,7 +304,7 @@ Core foundation package: `@file-viewer/core`. Core source is public: https://git
 
 ## Engineering-Grade On-Demand Renderer Assembly
 
-One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Prefer a product-shaped preset first: `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`. Install individual renderer packages only when you need the smallest possible custom cut. The Vite plugin generates `virtual:file-viewer-renderers`, and application code passes the same shared `options` everywhere.
+One component, one line of code, fast integration; renderer assembly is what controls install size and first-screen bundle weight. Prefer a product-shaped preset first: `@file-viewer/preset-lite`, `@file-viewer/preset-office`, `@file-viewer/preset-engineering`, or `@file-viewer/preset-all`. Install individual renderer packages only when you need the smallest possible custom cut. The Vite plugin auto-discovers and injects installed presets, so regular application code does not need to pass `renderers` manually.
 
 ```bash
 npm i @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
@@ -319,10 +319,20 @@ export default {
       preset: 'office',
       scan: true,
       copyAssets: true
+      // inject:true by default; components receive office preview capability automatically.
     })
   ]
 }
 ```
+
+```ts
+const options = {
+  // Optional: set false when a product needs total manual control.
+  autoRenderers: true
+}
+```
+
+For strict custom cuts or component-library tests, disable injection and pass the virtual module explicitly:
 
 ```ts
 import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
@@ -339,6 +349,7 @@ const options = {
 - For the smallest custom bundle, skip presets, install individual renderers such as `@file-viewer/renderer-pdf` or `@file-viewer/renderer-word`, and let `formats` generate exact imports.
 - `scan:true` detects `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` hints so development and production builds select matching renderers automatically.
 - `copyAssets:true` copies PDF/CAD/Typst/Archive/Data workers, WASM, and vendor assets for offline and enterprise intranet deployment.
+- If a file is in the supported matrix but its renderer is not assembled, the viewer shows the recommended preset / renderer package. Truly unknown extensions still show an unsupported-format state.
 - If you want the complete official demo capability matrix, install `@file-viewer/preset-all` and pass `allRenderers` to `renderers`; this is ideal for demos and internal admin tools, but should not be every product default.
 
 ### Component Props and Toolbar Customization Summary

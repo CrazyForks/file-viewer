@@ -9,6 +9,7 @@ declare module 'virtual:file-viewer-renderers' {
 
   export interface ConfiguredFileViewerRendererPlan {
     preset: string | null;
+    autoPresets: string[];
     formats: string[];
     rendererIds: string[];
     packages: string[];

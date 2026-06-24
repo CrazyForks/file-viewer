@@ -125,6 +125,40 @@ try {
     !officeVirtualCode.includes("import { pdfRenderer"),
     'office preset virtual module must not re-import renderer packages covered by the preset'
   )
+  assert(
+    officeVirtualCode.includes('registerFileViewerAutoRendererPreset'),
+    'virtual module must register selected renderers for framework auto consumption'
+  )
+  const officeHtmlTags = officePlugin.transformIndexHtml?.()
+  assert(
+    Array.isArray(officeHtmlTags) &&
+      officeHtmlTags.some(tag => tag?.children?.includes('virtual:file-viewer-renderers')),
+    'configured plugin should inject the virtual renderer module into Vite HTML'
+  )
+
+  const manualOnlyPlugin = fileViewerRenderers({ preset: 'office', inject: false })
+  assert(
+    manualOnlyPlugin.transformIndexHtml?.() === undefined,
+    'inject:false should keep the virtual renderer module manual-only'
+  )
+
+  const autoPresetSelection = resolveFileViewerRendererSelection({ preset: 'auto' }, tempRoot)
+  assert(
+    autoPresetSelection.autoPresetPackages.length > 0,
+    'preset:auto should discover installed @file-viewer/preset-* packages'
+  )
+  const autoPresetPlugin = fileViewerRenderers({ preset: 'auto' })
+  await autoPresetPlugin.buildStart?.()
+  const autoPresetModuleId = autoPresetPlugin.resolveId?.('virtual:file-viewer-renderers')
+  assert(typeof autoPresetModuleId === 'string', 'preset:auto virtual module did not resolve')
+  const autoPresetVirtualCode = await autoPresetPlugin.load?.(autoPresetModuleId)
+  assert(typeof autoPresetVirtualCode === 'string', 'preset:auto virtual module did not load')
+  assert(
+    autoPresetSelection.autoPresetPackages.some(packageName =>
+      autoPresetVirtualCode.includes(packageName)
+    ),
+    'preset:auto virtual module should import discovered preset packages'
+  )
 } finally {
   await rm(tempRoot, { recursive: true, force: true })
 }

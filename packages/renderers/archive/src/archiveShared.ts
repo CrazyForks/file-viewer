@@ -2,6 +2,11 @@ import {
   ARCHIVE_EXTENSIONS,
   DEFAULT_SUPPORTED_EXTENSIONS,
 } from '@file-viewer/core';
+import type {
+  FileRenderContext,
+  FileViewerArchiveOptions,
+  FileViewerOptions,
+} from '@file-viewer/core';
 
 export const ARCHIVE_PREVIEWABLE_EXTENSIONS = DEFAULT_SUPPORTED_EXTENSIONS as readonly string[];
 
@@ -119,3 +124,26 @@ export const createArchiveCacheKey = (archiveName: string, archiveSize: number, 
     entry.lastModified || 0,
   ].join(':');
 };
+
+const buildNestedOptions = (
+  context: FileRenderContext | undefined,
+  archiveOptions: FileViewerArchiveOptions | undefined
+): FileViewerOptions => ({
+  ...(context?.options || {}),
+  archive: archiveOptions,
+});
+
+export const buildArchiveNestedRenderContext = (
+  context: FileRenderContext | undefined,
+  entry: Pick<ArchiveEntryView, 'name'>,
+  archiveOptions: FileViewerArchiveOptions | undefined
+): FileRenderContext => ({
+  ...context,
+  filename: entry.name,
+  // Archive children are rendered from the extracted bytes. Never inherit
+  // the parent archive URL, otherwise streaming renderers such as PDF.js
+  // would try to parse the .zip/.rar source as the nested file.
+  url: undefined,
+  streamUrl: undefined,
+  options: buildNestedOptions(context, archiveOptions),
+});

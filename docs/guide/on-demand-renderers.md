@@ -94,15 +94,7 @@ export default defineConfig({
 })
 ```
 
-```ts
-import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
-
-const options = {
-  builtinRenderers: 'none',
-  rendererMode: 'replace',
-  renderers: configuredFileViewerRenderers
-}
-```
+插件默认 `inject:true`，会把生成的 renderer 模块注入 Vite HTML 入口，组件通过 `autoRenderers` 自动获得能力。常规业务代码无需再手动传 `renderers`。
 
 把 `@file-viewer/vue3` 换成 `@file-viewer/web`、`@file-viewer/react`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 后，仍然使用同一份 `options`。
 
@@ -131,6 +123,32 @@ export default defineConfig({
 ```
 
 常见轻附件使用 `preset-lite`，CAD / 3D / Typst / EDA / 数据资产等工程附件使用 `preset-engineering`，完整样例矩阵或全格式后台使用 `preset-all`。`copyAssets:true` 会把 Worker、WASM、PDF 字体、CAD、Typst WASM/字体、Archive、Data 等离线资源复制到部署目录，避免企业内网环境依赖公共 CDN。
+
+如果需要完全手动控制 registry，可以关闭注入并显式传入 virtual module：
+
+```ts
+fileViewerRenderers({
+  preset: 'office',
+  inject: false,
+  copyAssets: true
+})
+```
+
+```ts
+import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
+
+const options = {
+  builtinRenderers: 'none',
+  rendererMode: 'replace',
+  renderers: configuredFileViewerRenderers
+}
+```
+
+`preset: 'auto'` 会发现项目中已安装的 preset 包；当 `preset-all` 存在时会优先使用它，避免重复导入其它 preset。
+
+## 缺失 renderer 的友好提示
+
+core 始终保留完整支持矩阵。用户打开矩阵内但当前项目未装配 renderer 的格式时，预览器会显示“需要装配预览能力”，并提示推荐安装的 preset / renderer 包，例如 `.pdf` 会引导安装 `@file-viewer/preset-office` 或 `@file-viewer/renderer-pdf`。只有真正不在支持矩阵中的扩展名才显示“不支持在线预览”，避免用户误以为产品不支持该格式。
 
 ## 用户接入方式
 
@@ -194,16 +212,7 @@ export default defineConfig({
 })
 ```
 
-业务代码只引入 virtual module：
-
-```ts
-import { configuredFileViewerRenderers } from 'virtual:file-viewer-renderers'
-
-const options = {
-  rendererMode: 'replace',
-  renderers: configuredFileViewerRenderers
-}
-```
+插件默认注入 virtual module；业务组件会自动读取已注册 renderer。只有需要 `rendererMode:'replace'` 的严格裁剪场景，才需要关闭 `inject` 并手动引入 `configuredFileViewerRenderers`。
 
 ## Renderer 插件协议
 

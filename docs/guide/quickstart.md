@@ -23,6 +23,22 @@
   <strong>推荐经验:</strong> 一个组件，一行代码，快速集成。core 只负责底层预览能力和 API；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包负责各自生态的原生接入体验。所有标准组件包都使用同一套 options、事件、搜索、缩放、打印和导出语义。
 </div>
 
+## 先理解安装边界
+
+直接安装 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 这类标准组件包是最轻的接入方式，它们只提供当前框架的原生组件、类型、controller 和 core 基础能力，不会默认把 PDF、Office、CAD、Typst、压缩包等重型渲染依赖全部装进业务项目。
+
+需要预览具体文件格式时，再选择一个 preset 或单独 renderer:
+
+| 能力包 | 覆盖范围 | 推荐场景 |
+| --- | --- | --- |
+| `@file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频 | 常见轻附件、IM / 工单附件 |
+| `@file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument | OA、审批、知识库、合同归档 |
+| `@file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA | 工程图纸、研发附件、设计资产 |
+| `@file-viewer/preset-all` | 官方 Demo 的完整格式矩阵 | 演示站、内部全格式附件中心 |
+| 单个 renderer | 例如 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word` | 只需要少数格式、追求最小依赖 |
+
+`@file-viewer/vite-plugin` 可以自动发现已安装的 preset 并注入 renderer，常规业务无需手写 `renderers`。如果打开的是支持矩阵内但未装配的格式，预览器会给出应该安装哪个 preset / renderer 的提示；只有真正不在矩阵中的扩展名才提示不支持。
+
 ## 运行环境
 
 - Node.js `>= 18`
@@ -55,7 +71,23 @@ npm install @file-viewer/web
 ## Vue3 最短路径
 
 ```bash
-pnpm add @file-viewer/vue3
+pnpm add @file-viewer/vue3 @file-viewer/core @file-viewer/vite-plugin @file-viewer/preset-office
+```
+
+```ts
+// vite.config.ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [
+    fileViewerRenderers({
+      preset: 'office',
+      scan: true,
+      copyAssets: true,
+      chunkStrategy: 'renderer'
+    })
+  ]
+}
 ```
 
 ```ts

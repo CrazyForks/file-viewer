@@ -3,6 +3,7 @@ import type {
   FileViewerRenderedInstance,
   FileViewerRendererPreset,
 } from '@file-viewer/core';
+import { registerFileViewerAutoRendererPreset } from '@file-viewer/core';
 import { imageRenderer } from '@file-viewer/renderer-image';
 import { mediaRenderer } from '@file-viewer/renderer-media';
 import { textRenderer } from '@file-viewer/renderer-text';
@@ -16,5 +17,10 @@ export const liteRenderers: FileViewerRendererPreset<BrowserRendererHandler> = {
 };
 
 export const fileViewerPresetLite = liteRenderers;
+
+registerFileViewerAutoRendererPreset(liteRenderers, {
+  id: 'lite',
+  packageName: '@file-viewer/preset-lite',
+});
 
 export default liteRenderers;

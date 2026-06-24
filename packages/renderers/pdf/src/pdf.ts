@@ -85,6 +85,20 @@ const createStyle = (documentRef: Document) => {
 .pdf-page-thumb--thumbnail{width:46px;height:60px;overflow:hidden;background:#fff}
 .pdf-page-thumb--thumbnail img{display:block;width:100%;height:100%;object-fit:contain}
 .pdf-page-thumb--thumbnail span{display:inline-flex;align-items:center;justify-content:center;width:100%;height:100%}
+@media (max-width:720px){
+  .pdf-toolbar{flex-wrap:nowrap;gap:6px;min-height:44px;padding:5px 6px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  .pdf-toolbar::-webkit-scrollbar{display:none}
+  .pdf-toolbar-group{flex:0 0 auto;height:32px;gap:4px;padding:0 4px;border-radius:7px}
+  .pdf-toolbar-group--zoom{margin-left:0}
+  .pdf-icon-button,.pdf-scale-button{height:26px;border-radius:5px}
+  .pdf-icon-button{width:26px;font-size:16px}
+  .pdf-scale-button{width:54px;font-size:12px}
+  .pdf-page-meter{min-width:52px;font-size:12px}
+  .pdf-page-meter strong{font-size:13px}
+  .pdf-rotation-meter{min-width:30px;font-size:12px}
+  .pdf-nav-pane{width:min(82vw,280px);max-width:calc(100% - 52px)}
+  .pdfViewer{padding:12px 8px 22px}
+}
 `;
   return style;
 };
@@ -191,8 +205,16 @@ export default async function renderPdf(
   const toolbarVisible = options?.toolbar !== false;
   const thumbnailsEnabled = options?.thumbnails === true;
   const zoomEmitter = createFileViewerZoomChangeEmitter();
+  const isCompactViewport = () => {
+    const width = target.clientWidth || targetWindow.innerWidth || 0;
+    return width > 0 && width <= 720;
+  };
 
-  let navVisible = options?.navigation === false ? false : options?.defaultNavigationVisible !== false;
+  let navVisible = options?.navigation === false
+    ? false
+    : typeof options?.defaultNavigationVisible === 'boolean'
+      ? options.defaultNavigationVisible
+      : !isCompactViewport();
   let navMode: PdfNavMode = 'pages';
   let loadStatus: 'loading' | 'ready' | 'error' = 'loading';
   let errorMessage = '';
@@ -481,6 +503,7 @@ export default async function renderPdf(
   };
 
   const syncUi = () => {
+    root.classList.toggle('pdf-shell--compact', isCompactViewport());
     root.classList.toggle('pdf-shell--nav-hidden', !navigationEnabled || !navVisible);
     root.classList.toggle('pdf-shell--toolbar-hidden', !toolbarVisible);
     navToggleButton.classList.toggle('pdf-icon-button--active', navVisible);

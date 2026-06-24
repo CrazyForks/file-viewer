@@ -1,5 +1,6 @@
 import type { Plugin } from 'vite';
 export type FileViewerVitePreset = 'all' | 'lite' | 'office' | 'engineering';
+export type FileViewerVitePresetMode = FileViewerVitePreset | 'auto';
 export type FileViewerMissingRendererMode = 'error' | 'warn' | 'ignore';
 export type FileViewerChunkStrategy = 'renderer' | 'none';
 export interface FileViewerRendererScanOptions {
@@ -45,10 +46,23 @@ export interface FileViewerRenderersPluginOptions {
      */
     renderers?: readonly string[];
     /**
-     * Presets import their dedicated @file-viewer/preset-* package. Add
-     * `formats` / `renderers` when you need to extend a preset with extra lines.
+     * Presets import their dedicated @file-viewer/preset-* package. Use `auto`
+     * to discover installed preset packages, and add `formats` / `renderers`
+     * when you need to extend a preset with extra lines.
      */
-    preset?: FileViewerVitePreset;
+    preset?: FileViewerVitePresetMode;
+    /**
+     * Auto-discovers installed `@file-viewer/preset-*` packages and registers
+     * them globally for framework components. Defaults to true only when no
+     * explicit preset/formats/renderers are configured, or when `preset: 'auto'`.
+     */
+    autoPresets?: boolean | readonly FileViewerVitePreset[];
+    /**
+     * Injects the virtual renderer module into Vite HTML entrypoints so
+     * framework components can consume auto-registered renderers without
+     * application code importing `virtual:file-viewer-renderers`.
+     */
+    inject?: boolean;
     /**
      * Virtual module id consumed by application code.
      */
@@ -85,6 +99,8 @@ export declare function createFileViewerManualChunks(options?: FileViewerRendere
 export declare function resolveFileViewerRendererSelection(options?: FileViewerRenderersPluginOptions, projectRoot?: string): {
     preset: FileViewerVitePreset | null;
     presetPackage: string | null;
+    autoPresets: FileViewerVitePreset[];
+    autoPresetPackages: string[];
     formats: string[];
     packages: string[];
     rendererIds: string[];

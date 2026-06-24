@@ -6,10 +6,10 @@ import {
   disposeFileViewerRendered,
   type FileRenderContext,
   type FileViewerArchiveOptions,
-  type FileViewerOptions,
   type FileViewerRenderedInstance,
 } from '@file-viewer/core';
 import {
+  buildArchiveNestedRenderContext,
   createArchiveCacheKey,
   flattenArchiveObject,
   formatArchiveBytes,
@@ -247,14 +247,6 @@ const resolveWorkerCandidates = async (
 
   return candidates;
 };
-
-const buildNestedOptions = (
-  context: FileRenderContext | undefined,
-  archiveOptions: FileViewerArchiveOptions | undefined
-): FileViewerOptions => ({
-  ...(context?.options || {}),
-  archive: archiveOptions,
-});
 
 const renderNestedWithCoreFallback = async (
   buffer: ArrayBuffer,
@@ -578,11 +570,7 @@ export default async function renderArchive(
     await clearNestedPreview();
     const child = createElement(documentRef, 'div', 'archive-nested-content') as HTMLDivElement;
     nestedTarget.append(child);
-    const nestedContext: FileRenderContext = {
-      ...context,
-      filename: entry.name,
-      options: buildNestedOptions(context, archiveOptions),
-    };
+    const nestedContext = buildArchiveNestedRenderContext(context, entry, archiveOptions);
     nestedRendered = context?.renderNestedBuffer
       ? await context.renderNestedBuffer(entryBuffer, entry.extension, child, nestedContext)
       : await renderNestedWithCoreFallback(entryBuffer, entry.extension, child, nestedContext);

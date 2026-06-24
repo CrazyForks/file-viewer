@@ -5,6 +5,7 @@ import { dirname, extname, isAbsolute, join, resolve } from 'node:path'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 
 export type FileViewerVitePreset = 'all' | 'lite' | 'office' | 'engineering'
+export type FileViewerVitePresetMode = FileViewerVitePreset | 'auto'
 export type FileViewerMissingRendererMode = 'error' | 'warn' | 'ignore'
 export type FileViewerChunkStrategy = 'renderer' | 'none'
 
@@ -53,10 +54,23 @@ export interface FileViewerRenderersPluginOptions {
    */
   renderers?: readonly string[]
   /**
-   * Presets import their dedicated @file-viewer/preset-* package. Add
-   * `formats` / `renderers` when you need to extend a preset with extra lines.
+   * Presets import their dedicated @file-viewer/preset-* package. Use `auto`
+   * to discover installed preset packages, and add `formats` / `renderers`
+   * when you need to extend a preset with extra lines.
    */
-  preset?: FileViewerVitePreset
+  preset?: FileViewerVitePresetMode
+  /**
+   * Auto-discovers installed `@file-viewer/preset-*` packages and registers
+   * them globally for framework components. Defaults to true only when no
+   * explicit preset/formats/renderers are configured, or when `preset: 'auto'`.
+   */
+  autoPresets?: boolean | readonly FileViewerVitePreset[]
+  /**
+   * Injects the virtual renderer module into Vite HTML entrypoints so
+   * framework components can consume auto-registered renderers without
+   * application code importing `virtual:file-viewer-renderers`.
+   */
+  inject?: boolean
   /**
    * Virtual module id consumed by application code.
    */
@@ -711,8 +725,12 @@ export function collectFileViewerRendererScanTokens(
   return unique(tokens)
 }
 
+function resolveManualPreset(preset: FileViewerRenderersPluginOptions['preset']) {
+  return preset && preset !== 'auto' ? preset : null
+}
+
 function selectRenderers(options: FileViewerRenderersPluginOptions): RendererSelection {
-  const preset = options.preset ?? null
+  const preset = resolveManualPreset(options.preset)
   const presetCoveredIds = new Set(preset ? presetRendererIds[preset] : [])
   const selected = new Map<string, RendererModuleDescriptor>()
   const missing: MissingRendererNotice[] = []
@@ -777,41 +795,66 @@ function expandDescriptorRendererIds(ids: readonly string[]) {
   )
 }
 
-function renderVirtualModule(selection: RendererSelection, formats: readonly string[]) {
+function renderVirtualModule(
+  selection: RendererSelection,
+  formats: readonly string[],
+  autoPresetIds: readonly FileViewerVitePreset[] = []
+) {
   const presetModule = selection.preset ? presetModules[selection.preset] : null
+  const autoPresetModules = autoPresetIds
+    .filter((id) => id !== selection.preset)
+    .map((id) => presetModules[id])
   const presetImport = presetModule
     ? `import { ${presetModule.exportName} as presetRenderers } from '${presetModule.packageName}';`
     : null
+  const autoPresetImports = autoPresetModules.map(
+    (preset, index) =>
+      `import { ${preset.exportName} as autoPresetRenderers${index} } from '${preset.packageName}';`
+  )
   const rendererImports = selection.descriptors.map(
     (descriptor, index) =>
       `import { ${descriptor.exportName} as renderer${index} } from '${descriptor.packageName}';`
   )
   const rendererNames = [
     ...(presetModule ? ['presetRenderers'] : []),
+    ...autoPresetModules.map((_preset, index) => `autoPresetRenderers${index}`),
     ...selection.descriptors.map((_descriptor, index) => `renderer${index}`)
   ]
   const rendererIds = unique([
     ...(presetModule ? expandDescriptorRendererIds(presetModule.rendererIds) : []),
+    ...autoPresetModules.flatMap((preset) => expandDescriptorRendererIds(preset.rendererIds)),
     ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
   ])
   const packages = unique([
     ...(presetModule ? [presetModule.packageName] : []),
+    ...autoPresetModules.map((preset) => preset.packageName),
     ...selection.descriptors.map((descriptor) => descriptor.packageName)
   ])
   const plan = {
     preset: selection.preset,
+    autoPresets: autoPresetModules.map((preset) => preset.id),
     formats,
     rendererIds,
     packages,
     generatedBy: '@file-viewer/vite-plugin'
   }
+  const autoRegistrationId = selection.descriptors.length
+    ? '@file-viewer/vite-plugin:configured'
+    : selection.preset && !autoPresetModules.length
+      ? selection.preset
+      : !selection.preset && autoPresetModules.length === 1
+        ? autoPresetModules[0].id
+        : '@file-viewer/vite-plugin:configured'
 
   return [
+    `import { registerFileViewerAutoRendererPreset } from '@file-viewer/core';`,
     ...[presetImport].filter(Boolean),
+    ...autoPresetImports,
     ...rendererImports,
     '',
     `export const configuredFileViewerRenderers = [${rendererNames.join(', ')}];`,
     `export const fileViewerRendererPlan = ${JSON.stringify(plan, null, 2)};`,
+    `registerFileViewerAutoRendererPreset(configuredFileViewerRenderers, { id: ${JSON.stringify(autoRegistrationId)} });`,
     'export default configuredFileViewerRenderers;',
     ''
   ].join('\n')
@@ -825,10 +868,17 @@ function hasManualChunks(config: UserConfig) {
   return Boolean(output?.manualChunks)
 }
 
-function createManualChunks(selection: RendererSelection) {
+function createManualChunks(
+  selection: RendererSelection,
+  autoPresetIds: readonly FileViewerVitePreset[] = []
+) {
   const packageToChunk = new Map<string, string>()
-  if (selection.preset) {
-    const presetModule = presetModules[selection.preset]
+  const presetIds = unique([
+    ...(selection.preset ? [selection.preset] : []),
+    ...autoPresetIds
+  ])
+  presetIds.forEach((presetId) => {
+    const presetModule = presetModules[presetId]
     packageToChunk.set(presetModule.packageName, presetModule.chunkName)
     presetModule.rendererIds
       .map((id) => descriptorsById.get(id))
@@ -836,7 +886,7 @@ function createManualChunks(selection: RendererSelection) {
       .forEach((descriptor) => {
         packageToChunk.set(descriptor.packageName, descriptor.chunkName)
       })
-  }
+  })
   selection.descriptors.forEach((descriptor) => {
     packageToChunk.set(descriptor.packageName, descriptor.chunkName)
   })
@@ -951,6 +1001,50 @@ function resolvePackageJson(packageName: string, anchorPackages: readonly string
     }
   }
   return resolveWorkspacePackageJson(packageName)
+}
+
+function hasExplicitRendererSelection(options: FileViewerRenderersPluginOptions) {
+  return Boolean(
+    resolveManualPreset(options.preset) ||
+      options.formats?.length ||
+      options.renderers?.length ||
+      options.scan
+  )
+}
+
+function shouldAutoDiscoverPresets(options: FileViewerRenderersPluginOptions) {
+  if (Array.isArray(options.autoPresets)) {
+    return true
+  }
+  if (typeof options.autoPresets === 'boolean') {
+    return options.autoPresets
+  }
+  return options.preset === 'auto' || !hasExplicitRendererSelection(options)
+}
+
+function resolveAutoPresetIds(options: FileViewerRenderersPluginOptions): FileViewerVitePreset[] {
+  if (!shouldAutoDiscoverPresets(options)) {
+    return []
+  }
+  const candidates: readonly FileViewerVitePreset[] = Array.isArray(options.autoPresets)
+    ? (options.autoPresets as readonly FileViewerVitePreset[])
+    : (Object.keys(presetModules) as FileViewerVitePreset[])
+  const installed = unique(candidates).filter((presetId) =>
+    Boolean(resolvePackageJson(presetModules[presetId].packageName))
+  )
+  return installed.includes('all') ? ['all'] : installed
+}
+
+function collectSelectedPackages(
+  selection: RendererSelection,
+  autoPresetIds: readonly FileViewerVitePreset[] = []
+) {
+  const presetModule = selection.preset ? presetModules[selection.preset] : null
+  return unique([
+    ...(presetModule ? [presetModule.packageName] : []),
+    ...autoPresetIds.map((presetId) => presetModules[presetId].packageName),
+    ...selection.descriptors.map((descriptor) => descriptor.packageName)
+  ])
 }
 
 function resolvePackageRoot(packageName: string, anchorPackages: readonly string[] = []) {
@@ -1152,10 +1246,16 @@ function copyOptions(
   return typeof value === 'object' ? value : {}
 }
 
-function collectAssetRendererIds(selection: RendererSelection) {
-  const presetIds = selection.preset
-    ? expandDescriptorRendererIds(presetModules[selection.preset].rendererIds)
-    : []
+function collectAssetRendererIds(
+  selection: RendererSelection,
+  autoPresetIds: readonly FileViewerVitePreset[] = []
+) {
+  const presetIds = [
+    ...(selection.preset ? expandDescriptorRendererIds(presetModules[selection.preset].rendererIds) : []),
+    ...autoPresetIds.flatMap((presetId) =>
+      expandDescriptorRendererIds(presetModules[presetId].rendererIds)
+    )
+  ]
   return unique([
     ...presetIds,
     ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
@@ -1201,6 +1301,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     ...options,
     formats: [...(options.formats || []), ...scanFormats]
   })
+  let autoPresetIds = resolveAutoPresetIds(options)
   let resolvedConfig: ResolvedConfig | null = null
   const refreshSelection = (projectRoot?: string) => {
     if (projectRoot) {
@@ -1211,7 +1312,10 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       ...options,
       formats: [...(options.formats || []), ...scanFormats]
     })
+    autoPresetIds = resolveAutoPresetIds(options)
   }
+  const hasConfiguredRenderers = () =>
+    Boolean(selection.preset || selection.descriptors.length || autoPresetIds.length)
 
   return {
     name: 'file-viewer-renderers',
@@ -1226,7 +1330,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
         build: {
           rollupOptions: {
             output: {
-              manualChunks: createManualChunks(selection)
+              manualChunks: createManualChunks(selection, autoPresetIds)
             }
           }
         }
@@ -1238,10 +1342,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     },
     buildStart() {
       assertMissingRendererPolicy(selection, missingMode)
-      const packages = unique([
-        ...(selection.preset ? [presetModules[selection.preset].packageName] : []),
-        ...selection.descriptors.map((descriptor) => descriptor.packageName)
-      ])
+      const packages = collectSelectedPackages(selection, autoPresetIds)
       const missingPackages = packages.filter((packageName) => !resolvePackageJson(packageName))
       if (missingPackages.length && missingMode !== 'ignore') {
         const message = `Missing File Viewer preset/renderer package(s): ${missingPackages.join(', ')}. Install them or remove the matching preset/formats from @file-viewer/vite-plugin.`
@@ -1260,8 +1361,24 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
         copyOptions(options.copyAssets).publicDir,
         resolvedConfig?.publicDir || 'public'
       )
-      const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection))
+      const results = await copyKnownRendererAssets(
+        targetRoot,
+        collectAssetRendererIds(selection, autoPresetIds)
+      )
       reportAssetCopy(results, targetRoot, missingMode)
+    },
+    transformIndexHtml() {
+      if (options.inject === false || !hasConfiguredRenderers()) {
+        return undefined
+      }
+      return [
+        {
+          tag: 'script',
+          attrs: { type: 'module' },
+          children: `import ${JSON.stringify(moduleId)};`,
+          injectTo: 'head'
+        }
+      ]
     },
     handleHotUpdate(context) {
       if (!options.scan || !resolvedConfig) {
@@ -1292,7 +1409,10 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       }
       const outDir = resolvedConfig?.build.outDir || 'dist'
       const targetRoot = resolveTargetDir(copyOptions(options.copyAssets).outDir, outDir)
-      const results = await copyKnownRendererAssets(targetRoot, collectAssetRendererIds(selection))
+      const results = await copyKnownRendererAssets(
+        targetRoot,
+        collectAssetRendererIds(selection, autoPresetIds)
+      )
       reportAssetCopy(results, targetRoot, missingMode)
     },
     resolveId(id) {
@@ -1303,7 +1423,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     },
     load(id) {
       if (id === resolvedModuleId || id === resolvedVirtualModuleId) {
-        return renderVirtualModule(selection, requestedFormats)
+        return renderVirtualModule(selection, requestedFormats, autoPresetIds)
       }
       return undefined
     }
@@ -1311,7 +1431,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
 }
 
 export function createFileViewerManualChunks(options: FileViewerRenderersPluginOptions = {}) {
-  return createManualChunks(selectRenderers(options))
+  return createManualChunks(selectRenderers(options), resolveAutoPresetIds(options))
 }
 
 export function resolveFileViewerRendererSelection(
@@ -1331,17 +1451,19 @@ export function resolveFileViewerRendererSelection(
     formats: [...(options.formats || []), ...scanFormats]
   })
   const presetModule = selection.preset ? presetModules[selection.preset] : null
-  const packages = unique([
-    ...(presetModule ? [presetModule.packageName] : []),
-    ...selection.descriptors.map((descriptor) => descriptor.packageName)
-  ])
+  const autoPresetIds = resolveAutoPresetIds(options)
+  const autoPresetModules = autoPresetIds.map((presetId) => presetModules[presetId])
+  const packages = collectSelectedPackages(selection, autoPresetIds)
   return {
     preset: selection.preset,
     presetPackage: presetModule?.packageName ?? null,
+    autoPresets: autoPresetModules.map((preset) => preset.id),
+    autoPresetPackages: autoPresetModules.map((preset) => preset.packageName),
     formats: requestedFormats,
     packages,
     rendererIds: unique([
       ...(presetModule ? expandDescriptorRendererIds(presetModule.rendererIds) : []),
+      ...autoPresetModules.flatMap((preset) => expandDescriptorRendererIds(preset.rendererIds)),
       ...selection.descriptors.flatMap((descriptor) => descriptor.rendererIds)
     ]),
     renderers: selection.descriptors.map((descriptor) => ({

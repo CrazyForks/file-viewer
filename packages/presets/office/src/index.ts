@@ -3,6 +3,7 @@ import type {
   FileViewerRenderedInstance,
   FileViewerRendererPreset,
 } from '@file-viewer/core';
+import { registerFileViewerAutoRendererPreset } from '@file-viewer/core';
 import { ofdRenderer } from '@file-viewer/renderer-ofd';
 import { pdfRenderer } from '@file-viewer/renderer-pdf';
 import { presentationRenderer } from '@file-viewer/renderer-presentation';
@@ -18,5 +19,10 @@ export const officeRenderers: FileViewerRendererPreset<BrowserRendererHandler> =
 };
 
 export const fileViewerPresetOffice = officeRenderers;
+
+registerFileViewerAutoRendererPreset(officeRenderers, {
+  id: 'office',
+  packageName: '@file-viewer/preset-office',
+});
 
 export default officeRenderers;

@@ -85,3 +85,17 @@ export const createArchiveCacheKey = (archiveName, archiveSize, entry) => {
         entry.lastModified || 0,
     ].join(':');
 };
+const buildNestedOptions = (context, archiveOptions) => ({
+    ...((context === null || context === void 0 ? void 0 : context.options) || {}),
+    archive: archiveOptions,
+});
+export const buildArchiveNestedRenderContext = (context, entry, archiveOptions) => ({
+    ...context,
+    filename: entry.name,
+    // Archive children are rendered from the extracted bytes. Never inherit
+    // the parent archive URL, otherwise streaming renderers such as PDF.js
+    // would try to parse the .zip/.rar source as the nested file.
+    url: undefined,
+    streamUrl: undefined,
+    options: buildNestedOptions(context, archiveOptions),
+});

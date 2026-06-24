@@ -2,8 +2,18 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.1.2` 压缩包内嵌预览、移动端 PDF 与安装口径修复
+
+- 压缩包内嵌 PDF / Office / 图片等文件预览会清理父级压缩包的 `url` / `streamUrl`，避免内部 PDF 误读取外层 `.zip` / `.rar` 流导致 `Invalid PDF structure` 或 `Bad FCHECK in flate stream`
+- 移动端 PDF 预览在窄屏默认收起页侧边栏并压缩工具栏高度，避免导航面板遮挡页面主体；显式 `options.pdf.defaultNavigationVisible` 仍可覆盖默认行为
+- 快速开始、生态总览和 README 将“轻组件包 + preset / renderer 格式能力层”的安装边界前置说明，明确 `@file-viewer/vue3` 等组件包最轻，`preset-all` 是完整 Demo / 内部全格式入口而非所有业务默认选择
+- 发布前回归覆盖 `archive` 嵌套渲染上下文、core preset 自动装配、文档构建、Demo 构建、官网构建、离线资源校验、安装体积预算和冷安装时间；`vue3 + preset-all` 最重冷安装目标通过
+- 全线生态包、Demo、文档站、官网和开源总仓同步推进到 `2.1.2`
+
 ## `v2.1.1` GitHub issue 回归修复与发布同步
 
+- `@file-viewer/vite-plugin` 新增 preset 自动发现与默认 HTML 注入；安装 `@file-viewer/vue3` 等组件包并安装 `@file-viewer/preset-office` / `preset-engineering` 后，框架组件可通过 `autoRenderers` 自动获得对应预览能力，仍保留 `inject:false`、`autoRenderers:false` 和 `rendererMode:'replace'` 的手动控制路径
+- core 缺失 renderer 状态改为区分“支持矩阵内但未装配”和“真正不支持”：如 `.pdf` 未装配时提示安装 `@file-viewer/preset-office` 或 `@file-viewer/renderer-pdf`，避免用户误解为产品不支持该格式
 - Markdown 预览自动剥离文件开头 YAML Frontmatter，避免元数据被当作正文渲染，同时保留正文中的普通分隔线
 - PDF 默认 Worker、cMap、WASM 和标准字体资源改为站点根路径解析，兼容 Vite / Vue Router / React Router 等深层路由部署
 - Excel / XLSX worker 将图片 drawing anchor 纳入虚拟表格尺寸计算，修复图片位于数据区下方时无法继续向下滚动的问题

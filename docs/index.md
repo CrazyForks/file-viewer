@@ -4,221 +4,165 @@ title: Flyfish Viewer
 titleTemplate: false
 ---
 
-<main class="doc-home">
-<section class="doc-home-hero">
-<div class="doc-home-hero-inner">
-<div class="doc-eyebrow">Official Docs And Component Home</div>
-<h1>Flyfish Viewer</h1>
+<main class="doc-home doc-home-v2">
+<nav class="doc-home-anchor" aria-label="文档首页导航">
+<a href="#quickstart">快速开始</a>
+<a href="#demo">Demo</a>
+<a href="#presets">预设选择</a>
+<a href="#ecosystem">生态接入</a>
+<a href="#formats">格式能力</a>
+<a href="#delivery">部署分发</a>
+</nav>
+
+<section id="quickstart" class="doc-start">
+<div class="doc-start-copy">
+<span class="doc-eyebrow">Documentation Hub</span>
+<h1>企业级文件预览，从第一行代码开始。</h1>
 <p>
-纯前端多格式文件预览组件。把 Word、Excel、PPT、PDF、OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、代码、Git patch/bundle、图片、音视频、字体、PSD 图层资产和结构化数据预览能力放进浏览器端，
-同时提供 Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 原生集成路径。
-一个组件，一行代码，快速集成。
+Flyfish Viewer 为业务系统提供浏览器端文件预览能力。组件包保持轻量，格式能力通过 renderer 与 preset 模块化装配，适合从单一 PDF/Office 预览逐步扩展到完整附件中心。
 </p>
 <div class="doc-home-actions">
-<a class="doc-action doc-action-primary" href="/guide/quickstart">快速开始</a>
-<a class="doc-action" href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">在线 Demo</a>
-<a class="doc-action" href="https://demo.file-viewer.app/compare.html" target="_blank" rel="noreferrer">文档比对</a>
-<a class="doc-action" href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub 开源总仓库</a>
+<a class="doc-action doc-action-primary" href="/guide/quickstart">进入快速开始</a>
+<a class="doc-action" href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">体验 Demo</a>
+<a class="doc-action" href="/guide/on-demand-renderers">查看模块化装配</a>
+</div>
+<div class="doc-start-stats" aria-label="Flyfish Viewer 核心能力">
+<div><strong>206</strong><span>扩展名映射</span></div>
+<div><strong>24</strong><span>预览链路</span></div>
+<div><strong>42</strong><span>npm 发布目标</span></div>
+</div>
+</div>
+
+<div class="doc-install-panel" aria-label="推荐安装方式">
+<div class="doc-panel-top">
+<span></span><span></span><span></span>
+<strong>recommended setup</strong>
+</div>
+<div class="doc-install-block">
+<span>1. 选择生态组件</span>
+<pre><code>pnpm add @file-viewer/vue3</code></pre>
+</div>
+<div class="doc-install-block">
+<span>2. 追加业务需要的格式能力</span>
+<pre><code>pnpm add @file-viewer/preset-office
+pnpm add -D @file-viewer/vite-plugin</code></pre>
+</div>
+<div class="doc-install-note">
+<strong>组件包保持轻量。</strong>
+<span><code>@file-viewer/vue3</code>、<code>@file-viewer/react</code>、<code>@file-viewer/web</code> 等负责原生接入体验；Office、CAD、EDA、Typst、压缩包等能力由 preset 或 renderer 提供。</span>
 </div>
 </div>
 </section>
 
-<section class="doc-home-metrics" aria-label="Flyfish Viewer 核心指标">
-<div>
-<strong>206</strong>
-<span>个扩展名映射</span>
-</div>
-<div>
-<strong>24</strong>
-<span>条预览链路</span>
-</div>
-<div>
-<strong>42</strong>
-<span>个 npm 发布目标</span>
-</div>
-<div>
-<strong>Native</strong>
-<span>多生态一致接入</span>
-</div>
-</section>
-
-<section class="doc-section">
+<section id="demo" class="doc-demo-stage">
 <div class="doc-section-heading">
-<span>Product Experience</span>
-<h2>产品化的文件预览，而不是格式清单</h2>
-<p>
-文档解析、阅读布局、示例验收和分发交付被放在同一条链路里维护。接入前可以先看真实 Demo，
-接入后也能通过 npm、私有化静态站和各生态标准组件包继续迭代。
-</p>
+<span>Live Experience</span>
+<h2>先看真实预览，再决定接入范围。</h2>
+<p>Demo 使用真实样例、按需 renderer、移动端布局、文档比对和离线资源路径，适合直接验证业务场景。</p>
 </div>
-
-<div class="doc-showcase">
-<figure>
-<img src="/_media/flyfish-viewer-demo.gif" alt="Flyfish Viewer 在线预览器动图，展示 Word、PDF、PPTX 与文档比对" />
-<figcaption>动图展示了真实浏览器中的主 Demo、Office/PDF 阅读面、PPTX 和文档比对效果，比静态截图更适合快速判断交互质量。</figcaption>
+<div class="doc-demo-layout">
+<figure class="doc-demo-visual">
+<img src="/_media/flyfish-viewer-demo.gif" alt="Flyfish Viewer 在线 Demo 动图，展示多格式文件预览与文档比对" />
+<figcaption>真实浏览器 Demo 覆盖 Word、PDF、PPTX、压缩包、图纸、图表和文档比对。</figcaption>
 </figure>
-<div class="doc-showcase-list">
-<article>
-<span>01</span>
-<h3>打开即适配阅读宽度</h3>
-<p>PDF 和 Word 会按当前视口计算默认缩放，PDF 支持页侧边栏和目录树侧边栏切换，Word / PDF 打印使用专属完整页适配器，其他格式按能力动态显隐打印按钮。</p>
-</article>
-<article>
-<span>02</span>
-<h3>模块化边界清晰</h3>
-<p><code>@file-viewer/core</code> 只负责底层协议和统一 API；重型格式交给独立 renderer；preset 按产品形态组合；各框架组件只做原生体验封装，长期维护更稳。</p>
-</article>
-<article>
-<span>03</span>
-<h3>重型能力按需进入</h3>
-<p>OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HEIC、HLS、字体/数据资产和代码高亮都拆成异步块，命中格式时再加载。</p>
-</article>
-<article>
-<span>04</span>
-<h3>示例覆盖完整验收路径</h3>
-<p>示例文件按文档、表格、图纸、脑图与绘图、地理数据、电子书、压缩包、邮件、EDA、代码、媒体和数据资产等类型分组，方便快速定位和回归。</p>
-</article>
-<article>
-<span>05</span>
-<h3>独立比对不污染主入口</h3>
-<p><code>/compare.html</code> 提供左右并排预览、示例选择、URL、本地上传、交换、同步滚动、聚焦文档浮层搜索、行级定位和 PDF 工具栏隐藏，适合合同、报告、PPT 和导出物的视觉核对。</p>
-</article>
+<div class="doc-demo-actions">
+<a class="doc-path-card" href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">
+<strong>主 Demo</strong>
+<span>打开示例文件、上传本地文件、切换移动端视口并验证工具栏体验。</span>
+</a>
+<a class="doc-path-card" href="https://demo.file-viewer.app/compare.html" target="_blank" rel="noreferrer">
+<strong>文档比对</strong>
+<span>左右并排预览、同步滚动、搜索定位和 PDF 工具栏隐藏。</span>
+</a>
+<a class="doc-path-card" href="/guide/demo">
+<strong>Demo 说明</strong>
+<span>查看样例覆盖、部署边界和常见验证路径。</span>
+</a>
 </div>
 </div>
 </section>
 
-<section class="doc-section doc-section-muted">
+<section id="presets" class="doc-section doc-section-muted doc-preset-section">
 <div class="doc-section-heading">
-<span>Modular Integration</span>
-<h2>从最小化引入到组合引入，接入路径更清楚</h2>
-<p>
-2.1.0 的核心升级是模块化：组件包负责生态体验，renderer 负责单条格式链路，preset 负责产品形态组合，Vite 插件负责自动装配和离线资产复制。
-</p>
+<span>Install Strategy</span>
+<h2>先选组件，再选能力。避免把全量格式一次塞进业务页。</h2>
+<p>生产项目优先从轻量组件包开始，再按业务选择 preset 或单 renderer。<code>preset-all</code> 覆盖最完整，但体积最大，更适合完整文件工作台或内部验证环境。</p>
 </div>
-
-<div class="doc-value-grid">
-<article class="doc-card">
-<h3>最小化引入</h3>
-<p>只安装当前业务需要的 renderer，例如 PDF-only 只安装 <code>@file-viewer/renderer-pdf</code>，再通过 <code>formats:['pdf']</code> 生成精确导入。</p>
+<div class="doc-preset-grid">
+<article class="doc-card doc-preset-card">
+<strong>轻附件</strong>
+<h3>@file-viewer/preset-lite</h3>
+<p>图片、文本、Markdown、代码、媒体等常见轻量附件。</p>
 </article>
-<article class="doc-card">
-<h3>组合引入</h3>
-<p>办公平台使用 <code>preset-office</code>，工程平台使用 <code>preset-engineering</code>，轻附件使用 <code>preset-lite</code>，完整工作台使用 <code>preset-all</code>。</p>
+<article class="doc-card doc-preset-card">
+<strong>办公文档</strong>
+<h3>@file-viewer/preset-office</h3>
+<p>PDF、Word、Excel、PPTX、OFD、Typst、电子书和常用办公链路。</p>
 </article>
-<article class="doc-card">
-<h3>离线资产可追踪</h3>
-<p><code>copyAssets:true</code> 会复制 PDF、CAD、Typst、Archive、Data 等 Worker/WASM/字体/vendor 资源，适合内网和私有化部署。</p>
+<article class="doc-card doc-preset-card">
+<strong>工程资料</strong>
+<h3>@file-viewer/preset-engineering</h3>
+<p>CAD、EDA、3D、地理数据、绘图和结构化工程文件。</p>
 </article>
+<article class="doc-card doc-preset-card">
+<strong>完整工作台</strong>
+<h3>@file-viewer/preset-all</h3>
+<p>全格式体验与验收场景使用。业务端建议评估体量后再引入。</p>
+</article>
+</div>
+<div class="doc-callout doc-callout-compact">
+<strong>安装边界:</strong> 只安装 <code>@file-viewer/vue3</code>、<code>@file-viewer/react</code> 或 <code>@file-viewer/web</code> 是最轻的组件接入方式，但不会自动带入全部格式能力。需要预览文件时，请安装对应 preset 或 renderer。
 </div>
 </section>
 
-<section class="doc-section doc-section-muted">
+<section id="ecosystem" class="doc-section">
 <div class="doc-section-heading">
-<span>Why It Works</span>
-<h2>为业务系统准备的工程取舍</h2>
-<p>它不是一个只展示单一 PDF 的小组件，而是一套面向附件中心、OA、知识库和工单系统的前端预览方案。</p>
+<span>Native Ecosystem</span>
+<h2>每个技术栈都有原生组件，不以 iframe 作为核心路径。</h2>
+<p>所有生态组件共享 core 能力、options、事件、搜索、缩放、打印、导出和生命周期钩子，同时保持各框架自己的接入方式。</p>
 </div>
-
-<div class="doc-value-grid">
-<article class="doc-card">
-<h3>少一条服务端链路</h3>
-<p>大多数格式直接在浏览器完成解析，不需要把附件交给后端转 PDF，也减少临时文件和队列任务。</p>
-</article>
-<article class="doc-card">
-<h3>格式覆盖贴近业务</h3>
-<p>除了 Office、PDF 和图片，也补齐 OFD、Typst、XMind 脑图、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、Mermaid、PlantUML、EPUB、UMD、Markdown、代码、日志、配置文件、Git patch/bundle、音视频、字体、PSD 图层、SQLite、WASM、Parquet、Avro 和 WebArchive；XMind / Mermaid / PlantUML 使用 Panzoom 支持拖拽平移、移动端双指缩放和适配画布，结构化数据由独立 <code>@file-viewer/renderer-data</code> 承接，EDA 由独立 <code>@file-viewer/renderer-eda</code> 承接，标准 GDSII 可生成 SVG / WebGL 版图预览，OASIS 文本夹具可生成 SVG，PPTX 由独立开源的 <code>@file-viewer/pptx</code> 原生引擎承接，对组合图形、主题背景和 EMF 图片做了专门增强。</p>
-</article>
-<article class="doc-card">
-<h3>阅读质感有兜底</h3>
-<p>Word 保留白色纸张和灰色页面底，PDF 具备缩放、页码、页面/目录导航和宽度自适应，PPTX 通过 <code>@file-viewer/pptx</code> 尽量保留模板背景、组合元素和矢量插图。</p>
-</article>
-<article class="doc-card">
-<h3>接入边界清晰</h3>
-<p>Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery 和 Svelte 都有明确示例，URL、File、Blob 转 File 等输入路径也已写明。</p>
-</article>
-<article class="doc-card">
-<h3>开源总仓一站式入口</h3>
-<p>GitHub / Gitee 同步 core、标准组件包、Demo、文档源码、构建产物、样例文件和 release tarball。</p>
-</article>
-<article class="doc-card">
-<h3>模块化长期可维护</h3>
-<p>core、renderer、preset 和生态组件边界清楚，新增格式时优先落到独立 renderer，业务侧可以按体量和场景组合能力。</p>
-</article>
-<article class="doc-card">
-<h3>版本交付可追踪</h3>
-<p>README、文档站、Demo、npm 包和开源总仓库同步维护，便于验收和分发。</p>
-</article>
+<div class="doc-path-grid doc-ecosystem-grid">
+<a class="doc-path-card" href="/guide/quickstart-web"><strong>Vanilla JS / Web Component</strong><span>一行 HTML 或 mountViewer 命令式挂载，适合任意页面。</span></a>
+<a class="doc-path-card" href="/guide/quickstart-vue3"><strong>Vue 3</strong><span>插件安装、组件 props、事件、ref/controller 和工具栏定制。</span></a>
+<a class="doc-path-card" href="/guide/quickstart-vue2"><strong>Vue 2.7 / Vue 2.6</strong><span>兼容旧系统，保留与 Vue3 一致的参数模型。</span></a>
+<a class="doc-path-card" href="/guide/quickstart-react"><strong>React / React Legacy</strong><span>Hooks、refs、事件回调和 legacy React 项目接入。</span></a>
+<a class="doc-path-card" href="/guide/ecosystem#svelte"><strong>Svelte</strong><span>组件与 action 双路径，适合 SvelteKit 和轻应用。</span></a>
+<a class="doc-path-card" href="/guide/ecosystem#jquery"><strong>jQuery</strong><span>传统后台可用 <code>$(el).fileViewer(options)</code> 接入。</span></a>
 </div>
 </section>
 
-<section class="doc-section">
+<section id="formats" class="doc-section doc-format-panel">
 <div class="doc-section-heading">
-<span>Choose Your Path</span>
-<h2>按你的接入场景开始</h2>
-<p>先选路线，再进入对应文档。每条路线都给出最短示例和真实项目里的注意事项。</p>
+<span>Format Matrix</span>
+<h2>覆盖业务附件的主流类型，也保留可扩展边界。</h2>
+<p>核心格式按模块维护，重型解析库、worker、wasm 和离线 vendor 资源仅在命中文件类型时加载。</p>
 </div>
-
-<div class="doc-callout">
-<strong>接入亮点:</strong> 一个组件，一行代码，快速集成。Vanilla JS、Vue、React、jQuery 和 Svelte 都使用标准组件包接入，底层能力一致，上层体验保持各自生态的原生方式。
+<div class="doc-format-grid">
+<div><strong>Office</strong><span>DOCX / XLSX / PPTX / PDF / OFD / Typst</span></div>
+<div><strong>Engineering</strong><span>DWG / DXF / DWF / 3D / GIS / EDA / OLB / DRA</span></div>
+<div><strong>Knowledge</strong><span>Markdown / Code / Git patch / Git bundle / Mermaid / PlantUML</span></div>
+<div><strong>Assets</strong><span>PSD / Images / HEIC / Audio / Video / Fonts / SQLite / Parquet</span></div>
+<div><strong>Containers</strong><span>ZIP / RAR / 7Z / TAR / GZIP and nested preview</span></div>
+<div><strong>Collaboration</strong><span>EML / MSG / XMind / draw.io / Excalidraw / EPUB / UMD</span></div>
 </div>
-
-<div class="doc-path-grid">
-<a class="doc-path-card" href="/guide/quickstart-web">
-<strong>Vanilla JS / 纯 JS 页面</strong>
-<span>安装 @file-viewer/web，优先用 &lt;flyfish-file-viewer&gt; 原生组件，也可用 mountViewer 命令式挂载。</span>
-</a>
-<a class="doc-path-card" href="/guide/quickstart-vue3">
-<strong>Vue 3 项目</strong>
-<span>安装 @file-viewer/vue3，使用 createApp(App).use(FileViewer)，样式会随安装器自动带入。</span>
-</a>
-<a class="doc-path-card" href="/guide/quickstart-vue2">
-<strong>Vue2 项目</strong>
-<span>Vue2.7 安装 @file-viewer/vue2.7，Vue2.6 安装 @file-viewer/vue2.6，统一使用 Vue.use(FileViewer)。</span>
-</a>
-<a class="doc-path-card" href="/guide/quickstart-react">
-<strong>React 项目</strong>
-<span>React 18/19 使用 @file-viewer/react，React 16.8/17 使用 @file-viewer/react-legacy。</span>
-</a>
-<a class="doc-path-card" href="/guide/ecosystem#svelte">
-<strong>Svelte 项目</strong>
-<span>安装 @file-viewer/svelte，使用 Svelte 组件或 action 原生接入。</span>
-</a>
-<a class="doc-path-card" href="/guide/ecosystem#jquery">
-<strong>jQuery 后台</strong>
-<span>安装 @file-viewer/jquery，用 $(el).fileViewer(options) 接入传统系统。</span>
-</a>
-<a class="doc-path-card" href="/guide/ecosystem#core">
-<strong>Core 自定义</strong>
-<span>使用 @file-viewer/core 构建自研组件层，复用底层格式能力和统一 API。</span>
-</a>
-<a class="doc-path-card" href="/guide/ecosystem#pptx">
-<strong>PPTX 引擎</strong>
-<span>使用 @file-viewer/pptx 单独验证或复用原生幻灯片渲染能力。</span>
-</a>
-<a class="doc-path-card" href="/guide/usage">
-<strong>统一 API</strong>
-<span>查看 options、事件、搜索、缩放、打印、导出和 beforeOperation 钩子。</span>
-</a>
-<a class="doc-path-card" href="/guide/distribution">
-<strong>开源与支持</strong>
-<span>下载开源总仓库、分散组件仓库和 release 产物，或通过官方渠道支持项目并获得优先协助。</span>
-</a>
+<div class="doc-link-row">
+<a href="/guide/formats">查看完整格式矩阵</a>
+<a href="/guide/format-fidelity">查看格式完整度说明</a>
 </div>
 </section>
 
-<section class="doc-final-band">
+<section id="delivery" class="doc-final-band doc-final-band-v2">
 <div>
-<span>Official Resources</span>
-<h2>官网用于验证，组件用于私有化接入</h2>
+<span>Delivery</span>
+<h2>面向内网、私有化和开源分发的完整交付链路。</h2>
 <p>
-官方文档是 <a href="https://doc.file-viewer.app">doc.file-viewer.app</a>，
-在线预览是 <a href="https://demo.file-viewer.app">demo.file-viewer.app</a>，
-官网门户是 <a href="https://file-viewer.app">file-viewer.app</a>，
-开源总仓库是 <a href="https://github.com/flyfish-dev/file-viewer">github.com/flyfish-dev/file-viewer</a>，
-Gitee 镜像是 <a href="https://gitee.com/flyfish-dev/file-viewer">gitee.com/flyfish-dev/file-viewer</a>。
-Vanilla JS / Pure Web、React、jQuery 和 Svelte 组件默认在业务页面内原生挂载预览器，不会把官网 Demo 地址作为内置依赖。
+文档站、Demo、官网、npm 包、Docker 镜像、GitHub 开源总仓库和 Release 产物同步维护。需要更高还原度和极致性能的商业版，可从官网进入商业版说明与支持入口。
 </p>
 </div>
-<a class="doc-action doc-action-primary" href="/guide/">进入文档导览</a>
+<div class="doc-final-actions">
+<a class="doc-action doc-action-primary" href="/guide/distribution">发布与分发</a>
+<a class="doc-action" href="/guide/docker">Docker 部署</a>
+<a class="doc-action" href="https://github.com/flyfish-dev/file-viewer" target="_blank" rel="noreferrer">GitHub</a>
+</div>
 </section>
 </main>

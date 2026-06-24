@@ -1,6 +1,7 @@
 import {
   DEFAULT_RENDERER_DEFINITIONS,
   coreBrowserRendererHandlers,
+  registerFileViewerAutoRendererPreset,
   type FileRenderHandler,
   type FileViewerRenderedInstance,
   type FileViewerRendererPlugin,
@@ -49,5 +50,10 @@ export const allRenderers: FileViewerRendererPreset<BrowserRendererHandler> = {
 };
 
 export const fileViewerPresetAll = allRenderers;
+
+registerFileViewerAutoRendererPreset(allRenderers, {
+  id: 'all',
+  packageName: '@file-viewer/preset-all',
+});
 
 export default allRenderers;
