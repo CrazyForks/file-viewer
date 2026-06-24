@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-24T08:27:01.164Z",
+  "generatedAt": "2026-06-24T08:33:36.555Z",
   "version": "2.1.2",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "e669790b14bdff66afbd1f76702c425d308d9a66",
+      "hash": "f779b4683001b01e91d7e2dfbff2586a4fa20ee7",
       "error": ""
     },
     "gitee": {
@@ -43,22 +43,22 @@
       "error": ""
     },
     "inSync": false,
-    "syncMode": "unchecked",
-    "treeChecked": false,
-    "referenceTree": "7aeb4da7c606c3061999b5074ac57b2be08a7105",
-    "giteeTree": "",
-    "treeError": "local public repository 3d1817c9b32a does not match GitHub e669790b14bd",
+    "syncMode": "stale",
+    "treeChecked": true,
+    "referenceTree": "78d3b59b85938799cecc0d7e51fc7c42ef45da4d",
+    "giteeTree": "62b18f03808005d7045f6bcb1c078889de3cdff4",
+    "treeError": "",
     "reportHashNote": "The open-source main repository mirrors the current public source tree and records the private source commit in the public commit body for traceability. The observed remote hash can trail until that mirror commit is pushed. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
   },
   "githubRelease": {
-    "ok": false,
+    "ok": true,
     "tag": "v2.1.2",
-    "url": "",
-    "assetCount": 0,
-    "hasManifest": false,
-    "hasStatus": false,
-    "hasSchema": false,
-    "error": "release not found"
+    "url": "https://github.com/flyfish-dev/file-viewer/releases/tag/v2.1.2",
+    "assetCount": 48,
+    "hasManifest": true,
+    "hasStatus": true,
+    "hasSchema": true,
+    "error": ""
   },
   "componentRepositories": [
     {
@@ -520,32 +520,17 @@
       "error": ""
     }
   ],
-  "gaps": [
-    "GitHub Release v2.1.2 missing"
-  ],
+  "gaps": [],
   "gapSummary": {
-    "total": 1,
-    "externalBlockers": 1,
+    "total": 0,
+    "externalBlockers": 0,
     "localActionable": 0,
-    "byChannel": {
-      "github-release": 1
-    },
-    "externalBlockerChannels": [
-      "github-release"
-    ],
+    "byChannel": {},
+    "externalBlockerChannels": [],
     "localActionableChannels": []
   },
-  "gapDetails": [
-    {
-      "id": "github-release-github-release-v2.1.2-missing",
-      "channel": "github-release",
-      "scope": "release-assets",
-      "externalBlocker": true,
-      "message": "GitHub Release v2.1.2 missing",
-      "nextAction": "Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets."
-    }
-  ],
+  "gapDetails": [],
   "nextActions": [
-    "Create or update the GitHub Release assets, then rerun `pnpm release:public`."
+    "Release channels are aligned. Keep this report attached to the GitHub Release for downstream verification."
   ]
 }
