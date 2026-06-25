@@ -520,9 +520,69 @@ importers:
 
   packages/components/web-full:
     dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.1.3
+        version: link:../../core
       '@file-viewer/preset-all':
         specifier: workspace:^2.1.3
         version: link:../../presets/all
+      '@file-viewer/renderer-3d':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/3d
+      '@file-viewer/renderer-archive':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/archive
+      '@file-viewer/renderer-cad':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/cad
+      '@file-viewer/renderer-data':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/data
+      '@file-viewer/renderer-drawing':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/drawing
+      '@file-viewer/renderer-eda':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/eda
+      '@file-viewer/renderer-email':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/email
+      '@file-viewer/renderer-epub':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/ebook
+      '@file-viewer/renderer-geo':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/geo
+      '@file-viewer/renderer-image':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/image
+      '@file-viewer/renderer-media':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/media
+      '@file-viewer/renderer-mindmap':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/mindmap
+      '@file-viewer/renderer-ofd':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/ofd
+      '@file-viewer/renderer-pdf':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/pdf
+      '@file-viewer/renderer-presentation':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/presentation
+      '@file-viewer/renderer-spreadsheet':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/spreadsheet
+      '@file-viewer/renderer-text':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/text
+      '@file-viewer/renderer-typst':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/typst
+      '@file-viewer/renderer-word':
+        specifier: workspace:^2.1.3
+        version: link:../../renderers/word
       '@file-viewer/web':
         specifier: workspace:^2.1.3
         version: link:../web

@@ -4,7 +4,7 @@
 
 ## `v2.1.3` CDN 全量接入与生态 full 包
 
-- 新增 `@file-viewer/web-full`、`@file-viewer/vue3-full`、`@file-viewer/vue2.7-full`、`@file-viewer/vue2.6-full`、`@file-viewer/react-full`、`@file-viewer/react-legacy-full`、`@file-viewer/jquery-full` 和 `@file-viewer/svelte-full`，面向“一个组件，一行代码，完整能力”的快速接入场景
+- 新增 `@file-viewer/web-full`、`@file-viewer/vue3-full`、`@file-viewer/vue2.7-full`、`@file-viewer/vue2.6-full`、`@file-viewer/react-full`、`@file-viewer/react-legacy-full`、`@file-viewer/jquery-full` 和 `@file-viewer/svelte-full`，面向“先验收完整能力，再按业务边界裁剪”的快速接入场景
 - `@file-viewer/web-full` 提供 CDN / script 标签完整格式入口，IIFE 包会根据脚本地址自动定位随包分发的 Worker、WASM、字体、PDF cMap、CAD、Typst、Archive、Docx、Excel 和 Draw.io 离线资源，适合公网 CDN 与企业自托管两种模式
 - 保留原有轻量组件包与 `preset-lite` / `preset-office` / `preset-engineering` / `preset-all` 的按需组合模式；文档和 README 前置说明“轻组件 + preset / renderer”的推荐边界，避免把 full 包误用为所有业务的默认选择
 - Vanilla JS 快速开始补齐无组件命令式 `mountViewer` 示例；Vue3、Vue2.7、Vue2.6、React、React Legacy、Svelte、jQuery 的快速开始均补齐 full 包与按需包两条路径
