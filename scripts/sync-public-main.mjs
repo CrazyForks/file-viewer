@@ -488,8 +488,8 @@ async function readEcosystemPackManifest() {
 
 async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
-    ? ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
-    : ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', 'apps', 'packages', 'dist', 'artifacts']
+    ? ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
+    : ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
   const renderersByPackageName = new Map((wrapperManifest.renderers || []).map(renderer => [renderer.packageName, renderer]))
   const packages = ecosystemPackManifest.packages || []

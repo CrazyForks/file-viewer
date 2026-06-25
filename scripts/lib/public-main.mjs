@@ -26,6 +26,7 @@ export const openSourceMainDefaultRoots = [
   'LICENSE',
   'package.json',
   'pnpm-workspace.yaml',
+  '.github',
   'apps',
   'packages',
   'dist',
