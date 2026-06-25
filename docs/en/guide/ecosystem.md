@@ -5,6 +5,7 @@
 <p class="doc-lead">
   New integrations should prefer the standard <code>@file-viewer/*</code> packages.
   Historical <code>@flyfish-group/*</code> names remain available for existing users.
+  Each package line keeps the host framework native while presets and renderers make format capability and install boundaries explicit.
 </p>
 
 ## Recommended Packages

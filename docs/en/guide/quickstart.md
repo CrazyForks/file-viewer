@@ -3,8 +3,8 @@
 <div class="doc-kicker">Get Running Fast</div>
 
 <p class="doc-lead">
-  Pick the package that matches your stack, give the viewer container a stable height, and pass a file URL or a real <code>File</code>.
-  One component, one line of code, fast integration.
+  If your first goal is to see the viewer running, this page starts with the shortest runnable path.
+  Pick the native component package first, then add the preset or renderer that matches your file types; after that, tune on-demand assembly, offline assets, and toolbar behavior.
 </p>
 
 ## Three-step Integration
@@ -21,7 +21,7 @@ This page keeps the shortest runnable paths. See [Component Options](/en/guide/u
 
 Installing a standard component package such as `@file-viewer/vue3`, `@file-viewer/react`, or `@file-viewer/web` is the lightest path. It gives you the native framework component, types, controller APIs, and the core foundation; it does not install every heavy PDF, Office, CAD, Typst, archive, or engineering renderer by default.
 
-If you want “one component, one line of code” with the complete official demo capability, use a full package. Full packages import `@file-viewer/preset-all` for you, keep the same component API, and enable the full format matrix by default. For CDN / script-tag pages, prefer `@file-viewer/web-full`: jsDelivr / unpkg distribute the complete IIFE directly from npm, so the host application does not need to carry the full dependency set; the script also resolves bundled workers, WASM files, fonts, and vendor assets relative to its own URL. For intranet, strict-CSP, or fully offline deployments, mirror those assets to your own static domain.
+If you want to validate the complete official demo capability first, use a full package. Full packages import `@file-viewer/preset-all` for you, keep the same component API, and enable the full format matrix by default. For CDN / script-tag pages, prefer `@file-viewer/web-full`: jsDelivr / unpkg distribute the complete IIFE directly from npm, so the host application does not need to carry the full dependency set; the script also resolves bundled workers, WASM files, fonts, and vendor assets relative to its own URL. For intranet, strict-CSP, or fully offline deployments, mirror those assets to your own static domain.
 
 | Mode | Install | Notes |
 | --- | --- | --- |

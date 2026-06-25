@@ -3,9 +3,8 @@
 <div class="doc-kicker">Get Running Fast</div>
 
 <p class="doc-lead">
-  如果你现在最想做的事情是“尽快看到效果”，这一页就是最快路径。
-  先选接入路线，再复制一段最小示例，十几分钟内你就能把预览器跑起来。
-  一个组件，一行代码，快速集成。
+  如果你现在最想做的是“尽快看到效果”，这一页会先给最短可运行路径。
+  先选生态组件，再按业务文件类型选择 preset 或 renderer；跑通后再进入按需装配、离线资源和工具栏定制。
 </p>
 
 ## 三步接入
@@ -30,14 +29,14 @@
 | Core / PPTX 引擎 | 自研组件、深度二开、单独验证 PPTX | framework-neutral 能力与独立 renderer 包 | [生态组件总览](/guide/ecosystem) |
 
 <div class="doc-callout">
-  <strong>推荐经验:</strong> 一个组件，一行代码，快速集成。core 只负责底层预览能力和 API；Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包负责各自生态的原生接入体验。所有标准组件包都使用同一套 options、事件、搜索、缩放、打印和导出语义。
+  <strong>推荐经验:</strong> 先用标准组件包和一个明确的 preset 跑通业务文件，例如 Vue3 + preset-office；确认格式范围后，再收敛到 preset-lite、单 renderer，或扩展到 preset-engineering / preset-all。core 负责底层预览能力和 API，各生态组件负责原生接入体验。
 </div>
 
 ## 先理解安装边界
 
 直接安装 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 这类标准组件包是最轻的接入方式，它们只提供当前框架的原生组件、类型、controller 和 core 基础能力，不会默认把 PDF、Office、CAD、Typst、压缩包等重型渲染依赖全部装进业务项目。
 
-如果你的目标是“一个组件，一行代码，快速获得完整体验”，可以使用 full 包。full 包内部已引入 `@file-viewer/preset-all`，保留同样的组件 API，但默认具备官方 Demo 的完整格式矩阵。CDN / script 标签场景优先使用 `@file-viewer/web-full`，jsDelivr / unpkg 会直接从 npm 分发完整 IIFE，不需要把完整依赖下载到业务仓库；脚本会按自身 URL 自动定位随包分发的 Worker、WASM、字体和 vendor 资源。内网、严格 CSP 或完全离线部署时，再把这些资源同步到自己的静态域。
+如果你的目标是先完整验收所有格式，可以使用 full 包。full 包内部已引入 `@file-viewer/preset-all`，保留同样的组件 API，但默认具备官方 Demo 的完整格式矩阵。CDN / script 标签场景优先使用 `@file-viewer/web-full`，jsDelivr / unpkg 会直接从 npm 分发完整 IIFE，不需要把完整依赖下载到业务仓库；脚本会按自身 URL 自动定位随包分发的 Worker、WASM、字体和 vendor 资源。内网、严格 CSP 或完全离线部署时，再把这些资源同步到自己的静态域。
 
 | 模式 | 安装示例 | 特点 |
 | --- | --- | --- |

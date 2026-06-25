@@ -17,9 +17,9 @@ titleTemplate: false
 <section id="quickstart" class="doc-start">
 <div class="doc-start-copy">
 <span class="doc-eyebrow">Documentation Hub</span>
-<h1>企业级文件预览，从第一行代码开始。</h1>
+<h1>企业级文件预览，先跑起来，再精准装配。</h1>
 <p>
-Flyfish Viewer 为业务系统提供浏览器端文件预览能力。组件包保持轻量，格式能力通过 renderer 与 preset 模块化装配，适合从单一 PDF/Office 预览逐步扩展到完整附件中心。
+Flyfish Viewer 为业务系统提供浏览器端文件预览能力。文档从最短可运行路径开始，再逐步展开 preset、renderer、Worker/WASM 资产和私有化边界，帮助团队先完成接入验证，再按业务格式控制依赖范围。
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/guide/quickstart">进入快速开始</a>
@@ -131,7 +131,7 @@ pnpm add -D @file-viewer/vite-plugin # Vite 项目可选</code></pre>
 <p>所有生态组件共享 core 能力、options、事件、搜索、缩放、打印、导出和生命周期钩子，同时保持各框架自己的接入方式。</p>
 </div>
 <div class="doc-path-grid doc-ecosystem-grid">
-<a class="doc-path-card" href="/guide/quickstart-web"><strong>Vanilla JS / Web Component</strong><span>一行 HTML 或 mountViewer 命令式挂载，适合任意页面。</span></a>
+<a class="doc-path-card" href="/guide/quickstart-web"><strong>Vanilla JS / Web Component</strong><span>原生标签或 mountViewer 命令式挂载，适合任意页面。</span></a>
 <a class="doc-path-card" href="/guide/quickstart-vue3"><strong>Vue 3</strong><span>插件安装、组件 props、事件、ref/controller 和工具栏定制。</span></a>
 <a class="doc-path-card" href="/guide/quickstart-vue2"><strong>Vue 2.7 / Vue 2.6</strong><span>兼容旧系统，保留与 Vue3 一致的参数模型。</span></a>
 <a class="doc-path-card" href="/guide/quickstart-react"><strong>React / React Legacy</strong><span>Hooks、refs、事件回调和 legacy React 项目接入。</span></a>

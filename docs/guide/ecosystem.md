@@ -5,7 +5,7 @@
 <p class="doc-lead">
   Flyfish Viewer 的 2.x 架构把底层预览能力、重型渲染引擎和各框架组件拆清楚了。
   新项目优先选择 <code>@file-viewer/*</code> 标准包名；历史 <code>@flyfish-group/*</code> 包名仍同步维护，用于平滑升级旧项目。
-  核心目标是一个组件，一行代码，快速集成，同时保持每个生态自己的原生体验。
+  生态目标是让每个技术栈都有原生接入体验，同时通过 preset 或 renderer 明确控制格式能力和安装边界。
 </p>
 
 ## 导览
