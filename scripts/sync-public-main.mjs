@@ -54,6 +54,29 @@ const viewerDemoDistDir = join(sourceRoot, 'apps', 'viewer-demo', 'dist')
 const viewerDemoExampleDir = join(sourceRoot, 'apps', 'viewer-demo', 'public', 'example')
 const vue3LibraryDistDir = join(sourceRoot, 'packages', 'components', 'vue3', 'dist')
 const stableArchiveDate = new Date('2020-01-01T00:00:00.000Z')
+const publicCommunityRootFiles = [
+  'CHANGELOG.md',
+  'CODE_OF_CONDUCT.md',
+  'CONTRIBUTING.md',
+  'RELEASE_TEMPLATE.md',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'SUPPORT.md'
+]
+const privateOperationsRootFiles = [
+  'CONTENT_DISTRIBUTION_PLAN.md',
+  'GITHUB_GROWTH_AUDIT.md',
+  'GITHUB_GROWTH_PLAYBOOK.md',
+  'GITHUB_SETTINGS_CHECKLIST.md',
+  'TRAFFIC_TRACKING.md'
+]
+const publicGithubEntries = [
+  'FUNDING.yml',
+  'PULL_REQUEST_TEMPLATE.md',
+  'ISSUE_TEMPLATE',
+  'social-preview.svg',
+  'social-preview.png'
+]
 
 function run(command, commandArgs, options = {}) {
   console.log(`$ ${[command, ...commandArgs].join(' ')}`)
@@ -420,6 +443,42 @@ async function copyPublicSourceTree(repoDir) {
   await rewritePublicPackageJsons(repoDir)
 }
 
+async function copyPublicCommunityFiles(repoDir) {
+  for (const file of privateOperationsRootFiles) {
+    await removePath(join(repoDir, file))
+  }
+  for (const file of publicCommunityRootFiles) {
+    const sourceFile = join(sourceRoot, file)
+    const targetFile = join(repoDir, file)
+    if (existsSync(sourceFile)) {
+      await cp(sourceFile, targetFile, { force: true })
+    } else {
+      await removePath(targetFile)
+    }
+  }
+
+  const sourceGithubDir = join(sourceRoot, '.github')
+  const targetGithubDir = join(repoDir, '.github')
+  await removePath(targetGithubDir)
+  if (!existsSync(sourceGithubDir)) {
+    return
+  }
+  await mkdir(targetGithubDir, { recursive: true })
+  for (const entry of publicGithubEntries) {
+    const sourceEntry = join(sourceGithubDir, entry)
+    const targetEntry = join(targetGithubDir, entry)
+    if (!existsSync(sourceEntry)) {
+      continue
+    }
+    const info = await stat(sourceEntry)
+    if (info.isDirectory()) {
+      await copyCleanDir(sourceEntry, targetEntry)
+    } else {
+      await cp(sourceEntry, targetEntry, { force: true })
+    }
+  }
+}
+
 async function removeOldArtifacts(artifactsDir) {
   await mkdir(artifactsDir, { recursive: true })
   if (keepOldArtifacts) {
@@ -488,8 +547,8 @@ async function readEcosystemPackManifest() {
 
 async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
-    ? ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
-    : ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'artifacts']
+    ? ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', ...publicCommunityRootFiles, 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
+    : ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', ...publicCommunityRootFiles, 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
   const renderersByPackageName = new Map((wrapperManifest.renderers || []).map(renderer => [renderer.packageName, renderer]))
   const packages = ecosystemPackManifest.packages || []
@@ -633,6 +692,7 @@ await removePath(join(publicRepoDir, 'ecosystem'))
 await removePath(join(publicRepoDir, 'pnpm-workspace.yaml'))
 
 await copyPublicSourceTree(publicRepoDir)
+await copyPublicCommunityFiles(publicRepoDir)
 
 if (keepExpandedAssets) {
   await copyCleanDir(demoStagingDir, join(publicRepoDir, 'demo'))

@@ -17,13 +17,14 @@ titleTemplate: false
 <section id="capability" class="doc-start doc-product-hero">
 <div class="doc-start-copy">
 <span class="doc-eyebrow">Flyfish Viewer Docs</span>
-<h1>把复杂文件预览，稳定交给前端。</h1>
+<h1>企业后台、内网和私有化系统里的纯前端文件预览。</h1>
 <p>
-Flyfish Viewer 是面向业务系统的浏览器端文件预览基础设施，覆盖办公文档、工程图纸、压缩包、邮件、电子书、代码、图片、音视频和结构化数据。文档站把能力矩阵、接入路径、模块化边界、离线部署和生产验证放在同一个入口，帮助团队快速评估、按需装配并稳定上线。
+Flyfish Viewer 是面向业务系统的浏览器端文件预览基础设施，无需服务端转码，覆盖办公文档、工程图纸、压缩包、邮件、电子书、代码、图片、音视频和结构化数据。文档站把能力矩阵、接入路径、模块化边界、离线部署和生产验证放在同一个入口，帮助团队快速评估、按需装配并稳定上线。
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">立即体验 Demo</a>
 <a class="doc-action" href="/guide/formats">查看格式矩阵</a>
+<a class="doc-action" href="/guide/compare">方案对比</a>
 <a class="doc-action" href="/guide/quickstart">进入快速开始</a>
 </div>
 <div class="doc-start-stats" aria-label="Flyfish Viewer 核心能力">

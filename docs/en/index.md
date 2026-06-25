@@ -17,13 +17,14 @@ titleTemplate: false
 <section id="capability" class="doc-start doc-product-hero">
 <div class="doc-start-copy">
 <span class="doc-eyebrow">Flyfish Viewer Docs</span>
-<h1>Put complex file preview safely in the browser.</h1>
+<h1>Browser-native file preview for internal and private web apps.</h1>
 <p>
-Flyfish Viewer is browser-side file preview infrastructure for business applications. It covers office documents, engineering drawings, archives, email, ebooks, code, images, media, and structured data. This documentation connects the capability matrix, integration paths, modular boundaries, offline deployment, and production validation in one place.
+Flyfish Viewer is browser-side file preview infrastructure for business applications, without server-side conversion. It covers office documents, engineering drawings, archives, email, ebooks, code, images, media, and structured data. This documentation connects the capability matrix, integration paths, modular boundaries, offline deployment, and production validation in one place.
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="https://demo.file-viewer.app" target="_blank" rel="noreferrer">Try the demo</a>
 <a class="doc-action" href="/en/guide/formats">View format matrix</a>
+<a class="doc-action" href="/en/guide/compare">Compare options</a>
 <a class="doc-action" href="/en/guide/quickstart">Open quickstart</a>
 </div>
 <div class="doc-start-stats" aria-label="Flyfish Viewer capability metrics">

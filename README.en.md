@@ -4,10 +4,21 @@
   </a>
 </p>
 
-<h1 align="center">Flyfish Viewer</h1>
+<h1 align="center">File Viewer</h1>
 
 <p align="center">
-  <strong>Browser-native multi-format file preview, lightweight at entry and modular up to the full format matrix.</strong>
+  <strong>A browser-native file viewer for private and internal web apps.</strong>
+</p>
+
+<p align="center">
+  Preview Office, PDF/OFD, CAD, archives, email, images, media, and code without server-side conversion. Works with Vue, React, Svelte, jQuery, and Web Components.
+</p>
+
+<p align="center">
+  <a href="https://demo.file-viewer.app">Live Demo</a> ·
+  <a href="https://doc.file-viewer.app/en/">Docs</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#supported-formats">Supported Formats</a>
 </p>
 
 <p align="center">
@@ -33,9 +44,11 @@
 
 ## Positioning
 
-Flyfish Viewer is a browser-native file preview component for business applications. One component and one API cover Office, PDF, OFD, Typst, CAD, XMind, archives, email, diagrams, media, source code, PSD, fonts, and structured data.
+File Viewer is a browser-native file preview component for business applications. Its core use cases are internal tools, intranet systems, knowledge bases, approval workflows, attachment centers, engineering archives, and private deployments.
 
-No backend conversion service is required. It fits OA systems, knowledge bases, attachment centers, approval flows, support portals, intranet deployments, and private offline environments. New projects should prefer `@file-viewer/*`; historical `@flyfish-group/*` packages remain synchronized.
+It does not require a backend conversion service, and private files do not need to leave the browser path for a SaaS converter. One component and one API cover Office, PDF, OFD, Typst, CAD, XMind, archives, email, diagrams, media, source code, PSD, fonts, and structured data. The current matrix covers 206+ extensions across 24 preview pipelines.
+
+New projects should prefer `@file-viewer/*`; historical `@flyfish-group/*` packages remain synchronized.
 
 ## Highlights
 
@@ -47,11 +60,28 @@ No backend conversion service is required. It fits OA systems, knowledge bases, 
 - **Complete operations.** Search, highlight, zoom, print, HTML export, download, watermark, theme, lifecycle hooks, and before-operation guards share one API.
 - **Consistent ecosystem.** Core owns preview capabilities; framework packages provide native wrappers with the same options, events, and controller semantics.
 
+## Choose By Scenario
+
+| User | What they care about | Best entry |
+| --- | --- | --- |
+| Internal tools / OA teams | Word, Excel, PowerPoint, and PDF attachment preview | [Quick Start](#quick-start) / [Office preset](https://doc.file-viewer.app/en/guide/quickstart) |
+| Engineering archives | DWG, DXF, DWF, and drawing triage | [Supported Formats](#supported-formats) / [Format Fidelity](https://doc.file-viewer.app/en/guide/format-fidelity) |
+| Frontend component users | Vue / React / Web Component integration | [Ecosystem Packages](https://doc.file-viewer.app/en/guide/ecosystem) |
+| Private deployment teams | Offline assets, intranet hosting, Worker / WASM self-hosting | [Distribution](https://doc.file-viewer.app/en/guide/distribution) / [Docker](https://doc.file-viewer.app/en/guide/docker) |
+
 ## Live Demo
 
 ![Flyfish Viewer demo showing Word, PDF, PPTX, and document comparison](docs/public/_media/flyfish-viewer-demo.gif)
 
-Open [demo.file-viewer.app](https://demo.file-viewer.app) to try the complete sample matrix, upload preview, toolbar behavior, document comparison, and offline asset loading.
+Open [demo.file-viewer.app](https://demo.file-viewer.app) to try scenario shortcuts for Word documents, Excel reports, slide decks, DWG drawings, archives, and email. You can still open the complete sample matrix, upload a sanitized local file, copy the current React integration snippet, and verify toolbar behavior, document comparison, and offline asset loading.
+
+## Compatibility Feedback
+
+This project is still being refined, and real business files are the most useful way to validate compatibility.
+
+If you have public or sanitized DOC / XLS / PPT / DWG / DWF / archive / email samples, please try them in the [demo](https://demo.file-viewer.app). Rendering differences, files that do not open, private deployment path issues, and mobile WebView failures are all useful issue reports.
+
+If this direction is useful to you, starring or saving the project is welcome. Real compatibility feedback is even more valuable.
 
 ## Quick Start
 

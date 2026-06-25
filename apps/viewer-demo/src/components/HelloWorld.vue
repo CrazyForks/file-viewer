@@ -1,8 +1,10 @@
 <script setup lang='ts'>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import {
+  Check,
   ChevronDown,
   ChevronUp,
+  Copy,
   FileSearch,
   Link2,
   MoreHorizontal,
@@ -71,6 +73,7 @@ const mobileActionsOpen = ref(false)
 const viewerSearchOpen = ref(false)
 const viewerSearchQuery = ref('')
 const viewerSearchInputRef = ref<HTMLInputElement | null>(null)
+const snippetCopied = ref(false)
 const viewerSearchState = ref<FileViewerSearchState>({
   query: '',
   total: 0,
@@ -109,6 +112,13 @@ type SampleGroup = {
   description: string
   family: string
   items: PresetFile[]
+}
+
+type ScenarioPick = {
+  title: string
+  description: string
+  url: string
+  family: string
 }
 
 const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
@@ -156,7 +166,10 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     openMoreActions: '打开更多操作',
     reset: '还原',
     auto: 'AUTO',
-    language: '语言'
+    language: '语言',
+    integrationSnippet: '接入代码',
+    copySnippet: '复制代码',
+    copiedSnippet: '已复制'
   },
   'en-US': {
     pageTitle: 'Flyfish File Viewer Demo for Vue 3',
@@ -202,7 +215,10 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     openMoreActions: 'Open more actions',
     reset: 'Reset',
     auto: 'AUTO',
-    language: 'Language'
+    language: 'Language',
+    integrationSnippet: 'Integration code',
+    copySnippet: 'Copy code',
+    copiedSnippet: 'Copied'
   }
 }
 
@@ -533,6 +549,38 @@ const sampleGroupsEn: SampleGroup[] = sampleGroupsZh.map((group, index) => ({
 const sampleGroups = computed(() => demoLocale.value === 'zh-CN' ? sampleGroupsZh : sampleGroupsEn)
 const presetFiles = computed(() => sampleGroups.value.flatMap(group => group.items))
 const allPresetFiles = [...sampleGroupsZh, ...sampleGroupsEn].flatMap(group => group.items)
+const scenarioPicks = computed<ScenarioPick[]>(() => demoLocale.value === 'zh-CN'
+  ? [
+      { title: '试试 Word 合同', description: 'DOCX 长文档', url: '/example/word.docx', family: 'word' },
+      { title: '试试 Excel 报表', description: '多 sheet 表格', url: '/example/excel.xlsx', family: 'sheet' },
+      { title: '试试 PPT 材料', description: '演示文稿', url: '/example/ppt.pptx', family: 'slide' },
+      { title: '试试 DWG 图纸', description: '工程图纸', url: '/example/sample.dwg', family: 'cad' },
+      { title: '试试压缩包', description: '嵌套预览', url: '/example/archive.zip', family: 'archive' },
+      { title: '试试邮件', description: 'EML 附件', url: '/example/sample.eml', family: 'email' }
+    ]
+  : [
+      { title: 'Try Word doc', description: 'Rich DOCX', url: '/example/en/calibre-demo.docx', family: 'word' },
+      { title: 'Try Excel report', description: 'Workbook', url: '/example/en/financial-sample.xlsx', family: 'sheet' },
+      { title: 'Try slide deck', description: 'PPTX sample', url: '/example/en/sample-presentation.pptx', family: 'slide' },
+      { title: 'Try DWG drawing', description: 'CAD sample', url: '/example/sample.dwg', family: 'cad' },
+      { title: 'Try archive', description: 'Nested files', url: '/example/en/archive.zip', family: 'archive' },
+      { title: 'Try email', description: 'EML message', url: '/example/sample.eml', family: 'email' }
+    ])
+const integrationSnippet = computed(() => {
+  if (file.value) {
+    return `import FileViewer from '@file-viewer/react-full'
+
+export function Preview({ file }: { file: File }) {
+  return <FileViewer file={file} style={{ height: 720 }} />
+}`
+  }
+  const sampleUrl = preview.value || url.value || DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value]
+  return `import FileViewer from '@file-viewer/react-full'
+
+export function Preview() {
+  return <FileViewer url="${sampleUrl}" style={{ height: 720 }} />
+}`
+})
 const extraUploadExtensions = [
   'docm', 'dot', 'dotx', 'dotm', 'rtf', 'odt',
   'xlt', 'xltx', 'xltm',
@@ -926,6 +974,32 @@ const viewerOptions = computed((): FileViewerOptions => {
   return options
 })
 
+let copyResetTimer: number | undefined
+
+async function copyIntegrationSnippet() {
+  try {
+    await navigator.clipboard.writeText(integrationSnippet.value)
+  } catch {
+    const textarea = document.createElement('textarea')
+    textarea.value = integrationSnippet.value
+    textarea.setAttribute('readonly', 'true')
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+  }
+  snippetCopied.value = true
+  if (copyResetTimer) {
+    window.clearTimeout(copyResetTimer)
+  }
+  copyResetTimer = window.setTimeout(() => {
+    snippetCopied.value = false
+    copyResetTimer = undefined
+  }, 1600)
+}
+
 function triggerViewerAction(action: ViewerAction) {
   mobileActionsOpen.value = false
   if (action === 'download') {
@@ -1074,6 +1148,9 @@ onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointerDown)
   document.removeEventListener('keydown', handleDocumentKeydown)
   window.removeEventListener('resize', handleWindowResize)
+  if (copyResetTimer) {
+    window.clearTimeout(copyResetTimer)
+  }
 })
 
 function openUrlPreview(nextUrl = url.value) {
@@ -1286,6 +1363,25 @@ function updateSampleMenuGeometry() {
             </div>
 
             <template v-if='input'>
+              <div class='scenario-grid' aria-label='Demo scenarios'>
+                <button
+                  v-for='scenario in scenarioPicks'
+                  :key='scenario.url'
+                  type='button'
+                  class='scenario-card'
+                  :class='{ active: !file && isSameSampleUrl(url, scenario.url) }'
+                  @click='selectPreset(scenario.url)'
+                >
+                  <span class='sample-file-icon scenario-icon' :data-family='scenario.family'>
+                    <span>{{ getFileIconMeta(scenario.url).icon }}</span>
+                  </span>
+                  <span>
+                    <strong>{{ scenario.title }}</strong>
+                    <em>{{ scenario.description }}</em>
+                  </span>
+                </button>
+              </div>
+
               <div ref='samplePickerRef' class='sample-picker' :class='{ open: samplePickerOpen }'>
                 <button
                   type='button'
@@ -1371,6 +1467,24 @@ function updateSampleMenuGeometry() {
               <button type='button' class='primary-button' @click='openUrlPreview()'>
                 {{ demoCopy.preview }}
               </button>
+
+              <div class='snippet-card'>
+                <div class='snippet-heading'>
+                  <span>{{ demoCopy.integrationSnippet }}</span>
+                  <button
+                    type='button'
+                    class='snippet-copy'
+                    :class='{ copied: snippetCopied }'
+                    :title='snippetCopied ? demoCopy.copiedSnippet : demoCopy.copySnippet'
+                    @click='copyIntegrationSnippet'
+                  >
+                    <Check v-if='snippetCopied' :size='14' :stroke-width='2.5' />
+                    <Copy v-else :size='14' :stroke-width='2.5' />
+                    <strong>{{ snippetCopied ? demoCopy.copiedSnippet : demoCopy.copySnippet }}</strong>
+                  </button>
+                </div>
+                <pre><code>{{ integrationSnippet }}</code></pre>
+              </div>
             </template>
 
             <template v-else>
@@ -1889,14 +2003,16 @@ function updateSampleMenuGeometry() {
 .compact-field,
 .primary-button,
 .sample-trigger,
-.sample-card {
+.sample-card,
+.scenario-card {
   font: inherit;
 }
 
 .mode-button,
 .primary-button,
 .sample-trigger,
-.sample-card {
+.sample-card,
+.scenario-card {
   border: 0;
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
@@ -1905,7 +2021,8 @@ function updateSampleMenuGeometry() {
 .mode-button:hover,
 .primary-button:hover,
 .sample-trigger:hover,
-.sample-card:hover {
+.sample-card:hover,
+.scenario-card:hover {
   transform: translateY(-1px);
 }
 
@@ -1932,6 +2049,140 @@ function updateSampleMenuGeometry() {
   flex-direction: column;
   gap: 14px;
   padding: 2px 2px 4px;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.scenario-card {
+  min-width: 0;
+  min-height: 70px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  background: rgba(255, 255, 255, 0.74);
+  color: #142335;
+  text-align: left;
+}
+
+.scenario-card:hover,
+.scenario-card.active {
+  border-color: rgba(33, 163, 102, 0.26);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 22px rgba(18, 35, 55, 0.08);
+}
+
+.scenario-card.active {
+  background: rgba(33, 163, 102, 0.11);
+}
+
+.scenario-card > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.scenario-card strong,
+.scenario-card em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-card strong {
+  color: #142335;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.scenario-card em {
+  color: #718193;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.scenario-icon {
+  width: 32px;
+  height: 40px;
+}
+
+.snippet-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.44);
+}
+
+.snippet-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.snippet-heading > span {
+  color: #526174;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.snippet-copy {
+  height: 30px;
+  min-width: 82px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(33, 163, 102, 0.12);
+  color: #16804f;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.snippet-copy.copied {
+  background: rgba(43, 126, 238, 0.12);
+  color: #2668c9;
+}
+
+.snippet-copy strong {
+  font: inherit;
+  white-space: nowrap;
+}
+
+.snippet-card pre {
+  max-height: 118px;
+  margin: 0;
+  overflow: auto;
+  border-radius: 11px;
+  background: #112332;
+  color: #d6f4e5;
+  font-size: 11px;
+  line-height: 1.48;
+}
+
+.snippet-card code {
+  display: block;
+  min-width: max-content;
+  padding: 10px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 }
 
 .field-group {
@@ -2663,7 +2914,9 @@ function updateSampleMenuGeometry() {
 
   .current-card,
   .sample-trigger,
-  .upload-card {
+  .upload-card,
+  .snippet-card,
+  .scenario-card {
     background: rgba(22, 32, 39, 0.9);
     box-shadow: inset 0 0 0 1px rgba(167, 185, 198, 0.12);
   }
@@ -2676,6 +2929,8 @@ function updateSampleMenuGeometry() {
 
   .current-copy span,
   .field-label,
+  .snippet-heading > span,
+  .scenario-card em,
   .sample-trigger-copy span,
   .sample-trigger-copy em,
   .sample-card-copy span,
@@ -2686,6 +2941,7 @@ function updateSampleMenuGeometry() {
   }
 
   .current-copy strong,
+  .scenario-card strong,
   .sample-trigger-copy strong,
   .sample-card-copy strong,
   .sample-group-header .sample-group-title,
@@ -2777,6 +3033,28 @@ function updateSampleMenuGeometry() {
     border-color: rgba(45, 212, 154, 0.42);
     background: rgba(45, 212, 154, 0.14);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
+  }
+
+  .scenario-card:hover,
+  .scenario-card.active {
+    border-color: rgba(45, 212, 154, 0.34);
+    background: rgba(45, 212, 154, 0.12);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  }
+
+  .snippet-copy {
+    background: rgba(45, 212, 154, 0.14);
+    color: #61e5b4;
+  }
+
+  .snippet-copy.copied {
+    background: rgba(96, 165, 250, 0.16);
+    color: #9cc7ff;
+  }
+
+  .snippet-card pre {
+    background: #08141d;
+    color: #d7f8ea;
   }
 
   .sample-file-icon {
@@ -3169,6 +3447,23 @@ function updateSampleMenuGeometry() {
 
   .sample-card {
     min-height: 62px;
+  }
+
+  .scenario-grid {
+    gap: 7px;
+  }
+
+  .scenario-card {
+    min-height: 62px;
+    border-radius: 13px;
+  }
+
+  .snippet-card {
+    border-radius: 14px;
+  }
+
+  .snippet-card pre {
+    max-height: 104px;
   }
 
   .upload-card {

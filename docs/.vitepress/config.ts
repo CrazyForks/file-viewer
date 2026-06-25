@@ -61,6 +61,7 @@ const enSidebar = {
       items: [
         { text: 'Supported Formats', link: '/en/guide/formats' },
         { text: 'Format Fidelity', link: '/en/guide/format-fidelity' },
+        { text: 'Comparison', link: '/en/guide/compare' },
         { text: 'FAQ', link: '/en/guide/faq' }
       ]
     },
@@ -112,7 +113,7 @@ const enSearch = {
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Flyfish Viewer',
-  description: '纯前端多格式文件预览组件，覆盖 206 个扩展名、24 条预览链路和 Vanilla JS / Pure Web、Vue3、Vue2.7/2.6、React、jQuery、Svelte 原生接入方式',
+  description: '面向企业后台、内网和私有化系统的纯前端文件预览组件，无需服务端转码，覆盖 Office、PDF/OFD、CAD、压缩包、邮件、媒体和代码。',
   cleanUrls: true,
   lastUpdated: true,
   locales: {
@@ -125,7 +126,7 @@ export default defineConfig({
       lang: 'en-US',
       link: '/en/',
       title: 'Flyfish Viewer',
-      description: 'Offline-first frontend file preview with 206 extensions, 24 preview pipelines, and native Vanilla JS, Vue, React, jQuery, and Svelte integrations.',
+      description: 'Browser-native file preview for internal web apps, covering Office, PDF/OFD, CAD, archives, email, media, and code without server-side conversion.',
       themeConfig: {
         logo: '/_media/logo.svg',
         nav: enNav,
@@ -148,7 +149,7 @@ export default defineConfig({
   head: [
     ['meta', { name: 'theme-color', content: '#1d6fd6' }],
     ['meta', { property: 'og:title', content: 'Flyfish Viewer' }],
-    ['meta', { property: 'og:description', content: '纯前端多格式文件预览组件，覆盖 Office、PDF、OFD、CAD、3D、电子书、绘图、代码、媒体等业务附件。' }]
+    ['meta', { property: 'og:description', content: '面向企业后台、内网和私有化系统的纯前端文件预览组件，无需服务端转码。' }]
   ],
   themeConfig: {
     logo: '/_media/logo.svg',
@@ -207,6 +208,7 @@ export default defineConfig({
           items: [
             { text: '支持格式', link: '/guide/formats' },
             { text: '格式完整度', link: '/guide/format-fidelity' },
+            { text: '方案对比', link: '/guide/compare' },
             { text: '按需渲染架构', link: '/guide/on-demand-renderers' },
             { text: '常见问题', link: '/guide/faq' }
           ]

@@ -17,7 +17,9 @@
 
 ## 主示例页
 
-主示例页内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体/设计资产和结构化数据。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
+主示例页顶部提供 6 个场景快捷入口，可以直接打开 Word 合同、Excel 报表、PPT 材料、DWG 图纸、压缩包和邮件样例，帮助第一次访问的用户不用理解完整格式矩阵就先看到效果。每个当前样例都会在侧栏展示对应的 React `@file-viewer/react-full` 接入代码，点击复制后即可放进业务页试跑。
+
+主示例页也内置了完整示例列表，包括 Word、Excel、PPT、PDF、OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、Excalidraw、draw.io、EPUB、UMD、Markdown、代码/文本、图片、音视频、字体/设计资产和结构化数据。示例选择器按文件类型分组展示，每个样例都提供图标、格式名和文件名，点击后会立即打开并自动收起选择器。它适合做三件事:
 
 - 快速演示当前项目支持哪些文件类型
 - 用本地上传验证 `file` 方案

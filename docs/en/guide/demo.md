@@ -16,6 +16,8 @@
 
 | Area | What to verify |
 | --- | --- |
+| Scenario shortcuts | First-time users can open Word, Excel, PowerPoint, DWG, archive, and email samples without navigating the full matrix |
+| Copyable code | The sidebar shows a React `@file-viewer/react-full` snippet for the current file, with a copy action |
 | Sample selector | Files are grouped by type, collapsible, and the selected group stays discoverable |
 | Toolbar | Download, print, HTML export, watermark, search, zoom, navigation, and format-specific actions appear only when supported |
 | PDF | Page thumbnails, outline tree, floating toolbar, fit-to-width, search highlights, and side panel toggling |

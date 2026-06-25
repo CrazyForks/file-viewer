@@ -15,7 +15,7 @@
   "publicMainRepository": {
     "github": "https://github.com/flyfish-dev/file-viewer",
     "gitee": "https://gitee.com/flyfish-dev/file-viewer",
-    "description": "Modular open-source File Viewer ecosystem for 200+ formats: TypeScript core, on-demand renderers, presets, Vue/React/Web/Svelte components, demos, docs, and releases.",
+    "description": "Browser-native Office / PDF / CAD / archive viewer for internal web apps, with Vue, React, Svelte, jQuery, Web Components, and no server-side conversion.",
     "sourcePolicy": "public-open-source-main-repository",
     "role": "open-source-main-repository"
   },
