@@ -493,7 +493,7 @@ fileViewerRenderers({
 - [x] `@file-viewer/vite-plugin` 支持 `preset: 'lite' | 'office' | 'engineering' | 'all'`，会导入对应 `@file-viewer/preset-*` 包；同时声明 `formats` 时只补充 preset 外的额外 renderer，适配 pnpm 严格依赖模型。
 - [x] 插件能复制已拆 renderer 中需要自托管的 PDF/CAD/Typst/Archive/Data worker、wasm 和 vendor assets，并输出 `flyfish-viewer-assets.json` 部署 manifest；OFD vendor 随 `@file-viewer/renderer-ofd` npm 包离线分发，3D 与 EDA renderer 当前无额外外部资产，Office 等待对应 renderer 拆包后补入。
 - [x] demo 构建 chunk 按 renderer 命名，PDF/Office/CAD/Typst/3D 等不会进入首屏主包；`verify:bundle-budget` 会检查主 Demo、文档比对入口和异步 renderer chunk。
-- [x] 每个 wrapper 的文档都提供“一个组件，一行代码”和“按需 renderer”两种接入方式；生成器会同步到 Vanilla JS / Pure Web、Vue 3、Vue 2.7、Vue 2.6、React、React Legacy、jQuery 和 Svelte 的中英文 README。
+- [x] 每个标准组件的文档都提供“快速可运行接入”和“按需 renderer”两种接入方式；生成器会同步到 Vanilla JS / Pure Web、Vue 3、Vue 2.7、Vue 2.6、React、React Legacy、jQuery 和 Svelte 的中英文 README。
 - [x] 增加独立安装 smoke：`verify:renderer-standalone-smoke` 会在临时目录安装本地 tarball 版 `@file-viewer/core`、`@file-viewer/vite-plugin`、全部独立 renderer plugin 以及本地依赖闭包，验证每个 renderer 可注册、处理器可挂载，并逐个确认 Vite virtual module 只导入当前选择的 renderer 包。
 
 ### Phase 4：专业格式独立内核

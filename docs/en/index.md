@@ -17,9 +17,9 @@ titleTemplate: false
 <section id="quickstart" class="doc-start">
 <div class="doc-start-copy">
 <span class="doc-eyebrow">Documentation Hub</span>
-<h1>Start with one line. Scale to enterprise file preview.</h1>
+<h1>Start fast. Scale with modular file preview.</h1>
 <p>
-Flyfish Viewer brings browser-side file preview into product workflows. Component packages stay lightweight, while renderer and preset packages add only the document capabilities each product needs.
+Flyfish Viewer brings browser-side file preview into product workflows. The docs start with a runnable quickstart, then move into presets, renderers, Worker/WASM assets, and private deployment boundaries so teams can adopt only the capabilities they need.
 </p>
 <div class="doc-home-actions">
 <a class="doc-action doc-action-primary" href="/en/guide/quickstart">Open quickstart</a>
@@ -131,7 +131,7 @@ pnpm add -D @file-viewer/vite-plugin # optional for Vite</code></pre>
 <p>Every package shares the same core capabilities, options, events, search, zoom, print, export, and lifecycle hooks while keeping framework-native ergonomics.</p>
 </div>
 <div class="doc-path-grid doc-ecosystem-grid">
-<a class="doc-path-card" href="/en/guide/quickstart-web"><strong>Vanilla JS / Web Component</strong><span>One HTML tag or command-style mount for any page.</span></a>
+<a class="doc-path-card" href="/en/guide/quickstart-web"><strong>Vanilla JS / Web Component</strong><span>Custom Element or command-style mount for any page.</span></a>
 <a class="doc-path-card" href="/en/guide/quickstart-vue3"><strong>Vue 3</strong><span>Plugin install, component props, events, refs/controllers, and toolbar customization.</span></a>
 <a class="doc-path-card" href="/en/guide/quickstart-vue2"><strong>Vue 2.7 / Vue 2.6</strong><span>Legacy-friendly packages with the same option model as Vue 3.</span></a>
 <a class="doc-path-card" href="/en/guide/quickstart-react"><strong>React / React Legacy</strong><span>Hooks, refs, event callbacks, and legacy React support.</span></a>
