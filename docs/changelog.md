@@ -7,7 +7,7 @@
 - README 首屏改为“面向企业后台、内网和私有化系统的纯前端文件预览组件”，把无需服务端转码、Demo、文档、快速开始和支持格式前置，把 206+ 扩展名作为可信度证据承接
 - 新增 `CONTRIBUTING.md`、`SUPPORT.md`、`SECURITY.md`、`CODE_OF_CONDUCT.md`、`ROADMAP.md`、根 `CHANGELOG.md`、Issue 模板和 PR 模板，方便收集真实业务文件兼容性反馈
 - 文档站新增方案对比页，克制说明 File Viewer、服务端转码和 Office Online / 云服务的适用边界
-- 新增 `RELEASE_TEMPLATE.md` 和 `GITHUB_GROWTH_PLAYBOOK.md`，沉淀 Release 写法、Topics、Social Preview、四周传播节奏和 Traffic 记录表
+- 新增 `RELEASE_TEMPLATE.md`，沉淀 Release 写法、Topics、Social Preview 和版本发布节奏
 
 ## `v2.1.6` Vite 插件 PDF 资产复制与移动端接入说明修复
 
