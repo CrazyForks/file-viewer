@@ -14,6 +14,7 @@ import {
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
   type FileRenderContext,
+  type FileViewerDocxOptions,
   type FileViewerRenderedInstance as AppWrapper,
   type FileViewerZoomState,
   type PrintPageSize,
@@ -25,7 +26,8 @@ const DOCX_DEFAULT_PAGE_SIZE: PrintPageSize = {
 }
 
 const DOCX_PROGRESSIVE_BATCH_SIZE = 2
-const DOCX_WORKER_TIMEOUT = 120000
+const DOCX_WORKER_TIMEOUT = 5000
+const DOCX_WORKER_UNSAFE_PROTOCOLS = new Set(['file:', 'about:', 'data:'])
 const DOCX_MIN_SCALE = 0.24
 const DOCX_MAX_SCALE = 3
 const DOCX_ZOOM_STEP = 0.15
@@ -100,6 +102,47 @@ const assertValidDocxPackage = (buffer: ArrayBuffer) => {
   throw new Error('文件不是有效的 DOCX/OOXML 压缩包，可能下载不完整或被服务端错误内容替换，请重新上传或检查文件源。')
 }
 
+const getTargetWindow = (target: HTMLDivElement) => {
+  return target.ownerDocument.defaultView
+}
+
+const getTargetProtocol = (target: HTMLDivElement) => {
+  const candidates = [
+    target.ownerDocument.URL,
+    getTargetWindow(target)?.location?.href,
+    globalThis.location?.href
+  ].filter(Boolean) as string[]
+
+  for (const candidate of candidates) {
+    try {
+      return new URL(candidate).protocol
+    } catch {
+      // Ignore synthetic document URLs created by tests or embedded hosts.
+    }
+  }
+
+  return ''
+}
+
+const shouldUseDocxWorker = (
+  target: HTMLDivElement,
+  docxOptions: FileViewerDocxOptions | undefined
+) => {
+  if (docxOptions?.worker === false) {
+    return false
+  }
+  if (docxOptions?.worker === true) {
+    return true
+  }
+
+  const WorkerCtor = getTargetWindow(target)?.Worker ?? globalThis.Worker
+  if (!WorkerCtor) {
+    return false
+  }
+
+  return !DOCX_WORKER_UNSAFE_PROTOCOLS.has(getTargetProtocol(target))
+}
+
 const createDocxOptions = (
   target: HTMLDivElement,
   context: FileRenderContext | undefined,
@@ -107,7 +150,7 @@ const createDocxOptions = (
 ): Partial<Options> => {
   const docxOptions = context?.options?.docx
   const documentBaseUrl = target.ownerDocument.URL || undefined
-  const useWorker = docxOptions?.worker !== false
+  const useWorker = shouldUseDocxWorker(target, docxOptions)
   const usePagedLayout = docxOptions?.visualPagination === true
   const progress = (event: DocxProgressEvent) => {
     if (event.phase === 'render' || event.phase === 'layout' || event.phase === 'done') {
@@ -146,10 +189,6 @@ const createDocxOptions = (
     ignoreLastRenderedPageBreak: docxOptions?.ignoreLastRenderedPageBreak ?? !usePagedLayout,
     progress
   }
-}
-
-const getTargetWindow = (target: HTMLDivElement) => {
-  return target.ownerDocument.defaultView
 }
 
 const isTargetHTMLElement = (value: unknown, target: HTMLDivElement): value is HTMLElement => {

@@ -107,7 +107,7 @@ Flyfish Viewer is browser-side file preview infrastructure for business applicat
 
 <section id="presets" class="doc-section doc-section-muted doc-preset-section">
 <div class="doc-section-heading">
-<span>Install Strategy</span>
+<span>Modular Integration</span>
 <h2>Install the component first. Add document capabilities deliberately.</h2>
 <p>Production apps should start from the native component package, then add the smallest preset or renderer set that matches the product. <code>preset-all</code> is complete, but intentionally heavier.</p>
 </div>

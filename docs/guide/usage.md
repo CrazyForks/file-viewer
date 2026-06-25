@@ -206,12 +206,12 @@ const options = {
 | `archive.cache` | 是否使用 IndexedDB 缓存已解压的压缩包内文件 |
 | `archive.maxArchiveSize` | 单个压缩包允许读取目录的最大体积，默认 320MB |
 | `archive.maxEntryPreviewSize` | 压缩包内单文件允许预览的最大体积，默认 64MB |
-| `docx.worker` | 是否启用 `@file-viewer/renderer-word` 内部的 `@file-viewer/docx` Worker 解析，默认 `true`。仅在 CSP 或宿主环境禁用 Worker 时设为 `false` |
+| `docx.worker` | 是否启用 `@file-viewer/renderer-word` 内部的 `@file-viewer/docx` Worker 解析，默认自动检测：HTTP/HTTPS 启用 Worker，Electron `file://`、`about:`、`data:` 等不安全本地协议自动回退主线程；显式设为 `true` / `false` 时按业务配置执行 |
 | `docx.workerUrl` | 自定义 DOCX Worker 地址，默认尝试当前部署 base 下的 `vendor/docx/docx.worker.js` |
 | `docx.workerJsZipUrl` | 自定义 DOCX Worker 内加载的 JSZip 地址，默认尝试当前部署 base 下的 `vendor/docx/jszip.min.js` |
 | `docx.progressive` | 是否启用异步分批渲染，默认按批次让出主线程，提升大文档首屏和滚动响应 |
 | `docx.visualPagination` | 是否启用页式预览和预览层兜底分页，默认 `false`。默认 DOCX 使用连续流式阅读，避免复杂目录、表格和长段落被分页拆坏；只有业务明确需要页式效果时再设为 `true` |
-| `docx.workerTimeout` | DOCX Worker 超时时间，默认 120000ms，超时后由 `@file-viewer/renderer-word` 内部 DOCX 引擎自动回退 |
+| `docx.workerTimeout` | DOCX Worker 超时时间，默认 5000ms，静态资源路径、MIME、CSP 或 WebView 不兼容时会更快回退 |
 | `spreadsheet.worker` | 是否启用表格静态 Worker 尝试，默认 `false`；`@file-viewer/renderer-spreadsheet` 默认使用同一套 `styled-exceljs` 主线程解析以避开本地服务器、手机 WebView、MIME 或 CSP 导致的 Worker 卡住问题 |
 | `spreadsheet.workerUrl` | 自定义 Excel/XLSX Worker 地址，默认尝试当前部署 base 下的 `vendor/xlsx/sheet.worker.js` |
 | `spreadsheet.resizableColumns` | 是否允许用户在 Excel / CSV / ODS 等表格预览中拖拽表头边界调整列宽，默认 `false` 以保持历史兼容；Demo 默认开启，便于查看被截断的长文本 |
@@ -426,8 +426,9 @@ Vanilla JS / Pure Web、React、jQuery 和 Svelte 接入时，搜索和定位仍
   url="/files/report.docx"
   :options="{
     docx: {
-      // 默认 true。Worker 负责 ZIP/XML 解析，主线程负责真实页面 DOM 渲染。
-      worker: true,
+      // 默认自动检测：HTTP/HTTPS 使用 Worker，Electron file:// 等不安全本地协议自动回退。
+      // 只有明确要覆盖自动策略时才显式设置 true / false。
+      // worker: true,
       // 默认尝试当前部署 base 下的 vendor/docx/docx.worker.js；自托管子路径部署可显式覆盖。
       workerUrl: '/file-viewer/vendor/docx/docx.worker.js',
       // Worker 内部加载 JSZip 的离线地址。
@@ -436,8 +437,8 @@ Vanilla JS / Pure Web、React、jQuery 和 Svelte 接入时，搜索和定位仍
       progressive: true,
       // 默认 false，使用连续流式阅读；只有明确需要页式预览时再开启。
       visualPagination: false,
-      // 默认 120000。Worker 超时后自动回退，避免永久 loading。
-      workerTimeout: 120000,
+      // 默认 5000。Worker 超时后自动回退，避免永久 loading。
+      workerTimeout: 5000,
       strictWordCompatibility: true,
       preserveComplexFieldResults: true,
       ignoreLastRenderedPageBreak: true

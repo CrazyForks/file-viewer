@@ -74,6 +74,8 @@ type WorkerConstructor = new (scriptURL: string | URL, options?: WorkerOptions) 
 
 type SpreadsheetMessageListener = EventListenerOrEventListenerObject | null;
 
+const EXCEL_IMAGE_SCROLLBAR_GUARD = 18;
+
 const spreadsheetStyle = `
 .excel-wrapper{position:relative;width:100%;height:100%;display:flex;flex-direction:column;background:#fff;color:#172033;font-family:Aptos,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}
 .excel-wrapper *{box-sizing:border-box}
@@ -86,7 +88,7 @@ const spreadsheetStyle = `
 .excel-wrapper .sheet-loading{position:absolute;right:18px;bottom:18px;z-index:20;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:14px;background:rgba(33,163,102,.1);border:1px solid rgba(33,163,102,.2);box-shadow:0 8px 20px rgba(33,163,102,.12);color:#1a7f50;font-size:12px;font-weight:700;pointer-events:none}
 .excel-wrapper .sheet-loading-dot{width:8px;height:8px;flex-shrink:0;border-radius:999px;background:#21a366;box-shadow:0 0 0 6px rgba(33,163,102,.12);animation:sheet-loading-pulse 1.2s ease-in-out infinite}
 .excel-wrapper .sheet-loading-summary{color:#5f6368}
-.excel-wrapper .excel-image-viewport{position:absolute;right:0;bottom:0;z-index:35;overflow:hidden;pointer-events:none}
+.excel-wrapper .excel-image-viewport{position:absolute;z-index:35;overflow:hidden;pointer-events:none}
 .excel-wrapper .excel-image-layer{position:absolute;inset:0 auto auto 0;width:0;height:0;transform-origin:0 0;will-change:transform}
 .excel-wrapper .excel-image{position:absolute;display:block;max-width:none;height:auto;object-fit:contain;user-select:none}
 .excel-wrapper .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.96);z-index:999;backdrop-filter:blur(6px)}
@@ -471,10 +473,34 @@ const renderFileViewerSpreadsheet = async (
     maxScale: 2.5,
   });
 
+  const getImageViewportScrollbarGuard = () => {
+    const tableContainer = tableHost.querySelector<HTMLElement>('.e-virt-table-container');
+    const vertical = tableContainer
+      ? Math.max(tableContainer.offsetWidth - tableContainer.clientWidth, 0)
+      : 0;
+    const horizontal = tableContainer
+      ? Math.max(tableContainer.offsetHeight - tableContainer.clientHeight, 0)
+      : 0;
+
+    // e-virt-table may draw overlay scrollbars, so keep a small reserved lane
+    // even when native scrollbar metrics report zero.
+    return {
+      vertical: vertical || EXCEL_IMAGE_SCROLLBAR_GUARD,
+      horizontal: horizontal || EXCEL_IMAGE_SCROLLBAR_GUARD,
+    };
+  };
+
   const renderImages = () => {
     const margin = 240;
-    const width = Math.max(imageViewportState.width - scalePx(INDEX_COLUMN_WIDTH), 0);
-    const height = Math.max(imageViewportState.height - scalePx(HEADER_HEIGHT), 0);
+    const guard = getImageViewportScrollbarGuard();
+    const width = Math.max(
+      imageViewportState.width - scalePx(INDEX_COLUMN_WIDTH) - guard.vertical,
+      0
+    );
+    const height = Math.max(
+      imageViewportState.height - scalePx(HEADER_HEIGHT) - guard.horizontal,
+      0
+    );
     const visibleImages = sheetImages.filter((image) => {
       const x = scalePx(image.left) - imageViewportState.scrollX;
       const y = scalePx(image.top) - imageViewportState.scrollY;
@@ -488,6 +514,10 @@ const renderFileViewerSpreadsheet = async (
     Object.assign(imageViewport.style, {
       left: `${scalePx(INDEX_COLUMN_WIDTH)}px`,
       top: `${scalePx(HEADER_HEIGHT)}px`,
+      right: 'auto',
+      bottom: 'auto',
+      width: `${width}px`,
+      height: `${height}px`,
     });
     imageLayer.style.transform =
       `translate(${-imageViewportState.scrollX}px, ${-imageViewportState.scrollY}px)`;

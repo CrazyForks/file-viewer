@@ -118,8 +118,9 @@ Every renderer below can be passed through `options.renderers`:
 | `archive.workerTimeoutMs` | Timeout for worker startup, encryption checks, and directory reading; the viewer falls back to ZIP/TAR/GZIP-compatible paths when possible. |
 | `archive.cache` | Enables IndexedDB cache for extracted nested files. |
 | `archive.maxArchiveSize` / `archive.maxEntryPreviewSize` | Memory and safety limits for archive directory reading and nested preview. |
-| `docx.worker` | Enables `@file-viewer/docx` worker parsing by default; set `false` only when the host CSP or WebView disables workers. |
+| `docx.worker` | Auto-detects the safest DOCX parsing path by default: HTTP/HTTPS keeps the worker enabled, while Electron `file://`, `about:`, and `data:` documents fall back to the main thread. Explicit `true` / `false` values still take precedence. |
 | `docx.workerUrl` / `docx.workerJsZipUrl` | Self-host DOCX worker and JSZip assets. |
+| `docx.workerTimeout` | Worker startup timeout. The default is 5000ms so unsupported paths, MIME, CSP, or WebView environments fall back quickly. |
 | `docx.progressive` | Lets the renderer yield between batches to improve first content and scroll responsiveness on large documents. |
 | `docx.visualPagination` | Optional page-like preview. Default DOCX rendering is continuous flow to avoid breaking complex tables and directories. |
 | `spreadsheet.worker` / `spreadsheet.workerUrl` | Spreadsheet worker is opt-in; default parsing favors compatibility with local servers and mobile WebViews. |

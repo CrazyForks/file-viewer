@@ -65,7 +65,7 @@
 
 - `docx`、`docm`、`dotx`、`dotm` 由 `@file-viewer/renderer-word` 按需装配，并在命中格式时加载自研 `@file-viewer/docx`，适合正文、表格、图片、目录字段和常规版式较多的现代 Word 文档与模板。当前预览层会恢复白色文档面和灰色阅读底，并根据可用宽度自动缩放；宏内容只作为只读文档结构预览，不执行宏。
 - 如果你只安装 `@file-viewer/core` 或轻量组件包，Word 能力不会被默认拉进依赖树；生产项目可显式装配 `@file-viewer/renderer-word`，办公文档平台优先使用 `@file-viewer/preset-office`，完整 Demo 和全格式场景可直接使用 `@file-viewer/preset-all`。
-- DOCX 默认使用 `@file-viewer/docx` 的 Worker 解析、真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染，优先保证复杂目录、长表格、制表符、页眉页脚、字段和样式继承稳定；私有静态资源路径特殊时可配置 `options.docx.workerUrl` 和 `options.docx.workerJsZipUrl`。
+- DOCX 默认自动选择 `@file-viewer/docx` Worker 或主线程解析：HTTP/HTTPS 部署启用 Worker，Electron `file://` 等本地不安全协议自动回退；真实浏览器 DOM 渲染、连续流式阅读、目录字段缓存和异步分批渲染会继续优先保证复杂目录、长表格、制表符、页眉页脚、字段和样式继承稳定；私有静态资源路径特殊时可配置 `options.docx.workerUrl` 和 `options.docx.workerJsZipUrl`。
 - `doc`、`dot` 使用 `msdoc-viewer`，并额外套用 Word 风格页面容器。构建前会通过包管理器无关的补丁脚本增强 CFB 局部 sector 容错，它不只是“把内容吐出来”，而是尽量保留文档阅读时的页面感。
 - `rtf` 使用 RTFJS 读取富文本结构并生成安全的只读 HTML；`odt` 读取 OpenDocument 包内 `content.xml`，提取正文块并套用纸张阅读面。它们适合跨平台导出文档的快速查看，但复杂页眉页脚、域代码或宏能力仍建议转换为 DOCX/PDF 后验收。
 - Word 打印和导出 HTML 使用独立导出适配器，只带文档内容和必要 Word 样式，不带 Demo 布局、滚动容器和缩放状态，长文档会完整输出。
