@@ -182,6 +182,22 @@ function hasForbiddenLocalOptionField(source, fieldName) {
 let checked = 0
 for (const wrapper of wrapperManifest.wrappers) {
   const { content, path } = await readWrapperSource(wrapper.packageDir)
+  if (wrapper.flavor === 'full') {
+    assert(wrapper.basePackage, `${wrapper.packageName} full package must declare basePackage`)
+    assert(
+      content.includes('\'@file-viewer/preset-all\'') || content.includes('"@file-viewer/preset-all"'),
+      `${path} must import @file-viewer/preset-all to enable the complete format matrix`
+    )
+    assert(
+      content.includes(`'${wrapper.basePackage}'`) || content.includes(`"${wrapper.basePackage}"`),
+      `${path} must re-export its standard package ${wrapper.basePackage}`
+    )
+    for (const legacyType of forbiddenLegacyOptionTypes) {
+      assert(!hasTypeToken(content, legacyType), `${path} must not expose legacy iframe option type ${legacyType}`)
+    }
+    checked += 1
+    continue
+  }
   const { content: controllerContent, path: controllerPath } = await readWrapperControllerSource(wrapper.packageDir)
 
   for (const legacyType of forbiddenLegacyOptionTypes) {

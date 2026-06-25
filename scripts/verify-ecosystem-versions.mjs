@@ -16,6 +16,7 @@ const historicalPackageNames = new Set()
 const standardPackageByHistoricalName = new Map()
 const compatibilityPackageByName = new Map()
 const standardWrapperPackageNames = new Set(wrapperManifest.wrappers.map(wrapper => wrapper.packageName))
+const wrapperByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
 
 function assert(condition, message) {
   if (!condition) {
@@ -195,6 +196,10 @@ for (const entry of entries) {
   }
 
   if (entry.kind === 'standard-wrapper') {
+    const wrapper = wrapperByPackageName.get(entry.packageName)
+    const allowedWrapperDependencies = new Set(
+      wrapper?.flavor === 'full' && wrapper.basePackage ? [wrapper.basePackage] : []
+    )
     const dependencies = installDependencies(entry.packageJson)
     for (const packageName of Object.keys(dependencies)) {
       assert(
@@ -202,14 +207,27 @@ for (const entry of entries) {
         `${entry.packageName} must not depend on historical compatibility package ${packageName}`
       )
       assert(
-        !standardWrapperPackageNames.has(packageName) || packageName === entry.packageName,
+        !standardWrapperPackageNames.has(packageName)
+          || packageName === entry.packageName
+          || allowedWrapperDependencies.has(packageName),
         `${entry.packageName} must not depend on another standard wrapper package ${packageName}`
       )
     }
-    assert(
-      dependencies[corePackageName] === expectedWorkspaceRange,
-      `${entry.packageName} must depend on ${corePackageName}@${expectedWorkspaceRange}`
-    )
+    if (wrapper?.flavor === 'full') {
+      assert(
+        dependencies['@file-viewer/preset-all'] === expectedWorkspaceRange,
+        `${entry.packageName} full package must depend on @file-viewer/preset-all@${expectedWorkspaceRange}`
+      )
+      assert(
+        wrapper.basePackage && dependencies[wrapper.basePackage] === expectedWorkspaceRange,
+        `${entry.packageName} full package must depend on ${wrapper.basePackage}@${expectedWorkspaceRange}`
+      )
+    } else {
+      assert(
+        dependencies[corePackageName] === expectedWorkspaceRange,
+        `${entry.packageName} must depend on ${corePackageName}@${expectedWorkspaceRange}`
+      )
+    }
   }
 
   if (entry.kind === 'compatibility') {

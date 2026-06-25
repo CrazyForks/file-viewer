@@ -394,6 +394,20 @@
       "historicalPackages": ["@flyfish-group/file-viewer-web"]
     },
     {
+      "id": "web-full",
+      "framework": "Vanilla JS / Pure Web Full",
+      "packageName": "@file-viewer/web-full",
+      "description": "Full Vanilla JS and Web Component package with preset-all enabled by default for CDN, script-tag, Custom Element, and imperative mounting.",
+      "packageDir": "packages/components/web-full",
+      "repository": "file-viewer-web-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-web-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-web-full",
+      "entryFormats": ["esm", "types", "iife"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/web"
+    },
+    {
       "id": "vue3",
       "framework": "Vue 3",
       "packageName": "@file-viewer/vue3",
@@ -404,6 +418,20 @@
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue3",
       "entryFormats": ["esm", "types"],
       "historicalPackages": ["@flyfish-group/file-viewer3", "file-viewer3"]
+    },
+    {
+      "id": "vue3-full",
+      "framework": "Vue 3 Full",
+      "packageName": "@file-viewer/vue3-full",
+      "description": "Full Vue 3 component package with preset-all enabled by default for one-component, one-line complete preview integration.",
+      "packageDir": "packages/components/vue3-full",
+      "repository": "file-viewer-vue3-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-vue3-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue3-full",
+      "entryFormats": ["esm", "types"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/vue3"
     },
     {
       "id": "vue2.7",
@@ -418,6 +446,20 @@
       "historicalPackages": ["@flyfish-group/file-viewer"]
     },
     {
+      "id": "vue2.7-full",
+      "framework": "Vue 2.7 Full",
+      "packageName": "@file-viewer/vue2.7-full",
+      "description": "Full Vue 2.7 component package with preset-all enabled by default for complete preview coverage in modern Vue 2 projects.",
+      "packageDir": "packages/components/vue2.7-full",
+      "repository": "file-viewer-vue2.7-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-vue2.7-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue2.7-full",
+      "entryFormats": ["esm", "types"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/vue2.7"
+    },
+    {
       "id": "vue2.6",
       "framework": "Vue 2.6",
       "packageName": "@file-viewer/vue2.6",
@@ -428,6 +470,20 @@
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue2.6",
       "entryFormats": ["esm", "types"],
       "historicalPackages": []
+    },
+    {
+      "id": "vue2.6-full",
+      "framework": "Vue 2.6 Full",
+      "packageName": "@file-viewer/vue2.6-full",
+      "description": "Full Vue 2.6 component package with preset-all enabled by default for legacy Vue applications that need the complete format matrix.",
+      "packageDir": "packages/components/vue2.6-full",
+      "repository": "file-viewer-vue2.6-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-vue2.6-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-vue2.6-full",
+      "entryFormats": ["esm", "types"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/vue2.6"
     },
     {
       "id": "react",
@@ -442,6 +498,20 @@
       "historicalPackages": ["@flyfish-group/file-viewer-react"]
     },
     {
+      "id": "react-full",
+      "framework": "React 18/19 Full",
+      "packageName": "@file-viewer/react-full",
+      "description": "Full React component package with preset-all enabled by default while preserving the standard React handle and hook experience.",
+      "packageDir": "packages/components/react-full",
+      "repository": "file-viewer-react-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-react-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-react-full",
+      "entryFormats": ["esm", "types"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/react"
+    },
+    {
       "id": "react-legacy",
       "framework": "React 16.8/17",
       "packageName": "@file-viewer/react-legacy",
@@ -452,6 +522,20 @@
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-react-legacy",
       "entryFormats": ["esm", "types"],
       "historicalPackages": []
+    },
+    {
+      "id": "react-legacy-full",
+      "framework": "React 16.8/17 Full",
+      "packageName": "@file-viewer/react-legacy-full",
+      "description": "Full React 16.8/17 component package with preset-all enabled by default for long-lived React applications.",
+      "packageDir": "packages/components/react-legacy-full",
+      "repository": "file-viewer-react-legacy-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-react-legacy-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-react-legacy-full",
+      "entryFormats": ["esm", "types"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/react-legacy"
     },
     {
       "id": "jquery",
@@ -466,6 +550,20 @@
       "historicalPackages": []
     },
     {
+      "id": "jquery-full",
+      "framework": "jQuery Full",
+      "packageName": "@file-viewer/jquery-full",
+      "description": "Full jQuery plugin package with preset-all enabled by default for legacy and mixed frontend stacks.",
+      "packageDir": "packages/components/jquery-full",
+      "repository": "file-viewer-jquery-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-jquery-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-jquery-full",
+      "entryFormats": ["esm", "types"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/jquery"
+    },
+    {
       "id": "svelte",
       "framework": "Svelte",
       "packageName": "@file-viewer/svelte",
@@ -476,6 +574,20 @@
       "gitee": "https://gitee.com/flyfish-dev/file-viewer-svelte",
       "entryFormats": ["svelte-component", "esm", "types"],
       "historicalPackages": []
+    },
+    {
+      "id": "svelte-full",
+      "framework": "Svelte Full",
+      "packageName": "@file-viewer/svelte-full",
+      "description": "Full Svelte component and action package with preset-all enabled by default and the same viewer actions as the standard package.",
+      "packageDir": "packages/components/svelte-full",
+      "repository": "file-viewer-svelte-full",
+      "github": "https://github.com/flyfish-dev/file-viewer-svelte-full",
+      "gitee": "https://gitee.com/flyfish-dev/file-viewer-svelte-full",
+      "entryFormats": ["svelte-component", "esm", "types"],
+      "historicalPackages": [],
+      "flavor": "full",
+      "basePackage": "@file-viewer/svelte"
     }
   ]
 }

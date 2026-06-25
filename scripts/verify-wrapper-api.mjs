@@ -161,6 +161,13 @@ function assertImportsFrom(source, packageName, label) {
   )
 }
 
+function assertReferencesPackage(source, packageName, label) {
+  assert(
+    source.includes(`'${packageName}'`) || source.includes(`"${packageName}"`),
+    `${label} must reference ${packageName}`
+  )
+}
+
 function assertImportsFromAny(source, packageNames, label) {
   assert(
     packageNames.some(packageName =>
@@ -343,6 +350,19 @@ function verifySvelteWrapper(source, label) {
   assert(/export\s+default\s+fileViewer/.test(source), `${label} must default-export fileViewer action`)
 }
 
+function verifyFullWrapper(wrapper, source) {
+  const label = wrapper.packageName
+  assert(wrapper.basePackage, `${label} full package must declare basePackage`)
+  assertReferencesPackage(source, '@file-viewer/preset-all', label)
+  assertReferencesPackage(source, wrapper.basePackage, label)
+  assertNoLegacyIframeApi(source, label)
+  assert(
+    /export\s+\*\s+from\s+['"][^'"]+['"]/.test(source) ||
+      /export\s+\{\s*default\s*\}\s+from\s+['"][^'"]+['"]/.test(source),
+    `${label} full package must re-export the standard component API`
+  )
+}
+
 const verifiers = {
   vue3: source => verifyVue3Wrapper(source, '@file-viewer/vue3'),
   'vue2.7': source => verifyVue2Wrapper(source, '@file-viewer/vue2.7'),
@@ -356,9 +376,14 @@ const verifiers = {
 
 let checked = 0
 for (const wrapper of wrapperManifest.wrappers) {
+  const { content } = await readWrapperSource(wrapper)
+  if (wrapper.flavor === 'full') {
+    verifyFullWrapper(wrapper, content)
+    checked += 1
+    continue
+  }
   const verify = verifiers[wrapper.id]
   assert(verify, `Missing wrapper API verifier for ${wrapper.id}`)
-  const { content } = await readWrapperSource(wrapper)
   await assertNoWrapperToWrapperImports(wrapper)
   verify(content)
   checked += 1
