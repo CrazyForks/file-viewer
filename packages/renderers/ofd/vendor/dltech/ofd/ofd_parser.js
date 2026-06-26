@@ -32,6 +32,40 @@ const ensureBrowserGlobal = () => {
     globalThis.xmlParseFlag = 0;
 }
 
+const asArray = function (value) {
+    if (!value) {
+        return [];
+    }
+    return Array.isArray(value) ? value : [value];
+}
+
+const collectGroupedItems = function (groupOrGroups, childKey) {
+    let items = [];
+    for (const group of asArray(groupOrGroups)) {
+        if (group) {
+            items = items.concat(asArray(group[childKey]));
+        }
+    }
+    return items;
+}
+
+const getImageMime = function (format) {
+    const normalized = format ? format.toLowerCase() : '';
+    if (normalized === 'jpg' || normalized === 'jpeg') {
+        return 'image/jpeg';
+    }
+    if (normalized === 'gif') {
+        return 'image/gif';
+    }
+    if (normalized === 'bmp') {
+        return 'image/bmp';
+    }
+    if (normalized === 'webp') {
+        return 'image/webp';
+    }
+    return 'image/png';
+}
+
 export const unzipOfd = function (file) {
     return new Promise((resolve, reject) => {
         JsZip.loadAsync(file)
@@ -257,8 +291,7 @@ const getFont = async function (res) {
     const fonts = res['ofd:Fonts'];
     let fontResObj = {};
     if (fonts) {
-        let fontArray = [];
-        fontArray = fontArray.concat(fonts['ofd:Font']);
+        let fontArray = collectGroupedItems(fonts, 'ofd:Font');
         for (const font of fontArray) {
             if (font) {
                 if (font['@_FamilyName']) {
@@ -276,8 +309,7 @@ const getDrawParam = async function (res) {
     const drawParams = res['ofd:DrawParams'];
     let drawParamResObj = {};
     if (drawParams) {
-        let array = [];
-        array = array.concat(drawParams['ofd:DrawParam']);
+        let array = collectGroupedItems(drawParams, 'ofd:DrawParam');
         for (const item of array) {
             if (item) {
                 drawParamResObj[item['@_ID']] = {
@@ -296,10 +328,9 @@ const getMultiMediaRes = async function (zip, res, doc) {
     const multiMedias = res['ofd:MultiMedias'];
     let multiMediaResObj = {};
     if (multiMedias) {
-        let array = [];
-        array = array.concat(multiMedias['ofd:MultiMedia']);
+        let array = collectGroupedItems(multiMedias, 'ofd:MultiMedia');
         for (const item of array) {
-            if (item) {
+            if (item && item['ofd:MediaFile']) {
                 let file = item['ofd:MediaFile'];
                 if (res['@_BaseLoc']) {
                     if (file.indexOf(res['@_BaseLoc']) === -1) {
@@ -309,15 +340,17 @@ const getMultiMediaRes = async function (zip, res, doc) {
                 if (file.indexOf(doc) === -1) {
                     file = `${doc}/${file}`
                 }
-                if (item['@_Type'].toLowerCase() === 'image') {
+                const type = item['@_Type'] ? item['@_Type'].toLowerCase() : '';
+                if (type === 'image') {
                     const format = item['@_Format'];
                     const ext = getExtensionByPath(file);
                     if ((format && (format.toLowerCase() === 'gbig2' || format.toLowerCase() === 'jb2')) || ext && (ext.toLowerCase() === 'jb2' || ext.toLowerCase() === 'gbig2')) {
                         const jbig2 = await parseJbig2ImageFromZip(zip, file);
                         multiMediaResObj[item['@_ID']] = jbig2;
                     } else {
-                        const img = await parseOtherImageFromZip(zip, file);
-                        multiMediaResObj[item['@_ID']] = {img, 'format': 'png'};
+                        const imageFormat = format || ext || 'png';
+                        const img = await parseOtherImageFromZip(zip, file, getImageMime(imageFormat));
+                        multiMediaResObj[item['@_ID']] = {img, 'format': imageFormat.toLowerCase()};
                     }
                 } else {
                     multiMediaResObj[item['@_ID']] = file;
@@ -383,10 +416,10 @@ const parseJbig2ImageFromZip = async function (zip, name) {
     });
 }
 
-const parseOtherImageFromZip = async function (zip, name) {
+const parseOtherImageFromZip = async function (zip, name, mime = 'image/png') {
     return new Promise((resolve, reject) => {
         zip.files[name].async('base64').then(function (bytes) {
-            const img = 'data:image/png;base64,' + bytes;
+            const img = `data:${mime};base64,` + bytes;
             resolve(img);
         }, function error(e) {
             reject(e);

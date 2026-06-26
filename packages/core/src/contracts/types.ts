@@ -96,6 +96,8 @@ export type FileViewerMessageKey =
   | 'archive.loading.readingDirectory'
   | 'archive.loading.readingDirectoryHint'
   | 'archive.search.placeholder'
+  | 'archive.sidebar.hide'
+  | 'archive.sidebar.show'
   | 'archive.preview.title'
   | 'archive.preview.chooseFile'
   | 'archive.preview.downloadFile'

@@ -295,14 +295,24 @@ export const renderImageObject = function (pageWidth, pageHeight, multiMediaResO
     let boundary = parseStBox(imageObject['@_Boundary']);
     boundary = converterBox(boundary);
     const resId = imageObject['@_ResourceID'];
-    if (multiMediaResObj[resId].format === 'gbig2') {
-        const img = multiMediaResObj[resId].img;
-        const width = multiMediaResObj[resId].width;
-        const height = multiMediaResObj[resId].height;
+    const imageResource = multiMediaResObj ? multiMediaResObj[resId] : null;
+    if (!imageResource || typeof imageResource !== 'object') {
+        return renderMissingImageObject(boundary, imageObject['pfIndex']);
+    }
+    if (imageResource.format === 'gbig2') {
+        const img = imageResource.img;
+        const width = imageResource.width;
+        const height = imageResource.height;
         return renderImageOnCanvas(img, width, height, boundary, imageObject['pfIndex']);
     } else {
-        return renderImageOnDiv(pageWidth, pageHeight, multiMediaResObj[resId].img, boundary, false, false, null, null, imageObject['pfIndex']);
+        return renderImageOnDiv(pageWidth, pageHeight, imageResource.img, boundary, false, false, null, null, imageObject['pfIndex']);
     }
+}
+
+const renderMissingImageObject = function (boundary, oid){
+    let div = document.createElement('div');
+    div.setAttribute('style', `overflow: hidden; position: absolute; left: ${boundary.x}px; top: ${boundary.y}px; width: ${boundary.w}px; height: ${boundary.h}px;z-index: ${oid}`)
+    return div;
 }
 
 const renderImageOnCanvas = function (img, imgWidth, imgHeight, boundary, oid){
