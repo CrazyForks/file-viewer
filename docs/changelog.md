@@ -2,6 +2,12 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.1.9` OFD 资源路径解析加固
+
+- OFD renderer 加固电子发票资源路径归一化和查找逻辑，兼容 `DocumentRes`、`PublicRes`、`BaseLoc`、大小写差异和缺失目录等组合场景
+- 修复部分 OFD 文件读取图片资源时因路径解析失败抛出 `Cannot read properties of undefined (reading 'async')`，导致整份文档无法预览的问题
+- 缺失或异常资源继续降级跳过，保证可解析页面主体优先展示
+
 ## `v2.1.8` OFD 电子发票兼容与压缩包内嵌预览修复
 
 - OFD renderer 兼容多个并列 `ofd:Fonts`、`ofd:DrawParams`、`ofd:MultiMedias` 资源分组，修复部分电子发票在读取图片资源时抛出 `Cannot read properties of undefined (reading 'format')` 的问题

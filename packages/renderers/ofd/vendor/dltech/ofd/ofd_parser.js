@@ -49,6 +49,98 @@ const collectGroupedItems = function (groupOrGroups, childKey) {
     return items;
 }
 
+const zipEntryMapCache = new WeakMap();
+
+const normalizeZipPath = function (value) {
+    if (!value) {
+        return '';
+    }
+    let normalized = String(value).replace(/\\/g, '/').trim();
+    try {
+        normalized = decodeURIComponent(normalized);
+    } catch {
+        // Keep the original path when it is not URI-encoded.
+    }
+    normalized = normalized
+        .replace(/^\/+/, '')
+        .replace(/^\.\//, '')
+        .replace(/\/+/g, '/');
+    const segments = [];
+    for (const segment of normalized.split('/')) {
+        if (!segment || segment === '.') {
+            continue;
+        }
+        if (segment === '..') {
+            segments.pop();
+            continue;
+        }
+        segments.push(segment);
+    }
+    return segments.join('/');
+}
+
+const joinZipPath = function (...parts) {
+    return normalizeZipPath(parts.filter(Boolean).join('/'));
+}
+
+const startsWithZipRoot = function (path, root) {
+    const normalizedPath = normalizeZipPath(path);
+    const normalizedRoot = normalizeZipPath(root);
+    return normalizedPath === normalizedRoot || normalizedPath.startsWith(`${normalizedRoot}/`);
+}
+
+const getZipEntry = function (zip, candidates) {
+    const paths = asArray(candidates).map(normalizeZipPath).filter(Boolean);
+    for (const path of paths) {
+        if (zip.files[path]) {
+            return zip.files[path];
+        }
+    }
+    let lowerMap = zipEntryMapCache.get(zip);
+    if (!lowerMap) {
+        lowerMap = new Map();
+        for (const name of Object.keys(zip.files)) {
+            lowerMap.set(normalizeZipPath(name).toLowerCase(), zip.files[name]);
+        }
+        zipEntryMapCache.set(zip, lowerMap);
+    }
+    for (const path of paths) {
+        const entry = lowerMap.get(path.toLowerCase());
+        if (entry) {
+            return entry;
+        }
+    }
+    return null;
+}
+
+const resolveDocumentPath = function (path, doc) {
+    const normalizedPath = normalizeZipPath(path);
+    if (!normalizedPath || startsWithZipRoot(normalizedPath, doc)) {
+        return normalizedPath;
+    }
+    return joinZipPath(doc, normalizedPath);
+}
+
+const resolveResourceCandidates = function (file, baseLoc, doc) {
+    const mediaFile = normalizeZipPath(file);
+    const base = normalizeZipPath(baseLoc);
+    const candidates = [mediaFile];
+
+    if (base && !startsWithZipRoot(mediaFile, base)) {
+        candidates.push(joinZipPath(base, mediaFile));
+    }
+
+    const docCandidates = [];
+    for (const candidate of candidates) {
+        docCandidates.push(candidate);
+        if (candidate && !startsWithZipRoot(candidate, doc)) {
+            docCandidates.push(joinZipPath(doc, candidate));
+        }
+    }
+
+    return [...new Set(docCandidates.filter(Boolean))];
+}
+
 const getImageMime = function (format) {
     const normalized = format ? format.toLowerCase() : '';
     if (normalized === 'jpg' || normalized === 'jpeg') {
@@ -103,7 +195,7 @@ export const parseSingleDoc = async function ([zip, array]) {
 
 export const doGetDocRoot = async function (zip, docbody) {
     let docRoot = docbody['ofd:DocRoot'];
-    docRoot = replaceFirstSlash(docRoot);
+    docRoot = normalizeZipPath(replaceFirstSlash(docRoot));
     const doc = docRoot.split('/')[0];
     const signatures = docbody['ofd:Signatures'];
     const stampAnnot = await getSignature(zip, signatures, doc);
@@ -153,7 +245,7 @@ export const getDocument = async function ([zip, doc, docRoot, stampAnnot]) {
         if (annotations.indexOf(doc) === -1) {
             annotations = `${doc}/${annotations}`;
         }
-        if (zip.files[annotations]) {
+        if (getZipEntry(zip, annotations)) {
             annotations = await getJsonFromXmlContent(zip, annotations);
             array = array.concat(annotations['json']['ofd:Annotations']['ofd:Page']);
         }
@@ -170,7 +262,10 @@ const getAnnotations = async function (annoBase, annotations, doc, zip) {
         }
         const pageId = anno['@_PageID'];
         let fileLoc = anno['ofd:FileLoc'];
-        fileLoc = replaceFirstSlash(fileLoc);
+        if (!fileLoc) {
+            continue
+        }
+        fileLoc = normalizeZipPath(replaceFirstSlash(fileLoc));
         if (annoBase && fileLoc.indexOf(annoBase) === -1) {
             fileLoc = `${annoBase}/${fileLoc}`;
         }
@@ -178,7 +273,7 @@ const getAnnotations = async function (annoBase, annotations, doc, zip) {
             fileLoc = `${doc}/${fileLoc}`;
         }
 
-        if (zip.files[fileLoc]) {
+        if (getZipEntry(zip, fileLoc)) {
             const data = await getJsonFromXmlContent(zip, fileLoc);
 
             let array = [];
@@ -207,10 +302,8 @@ export const getDocumentRes = async function ([zip, doc, Document, stampAnnot, a
     let drawParamResObj = {};
     let multiMediaResObj = {};
     if (documentResPath) {
-        if (documentResPath.indexOf(doc) == -1) {
-            documentResPath = `${doc}/${documentResPath}`;
-        }
-        if (zip.files[documentResPath]) {
+        documentResPath = resolveDocumentPath(documentResPath, doc);
+        if (getZipEntry(zip, documentResPath)) {
             const data = await getJsonFromXmlContent(zip, documentResPath);
             const documentResObj = data['json']['ofd:Res'];
             fontResObj = await getFont(documentResObj);
@@ -224,10 +317,8 @@ export const getDocumentRes = async function ([zip, doc, Document, stampAnnot, a
 export const getPublicRes = async function ([zip, doc, Document, stampAnnot, annotationObjs, fontResObj, drawParamResObj, multiMediaResObj]) {
     let publicResPath = Document['ofd:CommonData']['ofd:PublicRes'];
     if (publicResPath) {
-        if (publicResPath.indexOf(doc) == -1) {
-            publicResPath = `${doc}/${publicResPath}`;
-        }
-        if (zip.files[publicResPath]) {
+        publicResPath = resolveDocumentPath(publicResPath, doc);
+        if (getZipEntry(zip, publicResPath)) {
             const data = await getJsonFromXmlContent(zip, publicResPath);
             const publicResObj = data['json']['ofd:Res'];
             let fontObj = await getFont(publicResObj);
@@ -331,29 +422,26 @@ const getMultiMediaRes = async function (zip, res, doc) {
         let array = collectGroupedItems(multiMedias, 'ofd:MultiMedia');
         for (const item of array) {
             if (item && item['ofd:MediaFile']) {
-                let file = item['ofd:MediaFile'];
-                if (res['@_BaseLoc']) {
-                    if (file.indexOf(res['@_BaseLoc']) === -1) {
-                        file = `${res['@_BaseLoc']}/${file}`
-                    }
-                }
-                if (file.indexOf(doc) === -1) {
-                    file = `${doc}/${file}`
-                }
+                const candidates = resolveResourceCandidates(item['ofd:MediaFile'], res['@_BaseLoc'], doc);
+                const file = getZipEntry(zip, candidates) ? candidates : null;
                 const type = item['@_Type'] ? item['@_Type'].toLowerCase() : '';
                 if (type === 'image') {
                     const format = item['@_Format'];
-                    const ext = getExtensionByPath(file);
+                    const ext = getExtensionByPath(candidates[0]);
                     if ((format && (format.toLowerCase() === 'gbig2' || format.toLowerCase() === 'jb2')) || ext && (ext.toLowerCase() === 'jb2' || ext.toLowerCase() === 'gbig2')) {
-                        const jbig2 = await parseJbig2ImageFromZip(zip, file);
-                        multiMediaResObj[item['@_ID']] = jbig2;
+                        const jbig2 = await parseJbig2ImageFromZip(zip, candidates);
+                        if (jbig2) {
+                            multiMediaResObj[item['@_ID']] = jbig2;
+                        }
                     } else {
                         const imageFormat = format || ext || 'png';
-                        const img = await parseOtherImageFromZip(zip, file, getImageMime(imageFormat));
-                        multiMediaResObj[item['@_ID']] = {img, 'format': imageFormat.toLowerCase()};
+                        const img = await parseOtherImageFromZip(zip, candidates, getImageMime(imageFormat));
+                        if (img) {
+                            multiMediaResObj[item['@_ID']] = {img, 'format': imageFormat.toLowerCase()};
+                        }
                     }
                 } else {
-                    multiMediaResObj[item['@_ID']] = file;
+                    multiMediaResObj[item['@_ID']] = file ? file[0] : candidates[0];
                 }
             }
         }
@@ -363,9 +451,7 @@ const getMultiMediaRes = async function (zip, res, doc) {
 
 const parsePage = async function (zip, obj, doc) {
     let pagePath = obj['@_BaseLoc'];
-    if (pagePath.indexOf(doc) == -1) {
-        pagePath = `${doc}/${pagePath}`;
-    }
+    pagePath = resolveDocumentPath(pagePath, doc);
     const data = await getJsonFromXmlContent(zip, pagePath);
     let pageObj = {};
     pageObj[obj['@_ID']] = {'json': data['json']['ofd:Page'], 'xml': data['xml']};
@@ -387,7 +473,12 @@ const getSealDocumentObj = function () {
 
 const getJsonFromXmlContent = async function (zip, xmlName) {
     return new Promise((resolve, reject) => {
-        zip.files[xmlName].async('string').then(function (content) {
+        const entry = getZipEntry(zip, xmlName);
+        if (!entry) {
+            reject(new Error(`OFD XML resource not found: ${normalizeZipPath(xmlName)}`));
+            return;
+        }
+        entry.async('string').then(function (content) {
             ensureBrowserGlobal();
             let ops = {
                 attributeNamePrefix: "@_",
@@ -406,7 +497,12 @@ const getJsonFromXmlContent = async function (zip, xmlName) {
 
 const parseJbig2ImageFromZip = async function (zip, name) {
     return new Promise((resolve, reject) => {
-        zip.files[name].async('uint8array').then(function (bytes) {
+        const entry = getZipEntry(zip, name);
+        if (!entry) {
+            resolve(null);
+            return;
+        }
+        entry.async('uint8array').then(function (bytes) {
             let jbig2 = new Jbig2Image();
             const img = jbig2.parse(bytes);
             resolve({img, width: jbig2.width, height: jbig2.height, format: 'gbig2'});
@@ -418,7 +514,12 @@ const parseJbig2ImageFromZip = async function (zip, name) {
 
 const parseOtherImageFromZip = async function (zip, name, mime = 'image/png') {
     return new Promise((resolve, reject) => {
-        zip.files[name].async('base64').then(function (bytes) {
+        const entry = getZipEntry(zip, name);
+        if (!entry) {
+            resolve(null);
+            return;
+        }
+        entry.async('base64').then(function (bytes) {
             const img = `data:${mime};base64,` + bytes;
             resolve(img);
         }, function error(e) {
