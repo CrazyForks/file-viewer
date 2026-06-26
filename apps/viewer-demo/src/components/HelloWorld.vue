@@ -307,11 +307,12 @@ const sampleGroupsZh: SampleGroup[] = [
   },
   {
     title: '压缩包',
-    description: 'ZIP / TAR.GZ',
+    description: 'ZIP / TAR.GZ / 加密',
     family: 'archive',
     items: [
       { name: 'ZIP', url: '/example/archive.zip' },
-      { name: 'TAR.GZ', url: '/example/archive.tar.gz' }
+      { name: 'TAR.GZ', url: '/example/archive.tar.gz' },
+      { name: '加密 ZIP（密码 flyfish）', url: '/example/encrypted.zip' }
     ]
   },
   {
@@ -439,7 +440,7 @@ const englishGroupCopy: Array<Pick<SampleGroup, 'title' | 'description'>> = [
   { title: 'Mindmaps & Diagrams', description: 'XMind / Mermaid / PlantUML / draw.io' },
   { title: '3D & Geo Models', description: 'GLTF / OBJ / STL / PLY / Geo' },
   { title: 'Ebooks', description: 'EPUB / UMD' },
-  { title: 'Archives', description: 'ZIP / TAR.GZ' },
+  { title: 'Archives', description: 'ZIP / TAR.GZ / Encrypted' },
   { title: 'Email & EDA', description: 'EML / MSG / OLB / DRA / GDS / OASIS' },
   { title: 'Text', description: 'Markdown / TXT / Log' },
   { title: 'Frontend & Data', description: 'JS / TS / Vue / Data' },
@@ -455,6 +456,7 @@ const englishSampleUrlMap: Record<string, string> = {
   '/example/ppt.pptx': '/example/en/sample-presentation.pptx',
   '/example/archive.zip': '/example/en/archive.zip',
   '/example/archive.tar.gz': '/example/en/archive.tar.gz',
+  '/example/encrypted.zip': '/example/encrypted.zip',
   '/example/model.gltf': '/example/en/model.gltf',
   '/example/map.geojson': '/example/en/map.geojson',
   '/example/markdown.md': '/example/en/markdown.md',
@@ -502,6 +504,7 @@ const englishSampleNameMap: Record<string, string> = {
   '/example/book.umd': 'UMD ebook',
   '/example/en/archive.zip': 'ZIP archive with English samples',
   '/example/en/archive.tar.gz': 'TAR.GZ archive with English samples',
+  '/example/encrypted.zip': 'Encrypted ZIP (password: flyfish)',
   '/example/sample.eml': 'EML message',
   '/example/sample.msg': 'MSG Outlook message',
   '/example/sample.mbox': 'MBOX mailbox',

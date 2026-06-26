@@ -8,6 +8,9 @@ import {
 const ZIP_LIKE_EXTENSIONS = new Set(['zip', 'zipx', 'jar', 'war', 'ear', 'apk', 'cbz']);
 const TAR_LIKE_EXTENSIONS = new Set(['tar', 'tgz', 'gz', 'gzip']);
 const TAR_BLOCK_SIZE = 512;
+const ZIP_CENTRAL_FILE_HEADER = 0x02014b50;
+const ZIP_LOCAL_FILE_HEADER = 0x04034b50;
+const ZIP_GENERAL_PURPOSE_ENCRYPTED_FLAG = 0x0001;
 
 type DecompressionFormat = ConstructorParameters<typeof DecompressionStream>[0];
 
@@ -131,6 +134,42 @@ const getArchiveExtension = (filename: string) => {
   return getArchiveEntryExtension(filename);
 };
 
+const readUint16 = (view: DataView, offset: number) => {
+  return offset + 2 <= view.byteLength ? view.getUint16(offset, true) : 0;
+};
+
+const readUint32 = (view: DataView, offset: number) => {
+  return offset + 4 <= view.byteLength ? view.getUint32(offset, true) : 0;
+};
+
+const hasEncryptedZipEntries = (data: ArrayBuffer) => {
+  const view = new DataView(data);
+
+  for (let offset = 0; offset + 12 <= view.byteLength; offset += 1) {
+    const signature = readUint32(view, offset);
+    if (signature !== ZIP_CENTRAL_FILE_HEADER && signature !== ZIP_LOCAL_FILE_HEADER) {
+      continue;
+    }
+
+    const flagOffset = signature === ZIP_CENTRAL_FILE_HEADER
+      ? offset + 8
+      : offset + 6;
+    if ((readUint16(view, flagOffset) & ZIP_GENERAL_PURPOSE_ENCRYPTED_FLAG) !== 0) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+export const isLikelyEncryptedArchive = (data: ArrayBuffer, filename: string) => {
+  const extension = getArchiveExtension(filename);
+  if (ZIP_LIKE_EXTENSIONS.has(extension)) {
+    return hasEncryptedZipEntries(data);
+  }
+  return false;
+};
+
 const getGzipEntryName = (filename: string) => {
   const lower = filename.toLowerCase();
   if (lower.endsWith('.gzip')) {
@@ -207,6 +246,9 @@ export const loadArchiveEntriesWithoutWorker = async (data: ArrayBuffer, filenam
   const extension = getArchiveExtension(filename);
 
   if (ZIP_LIKE_EXTENSIONS.has(extension)) {
+    if (isLikelyEncryptedArchive(data, filename)) {
+      return null;
+    }
     return loadZipEntries(data);
   }
 

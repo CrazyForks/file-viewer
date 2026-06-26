@@ -6,6 +6,7 @@ import {
   createFileViewerTranslator,
   disposeFileViewerRendered,
   type FileRenderContext,
+  type FileViewerArchivePasswordRequestReason,
   type FileViewerArchiveOptions,
   type FileViewerRenderedInstance,
 } from '@file-viewer/core';
@@ -18,7 +19,10 @@ import {
   type ArchiveEntryView,
 } from './archiveShared.js';
 import { readArchiveCache, writeArchiveCache } from './archiveCache.js';
-import { loadArchiveEntriesWithoutWorker } from './archiveFallback.js';
+import {
+  isLikelyEncryptedArchive,
+  loadArchiveEntriesWithoutWorker,
+} from './archiveFallback.js';
 
 type WorkerConstructor = new (scriptURL: string | URL, options?: WorkerOptions) => Worker;
 type FileConstructor = new (fileBits: BlobPart[], fileName: string, options?: FilePropertyBag) => File;
@@ -33,6 +37,13 @@ const DEFAULT_MAX_ARCHIVE_SIZE = 320 * 1024 * 1024;
 const DEFAULT_MAX_ENTRY_PREVIEW_SIZE = 64 * 1024 * 1024;
 const DEFAULT_WORKER_TIMEOUT_MS = 30000;
 const MAX_LISTED_ENTRIES = 5000;
+
+class ArchivePasswordCancelledError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ArchivePasswordCancelledError';
+  }
+}
 
 const archiveStyle = `
 .archive-shell,.archive-viewer{position:relative;box-sizing:border-box;height:100%;min-height:0;display:grid;grid-template-columns:minmax(280px,34%) minmax(0,1fr);background:#edf2f7;color:#172033;font-family:Aptos,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}
@@ -63,12 +74,26 @@ const archiveStyle = `
 .archive-state p{margin:4px 0 0;color:#64748b}
 .archive-spinner{width:34px;height:34px;flex-shrink:0;border-radius:999px;border:3px solid rgba(31,122,88,.16);border-top-color:#1f7a58;animation:archive-spin .9s linear infinite}
 .archive-error{position:absolute;right:18px;bottom:18px;width:min(460px,calc(100% - 36px));box-shadow:0 16px 36px rgba(23,32,51,.14);z-index:5}
+.archive-password-dialog{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(15,23,42,.42);backdrop-filter:blur(10px)}
+.archive-password-card{width:min(420px,100%);display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:18px;background:#fff;color:#172033;box-shadow:0 24px 56px rgba(15,23,42,.24)}
+.archive-password-card h3{margin:0;font-size:19px;line-height:1.25}
+.archive-password-card p{margin:0;color:#64748b;font-size:13px;line-height:1.55}
+.archive-password-card input{width:100%;height:44px;border-radius:12px;border:1px solid rgba(23,32,51,.12);outline:none;padding:0 12px;background:#fff;color:#172033;font:inherit}
+.archive-password-card input:focus{border-color:rgba(31,122,88,.48);box-shadow:0 0 0 3px rgba(31,122,88,.12)}
+.archive-password-error{min-height:18px;color:#b42318!important}
+.archive-password-actions{display:flex;justify-content:flex-end;gap:10px}
+.archive-password-actions button{height:38px;border:0;border-radius:10px;padding:0 14px;font:inherit;font-weight:800;cursor:pointer}
+.archive-password-cancel{background:#eef2f7;color:#334155}
+.archive-password-submit{background:#1f7a58;color:#fff}
 .archive-hidden{display:none!important}
 .file-viewer[data-viewer-theme='dark'] .archive-shell,.file-viewer[data-viewer-theme='dark'] .archive-viewer{background:#101820;color:#e6edf3}
 .file-viewer[data-viewer-theme='dark'] .archive-sidebar,.file-viewer[data-viewer-theme='dark'] .archive-preview-toolbar{border-color:rgba(139,148,158,.2);background:rgba(21,27,35,.82)}
 .file-viewer[data-viewer-theme='dark'] .archive-entry,.file-viewer[data-viewer-theme='dark'] .archive-search,.file-viewer[data-viewer-theme='dark'] .archive-state>div{background:#151b23;color:#e6edf3;border-color:rgba(139,148,158,.2)}
+.file-viewer[data-viewer-theme='dark'] .archive-password-card{background:#151b23;color:#e6edf3}
+.file-viewer[data-viewer-theme='dark'] .archive-password-card input{background:#0d1117;color:#e6edf3;border-color:rgba(139,148,158,.24)}
+.file-viewer[data-viewer-theme='dark'] .archive-password-cancel{background:#212a35;color:#d7dee8}
 .file-viewer[data-viewer-theme='dark'] .archive-empty strong{color:#f8fafc}
-@media (prefers-color-scheme:dark){.file-viewer[data-viewer-theme='system'] .archive-shell,.file-viewer[data-viewer-theme='system'] .archive-viewer{background:#101820;color:#e6edf3}.file-viewer[data-viewer-theme='system'] .archive-sidebar,.file-viewer[data-viewer-theme='system'] .archive-preview-toolbar{border-color:rgba(139,148,158,.2);background:rgba(21,27,35,.82)}.file-viewer[data-viewer-theme='system'] .archive-entry,.file-viewer[data-viewer-theme='system'] .archive-search,.file-viewer[data-viewer-theme='system'] .archive-state>div{background:#151b23;color:#e6edf3;border-color:rgba(139,148,158,.2)}.file-viewer[data-viewer-theme='system'] .archive-empty strong{color:#f8fafc}}
+@media (prefers-color-scheme:dark){.file-viewer[data-viewer-theme='system'] .archive-shell,.file-viewer[data-viewer-theme='system'] .archive-viewer{background:#101820;color:#e6edf3}.file-viewer[data-viewer-theme='system'] .archive-sidebar,.file-viewer[data-viewer-theme='system'] .archive-preview-toolbar{border-color:rgba(139,148,158,.2);background:rgba(21,27,35,.82)}.file-viewer[data-viewer-theme='system'] .archive-entry,.file-viewer[data-viewer-theme='system'] .archive-search,.file-viewer[data-viewer-theme='system'] .archive-state>div{background:#151b23;color:#e6edf3;border-color:rgba(139,148,158,.2)}.file-viewer[data-viewer-theme='system'] .archive-password-card{background:#151b23;color:#e6edf3}.file-viewer[data-viewer-theme='system'] .archive-password-card input{background:#0d1117;color:#e6edf3;border-color:rgba(139,148,158,.24)}.file-viewer[data-viewer-theme='system'] .archive-password-cancel{background:#212a35;color:#d7dee8}.file-viewer[data-viewer-theme='system'] .archive-empty strong{color:#f8fafc}}
 @keyframes archive-spin{to{transform:rotate(360deg)}}
 @media (max-width:860px){.archive-shell,.archive-viewer{grid-template-columns:1fr;grid-template-rows:minmax(220px,38%) minmax(0,1fr)}.archive-sidebar{border-right:0;border-bottom:1px solid rgba(23,32,51,.08)}}
 `;
@@ -100,6 +125,11 @@ const normalizeWorkerError = (reason: unknown) => {
     return reason.message;
   }
   return typeof reason === 'string' ? reason : JSON.stringify(reason);
+};
+
+const isArchivePasswordError = (reason: unknown) => {
+  const message = normalizeWorkerError(reason).toLowerCase();
+  return /passphrase|password|encrypted|decrypt|crypto|wrong key|incorrect/i.test(message);
 };
 
 const withTimeout = async <T,>(
@@ -296,6 +326,8 @@ export default async function renderArchive(
   let archiveNotice = '';
   let encrypted: boolean | null = null;
   let filterText = '';
+  let passwordAttempt = 0;
+  let passwordResolver: ((password: string | null) => void) | null = null;
 
   const style = createStyle(documentRef);
   const root = createElement(documentRef, 'section', 'archive-shell archive-viewer');
@@ -345,6 +377,27 @@ export default async function renderArchive(
   const errorMessage = createElement(documentRef, 'p');
   error.append(errorTitle, errorMessage);
   root.append(error);
+
+  const passwordDialog = createElement(documentRef, 'div', 'archive-password-dialog archive-hidden');
+  passwordDialog.setAttribute('role', 'dialog');
+  passwordDialog.setAttribute('aria-modal', 'true');
+  const passwordCard = createElement(documentRef, 'form', 'archive-password-card') as HTMLFormElement;
+  const passwordTitle = createElement(documentRef, 'h3', undefined, t('archive.password.title'));
+  const passwordDescription = createElement(documentRef, 'p', undefined, t('archive.password.description'));
+  const passwordInput = createElement(documentRef, 'input') as HTMLInputElement;
+  passwordInput.type = 'password';
+  passwordInput.autocomplete = 'current-password';
+  passwordInput.placeholder = t('archive.password.placeholder');
+  const passwordError = createElement(documentRef, 'p', 'archive-password-error');
+  const passwordActions = createElement(documentRef, 'div', 'archive-password-actions');
+  const passwordCancelButton = createElement(documentRef, 'button', 'archive-password-cancel', t('archive.password.cancel')) as HTMLButtonElement;
+  passwordCancelButton.type = 'button';
+  const passwordSubmitButton = createElement(documentRef, 'button', 'archive-password-submit', t('archive.password.confirm')) as HTMLButtonElement;
+  passwordSubmitButton.type = 'submit';
+  passwordActions.append(passwordCancelButton, passwordSubmitButton);
+  passwordCard.append(passwordTitle, passwordDescription, passwordInput, passwordError, passwordActions);
+  passwordDialog.append(passwordCard);
+  root.append(passwordDialog);
   target.replaceChildren(style, root);
 
   const listen = <K extends keyof HTMLElementEventMap>(
@@ -355,6 +408,92 @@ export default async function renderArchive(
     element.addEventListener(event, listener as EventListener);
     cleanups.push(() => element.removeEventListener(event, listener as EventListener));
   };
+
+  const closePasswordDialog = (password: string | null) => {
+    passwordDialog.classList.add('archive-hidden');
+    const resolve = passwordResolver;
+    passwordResolver = null;
+    resolve?.(password);
+  };
+
+  const requestPasswordWithDialog = async (
+    reason: FileViewerArchivePasswordRequestReason,
+    previousError?: unknown
+  ) => {
+    passwordDescription.textContent = t('archive.password.description');
+    passwordError.textContent = previousError || reason === 'invalid-password'
+      ? t('archive.password.invalid')
+      : '';
+    passwordInput.value = '';
+    passwordDialog.classList.remove('archive-hidden');
+    targetWindow?.setTimeout(() => passwordInput.focus(), 0);
+
+    return new Promise<string | null>((resolve) => {
+      passwordResolver = resolve;
+    });
+  };
+
+  const requestArchivePassword = async (
+    reason: FileViewerArchivePasswordRequestReason,
+    entry?: ArchiveEntryView,
+    previousError?: unknown
+  ) => {
+    passwordAttempt += 1;
+    const contextPayload = {
+      filename,
+      entryName: entry?.name,
+      attempt: passwordAttempt,
+      reason,
+      error: previousError,
+    };
+
+    if (archiveOptions?.password && passwordAttempt === 1 && !previousError) {
+      return archiveOptions.password;
+    }
+
+    if (archiveOptions?.requestPassword) {
+      const customPassword = await archiveOptions.requestPassword(contextPayload);
+      return customPassword ?? null;
+    }
+
+    return requestPasswordWithDialog(reason, previousError);
+  };
+
+  const applyArchivePassword = async (password: string) => {
+    await archiveReader?.usePassword?.(password);
+  };
+
+  const requestAndApplyPassword = async (
+    reason: FileViewerArchivePasswordRequestReason,
+    entry?: ArchiveEntryView,
+    previousError?: unknown
+  ) => {
+    const password = await requestArchivePassword(reason, entry, previousError);
+    if (password === null) {
+      throw new ArchivePasswordCancelledError(t('archive.error.passwordRequired'));
+    }
+    await applyArchivePassword(password);
+  };
+
+  listen(passwordCard, 'submit', (event) => {
+    event.preventDefault();
+    const password = passwordInput.value;
+    if (!password) {
+      passwordError.textContent = t('archive.password.required');
+      passwordInput.focus();
+      return;
+    }
+    closePasswordDialog(password);
+  });
+  listen(passwordCancelButton, 'click', () => {
+    closePasswordDialog(null);
+  });
+  listen(passwordDialog, 'keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closePasswordDialog(null);
+    }
+  });
 
   const getArchiveStats = () => {
     const totalSize = entries.reduce((sum, entry) => sum + entry.size, 0);
@@ -463,6 +602,31 @@ export default async function renderArchive(
     workers.length = 0;
   };
 
+  const readArchiveDirectoryWithPassword = async (
+    archive: any,
+    candidate: ArchiveWorkerCandidate
+  ) => {
+    for (;;) {
+      try {
+        return await withTimeout<Record<string, unknown>>(
+          archive.getFilesObject(),
+          workerTimeoutMs,
+          t('archive.error.candidateReadTimeout', { label: candidate.label }),
+          targetWindow
+        );
+      } catch (reason) {
+        if (!encrypted && !isArchivePasswordError(reason)) {
+          throw reason;
+        }
+        await requestAndApplyPassword(
+          encrypted ? 'invalid-password' : 'read-failed',
+          undefined,
+          reason
+        );
+      }
+    }
+  };
+
   const tryOpenArchiveWithWorker = async (Archive: any, candidate: ArchiveWorkerCandidate) => {
     const createdWorkers: Worker[] = [];
     const workerUrl = await prepareWorkerUrl(candidate, objectUrls);
@@ -492,14 +656,12 @@ export default async function renderArchive(
         t('archive.error.encryptedCheckTimeout', { label: candidate.label }),
         targetWindow
       ).catch(() => null);
+      if (encrypted) {
+        await requestAndApplyPassword('encrypted');
+      }
 
       setLoading(true, t('archive.loading.readingDirectory'), t('archive.loading.directoryReadyHint'));
-      const fileTree = await withTimeout<Record<string, unknown>>(
-        archive.getFilesObject(),
-        workerTimeoutMs,
-        t('archive.error.candidateReadTimeout', { label: candidate.label }),
-        targetWindow
-      );
+      const fileTree = await readArchiveDirectoryWithPassword(archive, candidate);
 
       entries = flattenArchiveObject(fileTree)
         .sort((left, right) => left.path.localeCompare(right.path));
@@ -558,11 +720,19 @@ export default async function renderArchive(
           await tryOpenArchiveWithWorker(Archive, candidate);
           return;
         } catch (reason) {
+          if (reason instanceof ArchivePasswordCancelledError) {
+            throw reason;
+          }
           errors.push(`${candidate.label}: ${normalizeWorkerError(reason)}`);
         }
       }
 
       await closeArchive();
+      if (isLikelyEncryptedArchive(buffer, filename)) {
+        encrypted = true;
+        syncState();
+        throw new Error(t('archive.error.encryptedRequiresWorker'));
+      }
       if (await tryOpenArchiveWithFallback()) {
         return;
       }
@@ -595,7 +765,20 @@ export default async function renderArchive(
       }
     }
 
-    const file = await entry.compressedFile.extract();
+    let file: File;
+    for (;;) {
+      try {
+        file = await entry.compressedFile.extract();
+        break;
+      } catch (reason) {
+        if (!archiveReader || !isArchivePasswordError(reason)) {
+          throw reason;
+        }
+        encrypted = true;
+        syncState();
+        await requestAndApplyPassword('extract-failed', entry, reason);
+      }
+    }
     const entryBuffer = await file.arrayBuffer();
 
     if (cacheEnabled) {
@@ -673,6 +856,7 @@ export default async function renderArchive(
   return {
     $el: root,
     async unmount() {
+      closePasswordDialog(null);
       cleanups.splice(0).forEach(cleanup => cleanup());
       await clearNestedPreview();
       await closeArchive();
