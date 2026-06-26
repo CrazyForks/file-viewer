@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-26T03:15:19.466Z",
+  "generatedAt": "2026-06-26T03:18:15.645Z",
   "version": "2.1.8",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -10,15 +10,15 @@
     "policy": "private-complete-original-workspace",
     "authoritativeCommit": "",
     "localBranch": "main",
-    "localCommit": "e3e83ae43e0302b095b72b2445e4ac19935fccfb",
+    "localCommit": "064cb4f4b7cafeed6d4b42b4784b2797c93950d7",
     "inSync": false,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "main",
-    "commit": "e3e83ae43e0302b095b72b2445e4ac19935fccfb",
-    "shortCommit": "e3e83ae4",
-    "dirty": true
+    "commit": "064cb4f4b7cafeed6d4b42b4784b2797c93950d7",
+    "shortCommit": "064cb4f4",
+    "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
@@ -43,11 +43,11 @@
       "error": ""
     },
     "inSync": false,
-    "syncMode": "stale",
-    "treeChecked": true,
-    "referenceTree": "1cf2fdb8383f83759de00fe3c910c186e2b92ca1",
-    "giteeTree": "62b18f03808005d7045f6bcb1c078889de3cdff4",
-    "treeError": "",
+    "syncMode": "unchecked",
+    "treeChecked": false,
+    "referenceTree": "d97af23748350efa3d0d28772d9801eeb2f5beee",
+    "giteeTree": "",
+    "treeError": "local public repository 15a99ab0683b does not match GitHub 0ac4797e1744",
     "reportHashNote": "The open-source main repository mirrors the current public source tree and records the private source commit in the public commit body for traceability. The observed remote hash can trail until that mirror commit is pushed. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
   },
   "githubRelease": {
@@ -722,7 +722,6 @@
   ],
   "gaps": [
     "source remote https://git.flyfish.dev/flyfish-group/file-viewer.git missing main",
-    "local source worktree has uncommitted changes",
     "GitHub Release v2.1.8 missing",
     "@file-viewer/core npm 2.1.7 !== 2.1.8",
     "@file-viewer/renderer-pdf npm 2.1.7 !== 2.1.8",
@@ -776,12 +775,11 @@
     "@file-viewer/svelte-full npm 2.1.7 !== 2.1.8"
   ],
   "gapSummary": {
-    "total": 53,
+    "total": 52,
     "externalBlockers": 52,
-    "localActionable": 1,
+    "localActionable": 0,
     "byChannel": {
       "source-remote": 1,
-      "source-worktree": 1,
       "github-release": 1,
       "npm": 50
     },
@@ -790,9 +788,7 @@
       "npm",
       "source-remote"
     ],
-    "localActionableChannels": [
-      "source-worktree"
-    ]
+    "localActionableChannels": []
   },
   "gapDetails": [
     {
@@ -802,14 +798,6 @@
       "externalBlocker": true,
       "message": "source remote https://git.flyfish.dev/flyfish-group/file-viewer.git missing main",
       "nextAction": "Restore the private Gitea source branch or push the expected release source."
-    },
-    {
-      "id": "source-worktree-local-source-worktree-has-uncommitted-changes",
-      "channel": "source-worktree",
-      "scope": "local",
-      "externalBlocker": false,
-      "message": "local source worktree has uncommitted changes",
-      "nextAction": "Commit or clean the local source worktree, then rerun the release audit."
     },
     {
       "id": "github-release-github-release-v2.1.8-missing",
@@ -1222,7 +1210,6 @@
   ],
   "nextActions": [
     "Run `npm login` / passkey in an interactive terminal, then `pnpm release:ecosystem:publish`.",
-    "Create or update the GitHub Release assets, then rerun `pnpm release:public`.",
-    "Commit and push the local source/public repository changes, then regenerate the release status report."
+    "Create or update the GitHub Release assets, then rerun `pnpm release:public`."
   ]
 }
