@@ -1298,6 +1298,7 @@ function reportAssetCopy(
 export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = {}): Plugin {
   const moduleId = options.moduleId || virtualModuleId
   const resolvedModuleId = `\0${moduleId}`
+  const injectedModulePath = moduleId.startsWith('/') ? moduleId : `/${moduleId}`
   const missingMode = options.missingRenderer || 'error'
   const explicitFormats = [...(options.formats || []), ...(options.renderers || [])]
     .map(normalizeToken)
@@ -1381,8 +1382,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       return [
         {
           tag: 'script',
-          attrs: { type: 'module' },
-          children: `import ${JSON.stringify(moduleId)};`,
+          attrs: { type: 'module', src: injectedModulePath },
           injectTo: 'head'
         }
       ]
@@ -1423,7 +1423,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       reportAssetCopy(results, targetRoot, missingMode)
     },
     resolveId(id) {
-      if (id === moduleId || id === virtualModuleId) {
+      if (id === moduleId || id === virtualModuleId || id === injectedModulePath) {
         return id === virtualModuleId ? resolvedVirtualModuleId : resolvedModuleId
       }
       return undefined
