@@ -128,7 +128,7 @@ Every renderer below can be passed through `options.renderers`:
 | `pdf.streaming` / `pdf.rangeChunkSize` | Controls URL-based progressive PDF loading and PDF.js range chunk size. |
 | `pdf.toolbar` | Shows or hides the PDF renderer's own page / zoom / rotation toolbar. Useful for comparison layouts. |
 | `pdf.navigation` / `pdf.defaultNavigationVisible` | Enables the left page / outline navigation pane and initial visibility. |
-| `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, `pdf.standardFontDataUrl` | Self-host PDF.js worker, CMap, WASM, and standard font assets. |
+| `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, `pdf.standardFontDataUrl` | Self-host PDF.js worker, CMap, WASM, and standard font assets. The default worker path is probed first and falls back to the packaged PDF.js handler when unavailable. |
 | `cad.wasmPath`, `cad.workerUrl`, `cad.dwfWasmUrl` | Self-host LibreDWG and DWF / DWFx / XPS assets. |
 | `cad.renderer` | `auto`, `webgl`, or `canvas2d`; default is `auto`. |
 | `cad.workerTimeoutMs` | DWG parsing timeout; `0` disables the limit. |
@@ -195,4 +195,4 @@ Framework packages expose the same operation model with ecosystem-native customi
 
 Toolbar buttons should call viewer operations rather than wrapping rendered content with outer CSS transforms. This keeps spreadsheet coordinates, PDF text layers, CAD canvases, and mobile gestures aligned.
 
-PDF default assets are resolved from the site root (`/vendor/pdf/...`) so Vue Router, React Router, and other deep routes do not accidentally request `vendor/pdf/pdf.worker.mjs` from the current page path. Use absolute `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, and `pdf.standardFontDataUrl` when deploying under a sub-path or a dedicated static asset domain.
+PDF default assets are probed from the site root (`/vendor/pdf/...`) so Vue Router, React Router, and other deep routes do not accidentally request `vendor/pdf/pdf.worker.mjs` from the current page path. When the static worker is missing or an app server falls back to HTML, the PDF renderer lazy-loads the packaged PDF.js worker handler as a compatibility fallback. Use absolute `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, and `pdf.standardFontDataUrl` when deploying under a sub-path, a dedicated static asset domain, or a strict CSP.

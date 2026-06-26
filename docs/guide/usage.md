@@ -221,7 +221,7 @@ const options = {
 | `pdf.thumbnails` | 页面列表是否显示真实页面缩略图，默认 `false`；开启后只对可见页懒渲染缩略图，避免大 PDF 一次性生成所有 canvas |
 | `pdf.rangeChunkSize` | PDF.js Range 请求分片大小，默认 64KB；仅在文件服务支持 Range 时生效 |
 | `pdf.withCredentials` | PDF.js URL 读取是否携带浏览器凭据，默认 `false` |
-| `pdf.workerUrl` | 自托管 PDF.js Worker 地址。默认从站点根路径加载 `/vendor/pdf/pdf.worker.mjs`，避免 Vue Router / React Router 深层路由把 worker 解析到错误目录；子路径或独立静态域部署时请显式传入绝对 URL |
+| `pdf.workerUrl` | 自托管 PDF.js Worker 地址。默认先从站点根路径探测 `/vendor/pdf/pdf.worker.mjs`，可用时使用真实 Worker；资源不存在、返回 HTML 或本地临时服务未复制 viewer assets 时，会懒加载包内 PDF.js worker handler 兜底，保证轻量组件 + preset 也能预览。子路径、独立静态域或严格 CSP 部署时请显式传入绝对 URL |
 | `pdf.cMapUrl` | PDF.js CMap 目录，默认从站点根路径加载 `/vendor/pdf/cmaps/` |
 | `pdf.wasmUrl` | PDF.js WASM 目录，默认从站点根路径加载 `/vendor/pdf/wasm/` |
 | `pdf.standardFontDataUrl` | PDF.js standard fonts 目录，默认从站点根路径加载 `/vendor/pdf/standard_fonts/` |

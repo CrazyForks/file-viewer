@@ -45,6 +45,19 @@ const SCALE_STEP = 0.1;
 const FIT_HORIZONTAL_PADDING = 28;
 const PAGE_BORDER_WIDTH = 18;
 const PDF_EXPORT_MAX_PAGE_PIXELS = 8_000_000;
+const PDF_WORKER_PROBE_TIMEOUT_MS = 1200;
+
+type PdfWorkerHandlerModule = {
+  WorkerMessageHandler: unknown;
+};
+
+type PdfJsWorkerGlobal = typeof globalThis & {
+  pdfjsWorker?: {
+    WorkerMessageHandler?: unknown;
+  };
+};
+
+let bundledPdfWorkerModulePromise: Promise<PdfWorkerHandlerModule> | null = null;
 
 // PDF.js viewer CSS references image assets that are not shipped with the
 // on-demand renderer chunk, so keep the preview self-contained and 404-free.
@@ -56,9 +69,7 @@ type PdfNavMode = 'pages' | 'outline';
 type PdfRotation = 0 | 90 | 180 | 270;
 type PdfLoadingTask = ReturnType<typeof getDocument>;
 type PdfDocumentProxy = Awaited<PdfLoadingTask['promise']>;
-type PdfWorkerInstance = {
-  destroy: () => void;
-};
+type PdfWorkerInstance = InstanceType<typeof PdfJsWorker>;
 type PdfResource = {
   loadingTask: PdfLoadingTask;
   worker: PdfWorkerInstance | null;
@@ -167,6 +178,37 @@ const waitForPaint = (view?: Window | null) => new Promise<void>(resolve => {
   }
   globalThis.setTimeout(resolve, 0);
 });
+
+const isConfiguredUrl = (value: string | URL | undefined) => {
+  return value !== undefined && value !== null && String(value).trim().length > 0;
+};
+
+const isJavaScriptLikeResponse = (response: Response) => {
+  const contentType = response.headers.get('content-type')?.toLowerCase() || '';
+  return !contentType ||
+    contentType.includes('javascript') ||
+    contentType.includes('ecmascript') ||
+    contentType.includes('application/octet-stream') ||
+    contentType.includes('text/plain');
+};
+
+const loadBundledPdfWorkerModule = async () => {
+  bundledPdfWorkerModulePromise ??= import('pdfjs-dist/legacy/build/pdf.worker.mjs') as Promise<PdfWorkerHandlerModule>;
+  return bundledPdfWorkerModulePromise;
+};
+
+const installBundledPdfFakeWorker = async () => {
+  const workerGlobal = globalThis as PdfJsWorkerGlobal;
+  if (workerGlobal.pdfjsWorker?.WorkerMessageHandler) {
+    return;
+  }
+
+  const workerModule = await loadBundledPdfWorkerModule();
+  workerGlobal.pdfjsWorker = {
+    ...workerGlobal.pdfjsWorker,
+    WorkerMessageHandler: workerModule.WorkerMessageHandler,
+  };
+};
 
 const resolvePdfWorkerUrl = (
   options: FileViewerPdfOptions | undefined,
@@ -570,18 +612,77 @@ export default async function renderPdf(
     });
   };
 
-  const createPdfWorker = () => {
-    if (!targetWindow?.Worker) {
-      return null;
+  const canUseResolvedPdfWorkerUrl = async (workerUrl: string) => {
+    const fetcher = targetWindow.fetch?.bind(targetWindow) || globalThis.fetch?.bind(globalThis);
+    const AbortControllerCtor = targetWindow.AbortController || globalThis.AbortController;
+    if (!fetcher || !AbortControllerCtor) {
+      return false;
     }
 
-    GlobalWorkerOptions.workerSrc = resolvePdfWorkerUrl(options, documentRef.URL || undefined);
     try {
-      return PdfJsWorker.create({ name: 'file-viewer-pdf-worker' });
-    } catch (error) {
-      console.warn('[file-viewer] PDF Worker 无法创建，回退到 PDF.js 默认加载策略。', error);
-      return null;
+      const parsed = new URL(workerUrl, documentRef.baseURI || targetWindow.location.href);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return false;
+      }
+    } catch {
+      return false;
     }
+
+    const controller = new AbortControllerCtor();
+    const timer = targetWindow.setTimeout(() => controller.abort(), PDF_WORKER_PROBE_TIMEOUT_MS);
+    try {
+      const response = await fetcher(workerUrl, {
+        method: 'HEAD',
+        cache: 'no-cache',
+        signal: controller.signal,
+      });
+      if (response.ok) {
+        return isJavaScriptLikeResponse(response);
+      }
+
+      if (response.status !== 405 && response.status !== 501) {
+        return false;
+      }
+
+      const fallbackResponse = await fetcher(workerUrl, {
+        method: 'GET',
+        cache: 'no-cache',
+        headers: { Range: 'bytes=0-0' },
+        signal: controller.signal,
+      });
+      return (fallbackResponse.ok || fallbackResponse.status === 206) &&
+        isJavaScriptLikeResponse(fallbackResponse);
+    } catch {
+      return false;
+    } finally {
+      targetWindow.clearTimeout(timer);
+    }
+  };
+
+  const createPdfWorker = async () => {
+    const workerUrl = resolvePdfWorkerUrl(options, documentRef.URL || undefined);
+    const hasExplicitWorkerUrl = isConfiguredUrl(options?.workerUrl);
+    const shouldUseRealWorker = !!targetWindow?.Worker &&
+      (hasExplicitWorkerUrl || await canUseResolvedPdfWorkerUrl(workerUrl));
+
+    if (shouldUseRealWorker) {
+      GlobalWorkerOptions.workerSrc = workerUrl;
+      try {
+        const worker = PdfJsWorker.create({ name: 'file-viewer-pdf-worker' }) as PdfWorkerInstance;
+        await worker.promise;
+        return worker;
+      } catch (error) {
+        console.warn('[file-viewer] PDF Worker 初始化失败，改用包内 PDF.js 兜底。', error);
+      }
+    }
+
+    try {
+      await installBundledPdfFakeWorker();
+    } catch (error) {
+      console.warn('[file-viewer] PDF.js 包内 worker 兜底加载失败，继续使用 PDF.js 默认策略。', error);
+      GlobalWorkerOptions.workerSrc = workerUrl;
+    }
+    return null;
   };
 
   const resolvePdfSearchWaiters = (state: FileViewerSearchState) => {
@@ -1073,7 +1174,7 @@ export default async function renderPdf(
         throw new Error(t('pdf.error.missingSource'));
       }
 
-      const worker = createPdfWorker();
+      const worker = await createPdfWorker();
       const pdfAssets = resolveFileViewerPdfAssetUrls(
         options,
         documentRef.URL || documentRef.baseURI

@@ -39,6 +39,8 @@ const options = {
 }
 ```
 
+默认未显式配置时，渲染器会先探测站点根路径的 `/vendor/pdf/pdf.worker.mjs`。如果客户项目没有执行 `file-viewer-copy-assets`、没有使用 `@file-viewer/vite-plugin`，或者本地临时服务器把该路径回退成 HTML，PDF renderer 会自动懒加载包内 PDF.js worker handler 作为兼容兜底，避免 `Setting up fake worker failed` 直接中断预览。需要最佳性能、完整 cMap/WASM/standard fonts 或严格离线部署时，仍建议复制 viewer assets 并配置真实静态地址。
+
 ## 迁移说明
 
 PDF 渲染已经从 `@file-viewer/core` 移入本包，`pdfjs-dist` 只由 `@file-viewer/renderer-pdf` 声明。只安装 core 或标准组件包时不会再拉取 PDF.js；需要 PDF 预览时请显式装配本 renderer，或使用 `@file-viewer/preset-all`。

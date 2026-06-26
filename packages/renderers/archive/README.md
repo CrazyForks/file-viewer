@@ -30,8 +30,9 @@ const options = {
 ## 能力边界
 
 - 支持 ZIP、TAR、GZIP、RAR、7z 等常见压缩包目录预览。
+- 支持加密压缩包：检测到加密内容后使用 `libarchive.js` 统一解密，默认弹框要求用户输入密码，密码正确后继续读取目录或预览内部文件。
 - 优先使用 `libarchive.js` Worker + WASM，避免大压缩包阻塞主线程。
-- Worker 不可用时自动回退到 ZIP / TAR / GZIP 兼容模式，适合手机 WebView、本地临时服务器和内网静态部署排障。
+- Worker 不可用时自动回退到 ZIP / TAR / GZIP 兼容模式，适合手机 WebView、本地临时服务器和内网静态部署排障；加密压缩包不会走 fallback，必须发布 libarchive Worker/WASM。
 - 点击内部文件后才按需解压，并通过 `renderNestedBuffer` 或 core dispatcher 复用 PDF、Office、CAD、XMind、图片、代码等现有 renderer。
 - 内置体积上限、单文件预览上限、Worker 超时、IndexedDB 缓存和下载入口，避免一次性把压缩包全部展开到内存。
 
@@ -54,6 +55,24 @@ const options = {
   },
 }
 ```
+
+## 加密压缩包
+
+默认情况下，检测到加密内容会显示内置密码弹框。业务也可以预置密码，或接管密码获取流程：
+
+```ts
+const options = {
+  archive: {
+    password: initialPasswordFromYourSystem,
+    async requestPassword(context) {
+      // context.filename / context.entryName / context.reason / context.attempt
+      return await openYourPermissionCheckedPasswordModal(context)
+    },
+  },
+}
+```
+
+`requestPassword` 返回字符串时继续解密；返回 `null` 或 `undefined` 时取消预览并展示友好提示。错误密码会重新请求密码，不会切换到 JSZip fallback。
 
 ## 迁移说明
 

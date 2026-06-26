@@ -60,8 +60,10 @@ const resolveInitialDemoLocale = (): DemoLocale => {
 const demoLocale = ref<DemoLocale>(resolveInitialDemoLocale())
 const url = ref(DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value])
 const preview = ref('')
+const scenarioPickerOpen = ref(false)
 const samplePickerOpen = ref(false)
 const expandedSampleGroupIndex = ref<number | null>(0)
+const scenarioPickerRef = ref<HTMLElement | null>(null)
 const samplePickerRef = ref<HTMLElement | null>(null)
 const controlPanelRef = ref<HTMLElement | null>(null)
 const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
@@ -131,6 +133,8 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     samples: '样例',
     search: '搜索',
     more: '更多',
+    quickSamples: '快速试用',
+    quickSamplesHint: '常用格式一键打开',
     sampleFile: '示例文件',
     collapse: '收起',
     open: '打开',
@@ -180,6 +184,8 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     samples: 'Samples',
     search: 'Search',
     more: 'More',
+    quickSamples: 'Quick samples',
+    quickSamplesHint: 'Open common formats',
     sampleFile: 'Sample file',
     collapse: 'Collapse',
     open: 'Open',
@@ -307,11 +313,12 @@ const sampleGroupsZh: SampleGroup[] = [
   },
   {
     title: '压缩包',
-    description: 'ZIP / TAR.GZ',
+    description: 'ZIP / TAR.GZ / 加密',
     family: 'archive',
     items: [
       { name: 'ZIP', url: '/example/archive.zip' },
-      { name: 'TAR.GZ', url: '/example/archive.tar.gz' }
+      { name: 'TAR.GZ', url: '/example/archive.tar.gz' },
+      { name: '加密 ZIP（密码 flyfish）', url: '/example/encrypted.zip' }
     ]
   },
   {
@@ -439,7 +446,7 @@ const englishGroupCopy: Array<Pick<SampleGroup, 'title' | 'description'>> = [
   { title: 'Mindmaps & Diagrams', description: 'XMind / Mermaid / PlantUML / draw.io' },
   { title: '3D & Geo Models', description: 'GLTF / OBJ / STL / PLY / Geo' },
   { title: 'Ebooks', description: 'EPUB / UMD' },
-  { title: 'Archives', description: 'ZIP / TAR.GZ' },
+  { title: 'Archives', description: 'ZIP / TAR.GZ / Encrypted' },
   { title: 'Email & EDA', description: 'EML / MSG / OLB / DRA / GDS / OASIS' },
   { title: 'Text', description: 'Markdown / TXT / Log' },
   { title: 'Frontend & Data', description: 'JS / TS / Vue / Data' },
@@ -455,6 +462,7 @@ const englishSampleUrlMap: Record<string, string> = {
   '/example/ppt.pptx': '/example/en/sample-presentation.pptx',
   '/example/archive.zip': '/example/en/archive.zip',
   '/example/archive.tar.gz': '/example/en/archive.tar.gz',
+  '/example/encrypted.zip': '/example/encrypted.zip',
   '/example/model.gltf': '/example/en/model.gltf',
   '/example/map.geojson': '/example/en/map.geojson',
   '/example/markdown.md': '/example/en/markdown.md',
@@ -502,6 +510,7 @@ const englishSampleNameMap: Record<string, string> = {
   '/example/book.umd': 'UMD ebook',
   '/example/en/archive.zip': 'ZIP archive with English samples',
   '/example/en/archive.tar.gz': 'TAR.GZ archive with English samples',
+  '/example/encrypted.zip': 'Encrypted ZIP (password: flyfish)',
   '/example/sample.eml': 'EML message',
   '/example/sample.msg': 'MSG Outlook message',
   '/example/sample.mbox': 'MBOX mailbox',
@@ -1121,6 +1130,8 @@ function handleViewerZoomChange(state: FileViewerZoomState) {
 listenForFile((body, target, options) => {
   hidden.value = true
   runtimeOptions.value = options || {}
+  scenarioPickerOpen.value = false
+  samplePickerOpen.value = false
   if (body) {
     filename.value = body.name && decodeURIComponent(body.name) || ''
     file.value = body
@@ -1158,6 +1169,7 @@ function openUrlPreview(nextUrl = url.value) {
   file.value = undefined
   resetViewerSearch()
   preview.value = nextUrl
+  scenarioPickerOpen.value = false
   samplePickerOpen.value = false
   mobileControlsOpen.value = false
   mobileActionsOpen.value = false
@@ -1180,6 +1192,7 @@ function setDemoLocale(nextLocale: DemoLocale) {
 
 function setInputMode(nextMode: boolean) {
   input.value = nextMode
+  scenarioPickerOpen.value = false
   samplePickerOpen.value = false
 }
 
@@ -1190,6 +1203,7 @@ async function handleChange(e: Event) {
     return
   }
   input.value = false
+  scenarioPickerOpen.value = false
   samplePickerOpen.value = false
   mobileControlsOpen.value = false
   mobileActionsOpen.value = false
@@ -1198,9 +1212,18 @@ async function handleChange(e: Event) {
   file.value = value
 }
 
+async function toggleScenarioPicker() {
+  scenarioPickerOpen.value = !scenarioPickerOpen.value
+  if (scenarioPickerOpen.value) {
+    samplePickerOpen.value = false
+    await nextTick()
+  }
+}
+
 async function toggleSamplePicker() {
   samplePickerOpen.value = !samplePickerOpen.value
   if (samplePickerOpen.value) {
+    scenarioPickerOpen.value = false
     expandedSampleGroupIndex.value = activeSampleGroupIndex.value >= 0 ? activeSampleGroupIndex.value : 0
     await nextTick()
     updateSampleMenuGeometry()
@@ -1217,6 +1240,7 @@ function selectPreset(nextUrl: string) {
   const nextGroupIndex = sampleGroups.value.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, nextUrl)))
   url.value = nextUrl
   expandedSampleGroupIndex.value = nextGroupIndex >= 0 ? nextGroupIndex : expandedSampleGroupIndex.value
+  scenarioPickerOpen.value = false
   samplePickerOpen.value = false
   mobileControlsOpen.value = false
   mobileActionsOpen.value = false
@@ -1228,7 +1252,7 @@ function isActivePreset(item: PresetFile) {
 }
 
 function handleDocumentPointerDown(event: PointerEvent) {
-  if (!samplePickerOpen.value) {
+  if (!samplePickerOpen.value && !scenarioPickerOpen.value) {
     return
   }
   const target = event.target
@@ -1242,6 +1266,10 @@ function handleDocumentPointerDown(event: PointerEvent) {
   if (target instanceof Node && samplePickerRef.value?.contains(target)) {
     return
   }
+  if (target instanceof Node && scenarioPickerRef.value?.contains(target)) {
+    return
+  }
+  scenarioPickerOpen.value = false
   samplePickerOpen.value = false
 }
 
@@ -1259,6 +1287,7 @@ function handleDocumentKeydown(event: KeyboardEvent) {
   }
 
   if (event.key === 'Escape') {
+    scenarioPickerOpen.value = false
     samplePickerOpen.value = false
     mobileControlsOpen.value = false
     mobileActionsOpen.value = false
@@ -1294,7 +1323,15 @@ function updateSampleMenuGeometry() {
 </script>
 
 <template>
-  <div class='demo-shell' :class="{ hidden, 'mobile-controls-open': mobileControlsOpen, 'mobile-actions-open': mobileActionsOpen }">
+  <div
+    class='demo-shell'
+    :class="{
+      hidden,
+      'mobile-controls-open': mobileControlsOpen,
+      'mobile-actions-open': mobileActionsOpen,
+      'sample-picker-open': samplePickerOpen
+    }"
+  >
     <main class='workspace'>
       <div v-if='!hidden' class='layout-shell'>
         <aside ref='controlPanelRef' class='control-panel'>
@@ -1363,23 +1400,50 @@ function updateSampleMenuGeometry() {
             </div>
 
             <template v-if='input'>
-              <div class='scenario-grid' aria-label='Demo scenarios'>
+              <div ref='scenarioPickerRef' class='scenario-picker' :class='{ open: scenarioPickerOpen }'>
                 <button
-                  v-for='scenario in scenarioPicks'
-                  :key='scenario.url'
                   type='button'
-                  class='scenario-card'
-                  :class='{ active: !file && isSameSampleUrl(url, scenario.url) }'
-                  @click='selectPreset(scenario.url)'
+                  class='scenario-trigger'
+                  aria-controls='scenario-menu'
+                  :aria-expanded="scenarioPickerOpen ? 'true' : 'false'"
+                  @click='toggleScenarioPicker'
                 >
-                  <span class='sample-file-icon scenario-icon' :data-family='scenario.family'>
-                    <span>{{ getFileIconMeta(scenario.url).icon }}</span>
+                  <span class='scenario-trigger-icon'>
+                    <FileSearch :size='17' :stroke-width='2.4' />
                   </span>
-                  <span>
-                    <strong>{{ scenario.title }}</strong>
-                    <em>{{ scenario.description }}</em>
+                  <span class='scenario-trigger-copy'>
+                    <strong>{{ demoCopy.quickSamples }}</strong>
+                    <em>{{ demoCopy.quickSamplesHint }}</em>
                   </span>
+                  <ChevronUp v-if='scenarioPickerOpen' :size='16' :stroke-width='2.6' />
+                  <ChevronDown v-else :size='16' :stroke-width='2.6' />
                 </button>
+
+                <div
+                  v-if='scenarioPickerOpen'
+                  id='scenario-menu'
+                  class='scenario-popover'
+                  role='menu'
+                  aria-label='Demo scenarios'
+                >
+                  <button
+                    v-for='scenario in scenarioPicks'
+                    :key='scenario.url'
+                    type='button'
+                    class='scenario-card'
+                    :class='{ active: !file && isSameSampleUrl(url, scenario.url) }'
+                    role='menuitem'
+                    @click='selectPreset(scenario.url)'
+                  >
+                    <span class='sample-file-icon scenario-icon' :data-family='scenario.family'>
+                      <span>{{ getFileIconMeta(scenario.url).icon }}</span>
+                    </span>
+                    <span>
+                      <strong>{{ scenario.title }}</strong>
+                      <em>{{ scenario.description }}</em>
+                    </span>
+                  </button>
+                </div>
               </div>
 
               <div ref='samplePickerRef' class='sample-picker' :class='{ open: samplePickerOpen }'>
@@ -1783,11 +1847,14 @@ function updateSampleMenuGeometry() {
 
 .workspace {
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
   padding: 16px;
 }
 
 .layout-shell {
   height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(276px, 320px) minmax(0, 1fr);
   gap: 16px;
@@ -1808,6 +1875,7 @@ function updateSampleMenuGeometry() {
   z-index: 3;
   display: flex;
   flex-direction: column;
+  max-height: 100%;
   overflow: visible;
   padding: 12px;
   gap: 12px;
@@ -1815,6 +1883,7 @@ function updateSampleMenuGeometry() {
 
 .brand-card {
   position: relative;
+  flex-shrink: 0;
   min-height: 144px;
   overflow: hidden;
   display: flex;
@@ -1947,6 +2016,7 @@ function updateSampleMenuGeometry() {
 }
 
 .current-card {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2002,6 +2072,7 @@ function updateSampleMenuGeometry() {
 .mode-button,
 .compact-field,
 .primary-button,
+.scenario-trigger,
 .sample-trigger,
 .sample-card,
 .scenario-card {
@@ -2010,6 +2081,7 @@ function updateSampleMenuGeometry() {
 
 .mode-button,
 .primary-button,
+.scenario-trigger,
 .sample-trigger,
 .sample-card,
 .scenario-card {
@@ -2020,6 +2092,7 @@ function updateSampleMenuGeometry() {
 
 .mode-button:hover,
 .primary-button:hover,
+.scenario-trigger:hover,
 .sample-trigger:hover,
 .sample-card:hover,
 .scenario-card:hover {
@@ -2044,17 +2117,104 @@ function updateSampleMenuGeometry() {
   position: relative;
   flex: 1;
   min-height: 0;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 2px 2px 4px;
+  padding: 2px 4px 4px 2px;
 }
 
-.scenario-grid {
+.sample-picker-open .panel-body {
+  overflow: visible;
+}
+
+.scenario-picker {
+  position: relative;
+  z-index: 5;
+}
+
+.scenario-trigger {
+  width: 100%;
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+  color: #142335;
+  text-align: left;
+}
+
+.scenario-picker.open .scenario-trigger,
+.scenario-trigger:hover {
+  border-color: rgba(33, 163, 102, 0.24);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 24px rgba(18, 35, 55, 0.08);
+}
+
+.scenario-trigger-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(33, 163, 102, 0.12);
+  color: #16804f;
+}
+
+.scenario-trigger-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scenario-trigger-copy strong {
+  color: #142335;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.scenario-trigger-copy em {
+  color: #718193;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.scenario-trigger-copy strong,
+.scenario-trigger-copy em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-popover {
+  position: absolute;
+  z-index: 28;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  max-height: min(46vh, 360px);
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 22px 50px rgba(18, 35, 55, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(16px);
 }
 
 .scenario-card {
@@ -2219,10 +2379,12 @@ function updateSampleMenuGeometry() {
   z-index: 4;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .sample-trigger {
   width: 100%;
+  flex-shrink: 0;
   min-height: 70px;
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
@@ -2913,6 +3075,7 @@ function updateSampleMenuGeometry() {
   }
 
   .current-card,
+  .scenario-trigger,
   .sample-trigger,
   .upload-card,
   .snippet-card,
@@ -2930,6 +3093,7 @@ function updateSampleMenuGeometry() {
   .current-copy span,
   .field-label,
   .snippet-heading > span,
+  .scenario-trigger-copy em,
   .scenario-card em,
   .sample-trigger-copy span,
   .sample-trigger-copy em,
@@ -2941,6 +3105,7 @@ function updateSampleMenuGeometry() {
   }
 
   .current-copy strong,
+  .scenario-trigger-copy strong,
   .scenario-card strong,
   .sample-trigger-copy strong,
   .sample-card-copy strong,
@@ -2977,6 +3142,26 @@ function updateSampleMenuGeometry() {
   .compact-field:focus {
     border-color: rgba(45, 212, 154, 0.4);
     box-shadow: 0 0 0 4px rgba(45, 212, 154, 0.12);
+  }
+
+  .scenario-picker.open .scenario-trigger,
+  .scenario-trigger:hover {
+    border-color: rgba(45, 212, 154, 0.26);
+    background: rgba(22, 32, 39, 0.96);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+  }
+
+  .scenario-trigger-icon {
+    background: rgba(45, 212, 154, 0.14);
+    color: #61e5b4;
+  }
+
+  .scenario-popover {
+    border-color: rgba(167, 185, 198, 0.16);
+    background: rgba(14, 22, 28, 0.96);
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.42),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   }
 
   .sample-picker.open .sample-trigger,
@@ -3263,6 +3448,11 @@ function updateSampleMenuGeometry() {
   }
 
   .panel-body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .sample-picker-open .panel-body {
     overflow: visible;
   }
 }
@@ -3362,6 +3552,10 @@ function updateSampleMenuGeometry() {
     transition: transform 0.24s ease, opacity 0.2s ease;
   }
 
+  .sample-picker-open .control-panel {
+    max-height: min(86dvh, 680px);
+  }
+
   .mobile-controls-open .control-panel {
     transform: translateY(0);
     opacity: 1;
@@ -3406,9 +3600,26 @@ function updateSampleMenuGeometry() {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
     gap: 10px;
     padding-right: 2px;
+  }
+
+  .sample-picker-open .panel-body {
+    overflow: hidden;
+  }
+
+  .sample-picker-open .scenario-picker,
+  .sample-picker-open .field-group,
+  .sample-picker-open .primary-button,
+  .sample-picker-open .snippet-card {
+    display: none;
+  }
+
+  .sample-picker-open .sample-picker {
+    flex: 1;
+    min-height: 0;
   }
 
   .compact-field,
@@ -3435,6 +3646,12 @@ function updateSampleMenuGeometry() {
     border-radius: 18px;
   }
 
+  .sample-picker-open .sample-menu {
+    flex: 1;
+    min-height: 0;
+    max-height: none !important;
+  }
+
   .sample-menu--bottom,
   .sample-menu--top {
     top: auto;
@@ -3449,8 +3666,23 @@ function updateSampleMenuGeometry() {
     min-height: 62px;
   }
 
-  .scenario-grid {
-    gap: 7px;
+  .scenario-trigger {
+    min-height: 42px;
+    border-radius: 15px;
+    padding: 6px 9px;
+  }
+
+  .scenario-trigger-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .scenario-popover {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: min(32dvh, 250px);
+    margin-top: 8px;
+    border-radius: 18px;
   }
 
   .scenario-card {

@@ -2,6 +2,14 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.1.8` OFD 电子发票兼容与压缩包内嵌预览修复
+
+- OFD renderer 兼容多个并列 `ofd:Fonts`、`ofd:DrawParams`、`ofd:MultiMedias` 资源分组，修复部分电子发票在读取图片资源时抛出 `Cannot read properties of undefined (reading 'format')` 的问题
+- OFD 图片资源渲染增加缺失资源兜底，单个资源异常不会中断整份文档正文预览
+- PDF renderer 默认静态 `vendor/pdf/pdf.worker.mjs` 不存在或被网关回退成 HTML 时，会自动懒加载包内 PDF.js worker handler 兜底，修复轻量 `@file-viewer/vue3` / `@file-viewer/web` + `@file-viewer/preset-office` 接入时因未复制 viewer assets 导致 `Setting up fake worker failed` 的问题；显式 `options.pdf.workerUrl`、Vite 插件和 `file-viewer-copy-assets` 仍优先使用真实 Worker
+- 压缩包预览支持隐藏/显示内部文件列表，长文件名自动省略，避免移动端和窄容器下把页面挤出视图
+- `@file-viewer/web-full` IIFE 嵌套预览继续使用当前已安装的 renderer / preset 上下文，压缩包内 PDF、Office、图片等文件不再误判为缺失 renderer
+
 ## 当前主线 GitHub 曝光与长期运营资产优化
 
 - README 首屏改为“面向企业后台、内网和私有化系统的纯前端文件预览组件”，把无需服务端转码、Demo、文档、快速开始和支持格式前置，把 206+ 扩展名作为可信度证据承接

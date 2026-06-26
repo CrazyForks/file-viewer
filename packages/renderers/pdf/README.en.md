@@ -39,6 +39,8 @@ const options = {
 }
 ```
 
+When no explicit URL is provided, the renderer first probes `/vendor/pdf/pdf.worker.mjs` from the site root. If the host app did not run `file-viewer-copy-assets`, does not use `@file-viewer/vite-plugin`, or a local dev server falls back to HTML for that path, the renderer lazy-loads the packaged PDF.js worker handler as a compatibility fallback so preview does not fail with `Setting up fake worker failed`. For best performance, full cMap/WASM/standard-font support, or strict offline deployments, still copy viewer assets and point these URLs at real static files.
+
 ## Migration Note
 
 PDF rendering has moved out of `@file-viewer/core` into this package, and `pdfjs-dist` is now declared only by `@file-viewer/renderer-pdf`. Installing core or a standard component package no longer pulls PDF.js; explicitly assemble this renderer when PDF preview is needed, or use `@file-viewer/preset-all`.

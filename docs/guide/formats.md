@@ -100,7 +100,7 @@
 - 图片填充会处理 `srcRect` 裁剪信息，复杂模板里的裁切图、背景图和组合形状更适合作为真实业务样本回归。
 - `odp` 作为 OpenDocument 演示文稿兼容入口，会读取每页幻灯片文本和页面结构，用于快速确认内容和页数。需要完整动画、母版和复杂形状高保真时，仍建议导出为 PPTX 或 PDF。
 - `pdf` 走 `pdfjs-dist`，通常是版式最稳定的一类文件，适合合同、流程单、正式成品材料。当前 PDF 视图提供顶部缩放工具栏、页码状态、旋转页兼容、可显隐导航窗格、页面/目录树切换、可选懒加载页面缩略图和宽度自适应。同源 URL 会默认使用 PDF.js 的 URL 渐进读取；文件服务支持 Range 时会自动分片加载，避免大文件必须整包下载后才出现首屏。
-- PDF.js worker、CMap、WASM 和 standard fonts 默认随 viewer assets 分发到 `vendor/pdf/`，不会访问公共 CDN。静态目录特殊时可通过 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl` 和 `options.pdf.standardFontDataUrl` 指向自托管地址。
+- PDF.js worker、CMap、WASM 和 standard fonts 默认随 viewer assets 分发到 `vendor/pdf/`，不会访问公共 CDN。轻量组件 + preset 没有复制 assets 时，PDF renderer 会在默认 worker 不可用或返回 HTML 时懒加载包内 worker handler 兜底，保证先能预览；静态目录特殊、需要最佳性能或严格离线时可通过 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl` 和 `options.pdf.standardFontDataUrl` 指向自托管地址。
 - PDF 的打印与导出 HTML 会通过专属导出适配器逐页生成完整页面，不依赖当前滚动位置、当前可见页或已经渲染的 canvas，也不会被导航窗格、预览容器或全局样式截断，适合正式归档和审批留痕。
 - `ofd` 走 `@file-viewer/renderer-ofd` 独立 renderer，按需加载 `DLTech21/ofd.js` 仓库源码，用于国产版式文档在线预览。npm dist 当前会在 wasm 解析层返回授权错误，组件改用同仓库的纯 JS 解析/渲染链路，并保留解析缓存、resize 重排、缩放、打印和 HTML 导出。
 - `typ` / `typst` 始终按源文件直接预览，不会自动探测或替换为同名 PDF。组件会在命中 Typst 时按需加载 `@myriaddreamin/typst.ts` 的浏览器 WASM 编译与 SVG 渲染链路。

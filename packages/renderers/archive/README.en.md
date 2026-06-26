@@ -30,8 +30,9 @@ const options = {
 ## Capabilities
 
 - Previews ZIP, TAR, GZIP, RAR, 7z, and common archive directories.
+- Supports encrypted archives: encrypted content is handled through the unified `libarchive.js` path, the built-in dialog asks for a password, and a correct password unlocks directory reading or nested entry previews.
 - Uses `libarchive.js` Worker + WASM first to keep large archive parsing off the main thread.
-- Falls back to ZIP / TAR / GZIP parsing when the Worker cannot be started, which helps mobile WebViews, local static servers, and private intranet deployments.
+- Falls back to ZIP / TAR / GZIP parsing when the Worker cannot be started, which helps mobile WebViews, local static servers, and private intranet deployments. Encrypted archives never use the fallback path and require the libarchive Worker/WASM assets.
 - Extracts internal files on demand, then delegates nested previews through `renderNestedBuffer` or the core dispatcher.
 - Includes archive size limits, entry preview limits, worker timeout, IndexedDB cache, and single-entry download.
 
@@ -54,6 +55,24 @@ const options = {
   },
 }
 ```
+
+## Encrypted Archives
+
+By default, encrypted archives open a built-in password dialog. Applications can also provide an initial password or take over password collection:
+
+```ts
+const options = {
+  archive: {
+    password: initialPasswordFromYourSystem,
+    async requestPassword(context) {
+      // context.filename / context.entryName / context.reason / context.attempt
+      return await openYourPermissionCheckedPasswordModal(context)
+    },
+  },
+}
+```
+
+Return a string from `requestPassword` to continue. Return `null` or `undefined` to cancel and show a friendly notice. Wrong passwords request another password and never switch to the JSZip fallback.
 
 ## Migration Note
 
