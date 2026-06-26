@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-06-26T07:28:55.932Z",
+  "generatedAt": "2026-06-26T07:32:09.766Z",
   "version": "2.1.9",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -32,7 +32,7 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "e605780a62a7cdd69be8cb99dff4bb14f53ee07b",
+      "hash": "5d09c55f73cb1bcff606cb77b9806c0b75b15ff9",
       "error": ""
     },
     "gitee": {
@@ -43,22 +43,22 @@
       "error": ""
     },
     "inSync": false,
-    "syncMode": "unchecked",
-    "treeChecked": false,
-    "referenceTree": "d0a96156b7a04fd8f1619f76164038c8423f3433",
-    "giteeTree": "",
-    "treeError": "local public repository a5e0219646f6 does not match GitHub e605780a62a7",
+    "syncMode": "stale",
+    "treeChecked": true,
+    "referenceTree": "f51da0e946ac19300de38145ce302ca0b78fe7d6",
+    "giteeTree": "62b18f03808005d7045f6bcb1c078889de3cdff4",
+    "treeError": "",
     "reportHashNote": "The open-source main repository mirrors the current public source tree and records the private source commit in the public commit body for traceability. The observed remote hash can trail until that mirror commit is pushed. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
   },
   "githubRelease": {
-    "ok": false,
+    "ok": true,
     "tag": "v2.1.9",
-    "url": "",
-    "assetCount": 0,
-    "hasManifest": false,
-    "hasStatus": false,
-    "hasSchema": false,
-    "error": "release not found"
+    "url": "https://github.com/flyfish-dev/file-viewer/releases/tag/v2.1.9",
+    "assetCount": 56,
+    "hasManifest": true,
+    "hasStatus": true,
+    "hasSchema": true,
+    "error": ""
   },
   "componentRepositories": [
     {
@@ -722,20 +722,17 @@
   ],
   "gaps": [
     "source remote https://git.flyfish.dev/flyfish-group/file-viewer.git missing main",
-    "local source worktree has uncommitted changes",
-    "GitHub Release v2.1.9 missing"
+    "local source worktree has uncommitted changes"
   ],
   "gapSummary": {
-    "total": 3,
-    "externalBlockers": 2,
+    "total": 2,
+    "externalBlockers": 1,
     "localActionable": 1,
     "byChannel": {
       "source-remote": 1,
-      "source-worktree": 1,
-      "github-release": 1
+      "source-worktree": 1
     },
     "externalBlockerChannels": [
-      "github-release",
       "source-remote"
     ],
     "localActionableChannels": [
@@ -758,18 +755,9 @@
       "externalBlocker": false,
       "message": "local source worktree has uncommitted changes",
       "nextAction": "Commit or clean the local source worktree, then rerun the release audit."
-    },
-    {
-      "id": "github-release-github-release-v2.1.9-missing",
-      "channel": "github-release",
-      "scope": "release-assets",
-      "externalBlocker": true,
-      "message": "GitHub Release v2.1.9 missing",
-      "nextAction": "Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets."
     }
   ],
   "nextActions": [
-    "Create or update the GitHub Release assets, then rerun `pnpm release:public`.",
     "Commit and push the local source/public repository changes, then regenerate the release status report."
   ]
 }
