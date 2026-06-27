@@ -965,6 +965,22 @@ const waitForSampleReady = async (page, samplePath) => {
   )
 }
 
+const unlockKnownPasswordSample = async (page, samplePath) => {
+  if (!samplePath.endsWith('encrypted.zip')) {
+    return
+  }
+
+  const dialogSelector = '.archive-password-dialog:not(.archive-hidden)'
+  await page.waitForSelector(`${dialogSelector} input[type="password"]`, { timeout: sampleTimeout })
+  await page.fill(`${dialogSelector} input[type="password"]`, 'flyfish')
+  await page.click(`${dialogSelector} .archive-password-submit`)
+  await page.waitForFunction(
+    selector => !document.querySelector(selector),
+    dialogSelector,
+    { timeout: sampleTimeout }
+  )
+}
+
 const verifyMainDemo = async (page, baseUrl, failures) => {
   await page.goto(`${baseUrl}/index.html?url=/example/markdown.md&smoke=demo-browser`, {
     waitUntil: 'domcontentloaded',
@@ -1032,6 +1048,8 @@ const verifySampleFile = async (page, baseUrl, samplePath, failures) => {
     waitUntil: 'domcontentloaded',
     timeout: sampleTimeout
   })
+
+  await unlockKnownPasswordSample(page, samplePath)
 
   try {
     await waitForSampleReady(page, samplePath)
