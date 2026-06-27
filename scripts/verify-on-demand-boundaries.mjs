@@ -87,6 +87,33 @@ assertNoPackages(
 )
 
 for (const wrapperEntry of wrapperEntries) {
+  if (wrapperEntry.wrapper?.flavor === 'full') {
+    const basePackage = wrapperEntry.wrapper.basePackage
+    assert(
+      basePackage,
+      `${wrapperEntry.packageName} full wrapper must declare basePackage`
+    )
+    const allowedPackages = new Set(['@file-viewer/core', basePackage, '@file-viewer/preset-all'])
+    if (wrapperEntry.packageName === '@file-viewer/web-full') {
+      for (const rendererPackageName of pluginRendererPackageNames) {
+        allowedPackages.add(rendererPackageName)
+      }
+    }
+    assertOnlyAllowedWorkspaceDeps(
+      wrapperEntry,
+      allowedPackages,
+      'full component packages'
+    )
+    assert(
+      wrapperEntry.packageJson.dependencies?.[basePackage],
+      `${wrapperEntry.packageName} must depend on its base package ${basePackage}`
+    )
+    assert(
+      wrapperEntry.packageJson.dependencies?.['@file-viewer/preset-all'],
+      `${wrapperEntry.packageName} must depend on @file-viewer/preset-all`
+    )
+    continue
+  }
   assertOnlyAllowedWorkspaceDeps(
     wrapperEntry,
     new Set(['@file-viewer/core']),

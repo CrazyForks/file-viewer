@@ -163,7 +163,10 @@ function assertImportsFrom(source, packageName, label) {
 
 function assertReferencesPackage(source, packageName, label) {
   assert(
-    source.includes(`'${packageName}'`) || source.includes(`"${packageName}"`),
+    source.includes(`'${packageName}'`) ||
+      source.includes(`"${packageName}"`) ||
+      source.includes(`'${packageName}/`) ||
+      source.includes(`"${packageName}/`),
     `${label} must reference ${packageName}`
   )
 }
@@ -353,8 +356,27 @@ function verifySvelteWrapper(source, label) {
 function verifyFullWrapper(wrapper, source) {
   const label = wrapper.packageName
   assert(wrapper.basePackage, `${label} full package must declare basePackage`)
-  assertReferencesPackage(source, '@file-viewer/preset-all', label)
+  assertImportsFrom(source, '@file-viewer/preset-all', label)
   assertReferencesPackage(source, wrapper.basePackage, label)
+  assertTokens(source, [
+    'fileViewerFullPreset',
+    'withFullViewerOptions',
+    'withFullMountOptions',
+    'rendererMode',
+    'autoRenderers'
+  ], label)
+  assert(
+    /preset\s*=\s*(?:allRenderers|fileViewerFullPreset)/.test(source),
+    `${label} full package must default options.preset to @file-viewer/preset-all`
+  )
+  assert(
+    /rendererMode\s*=\s*['"]replace['"]/.test(source),
+    `${label} full package must default rendererMode to replace with an explicit full preset`
+  )
+  assert(
+    /autoRenderers\s*:\s*rest\.autoRenderers\s*\?\?\s*true/.test(source),
+    `${label} full package must keep auto-registered renderer presets enabled unless the user disables them`
+  )
   assertNoLegacyIframeApi(source, label)
   assert(
     /export\s+\*\s+from\s+['"][^'"]+['"]/.test(source) ||
