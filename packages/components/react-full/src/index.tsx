@@ -8,7 +8,7 @@ import {
   type ViewerMountOptions,
   type ViewerOptions
 } from '@file-viewer/react'
-import { forwardRef, useMemo } from 'react'
+import { createElement, forwardRef, useMemo } from 'react'
 
 export * from '@file-viewer/react'
 
@@ -35,13 +35,11 @@ export const FileViewer = forwardRef<FileViewerHandle, FileViewerProps>((props, 
   const { options, ...rest } = props
   const fullOptions = useMemo(() => withFullViewerOptions(options), [options])
 
-  return (
-    <BaseFileViewer
-      {...rest}
-      ref={ref}
-      options={fullOptions}
-    />
-  )
+  return createElement(BaseFileViewer, {
+    ...rest,
+    ref,
+    options: fullOptions
+  })
 })
 
 FileViewer.displayName = 'FileViewerFull'

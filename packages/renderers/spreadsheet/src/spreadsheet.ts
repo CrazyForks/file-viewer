@@ -49,6 +49,13 @@ type EVirtTableInstance = {
     };
     scrollX?: number;
     scrollY?: number;
+    selector?: {
+      xArr: number[];
+      yArr: number[];
+      xArrCopy: number[];
+      yArrCopy: number[];
+    };
+    emit?(type: string, ...args: unknown[]): void;
   };
   on(type: string, handler: (...args: any[]) => void): void;
   loadConfig(config: unknown): void;
@@ -69,6 +76,12 @@ type ResizeColumnChangeEvent = {
 type ResizeRowChangeEvent = {
   rowIndex?: number;
   height?: number;
+};
+
+type SpreadsheetCopyParams = {
+  data: unknown;
+  xArr: number[];
+  yArr: number[];
 };
 
 type EVirtTableConstructor = new (
@@ -299,6 +312,82 @@ const setHidden = (element: HTMLElement, hidden: boolean) => {
 
 const clampZoom = (value: number) => {
   return Math.min(2.5, Math.max(0.5, Number(value.toFixed(2))));
+};
+
+const serializeSpreadsheetCopyCell = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  const text = `${value}`;
+  return /[\t\r\n"]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const serializeSpreadsheetCopyData = (data: unknown) => {
+  if (!Array.isArray(data)) {
+    return serializeSpreadsheetCopyCell(data);
+  }
+  return data.map(row => {
+    if (!Array.isArray(row)) {
+      return serializeSpreadsheetCopyCell(row);
+    }
+    return row.map(serializeSpreadsheetCopyCell).join('\t');
+  }).join('\n');
+};
+
+const copyTextWithTextareaFallback = (documentRef: Document, text: string) => {
+  const body = documentRef.body;
+  if (!body || typeof documentRef.execCommand !== 'function') {
+    return false;
+  }
+
+  const activeElement = documentRef.activeElement as HTMLElement | null;
+  const textarea = documentRef.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', 'true');
+  textarea.setAttribute('aria-hidden', 'true');
+  Object.assign(textarea.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '1px',
+    height: '1px',
+    padding: '0',
+    border: '0',
+    opacity: '0',
+    pointerEvents: 'none',
+  });
+
+  body.appendChild(textarea);
+  textarea.focus({ preventScroll: true });
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+
+  let copied = false;
+  try {
+    copied = documentRef.execCommand('copy');
+  } finally {
+    textarea.remove();
+    activeElement?.focus?.({ preventScroll: true });
+  }
+
+  return copied;
+};
+
+const writeSpreadsheetClipboard = async (documentRef: Document, text: string) => {
+  const targetWindow = documentRef.defaultView;
+  const clipboard = targetWindow?.navigator?.clipboard;
+  const useAsyncClipboard = !!targetWindow?.isSecureContext && typeof clipboard?.writeText === 'function';
+
+  if (useAsyncClipboard) {
+    try {
+      await clipboard.writeText(text);
+      return true;
+    } catch {
+      return copyTextWithTextareaFallback(documentRef, text);
+    }
+  }
+
+  return copyTextWithTextareaFallback(documentRef, text);
 };
 
 const renderFileViewerSpreadsheet = async (
@@ -641,11 +730,40 @@ const renderFileViewerSpreadsheet = async (
     renderImages();
   };
 
+  const markCopiedSelection = (params: SpreadsheetCopyParams) => {
+    const selector = table?.ctx.selector;
+    if (!selector) {
+      return;
+    }
+    selector.xArrCopy = params.xArr.slice();
+    selector.yArrCopy = params.yArr.slice();
+    table?.ctx.emit?.('copyChange', {
+      xArr: selector.xArrCopy,
+      yArr: selector.yArrCopy,
+      data: params.data,
+    });
+    table?.ctx.emit?.('draw');
+  };
+
+  const copySpreadsheetSelection = (params: SpreadsheetCopyParams) => {
+    const text = serializeSpreadsheetCopyData(params.data);
+    void writeSpreadsheetClipboard(documentRef, text).then((copied) => {
+      if (copied) {
+        markCopiedSelection(params);
+        return;
+      }
+      console.error('Spreadsheet copy failed: clipboard fallback returned false.');
+    }).catch((error) => {
+      console.error('Spreadsheet copy failed:', error);
+    });
+  };
+
   const buildTableView = () => ({
     config: createTableConfig({
       hostHeight: getHostHeight(),
       resizableColumns,
       resizableRows,
+      copySelection: copySpreadsheetSelection,
       sheetDefaults,
       virtualState,
       zoomScale: zoom,
@@ -708,6 +826,7 @@ const renderFileViewerSpreadsheet = async (
         hostHeight: getHostHeight(),
         resizableColumns,
         resizableRows,
+        copySelection: copySpreadsheetSelection,
         sheetDefaults,
         virtualState,
         zoomScale: zoom,
@@ -733,6 +852,7 @@ const renderFileViewerSpreadsheet = async (
         hostHeight: getHostHeight(),
         resizableColumns,
         resizableRows,
+        copySelection: copySpreadsheetSelection,
         sheetDefaults,
         virtualState,
         zoomScale: zoom,

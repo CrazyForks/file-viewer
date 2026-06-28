@@ -81,7 +81,7 @@
     <script>
       var statusNode = document.getElementById('status')
       var host = document.getElementById('viewer')
-      var bundleUrl = '/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js'
+      var bundleUrl = '/vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js'
 
       function setStatus(value) {
         document.body.setAttribute('data-viewer-status', value)
@@ -89,18 +89,18 @@
       }
 
       function loadViewerApi() {
-        if (window.FlyfishFileViewerWeb) {
-          return Promise.resolve(window.FlyfishFileViewerWeb)
+        if (window.FlyfishFileViewerWebFull) {
+          return Promise.resolve(window.FlyfishFileViewerWebFull)
         }
         return new Promise(function (resolve, reject) {
           var script = document.createElement('script')
           script.src = bundleUrl
           script.async = true
           script.onload = function () {
-            if (window.FlyfishFileViewerWeb) {
-              resolve(window.FlyfishFileViewerWeb)
+            if (window.FlyfishFileViewerWebFull) {
+              resolve(window.FlyfishFileViewerWebFull)
             } else {
-              reject(new Error('FlyfishFileViewerWeb global is unavailable'))
+              reject(new Error('FlyfishFileViewerWebFull global is unavailable'))
             }
           }
           script.onerror = function () {

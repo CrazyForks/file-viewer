@@ -81,20 +81,20 @@
       </header>
       <flyfish-file-viewer
         id="viewer"
-        src="/example/preview.md"
-        filename="preview.md"
+        src="/example/word.docx"
+        filename="word.docx"
         theme="light"
         toolbar-position="bottom-right"
         data-testid="iife-viewer-host"
       ></flyfish-file-viewer>
     </main>
 
-    <script src="/vendor/file-viewer-web/flyfish-file-viewer-web.iife.js"></script>
+    <script src="/vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js"></script>
     <script>
       (function () {
         var statusNode = document.getElementById('status')
         var host = document.getElementById('viewer')
-        var api = window.FlyfishFileViewerWeb
+        var api = window.FlyfishFileViewerWebFull
 
         function setStatus(value) {
           document.body.setAttribute('data-viewer-status', value)
@@ -103,7 +103,7 @@
 
         if (!api || typeof api.mountViewer !== 'function' || typeof api.defineFileViewerElement !== 'function') {
           setStatus('missing-global')
-          throw new Error('window.FlyfishFileViewerWeb is unavailable')
+          throw new Error('window.FlyfishFileViewerWebFull is unavailable')
         }
 
         host.options = {

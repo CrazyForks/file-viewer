@@ -1,4 +1,4 @@
-import fileViewer from '@file-viewer/svelte/action'
+import fileViewer from '@file-viewer/svelte-full/action'
 import './styles.css'
 
 const host = document.getElementById('svelte-viewer')
@@ -8,7 +8,7 @@ if (!host) {
 }
 
 fileViewer(host, {
-  url: '/example/preview.md',
+  url: '/example/word.docx',
   options: {
     theme: 'light',
     toolbar: {

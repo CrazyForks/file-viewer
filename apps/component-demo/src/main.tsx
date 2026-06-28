@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
-import FileViewer from '@file-viewer/react'
-import { mountViewer, type ViewerController } from '@file-viewer/web'
+import FileViewer from '@file-viewer/react-full'
+import { mountViewer, type ViewerController } from '@file-viewer/web-full'
 import './styles.css'
 
 const docxPreviewUrl = '/example/word.docx'
@@ -32,7 +32,7 @@ function App() {
       <header className="topbar">
         <div>
           <h1>Flyfish Viewer</h1>
-          <p>Native component smoke test</p>
+          <p>Full preset component smoke test</p>
         </div>
         <nav className="topbar-actions" aria-label="Demo links">
           <a href="/manual-js.html" target="_blank" rel="noreferrer">
@@ -58,14 +58,14 @@ function App() {
 
       <section className="viewer-grid" aria-label="Component preview">
         <article className="viewer-panel">
-          <h2>Vanilla JS / Web</h2>
+          <h2>Vanilla JS / Web Full</h2>
           <div className="viewer-frame">
             <WebViewerPanel />
           </div>
         </article>
 
         <article className="viewer-panel">
-          <h2>React</h2>
+          <h2>React Full</h2>
           <div className="viewer-frame">
             <FileViewer url={docxPreviewUrl} data-testid="react-viewer" />
           </div>

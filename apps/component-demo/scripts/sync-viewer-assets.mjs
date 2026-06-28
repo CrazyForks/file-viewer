@@ -13,6 +13,8 @@ const targetDirs = [
 const helperSourceDir = resolve(repoDir, 'packages/components/web/dist')
 const helperTargetDir = resolve(demoDir, 'public/vendor/file-viewer-web')
 const helperFiles = ['flyfish-file-viewer-web.iife.js']
+const fullHelperSourceDir = resolve(repoDir, 'packages/components/web-full/dist')
+const fullHelperTargetDir = resolve(demoDir, 'public/vendor/file-viewer-web-full')
 const exampleSourceDir = resolve(repoDir, 'apps/viewer-demo/public/example')
 const exampleTargetDir = resolve(demoDir, 'public/example')
 
@@ -68,6 +70,15 @@ for (const helperFile of helperFiles) {
   await cp(sourceFile, resolve(helperTargetDir, helperFile))
 }
 console.log(`[file-viewer-demo] web helper assets copied to ${helperTargetDir}`)
+
+if (!existsSync(resolve(fullHelperSourceDir, 'flyfish-file-viewer-web-full.iife.js'))) {
+  throw new Error(`缺少 ${fullHelperSourceDir}，请先运行 pnpm --filter @file-viewer/web-full build`)
+}
+await rm(fullHelperTargetDir, { force: true, recursive: true })
+await mkdir(fullHelperTargetDir, { recursive: true })
+await cp(fullHelperSourceDir, fullHelperTargetDir, { recursive: true })
+await removeMacMetadata(fullHelperTargetDir)
+console.log(`[file-viewer-demo] web full helper assets copied to ${fullHelperTargetDir}`)
 
 await mkdir(exampleTargetDir, { recursive: true })
 await cp(resolve(exampleSourceDir, 'word.docx'), resolve(exampleTargetDir, 'word.docx'))

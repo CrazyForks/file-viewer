@@ -110,13 +110,14 @@ bucket[renderer.id] = renderer
     build: {
       emptyOutDir: false,
       minify: 'esbuild',
+      outDir: rendererOutDir,
       sourcemap: false,
       target: 'es2020',
       lib: {
         entry: rendererEntry,
         name: renderer.globalName,
         formats: ['iife'],
-        fileName: () => `renderers/${renderer.key}.iife.js`
+        fileName: () => `${renderer.key}.iife.js`
       },
       rollupOptions: {
         output: {

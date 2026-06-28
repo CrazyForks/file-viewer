@@ -1,5 +1,5 @@
 import { createApp, h } from 'vue'
-import FileViewerPlugin, { FileViewer } from '@file-viewer/vue3'
+import FileViewerPlugin, { FileViewer } from '@file-viewer/vue3-full'
 import '@file-viewer/vue3/dist/file-viewer3.css'
 import './styles.css'
 
@@ -12,7 +12,7 @@ if (!host) {
 createApp({
   render() {
     return h(FileViewer, {
-      url: '/example/preview.md',
+      url: '/example/word.docx',
       options: {
         theme: 'light',
         toolbar: {

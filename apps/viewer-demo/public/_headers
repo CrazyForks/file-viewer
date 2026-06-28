@@ -22,4 +22,4 @@
   Content-Type: application/wasm
 
 /example/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=0, must-revalidate

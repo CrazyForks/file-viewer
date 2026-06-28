@@ -838,6 +838,28 @@ const sampleUrlKey = (target: string) => {
   }
 }
 
+const legacyDemoUrlMap: Record<string, string> = {
+  '/example/calibre-demo.docx': '/example/en/calibre-demo.docx'
+}
+
+const normalizeDemoUrl = (target: string) => {
+  const normalizedPath = legacyDemoUrlMap[sampleUrlKey(target)]
+  if (!normalizedPath) {
+    return target
+  }
+  try {
+    const parsed = new URL(target, window.location.origin)
+    const isRelative = !/^[a-z][a-z\d+\-.]*:/i.test(target)
+    const isDemoOrigin = parsed.origin === window.location.origin || parsed.hostname === 'demo.file-viewer.app'
+    if (!isRelative && !isDemoOrigin) {
+      return target
+    }
+    return `${normalizedPath}${parsed.search}${parsed.hash}`
+  } catch {
+    return normalizedPath
+  }
+}
+
 const isSameSampleUrl = (left: string, right: string) => {
   return sampleUrlKey(left) === sampleUrlKey(right)
 }
@@ -1138,8 +1160,9 @@ listenForFile((body, target, options) => {
     file.value = body
   }
   if (target) {
-    url.value = target
-    preview.value = target
+    const normalizedTarget = normalizeDemoUrl(target)
+    url.value = normalizedTarget
+    preview.value = normalizedTarget
   }
 })
 
@@ -1166,10 +1189,12 @@ onBeforeUnmount(() => {
 })
 
 function openUrlPreview(nextUrl = url.value) {
+  const normalizedUrl = normalizeDemoUrl(nextUrl)
   input.value = true
   file.value = undefined
   resetViewerSearch()
-  preview.value = nextUrl
+  url.value = normalizedUrl
+  preview.value = normalizedUrl
   scenarioPickerOpen.value = false
   samplePickerOpen.value = false
   mobileControlsOpen.value = false
@@ -1238,14 +1263,15 @@ async function toggleSampleGroup(index: number) {
 }
 
 function selectPreset(nextUrl: string) {
-  const nextGroupIndex = sampleGroups.value.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, nextUrl)))
-  url.value = nextUrl
+  const normalizedUrl = normalizeDemoUrl(nextUrl)
+  const nextGroupIndex = sampleGroups.value.findIndex(group => group.items.some(item => isSameSampleUrl(item.url, normalizedUrl)))
+  url.value = normalizedUrl
   expandedSampleGroupIndex.value = nextGroupIndex >= 0 ? nextGroupIndex : expandedSampleGroupIndex.value
   scenarioPickerOpen.value = false
   samplePickerOpen.value = false
   mobileControlsOpen.value = false
   mobileActionsOpen.value = false
-  openUrlPreview(nextUrl)
+  openUrlPreview(normalizedUrl)
 }
 
 function isActivePreset(item: PresetFile) {

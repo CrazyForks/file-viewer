@@ -2,7 +2,7 @@ import {
   defineFileViewerElement,
   type FileViewerElement,
   type ViewerEvent,
-} from '@file-viewer/web'
+} from '@file-viewer/web-full'
 import './styles.css'
 
 defineFileViewerElement()

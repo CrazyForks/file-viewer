@@ -1,8 +1,8 @@
 import jquery from 'jquery'
-import { installJQueryFileViewer } from '@file-viewer/jquery'
+import { installJQueryFileViewer } from '@file-viewer/jquery-full'
 import './styles.css'
 
-const sampleUrl = '/example/preview.md'
+const sampleUrl = '/example/word.docx'
 const host = document.getElementById('jquery-viewer')
 
 if (!host) {
