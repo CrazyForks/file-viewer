@@ -5,6 +5,7 @@ import {
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
   type FileRenderContext,
+  type FileViewerGeoBasemapOptions,
   type FileViewerGeoOptions,
   type FileViewerRenderedInstance,
 } from '@file-viewer/core';
@@ -48,6 +49,15 @@ interface ParseGeoResult {
 
 type FileViewerTranslator = ReturnType<typeof createFileViewerTranslator>;
 type ProjectionTransformer = (position: Position) => Position;
+type MapLibreModule = typeof import('maplibre-gl');
+type MapLibreStyleLike = string | Record<string, unknown>;
+type GeoBasemapKind = 'offline' | 'raster' | 'vector-style';
+interface ResolvedGeoBasemapConfig {
+  kind: GeoBasemapKind;
+  label: string;
+  style: MapLibreStyleLike;
+  attributionControl: boolean;
+}
 type Proj4Module = {
   default?: Proj4Function;
 } & Proj4Function;
@@ -64,6 +74,18 @@ const WEB_MERCATOR_LIMIT = 20037508.342789244;
 const DEFAULT_FIT_PADDING = 44;
 const MIN_MAP_ZOOM = 0;
 const MAX_MAP_ZOOM = 22;
+const OPENFREEMAP_STYLE_BASE = 'https://tiles.openfreemap.org/styles/';
+const OSM_RASTER_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const OSM_ATTRIBUTION = '&copy; OpenStreetMap contributors';
+
+const OPENFREEMAP_STYLE_PRESETS: Record<string, { style: string; label: string }> = {
+  openfreemap: { style: 'liberty', label: 'OpenFreeMap Liberty' },
+  'openfreemap-liberty': { style: 'liberty', label: 'OpenFreeMap Liberty' },
+  'openfreemap-bright': { style: 'bright', label: 'OpenFreeMap Bright' },
+  'openfreemap-positron': { style: 'positron', label: 'OpenFreeMap Positron' },
+  'openfreemap-dark': { style: 'dark', label: 'OpenFreeMap Dark' },
+  'openfreemap-fiord': { style: 'fiord', label: 'OpenFreeMap Fiord' },
+};
 
 const geoStyle = `
 .geo-viewer{min-height:540px;height:100%;display:grid;grid-template-columns:minmax(250px,330px) minmax(0,1fr);background:#eef2f5;color:#132235}
@@ -94,8 +116,13 @@ const geoStyle = `
 .geo-viewer .maplibregl-ctrl button:last-child{border-bottom:0}.geo-viewer .maplibregl-ctrl button:hover{background:#f1f5f9}
 .geo-viewer .maplibregl-ctrl-icon.maplibregl-ctrl-zoom-in::before{content:'+';font-size:18px;font-weight:800}.geo-viewer .maplibregl-ctrl-icon.maplibregl-ctrl-zoom-out::before{content:'-';font-size:20px;font-weight:800}
 .geo-viewer .maplibregl-ctrl-compass{display:none!important}
+.geo-viewer .maplibregl-ctrl-bottom-right{position:absolute;right:8px;bottom:8px;pointer-events:auto}
+.geo-viewer .maplibregl-ctrl-attrib{display:block;max-width:min(460px,calc(100vw - 40px));border-radius:6px;padding:3px 7px;background:rgba(255,255,255,.9);box-shadow:0 8px 20px rgba(15,23,42,.12);color:#334155;font-size:11px;line-height:1.45}
+.geo-viewer .maplibregl-ctrl-attrib a{color:#0f766e;text-decoration:none}.geo-viewer .maplibregl-ctrl-attrib-button{display:none}
 .file-viewer[data-viewer-theme='dark'] .geo-viewer{background:#101820;color:#e5edf6}.file-viewer[data-viewer-theme='dark'] .geo-panel{background:#111827;border-color:rgba(148,163,184,.18)}.file-viewer[data-viewer-theme='dark'] .geo-panel dt,.file-viewer[data-viewer-theme='dark'] .geo-counts strong{color:#94a3b8}.file-viewer[data-viewer-theme='dark'] .geo-toolbar{background:rgba(17,24,39,.9);border-color:rgba(148,163,184,.18)}.file-viewer[data-viewer-theme='dark'] .geo-map-frame,.file-viewer[data-viewer-theme='dark'] .geo-map-svg rect{background:#111827;fill:#111827;stroke:rgba(148,163,184,.18)}
+.file-viewer[data-viewer-theme='dark'] .geo-viewer .maplibregl-ctrl-attrib{background:rgba(15,23,42,.9);color:#cbd5e1}.file-viewer[data-viewer-theme='dark'] .geo-viewer .maplibregl-ctrl-attrib a{color:#5eead4}
 @media (prefers-color-scheme:dark){.file-viewer[data-viewer-theme='system'] .geo-viewer{background:#101820;color:#e5edf6}.file-viewer[data-viewer-theme='system'] .geo-panel{background:#111827;border-color:rgba(148,163,184,.18)}.file-viewer[data-viewer-theme='system'] .geo-panel dt,.file-viewer[data-viewer-theme='system'] .geo-counts strong{color:#94a3b8}.file-viewer[data-viewer-theme='system'] .geo-toolbar{background:rgba(17,24,39,.9);border-color:rgba(148,163,184,.18)}.file-viewer[data-viewer-theme='system'] .geo-map-frame,.file-viewer[data-viewer-theme='system'] .geo-map-svg rect{background:#111827;fill:#111827;stroke:rgba(148,163,184,.18)}}
+@media (prefers-color-scheme:dark){.file-viewer[data-viewer-theme='system'] .geo-viewer .maplibregl-ctrl-attrib{background:rgba(15,23,42,.9);color:#cbd5e1}.file-viewer[data-viewer-theme='system'] .geo-viewer .maplibregl-ctrl-attrib a{color:#5eead4}}
 @media (max-width:860px){.geo-viewer{grid-template-columns:1fr}.geo-panel{max-height:230px;border-right:0;border-bottom:1px solid rgba(15,23,42,.08)}.geo-map-frame{min-height:430px}}
 `;
 
@@ -636,14 +663,24 @@ const formatBounds = (bounds: Bounds | null) => {
   return `${bounds.minX.toFixed(5)}, ${bounds.minY.toFixed(5)} -> ${bounds.maxX.toFixed(5)}, ${bounds.maxY.toFixed(5)}`;
 };
 
-const appendDescriptionItem = (list: HTMLDListElement, label: string, value: string | number) => {
+const appendDescriptionItem = (list: HTMLDListElement, label: string, value: string | number, field?: string) => {
   const row = document.createElement('div');
   const term = document.createElement('dt');
   term.textContent = label;
   const detail = document.createElement('dd');
   detail.textContent = String(value);
+  if (field) {
+    detail.dataset.geoPanelField = field;
+  }
   row.append(term, detail);
   list.appendChild(row);
+};
+
+const updatePanelValue = (root: HTMLElement, field: string, value: string) => {
+  const detail = root.querySelector<HTMLElement>(`[data-geo-panel-field="${field}"]`);
+  if (detail) {
+    detail.textContent = value;
+  }
 };
 
 const getFitPadding = (options?: FileViewerGeoOptions) => {
@@ -655,6 +692,7 @@ const buildPanel = (
   parsed: ParseGeoResult,
   type: string,
   engineLabel: string,
+  basemapLabel: string,
   t: FileViewerTranslator
 ) => {
   const panel = document.createElement('aside');
@@ -668,6 +706,7 @@ const buildPanel = (
   appendDescriptionItem(description, t('geo.bounds'), formatBounds(parsed.bounds));
   appendDescriptionItem(description, t('geo.projection'), `${parsed.sourceProjection} -> ${parsed.displayProjection}`);
   appendDescriptionItem(description, t('geo.engine'), engineLabel);
+  appendDescriptionItem(description, t('geo.basemap'), basemapLabel, 'basemap');
   const counts = document.createElement('div');
   counts.className = 'geo-counts';
   const countsHeading = document.createElement('strong');
@@ -747,6 +786,135 @@ const createOfflineStyle = () => ({
   }],
 });
 
+const normalizeTileUrls = (tileUrl?: string | string[]) => {
+  const values = Array.isArray(tileUrl) ? tileUrl : tileUrl ? [tileUrl] : [];
+  return values.map(value => value.trim()).filter(Boolean);
+};
+
+const finiteNumber = (value: unknown, fallback: number, min: number, max: number) => {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, number));
+};
+
+const createRasterBasemapStyle = (
+  tileUrls: string[],
+  basemap: FileViewerGeoBasemapOptions | undefined
+) => {
+  const tileSize = Math.round(finiteNumber(basemap?.tileSize, 256, 64, 1024));
+  const opacity = finiteNumber(basemap?.rasterOpacity, 1, 0, 1);
+  const source: Record<string, unknown> = {
+    type: 'raster',
+    tiles: tileUrls,
+    tileSize,
+  };
+  if (basemap?.attribution) {
+    source.attribution = basemap.attribution;
+  }
+  if (Number.isFinite(basemap?.minZoom)) {
+    source.minzoom = finiteNumber(basemap?.minZoom, 0, 0, MAX_MAP_ZOOM);
+  }
+  if (Number.isFinite(basemap?.maxZoom)) {
+    source.maxzoom = finiteNumber(basemap?.maxZoom, MAX_MAP_ZOOM, 0, MAX_MAP_ZOOM);
+  }
+  if (basemap?.scheme === 'tms') {
+    source.scheme = 'tms';
+  }
+  return {
+    version: 8,
+    sources: {
+      'geo-basemap-raster': source,
+    },
+    layers: [
+      {
+        id: 'geo-background',
+        type: 'background',
+        paint: {
+          'background-color': '#eef2f5',
+        },
+      },
+      {
+        id: 'geo-basemap-raster',
+        type: 'raster',
+        source: 'geo-basemap-raster',
+        paint: {
+          'raster-opacity': opacity,
+          'raster-resampling': 'linear',
+        },
+      },
+    ],
+  };
+};
+
+const createOfflineBasemapConfig = (t: FileViewerTranslator): ResolvedGeoBasemapConfig => ({
+  kind: 'offline',
+  label: t('geo.basemap.offline'),
+  style: createOfflineStyle(),
+  attributionControl: false,
+});
+
+const createRasterBasemapConfig = (
+  tileUrls: string[],
+  basemap: FileViewerGeoBasemapOptions | undefined,
+  label: string
+): ResolvedGeoBasemapConfig => ({
+  kind: 'raster',
+  label,
+  style: createRasterBasemapStyle(tileUrls, basemap),
+  attributionControl: true,
+});
+
+export const resolveFileViewerGeoBasemapConfig = (
+  options: FileViewerGeoOptions | undefined,
+  t: FileViewerTranslator
+): ResolvedGeoBasemapConfig => {
+  const basemap = options?.basemap;
+  if (basemap === false || basemap === 'none' || basemap === 'offline') {
+    return createOfflineBasemapConfig(t);
+  }
+  if (typeof basemap === 'string') {
+    const openFreeMapPreset = OPENFREEMAP_STYLE_PRESETS[basemap];
+    if (openFreeMapPreset) {
+      return {
+        kind: 'vector-style',
+        label: openFreeMapPreset.label,
+        style: `${OPENFREEMAP_STYLE_BASE}${openFreeMapPreset.style}`,
+        attributionControl: true,
+      };
+    }
+    if (basemap === 'osm-raster') {
+      return createRasterBasemapConfig(
+        [OSM_RASTER_TILE_URL],
+        { attribution: OSM_ATTRIBUTION },
+        'OpenStreetMap Raster'
+      );
+    }
+  }
+  if (isRecord(basemap)) {
+    const config = basemap as FileViewerGeoBasemapOptions;
+    const label = config.label?.trim() || t('geo.basemap.custom');
+    if ((config.type === 'vector-style' || config.styleUrl || config.style) && (config.styleUrl || config.style)) {
+      return {
+        kind: 'vector-style',
+        label,
+        style: config.styleUrl || config.style || createOfflineStyle(),
+        attributionControl: true,
+      };
+    }
+    const tileUrls = normalizeTileUrls(config.tileUrl);
+    if ((config.type === 'raster' || tileUrls.length > 0) && tileUrls.length > 0) {
+      return createRasterBasemapConfig(tileUrls, config, label);
+    }
+  }
+  const tileUrls = normalizeTileUrls(options?.tileUrl);
+  if (tileUrls.length > 0) {
+    return createRasterBasemapConfig(tileUrls, undefined, t('geo.basemap.custom'));
+  }
+  return createOfflineBasemapConfig(t);
+};
+
 const fitMapToBounds = (map: MapLibreMap, bounds: Bounds | null, padding: number) => {
   if (!bounds) {
     map.jumpTo({ center: [0, 0], zoom: 1 });
@@ -778,15 +946,41 @@ const createZoomState = (map: MapLibreMap, bounds: Bounds | null) => {
 
 const waitForMapLoad = (map: MapLibreMap) => {
   return new Promise<void>((resolve, reject) => {
-    const timeout = window.setTimeout(() => reject(new Error('MapLibre load timeout')), 8000);
-    map.once('load', () => {
+    const cleanup = () => {
       window.clearTimeout(timeout);
+      map.off('load', onLoad);
+      map.off('error', onError);
+    };
+    const onLoad = () => {
+      cleanup();
       resolve();
-    });
-    map.once('error', event => {
-      window.clearTimeout(timeout);
+    };
+    const onError = (event: { error?: Error }) => {
+      cleanup();
       reject((event as { error?: Error }).error || new Error('MapLibre failed to load'));
-    });
+    };
+    const timeout = window.setTimeout(() => {
+      cleanup();
+      reject(new Error('MapLibre load timeout'));
+    }, 8000);
+    map.once('load', onLoad);
+    map.once('error', onError);
+  });
+};
+
+const createMapLibreMap = (
+  maplibre: MapLibreModule,
+  host: HTMLDivElement,
+  basemap: ResolvedGeoBasemapConfig
+) => {
+  return new maplibre.Map({
+    container: host,
+    style: basemap.style as never,
+    attributionControl: basemap.attributionControl ? { compact: true } : false,
+    dragRotate: false,
+    pitchWithRotate: false,
+    minZoom: MIN_MAP_ZOOM,
+    maxZoom: MAX_MAP_ZOOM,
   });
 };
 
@@ -795,21 +989,29 @@ const mountMapLibre = async (
   root: HTMLDivElement,
   parsed: ParseGeoResult,
   options: FileViewerGeoOptions | undefined,
+  basemap: ResolvedGeoBasemapConfig,
   t: FileViewerTranslator
 ) => {
   const maplibre = await import('maplibre-gl');
-  const map = new maplibre.Map({
-    container: host,
-    style: createOfflineStyle() as never,
-    attributionControl: false,
-    dragRotate: false,
-    pitchWithRotate: false,
-    minZoom: MIN_MAP_ZOOM,
-    maxZoom: MAX_MAP_ZOOM,
-  });
+  let activeBasemap = basemap;
+  let map = createMapLibreMap(maplibre, host, activeBasemap);
   map.addControl(new maplibre.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-right');
 
-  await waitForMapLoad(map);
+  try {
+    await waitForMapLoad(map);
+  } catch (error) {
+    if (activeBasemap.kind === 'offline') {
+      throw error;
+    }
+    console.warn('[file-viewer] Geo basemap failed; retrying with the offline empty basemap.', error);
+    map.remove();
+    host.replaceChildren();
+    activeBasemap = createOfflineBasemapConfig(t);
+    updatePanelValue(root, 'basemap', activeBasemap.label);
+    map = createMapLibreMap(maplibre, host, activeBasemap);
+    map.addControl(new maplibre.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-right');
+    await waitForMapLoad(map);
+  }
 
   const graticule = createGraticule(parsed.bounds);
   map.addSource('geo-graticule', {
@@ -935,6 +1137,7 @@ const buildMapShell = (
   parsed: ParseGeoResult,
   type: string,
   engineLabel: string,
+  basemapLabel: string,
   t: FileViewerTranslator
 ) => {
   const root = createElement('div', 'geo-viewer');
@@ -947,7 +1150,7 @@ const buildMapShell = (
   frame.appendChild(mapHost);
   toolbar.appendChild(fitButton);
   stage.append(toolbar, frame);
-  root.append(buildPanel(parsed, type, engineLabel, t), stage);
+  root.append(buildPanel(parsed, type, engineLabel, basemapLabel, t), stage);
   return { root, mapHost, frame };
 };
 
@@ -957,8 +1160,9 @@ const renderMapLibreView = async (
   options: FileViewerGeoOptions | undefined,
   t: FileViewerTranslator
 ) => {
-  const shell = buildMapShell(parsed, type, t('geo.engine.maplibre'), t);
-  const mounted = await mountMapLibre(shell.mapHost, shell.root, parsed, options, t);
+  const basemap = resolveFileViewerGeoBasemapConfig(options, t);
+  const shell = buildMapShell(parsed, type, t('geo.engine.maplibre'), basemap.label, t);
+  const mounted = await mountMapLibre(shell.mapHost, shell.root, parsed, options, basemap, t);
   return {
     element: shell.root,
     cleanup: mounted.cleanup,
@@ -970,7 +1174,7 @@ const renderSvgView = (
   type: string,
   t: FileViewerTranslator
 ) => {
-  const shell = buildMapShell(parsed, type, t('geo.engine.svg'), t);
+  const shell = buildMapShell(parsed, type, t('geo.engine.svg'), t('geo.basemap.offline'), t);
   shell.frame.replaceChildren(buildSvgPreview(parsed, t));
   return shell.root;
 };

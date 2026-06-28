@@ -420,7 +420,7 @@ fileViewerRenderers({
 | Draw.io / diagrams.net / Mermaid / PlantUML | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、Excalidraw 官方导出、Mermaid 官方 SVG 渲染和 PlantUML 离线源码预览 / 可配置 SVG 服务为基准，优先保证离线或自托管预览，不依赖公网 CDN。 | 绘图类格式统一在该包内维护 pan/zoom、主题适配、打印和 HTML 导出；PlantUML 需要完整图形渲染时再配置自托管 `plantumlServerUrl`。 |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
 | XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层使用 `@panzoom/panzoom` 提供可拖拽、移动端双指缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
-| GeoJSON / KML / GPX / SHP   | GeoJSON 直接读取，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON，并输出离线 SVG 地图，不依赖在线瓦片服务。 | core 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，`@file-viewer/renderer-geo` 单独维护地理数据预览体验。 |
+| GeoJSON / KML / GPX / SHP   | GeoJSON 直接读取，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON，CRS 归一化后用离线 MapLibre 矢量地图渲染叠加层，WebGL 不可用时回退 SVG。 | core 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` / `maplibre-gl` / `proj4` 直接依赖，`@file-viewer/renderer-geo` 单独维护地理数据预览体验。 |
 | Archive                     | 优先 `libarchive.js` Worker + WASM，覆盖 RAR/7z/TAR/ZIP 等多格式；Worker 不可用时降级 ZIP/TAR/GZIP，内部文件点击后再按需解压和嵌套预览。                      | `@file-viewer/renderer-archive` 独立维护 worker/wasm、缓存、内存上限和移动端 fallback。                  |
 | EDA / 工程二进制            | `@file-viewer/renderer-eda` 先承接 OLB/DRA/GDSII/OASIS 的结构预览；标准 GDSII 用纯 TS 解析 records，小图生成 SVG 快速版图，大元素集使用 `@file-viewer/eda-layout` 的 WebGL typed-array 批次和 canvas 渲染；OASIS 文本夹具可生成 SVG，真实二进制 OASIS 与 Cadence 专有二进制先做安全索引和诊断。 | OASIS 后续适合引入 KLayout / dump_oas_gds2 路线的 WASM 或 WebGL 增量渲染；Cadence DRA/OLB/DSN 高保真预览以后续 OpenAllegroParser/OpenOrCadParser WASM 化为主。 |
 
@@ -472,7 +472,7 @@ fileViewerRenderers({
 - [x] 建立 `@file-viewer/renderer-media` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的音频 / 视频 / HLS / MIDI renderer。
 - [x] `@file-viewer/core` 已移除 audio / video renderer 兼容入口和 `hls.js` / `@tonejs/midi` 直接依赖，媒体完整能力统一通过 `@file-viewer/renderer-media` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-geo` 独立包，并让 `@file-viewer/preset-all` 优先聚合该包的 GeoJSON / KML / GPX / SHP renderer。
-- [x] `@file-viewer/core` 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` 直接依赖，地理数据完整能力统一通过 `@file-viewer/renderer-geo` 或 preset 装配。
+- [x] `@file-viewer/core` 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` / `maplibre-gl` / `proj4` 直接依赖，地理数据完整能力统一通过 `@file-viewer/renderer-geo` 或 preset 装配。
 - [x] 建立 `@file-viewer/renderer-data` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 PSD / SQLite / Parquet / Avro / WASM / 字体 / AI / EPS / WebArchive renderer。
 - [x] 建立 `@file-viewer/renderer-eda` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 OLB / DRA / GDSII / OASIS renderer。
 - [x] 建立 `@file-viewer/renderer-spreadsheet` 独立包，并让 `@file-viewer/preset-all` 和 `@file-viewer/vite-plugin` 优先聚合 XLSX / XLSM / XLSB / XLS / CSV / ODS / FODS / Numbers renderer。

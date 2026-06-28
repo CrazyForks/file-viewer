@@ -92,7 +92,7 @@
 - `@file-viewer/core` 移除 `@file-viewer/pptx` 直接依赖和内置 PPTX handler，PowerPoint 完整预览统一通过 `@file-viewer/renderer-presentation` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 37 降到 36
 - 新增 `@file-viewer/renderer-word` 独立 renderer 包，承接 DOCX / DOCM / DOTX / DOTM、DOC / DOT、RTF 和 ODT 预览链路；`@file-viewer/core` 移除 `@file-viewer/docx`、`msdoc-viewer`、`rtf.js`、`linkedom` 和 `@xmldom/xmldom` 直接依赖，Word 完整预览统一通过 `@file-viewer/renderer-word` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 36 降到 31
 - XMind 已从 core 兼容入口中彻底移出，`@file-viewer/core` 不再默认安装 `@ljheee/xmind-parser`；完整脑图预览统一由 `@file-viewer/renderer-mindmap` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 31 降到 30
-- 地理数据已从 core 兼容入口中移出，`@file-viewer/core` 不再默认安装 `@tmcw/togeojson` 和 `shpjs`；GeoJSON / KML / GPX / SHP 预览统一由 `@file-viewer/renderer-geo` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 30 降到 28
+- 地理数据已从 core 兼容入口中移出，`@file-viewer/core` 不再默认安装 `@tmcw/togeojson`、`shpjs`、`maplibre-gl` 和 `proj4`；GeoJSON / KML / GPX / SHP 预览统一由 `@file-viewer/renderer-geo` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 30 降到 28
 - HEIC / HEIF 转换能力已从 core 轻量图片入口中移出，`@file-viewer/core` 不再默认安装 `heic2any`；普通图片仍保留浏览器原生预览，HEIC / HEIF 和完整图片链路统一由 `@file-viewer/renderer-image` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 28 降到 27
 - Vue3 原生组件渲染桥接层改为按当前 `options.renderers`、`options.rendererMode` 和 `options.builtinRenderers` 创建临时 renderer registry，`@file-viewer/preset-all` / 独立 renderer 包会在组件路径真实生效，避免 XMind、Geo、HEIC 等已从 core 移出的格式在 Demo 中误显示“不支持”
 - 新增 `@file-viewer/renderer-drawing` 独立 renderer 包，覆盖 Draw.io / diagrams.net 离线 viewer、Excalidraw 官方 SVG 导出、rough.js 兜底、统一缩放、打印和 HTML 导出，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
@@ -126,7 +126,7 @@
 - 代码与 Markdown 预览迁移为 `@file-viewer/renderer-text` 独立 renderer 包，继续使用按语言动态加载的 `highlight.js` 和 `marked`，并由 `@file-viewer/preset-all` 自动聚合
 - 图片预览迁移为 `@file-viewer/renderer-image` 独立 renderer 包，普通图片继续使用浏览器原生解码，HEIC / HEIF 只在命中格式时按需加载 `heic2any`，并由 `@file-viewer/preset-all` 自动聚合
 - 音视频预览迁移为 `@file-viewer/renderer-media` 独立 renderer 包，MP4 / WebM / 常见音频继续使用原生控件，HLS 和 MIDI 只在命中格式时按需加载 `hls.js` / `@tonejs/midi`，并由 `@file-viewer/preset-all` 自动聚合
-- 地理数据预览迁移为 `@file-viewer/renderer-geo` 独立 renderer 包，GeoJSON 直接读取，KML / GPX 按需加载 `@tmcw/togeojson`，SHP 按需加载 `shpjs`，并由 `@file-viewer/preset-all` 自动聚合
+- 地理数据预览迁移为 `@file-viewer/renderer-geo` 独立 renderer 包，GeoJSON 直接读取，KML / GPX 按需加载 `@tmcw/togeojson`，SHP 按需加载 `shpjs`，地图叠加层和 CRS 转换按需加载 `maplibre-gl` / `proj4`，并由 `@file-viewer/preset-all` 自动聚合
 - 新增 `@file-viewer/vite-plugin` 工程化入口，支持按 `formats` 自动生成 `virtual:file-viewer-renderers`、renderer chunk 分组、缺失 renderer 提示，并复制 PDF/CAD/Typst/Archive 离线 worker/WASM/vendor 资源和部署 manifest
 - `@file-viewer/vite-plugin` 新增 `scan: true` 源码 hint 自动装配能力，可从 `fileViewerFormats` / `fileViewerRenderers` / `data-file-viewer-formats` / 上传 `accept` 声明提取格式并选择对应 renderer；新增 `verify:vite-plugin-auto-scan` 防止自动化装配链路回退
 - 新增 `@file-viewer/preset-lite`、`@file-viewer/preset-office` 和 `@file-viewer/preset-engineering` 三个标准 preset 包；`@file-viewer/vite-plugin` 支持 `preset: 'lite' | 'office' | 'engineering' | 'all'`，会导入对应 `@file-viewer/preset-*` 包，并可继续用 `formats` 补充 preset 外 renderer，兼容 pnpm 严格依赖模型

@@ -494,6 +494,8 @@ const renderFileViewerSpreadsheet = async (
   let resizeObserver: ResizeObserver | null = null;
   let resizeFrame = 0;
   let scrollFrame = 0;
+  let layoutRefreshToken = 0;
+  const layoutRefreshTimers: number[] = [];
   let viewportRange = { start: 0, end: 0 };
   let scrollDirection: ScrollDirection = 1;
   let lastScrollY = 0;
@@ -892,6 +894,66 @@ const renderFileViewerSpreadsheet = async (
     scheduleViewportLoad();
   }
 
+  const clearScheduledLayoutRefresh = () => {
+    layoutRefreshToken += 1;
+    const view = getTargetWindow(target);
+    while (layoutRefreshTimers.length) {
+      const timer = layoutRefreshTimers.pop();
+      if (timer !== undefined) {
+        view?.clearTimeout(timer);
+      }
+    }
+  };
+
+  const refreshTableLayoutWhenVisible = () => {
+    if (disposed || !table || !virtualState.active) {
+      return;
+    }
+
+    const rect = tableHost.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      return;
+    }
+
+    syncTableLayout();
+  };
+
+  const scheduleStableFirstPaintRefresh = () => {
+    clearScheduledLayoutRefresh();
+    const token = layoutRefreshToken;
+    const view = getTargetWindow(target);
+    if (!view) {
+      return;
+    }
+    const delays = [0, 32, 120, 300, 700];
+
+    delays.forEach((delay) => {
+      const timer = view.setTimeout(() => {
+        const index = layoutRefreshTimers.indexOf(timer);
+        if (index >= 0) {
+          layoutRefreshTimers.splice(index, 1);
+        }
+
+        view.requestAnimationFrame(() => {
+          if (token !== layoutRefreshToken) {
+            return;
+          }
+          refreshTableLayoutWhenVisible();
+        });
+      }, delay);
+      layoutRefreshTimers.push(timer);
+    });
+
+    void documentRef.fonts?.ready.then(() => {
+      if (token !== layoutRefreshToken) {
+        return;
+      }
+      refreshTableLayoutWhenVisible();
+    }).catch(() => {
+      // Font readiness is only a paint stabilizer; rendering already has a fallback.
+    });
+  };
+
   function setColumnWidthByKey(columns: unknown[], key: string, width: number): boolean {
     for (const column of columns as Array<Record<string, unknown>>) {
       if (`${column.key}` === key) {
@@ -1034,13 +1096,6 @@ const renderFileViewerSpreadsheet = async (
     totalRows = meta.totalRows;
     totalCols = meta.totalCols;
     syncWindowStats();
-
-    queueMicrotask(() => {
-      if (disposed) {
-        return;
-      }
-      renderTable(ensureTable(), columns, virtualState.rows, true);
-    });
   };
 
   const clearVirtualRow = (row: Record<string, unknown>) => {
@@ -1184,6 +1239,7 @@ const renderFileViewerSpreadsheet = async (
       return;
     }
 
+    const isFirstWindow = !hasInitialWindow;
     if (!virtualState.active) {
       initializeVirtualSheet(ws);
     }
@@ -1202,13 +1258,20 @@ const renderFileViewerSpreadsheet = async (
       sheetStateCache.set(activeSheetId, virtualState);
     }
 
-    table?.draw();
+    if (isFirstWindow) {
+      renderTable(ensureTable(), virtualState.columns, virtualState.rows, true);
+    } else {
+      table?.draw();
+    }
     loadingState = false;
     sheetInitializing = false;
     renderChrome();
     if (!hasNotifiedFirstPaint) {
       hasNotifiedFirstPaint = true;
       context?.onProgressiveRender?.();
+    }
+    if (isFirstWindow) {
+      scheduleStableFirstPaintRefresh();
     }
 
     const start = viewportRange.start || meta.startRow;
@@ -1268,6 +1331,7 @@ const renderFileViewerSpreadsheet = async (
       }
       renderTable(ensureTable(), cached.columns, cached.rows);
       syncImageViewport();
+      scheduleStableFirstPaintRefresh();
     });
 
     return true;
@@ -1394,6 +1458,7 @@ const renderFileViewerSpreadsheet = async (
       if (scrollFrame) {
         cancelAnimationFrame(scrollFrame);
       }
+      clearScheduledLayoutRefresh();
       resizeObserver?.disconnect();
       resizeObserver = null;
       unregisterFileViewerZoomProvider(root);

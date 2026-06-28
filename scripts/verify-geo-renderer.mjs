@@ -2,7 +2,10 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { DOMParser } from 'linkedom'
 import { createFileViewerTranslator } from '../packages/core/dist/index.js'
-import { parseFileViewerGeoData } from '../packages/renderers/geo/dist/geo.js'
+import {
+  parseFileViewerGeoData,
+  resolveFileViewerGeoBasemapConfig
+} from '../packages/renderers/geo/dist/geo.js'
 
 globalThis.DOMParser ||= DOMParser
 
@@ -86,4 +89,32 @@ assert(inferred.sourceProjection === 'EPSG:3857', 'GeoJSON with large Web Mercat
 near(inferred.bounds.minX, 121.4737, 0.0001, 'Inferred EPSG:3857 longitude')
 near(inferred.bounds.minY, 31.2304, 0.0001, 'Inferred EPSG:3857 latitude')
 
-console.log('[geo-renderer] Verified GeoJSON, KML, GPX, EPSG:3857 CRS metadata, and Web Mercator inference.')
+const offlineBasemap = resolveFileViewerGeoBasemapConfig(undefined, t)
+assert(offlineBasemap.kind === 'offline', 'Default basemap should stay offline')
+
+const tileBasemap = resolveFileViewerGeoBasemapConfig({
+  tileUrl: '/tiles/{z}/{x}/{y}.png'
+}, t)
+assert(tileBasemap.kind === 'raster', 'tileUrl should create a raster basemap')
+assert(tileBasemap.attributionControl === true, 'Raster basemaps should enable attribution controls')
+
+const openFreeMapBasemap = resolveFileViewerGeoBasemapConfig({
+  basemap: 'openfreemap-liberty'
+}, t)
+assert(openFreeMapBasemap.kind === 'vector-style', 'OpenFreeMap preset should use a MapLibre style')
+assert(
+  openFreeMapBasemap.style === 'https://tiles.openfreemap.org/styles/liberty',
+  'OpenFreeMap preset should resolve the official Liberty style URL'
+)
+
+const inlineStyleBasemap = resolveFileViewerGeoBasemapConfig({
+  basemap: {
+    type: 'vector-style',
+    label: 'Intranet vector tiles',
+    styleUrl: '/maps/styles/liberty/style.json'
+  }
+}, t)
+assert(inlineStyleBasemap.kind === 'vector-style', 'Custom styleUrl should create a vector-style basemap')
+assert(inlineStyleBasemap.label === 'Intranet vector tiles', 'Custom basemap label should be preserved')
+
+console.log('[geo-renderer] Verified GeoJSON, KML, GPX, EPSG:3857 CRS metadata, Web Mercator inference, and basemap resolution.')

@@ -987,6 +987,10 @@ const viewerOptions = computed((): FileViewerOptions => {
     resizableRows: true,
     ...runtime.spreadsheet
   }
+  options.geo = {
+    basemap: 'openfreemap-liberty',
+    ...runtime.geo
+  }
   options.drawing = { ...runtime.drawing }
   options.toolbar = hidden.value ? runtime.toolbar ?? true : false
   options.watermark = watermarkEnabled.value

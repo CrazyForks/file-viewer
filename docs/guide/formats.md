@@ -43,7 +43,7 @@
 | 邮件 | `eml`、`msg`、`mbox` | `@file-viewer/renderer-email` + `postal-mime` / `@kenjiuno/msgreader` | 展示头信息、HTML/文本正文、附件列表；MBOX 会解析首封邮件并标注识别数量；附件可下载，也可继续在线预览 | 邮件归档、客服工单、客户来信附件 |
 | EDA | `olb`、`dra`、`gds`、`oas`、`oasis` | `@file-viewer/renderer-eda` + `cfb` 容器解析 + GDSII/OASIS 版图解析 + WebGL 批次 | 独立 EDA renderer 优先解析 OrCAD / Allegro 常见 CFB 容器；标准 GDSII 会读取 structure、boundary、path、text、reference 并生成 SVG 版图预览，元素较多时自动切到 WebGL canvas；OAS/OASIS 可读文本版图夹具会生成 SVG 预览，真实 SEMI 二进制 OASIS 当前做安全结构索引、可读字符串、实体候选和诊断；完整 OLB/DRA/OASIS 可视化路线见 [格式完整度](/guide/format-fidelity) | 元件库、封装图纸、芯片版图文件初筛 |
 | CAD | `dwg`、`dxf`、`dwf`、`dwfx`、`xps` | `@flyfish-dev/cad-viewer` | DWG 通过 Worker + LibreDWG WASM 解析；DXF 使用 JS parser；DWF/DWFx/XPS 使用 native `dwf-viewer` 渲染 W2D/W3D/XPS 图形，并支持 WebGL / WASM fallback | 工程图纸、二维 CAD 附件、AutoCAD 归档文件 |
-| 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@file-viewer/renderer-geo` + GeoJSON 标准化 + CRS 归一化 + 离线 MapLibre 矢量叠加层 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`；支持 Web Mercator 推断、`options.geo.projection` 和 SVG fallback | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
+| 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@file-viewer/renderer-geo` + GeoJSON 标准化 + CRS 归一化 + MapLibre 矢量叠加层 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`；默认离线空底图，可通过 `options.geo.tileUrl` / `options.geo.basemap` 启用公网、内网或离线自托管瓦片；支持 Web Mercator 推断、`options.geo.projection` 和 SVG fallback | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | `@file-viewer/renderer-3d` + Three.js loaders | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
 | XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` + `@panzoom/panzoom` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏，并通过成熟 Panzoom 画布提供拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘平移、统一 toolbar 状态同步、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
 | Excalidraw | `excalidraw` | `@file-viewer/renderer-drawing` + `@excalidraw/excalidraw` | 独立绘图 renderer 按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
@@ -136,9 +136,11 @@
 
 - `geojson` 会直接读取标准 GeoJSON；`kml` / `gpx` 使用 `@file-viewer/renderer-geo` 内部按需加载的 `@tmcw/togeojson` 转换为 GeoJSON；`shp` 使用同包内按需加载的 `shpjs` 解析 Shapefile 压缩包或二进制内容。
 - 默认通过离线 MapLibre 空底图渲染点、线、面叠加层，支持平移、缩放、适配范围和统一工具栏缩放；不依赖在线地图底图或公网 CDN。
+- 需要真实底图时可显式配置 `options.geo.tileUrl`，例如 `/tiles/world/{z}/{x}/{y}.png`，也可以通过 `options.geo.basemap` 使用 `openfreemap-liberty` 等 OpenFreeMap 国际化开源底图 preset，或传入 `{ type: 'vector-style', styleUrl: '/maps/styles/liberty/style.json' }` 指向内网 / 国内 CDN / 离线静态目录。
+- `osm-raster` 作为显式 opt-in preset 仅适合 demo 或低频访问；生产环境应遵守 OpenStreetMap 官方 tile policy，保留可替换 URL、缓存和 attribution。中国大陆生产环境更推荐把 OpenFreeMap / OpenMapTiles 栈自托管或镜像后再接入。
 - 坐标系会归一化到 WGS84：标准 GeoJSON 默认按 `EPSG:4326`，也会读取 GeoJSON `crs`、自动推断 Web Mercator，并支持通过 `options.geo.projection` 声明 `EPSG:3857`、`EPSG:4490`、`GCJ02`、`BD09` 或 proj4 字符串。
 - WebGL 或 MapLibre 初始化不可用时会回退 SVG 矢量预览，仍会展示要素数量、坐标范围和点线面结构。
-- 如果业务需要瓦片底图、坐标系转换、空间分析或大量要素抽稀，建议在业务系统中接入专业 GIS 组件，并把 Flyfish Viewer 作为附件快速预览入口。
+- 如果业务需要空间分析、编辑、拓扑校验或大量要素抽稀，仍建议在业务系统中接入专业 GIS 组件，并把 Flyfish Viewer 作为附件快速预览入口。
 
 ### 3D 模型
 
@@ -188,7 +190,7 @@
 - 你能控制导出格式：优先使用 `docx`、`xlsx`、`pptx`、`pdf`、`ofd`、`dxf`、`glb` 这类现代或稳定交换格式。
 - 你要兼容历史附件：`.doc` 与 `xls/xlsm/xlsb/csv/ods` 这一组已经有正式链路，但要接受它们与现代格式在样式上的差异。
 - 你要看日志、配置或代码：直接用代码/文本链路即可，重点是快速打开、检索内容和保持安全。
-- 你要看地理附件：GeoJSON/KML/GPX/SHP 可以直接作为快速预览入口；需要底图、坐标转换或空间计算时再接入专业 GIS。
+- 你要看地理附件：GeoJSON/KML/GPX/SHP 可以直接作为快速预览入口；需要真实底图时配置 `geo.tileUrl` 或 `geo.basemap`，需要空间计算、编辑或拓扑分析时再接入专业 GIS。
 - 你要看结构化数据或二进制资产：SQLite、Parquet、Avro、WASM、PSD、字体和 WebArchive 都能做快速结构审阅，但不建议把它们当完整编辑器使用。
 - 你在做品牌、示意图或视觉素材展示：`png`、`svg`、`webp` 这类图片格式会比转成文档更省心。
 - 你要预览 CAD：优先提供 `dwg`、`dxf`、`dwf` 或 `dwfx`；DWG 和 DWF native renderer 会按需加载 Worker/WASM，私有化部署时请确认 viewer assets 中的 `wasm/cad/` 资源可访问。

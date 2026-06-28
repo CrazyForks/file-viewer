@@ -38,7 +38,7 @@
 | Excalidraw | 使用官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` | 保持官方导出优先，rough.js 兜底 |
 | CAD | Autodesk 官方 viewer 路线也把 DWG / DXF / DWF / DWFx 作为独立查看格式处理；前端离线链路委托 `@flyfish-dev/cad-viewer`，DWG 使用 Worker + LibreDWG WASM，DWF/DWFx/XPS 使用 native DWF renderer | 继续跟随 cad-viewer 升级，viewer 只负责资源路径、生命周期和统一 toolbar |
 | XMind | `@file-viewer/renderer-mindmap` 解析 XMind 8 XML / XMind 2020+ JSON 包结构，使用 SVG/DOM 脑图阅读器 | 继续增强只读预览体验，当前已使用 `@panzoom/panzoom` 提供拖拽平移、从节点卡片起手拖拽、移动端双指缩放、滚轮锚点缩放、键盘平移、统一工具栏状态同步、容器 resize 自动适配和用户交互后的视角保留 |
-| GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON；core 默认安装不再携带 `@tmcw/togeojson` / `shpjs` / `maplibre-gl` / `proj4` | 使用离线 MapLibre 空底图渲染点线面叠加层，支持 GeoJSON `crs`、`options.geo.projection`、Web Mercator 推断、GCJ-02 / BD-09 转换和 SVG fallback；空间分析仍交给业务 GIS |
+| GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON；core 默认安装不再携带 `@tmcw/togeojson` / `shpjs` / `maplibre-gl` / `proj4` | 默认使用离线 MapLibre 空底图渲染点线面叠加层，可通过 `options.geo.tileUrl` / `options.geo.basemap` 接公网、内网或离线自托管底图；支持 GeoJSON `crs`、`options.geo.projection`、Web Mercator 推断、GCJ-02 / BD-09 转换和 SVG fallback；空间分析仍交给业务 GIS |
 | Image / HEIC | core 继续保留 PNG/JPEG/SVG/WebP 等浏览器原生图片预览；HEIC/HEIF 转换依赖体积和兼容性更重，适合独立 renderer 承接 | `heic2any` 已从 core 直接依赖中移除，HEIC/HEIF 和完整图片链路由 `@file-viewer/renderer-image` 或 preset 装配 |
 | GDSII | `@file-viewer/eda-layout` 提供 GDSII record parser 和 WebGL draw batch，`@file-viewer/renderer-eda` 读取 library、structure、boundary、path、text、sref/aref 和坐标边界，小图输出 SVG，大元素集输出 WebGL canvas | 当前可作为 GDSII 版图快速预览；层控制、层级实例展开和 tile 增量加载继续在 `@file-viewer/eda-layout` 中演进 |
 

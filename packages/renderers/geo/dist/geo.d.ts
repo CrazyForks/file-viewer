@@ -45,6 +45,15 @@ interface ParseGeoResult {
     displayProjection: string;
 }
 type FileViewerTranslator = ReturnType<typeof createFileViewerTranslator>;
+type MapLibreStyleLike = string | Record<string, unknown>;
+type GeoBasemapKind = 'offline' | 'raster' | 'vector-style';
+interface ResolvedGeoBasemapConfig {
+    kind: GeoBasemapKind;
+    label: string;
+    style: MapLibreStyleLike;
+    attributionControl: boolean;
+}
 export declare const parseFileViewerGeoData: (buffer: ArrayBuffer, type: string | undefined, options: FileViewerGeoOptions | undefined, t: FileViewerTranslator) => Promise<ParseGeoResult>;
+export declare const resolveFileViewerGeoBasemapConfig: (options: FileViewerGeoOptions | undefined, t: FileViewerTranslator) => ResolvedGeoBasemapConfig;
 export default function renderGeo(buffer: ArrayBuffer, target: HTMLDivElement, type?: string, context?: FileRenderContext): Promise<FileViewerRenderedInstance>;
 export {};

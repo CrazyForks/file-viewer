@@ -46,8 +46,18 @@
       "surface": "vue3"
     },
     {
+      "id": "vue3-full",
+      "packageName": "@file-viewer/vue3-full",
+      "surface": "vue3"
+    },
+    {
       "id": "vue2.7",
       "packageName": "@file-viewer/vue2.7",
+      "surface": "vue2.7"
+    },
+    {
+      "id": "vue2.7-full",
+      "packageName": "@file-viewer/vue2.7-full",
       "surface": "vue2.7"
     },
     {
@@ -56,8 +66,18 @@
       "surface": "vue2.6"
     },
     {
+      "id": "vue2.6-full",
+      "packageName": "@file-viewer/vue2.6-full",
+      "surface": "vue2.6"
+    },
+    {
       "id": "react",
       "packageName": "@file-viewer/react",
+      "surface": "react"
+    },
+    {
+      "id": "react-full",
+      "packageName": "@file-viewer/react-full",
       "surface": "react"
     },
     {
@@ -66,8 +86,18 @@
       "surface": "react-legacy"
     },
     {
+      "id": "react-legacy-full",
+      "packageName": "@file-viewer/react-legacy-full",
+      "surface": "react-legacy"
+    },
+    {
       "id": "web",
       "packageName": "@file-viewer/web",
+      "surface": "script-tag"
+    },
+    {
+      "id": "web-full",
+      "packageName": "@file-viewer/web-full",
       "surface": "script-tag"
     },
     {
@@ -76,8 +106,18 @@
       "surface": "jquery"
     },
     {
+      "id": "jquery-full",
+      "packageName": "@file-viewer/jquery-full",
+      "surface": "jquery"
+    },
+    {
       "id": "svelte",
       "packageName": "@file-viewer/svelte",
+      "surface": "svelte"
+    },
+    {
+      "id": "svelte-full",
+      "packageName": "@file-viewer/svelte-full",
       "surface": "svelte"
     }
   ],
@@ -402,8 +442,20 @@
       "surface": "vue3"
     },
     {
+      "id": "vue3-full-pdf",
+      "wrapperId": "vue3-full",
+      "sample": "pdf.pdf",
+      "surface": "vue3"
+    },
+    {
       "id": "vue27-pdf",
       "wrapperId": "vue2.7",
+      "sample": "pdf.pdf",
+      "surface": "vue2.7"
+    },
+    {
+      "id": "vue27-full-pdf",
+      "wrapperId": "vue2.7-full",
       "sample": "pdf.pdf",
       "surface": "vue2.7"
     },
@@ -414,8 +466,20 @@
       "surface": "vue2.6"
     },
     {
+      "id": "vue26-full-pdf",
+      "wrapperId": "vue2.6-full",
+      "sample": "pdf.pdf",
+      "surface": "vue2.6"
+    },
+    {
       "id": "react-pdf",
       "wrapperId": "react",
+      "sample": "pdf.pdf",
+      "surface": "react"
+    },
+    {
+      "id": "react-full-pdf",
+      "wrapperId": "react-full",
       "sample": "pdf.pdf",
       "surface": "react"
     },
@@ -426,8 +490,20 @@
       "surface": "react-legacy"
     },
     {
+      "id": "react-legacy-full-pdf",
+      "wrapperId": "react-legacy-full",
+      "sample": "pdf.pdf",
+      "surface": "react-legacy"
+    },
+    {
       "id": "web-script-pdf",
       "wrapperId": "web",
+      "sample": "pdf.pdf",
+      "surface": "script-tag"
+    },
+    {
+      "id": "web-full-script-pdf",
+      "wrapperId": "web-full",
       "sample": "pdf.pdf",
       "surface": "script-tag"
     },
@@ -438,8 +514,20 @@
       "surface": "jquery"
     },
     {
+      "id": "jquery-full-pdf",
+      "wrapperId": "jquery-full",
+      "sample": "pdf.pdf",
+      "surface": "jquery"
+    },
+    {
       "id": "svelte-pdf",
       "wrapperId": "svelte",
+      "sample": "pdf.pdf",
+      "surface": "svelte"
+    },
+    {
+      "id": "svelte-full-pdf",
+      "wrapperId": "svelte-full",
       "sample": "pdf.pdf",
       "surface": "svelte"
     }

@@ -980,6 +980,8 @@ export type {
   FileViewerEventType,
   FileViewerExportHtmlOptions,
   FileViewerFileRef,
+  FileViewerGeoBasemapOptions,
+  FileViewerGeoBasemapPreset,
   FileViewerGeoOptions,
   FileRenderContext,
   FileRenderExportAdapter,

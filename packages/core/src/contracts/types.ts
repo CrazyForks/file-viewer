@@ -316,6 +316,9 @@ export type FileViewerMessageKey =
   | 'geo.loading'
   | 'geo.projection'
   | 'geo.engine'
+  | 'geo.basemap'
+  | 'geo.basemap.offline'
+  | 'geo.basemap.custom'
   | 'geo.engine.maplibre'
   | 'geo.engine.svg'
   | 'geo.error.projection'
@@ -616,6 +619,48 @@ export interface FileViewerDataOptions {
   sqlWasmUrl?: string;
 }
 
+export type FileViewerGeoBasemapPreset =
+  | 'none'
+  | 'offline'
+  | 'openfreemap'
+  | 'openfreemap-liberty'
+  | 'openfreemap-bright'
+  | 'openfreemap-positron'
+  | 'openfreemap-dark'
+  | 'openfreemap-fiord'
+  | 'osm-raster';
+
+export interface FileViewerGeoBasemapOptions {
+  /**
+   * `raster` uses XYZ/TMS image tiles. `vector-style` uses a MapLibre style
+   * object or URL, which is the best path for OpenFreeMap/OpenMapTiles stacks.
+   */
+  type?: 'raster' | 'vector-style';
+  /**
+   * Raster XYZ/TMS tile template, for example `/tiles/{z}/{x}/{y}.png`.
+   */
+  tileUrl?: string | string[];
+  /**
+   * MapLibre style JSON URL. Can point to a public source, an intranet mirror,
+   * or an offline static file distributed with the viewer.
+   */
+  styleUrl?: string;
+  /**
+   * Inline MapLibre style object for fully offline deployments.
+   */
+  style?: Record<string, unknown>;
+  /**
+   * Human-readable label shown in the geo preview details panel.
+   */
+  label?: string;
+  attribution?: string;
+  tileSize?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  scheme?: 'xyz' | 'tms';
+  rasterOpacity?: number;
+}
+
 export interface FileViewerGeoOptions {
   /**
    * Source coordinate reference system. GeoJSON normally uses WGS84, but many
@@ -625,6 +670,21 @@ export interface FileViewerGeoOptions {
    * `BD09`, or a proj4 definition string.
    */
   projection?: string;
+  /**
+   * Convenience raster tile URL. The renderer stays offline by default; setting
+   * this property opts into a raster basemap without requiring a full MapLibre
+   * style. Use `basemap` when you need a named preset or vector style URL.
+   */
+  tileUrl?: string | string[];
+  /**
+   * Basemap configuration. Defaults to an offline empty MapLibre style.
+   *
+   * Built-in presets are opt-in: `openfreemap-liberty` uses the public
+   * OpenFreeMap MapLibre style, and `osm-raster` uses the public OSM raster
+   * tiles for light usage or demos. Production systems should prefer a
+   * self-hosted or intranet style/tile URL.
+   */
+  basemap?: false | FileViewerGeoBasemapPreset | FileViewerGeoBasemapOptions;
   /**
    * Defaults to true. When no CRS is declared and coordinates exceed longitude
    * or latitude ranges, the geo renderer treats Web Mercator-sized values as
