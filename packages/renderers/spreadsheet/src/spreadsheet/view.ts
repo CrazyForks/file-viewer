@@ -66,9 +66,17 @@ interface TableConfigOptions {
   hostHeight: number
   resizableColumns?: boolean
   resizableRows?: boolean
+  copySelection?: (params: SpreadsheetCopyParams) => void
   sheetDefaults: SheetDefaults
   virtualState: VirtualSheetState
   zoomScale?: number
+}
+
+interface SpreadsheetCopyParams {
+  focusCell?: unknown
+  data: unknown
+  xArr: number[]
+  yArr: number[]
 }
 
 interface TextOverflowLayout {
@@ -981,6 +989,7 @@ export const createTableConfig = ({
   hostHeight,
   resizableColumns = false,
   resizableRows = false,
+  copySelection,
   sheetDefaults,
   virtualState,
   zoomScale = 1
@@ -1159,6 +1168,12 @@ export const createTableConfig = ({
     RESIZE_ROW_MIN_HEIGHT: scaleNumber(RESIZABLE_ROW_MIN_HEIGHT, normalizedScale),
     ENABLE_KEYBOARD: true,
     ENABLE_COPY: true,
+    BEFORE_COPY_METHOD: copySelection
+      ? (params) => {
+        copySelection(params as SpreadsheetCopyParams)
+        return undefined
+      }
+      : undefined,
     // 预览态只开放“拖动扩选”的交互，不允许真正写回单元格内容。
     BEFORE_AUTOFILL_DATA_METHOD: () => [],
     SPAN_METHOD: spanMethod,

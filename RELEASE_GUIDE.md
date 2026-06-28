@@ -305,6 +305,7 @@ pnpm release:public -- --public-repo-dir /Users/wangyu/IdeaProjects/file-viewer-
 - 生成 Demo、组件 Demo、库产物、文档站 tarball
 - 写入 `artifacts/release-manifest.json`
 - 检查开源总仓库根目录是否误出现 `.env`、`.release/`、`node_modules/`、根目录 `scripts/` 等内部内容
+- 输出建议的开源总仓提交命令，提交标题会带上版本号和本次源码提交标题
 
 脚本会使用稳定的 gzip 头生成静态 tarball，并在复制/打包前做内容比较；如果产物字节完全一致，会保留旧文件，避免 GitHub/Gitee 历史因为无意义的二进制重写继续膨胀。Gitee 已提示仓库接近或超过 1GB 时，务必优先确认 `git diff --stat` 中没有重复变化的大型 `.tar.gz`。
 
@@ -333,11 +334,12 @@ test ! -d node_modules
 test ! -d scripts
 ```
 
-确认源码、静态产物、示例和 release 下载物都符合预期后再提交:
+确认源码、静态产物、示例和 release 下载物都符合预期后再提交。提交信息必须说明本次真实变化，优先使用脚本末尾输出的建议命令；禁止使用“同步产物”“refresh open-source main repository”这类没有业务含义的泛化标题:
 
 ```bash
 git add -A
-git commit -m "chore: refresh open-source main repository for <version>"
+git commit -m "chore: publish open-source main v<version> - <specific source change>" \
+  -m "Source commit: <private-gitea-main-commit>"
 git push origin main
 git push gitee main
 ```
@@ -347,7 +349,8 @@ git push gitee main
 ```bash
 cd /Users/wangyu/IdeaProjects/file-viewer3
 pnpm public:gitee:snapshot
-pnpm public:gitee:snapshot -- --push --confirm-rewrite-history
+pnpm public:gitee:snapshot -- --push --confirm-rewrite-history \
+  --message "chore: publish Gitee open-source snapshot - <specific public commit title>"
 ```
 
 ## 同步 core 和组件分仓

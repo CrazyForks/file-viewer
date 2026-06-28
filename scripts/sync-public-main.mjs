@@ -26,10 +26,9 @@ const includeLegacyVue2Tarball =
   args.includes('--include-legacy-vue2-tarball') ||
   process.env.FILE_VIEWER_INCLUDE_LEGACY_VUE2_TARBALL === '1'
 const skipVue2Tarball = args.includes('--skip-vue2-tarball') || !includeLegacyVue2Tarball
-const slimArtifacts =
-  (args.includes('--slim') || process.env.FILE_VIEWER_PUBLIC_SLIM === '1') &&
-  !args.includes('--expanded-assets')
-const keepExpandedAssets = !slimArtifacts
+const keepExpandedAssets =
+  args.includes('--expanded-assets') || process.env.FILE_VIEWER_PUBLIC_EXPANDED_ASSETS === '1'
+const slimArtifacts = !keepExpandedAssets
 const {
   rootPackage: packageJson,
   wrapperManifest,
@@ -38,6 +37,10 @@ const {
 const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
 const releaseSourceBranch = branchRoles.currentSourceBranch || currentBranch()
 const version = packageJson.version
+const explicitPublicCommitMessage = readArg(
+  '--public-commit-message',
+  process.env.FILE_VIEWER_PUBLIC_COMMIT_MESSAGE || ''
+)
 const vue2Tarball = resolve(
   readArg(
     '--vue2-tarball',
@@ -133,6 +136,28 @@ function currentBranch() {
 
 function currentCommit() {
   return run('git', ['rev-parse', 'HEAD'], { capture: true })
+}
+
+function currentCommitSubject() {
+  return run('git', ['log', '-1', '--pretty=%s'], { capture: true })
+}
+
+function shellQuote(value) {
+  return `'${String(value).replaceAll("'", "'\"'\"'")}'`
+}
+
+function compactCommitSubject(subject) {
+  return subject.replace(/\s+/g, ' ').trim()
+}
+
+function suggestedPublicCommitMessage() {
+  if (explicitPublicCommitMessage) {
+    return compactCommitSubject(explicitPublicCommitMessage)
+  }
+  const subject = compactCommitSubject(currentCommitSubject())
+  return subject
+    ? `chore: publish open-source main v${version} - ${subject}`
+    : `chore: publish open-source main v${version}`
 }
 
 function remoteHeadForBranch(remoteName, branchName) {
@@ -548,7 +573,7 @@ async function readEcosystemPackManifest() {
 async function writeReleaseManifest(repoDir, ecosystemPackManifest) {
   const allowedRoots = keepExpandedAssets
     ? ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', ...publicCommunityRootFiles, 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'demo', 'component-demo', 'docs', 'docs-dist', 'example', 'artifacts']
-    : ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', ...publicCommunityRootFiles, 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'dist', 'artifacts']
+    : ['README.md', 'README.en.md', 'BRANCHES.md', 'WRAPPER_ECOSYSTEM.md', 'LICENSE', ...publicCommunityRootFiles, 'package.json', 'pnpm-workspace.yaml', '.github', 'apps', 'packages', 'docs', 'dist', 'artifacts']
   const wrappersByPackageName = new Map(wrapperManifest.wrappers.map(wrapper => [wrapper.packageName, wrapper]))
   const renderersByPackageName = new Map((wrapperManifest.renderers || []).map(renderer => [renderer.packageName, renderer]))
   const packages = ecosystemPackManifest.packages || []
@@ -742,3 +767,8 @@ console.log(`Open-source main repository prepared in ${publicRepoDir}`)
 console.log('Review with:')
 console.log(`  git -C ${publicRepoDir} status --short`)
 console.log(`  git -C ${publicRepoDir} diff --stat`)
+console.log('Suggested commit:')
+console.log(`  git -C ${publicRepoDir} add -A`)
+console.log(
+  `  git -C ${publicRepoDir} commit -m ${shellQuote(suggestedPublicCommitMessage())} -m ${shellQuote(`Source commit: ${currentCommit()}`)}`
+)

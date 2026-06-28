@@ -8,7 +8,7 @@ import {
   type ViewerMountOptions,
   type ViewerOptions
 } from '@file-viewer/react-legacy'
-import { forwardRef, useMemo } from 'react'
+import { createElement, forwardRef, useMemo } from 'react'
 
 export * from '@file-viewer/react-legacy'
 
@@ -35,13 +35,11 @@ export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLeg
   const { options, ...rest } = props
   const fullOptions = useMemo(() => withFullViewerOptions(options), [options])
 
-  return (
-    <BaseFileViewerLegacy
-      {...rest}
-      ref={ref}
-      options={fullOptions}
-    />
-  )
+  return createElement(BaseFileViewerLegacy, {
+    ...rest,
+    ref,
+    options: fullOptions
+  })
 })
 
 FileViewerLegacy.displayName = 'FileViewerLegacyFull'

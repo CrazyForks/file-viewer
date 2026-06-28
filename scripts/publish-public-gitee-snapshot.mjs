@@ -28,7 +28,7 @@ const keepSnapshot = args.includes('--keep')
 const confirmRewriteHistory = args.includes('--confirm-rewrite-history')
 const branchRoles = await readJson(join(sourceRoot, 'ecosystem', 'branch-roles.json'))
 const remoteUrl = readArg('--remote-url', branchRoles.publicMainRepository.gitee)
-const message = readArg('--message', 'chore: publish open-source main snapshot mirror')
+const explicitMessage = readArg('--message', process.env.FILE_VIEWER_PUBLIC_GITEE_COMMIT_MESSAGE || '')
 const packageMetadataFiles = ['package.json', 'README.md', 'README.en.md', 'LICENSE']
 const excludedSnapshotPrefixes = [
   'apps/',
@@ -148,6 +148,24 @@ function lsRemoteHead(url, branchName) {
       allowFailure: true
     })
   )
+}
+
+function compactCommitSubject(subject) {
+  return subject.replace(/\s+/g, ' ').trim()
+}
+
+function publicCommitSubject(repoDir) {
+  return compactCommitSubject(run('git', ['log', '-1', '--pretty=%s'], { cwd: repoDir, capture: true }))
+}
+
+function snapshotCommitMessage(repoDir) {
+  if (explicitMessage) {
+    return compactCommitSubject(explicitMessage)
+  }
+  const subject = publicCommitSubject(repoDir)
+  return subject
+    ? `chore: publish Gitee open-source snapshot - ${subject}`
+    : 'chore: publish Gitee open-source snapshot'
 }
 
 async function copyTrackedFiles(from, to) {
@@ -336,6 +354,7 @@ assertCleanGitRepo(publicRepoDir, 'Open-source main repository')
 const publicHead = run('git', ['rev-parse', 'HEAD'], { cwd: publicRepoDir, capture: true })
 const publicTree = run('git', ['rev-parse', 'HEAD^{tree}'], { cwd: publicRepoDir, capture: true })
 const remoteHead = lsRemoteHead(remoteUrl, branch)
+const message = snapshotCommitMessage(publicRepoDir)
 
 await rm(snapshotDir, { recursive: true, force: true })
 await mkdir(snapshotDir, { recursive: true })

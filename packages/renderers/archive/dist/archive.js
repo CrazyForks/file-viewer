@@ -417,6 +417,12 @@ export default async function renderArchive(buffer, target, _type, context) {
         resolve === null || resolve === void 0 ? void 0 : resolve(password);
     };
     const requestPasswordWithDialog = async (reason, previousError) => {
+        const wasLoading = loading;
+        if (wasLoading) {
+            loading = false;
+            syncState();
+            renderEmptyState();
+        }
         passwordDescription.textContent = t('archive.password.description');
         passwordError.textContent = previousError || reason === 'invalid-password'
             ? t('archive.password.invalid')
@@ -425,7 +431,14 @@ export default async function renderArchive(buffer, target, _type, context) {
         passwordDialog.classList.remove('archive-hidden');
         targetWindow === null || targetWindow === void 0 ? void 0 : targetWindow.setTimeout(() => passwordInput.focus(), 0);
         return new Promise((resolve) => {
-            passwordResolver = resolve;
+            passwordResolver = password => {
+                if (wasLoading && password !== null) {
+                    loading = true;
+                    syncState();
+                    renderEmptyState();
+                }
+                resolve(password);
+            };
         });
     };
     const requestArchivePassword = async (reason, entry, previousError) => {

@@ -771,7 +771,7 @@ function generatedPublicBlock(locale) {
       '',
       '下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/registry/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。',
       '',
-      `核心底座包: \`${core.packageName}\`。core 源码已公开，GitHub: ${core.github}，Gitee: ${core.gitee}。开源总仓库提供可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例文件和 release tarball；私有 Gitea \`main\` 是完整原始聚合仓，用于统一自动化、内部集成历史、打赏支持和优先技术支持，不等同于 GitHub 开源总仓库。`,
+      `核心底座包: \`${core.packageName}\`。core 源码已公开，GitHub: ${core.github}，Gitee: ${core.gitee}。开源总仓库提供可运行的主 Demo 源码、core、标准组件包、兼容包、文档源码和 release 索引；完整 Demo、component demo、文档站和样例构建产物通过 GitHub Release 或 Cloudflare Pages 分发，避免普通 clone 被静态产物拖大。私有 Gitea \`main\` 是完整原始聚合仓，用于统一自动化、内部集成历史、打赏支持和优先技术支持，不等同于 GitHub 开源总仓库。`,
       '',
       markdownTable(
         template.wrapperMatrixHeaders,
@@ -800,7 +800,7 @@ function generatedPublicBlock(locale) {
     '',
     'This section is generated from `ecosystem/wrappers.json` and `packages/core/src/registry/formats.ts`. The open-source main repository carries the same index so users can find standard npm packages, historical compatibility packages, split component repositories, and release downloads from one place.',
     '',
-    `Core foundation package: \`${core.packageName}\`. Core source is public: ${core.github} and ${core.gitee}. The open-source aggregate repository provides runnable main demo source, core, standard component packages, compatibility aliases, documentation source, build artifacts, examples, and release tarballs; private Gitea \`main\` is the complete original aggregate workspace for unified automation, integration history, sponsorship, and priority support, and is not the same as the GitHub open-source aggregate.`,
+    `Core foundation package: \`${core.packageName}\`. Core source is public: ${core.github} and ${core.gitee}. The open-source aggregate repository provides runnable main demo source, core, standard component packages, compatibility aliases, documentation source, and release indexes; full demo, component demo, docs, and sample-file builds are distributed through GitHub Releases or Cloudflare Pages so normal clones stay practical. Private Gitea \`main\` is the complete original aggregate workspace for unified automation, integration history, sponsorship, and priority support, and is not the same as the GitHub open-source aggregate.`,
     '',
     markdownTable(
       template.wrapperMatrixHeaders,

@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-workspace",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
@@ -72,6 +72,7 @@
     "site:deploy:cloudflare": "pnpm site:build && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-site CLOUDFLARE_PAGES_OUTPUT_DIR=apps/official-site/dist node scripts/deploy-cloudflare-pages.mjs",
     "dev:components": "pnpm --filter @flyfish-group/file-viewer-component-demo dev",
     "build:component-demo": "pnpm --filter @flyfish-group/file-viewer-component-demo build && pnpm verify:component-demo-output",
+    "component-demo:deploy:cloudflare": "pnpm build:component-demo && CLOUDFLARE_PAGES_PROJECT=flyfish-file-viewer-component-demo CLOUDFLARE_PAGES_OUTPUT_DIR=apps/component-demo/dist node scripts/deploy-cloudflare-pages.mjs",
     "verify:demo-output": "node scripts/verify-demo-output.mjs",
     "verify:demo-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-demo-browser-smoke.mjs",
     "verify:component-demo-output": "node scripts/verify-wrapper-demo-output.mjs",
