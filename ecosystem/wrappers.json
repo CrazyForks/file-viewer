@@ -206,7 +206,7 @@
     {
       "id": "geo",
       "packageName": "@file-viewer/renderer-geo",
-      "description": "Standalone geospatial renderer plugin for File Viewer with GeoJSON, KML, GPX, and SHP parsing, offline SVG map preview, and lazy format-specific dependencies.",
+      "description": "Standalone geospatial renderer plugin for File Viewer with GeoJSON, KML, GPX, and SHP parsing, CRS normalization, offline MapLibre overlay rendering, SVG fallback, and lazy format-specific dependencies.",
       "packageDir": "packages/renderers/geo",
       "repository": "file-viewer-renderer-geo",
       "github": "https://github.com/flyfish-dev/file-viewer-renderer-geo",

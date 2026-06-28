@@ -516,7 +516,9 @@ async function useLocal(blob: Blob) {
 
 ### 地理数据怎么接
 
-`geojson` 会直接按 GeoJSON 读取；`kml` 和 `gpx` 会由 `@file-viewer/renderer-geo` 按需加载 `@tmcw/togeojson` 转换；`shp` 会由同一个 renderer 包按需加载 `shpjs`。内置预览是离线 SVG 地图，不依赖在线瓦片服务，适合内网附件中心快速确认点线面、轨迹和边界。大量要素、投影转换或空间分析仍建议在业务 GIS 模块中处理。
+`geojson` 会直接按 GeoJSON 读取；`kml` 和 `gpx` 会由 `@file-viewer/renderer-geo` 按需加载 `@tmcw/togeojson` 转换；`shp` 会由同一个 renderer 包按需加载 `shpjs`。内置预览使用离线 MapLibre 空底图渲染点线面叠加层，不依赖在线瓦片服务，适合内网附件中心快速确认点位、轨迹和边界。
+
+坐标系默认归一化到 WGS84。标准 GeoJSON 按 `EPSG:4326` 读取；带 `crs` 的 GeoJSON 会按声明转换；未声明但坐标超出经纬度范围时会自动推断 Web Mercator；业务系统也可以通过 `options.geo.projection` 显式指定 `EPSG:3857`、`EPSG:4490`、`GCJ02`、`BD09` 或 proj4 字符串。WebGL 不可用时会回退 SVG 矢量预览。海量要素抽稀或空间分析仍建议在业务 GIS 模块中处理。
 
 `.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线预览。静态路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管 `viewer-static.min.js`，组件会把同目录下的 styles、shapes、stencils、img、mxgraph 和 math 资源用于离线渲染；官方 viewer 异常时会回退内置 SVG。
 

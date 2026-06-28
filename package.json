@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-workspace",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
@@ -106,6 +106,7 @@
     "verify:production-entrypoints": "node scripts/verify-production-entrypoints.mjs",
     "verify:renderer-contracts": "node scripts/verify-renderer-contracts.mjs",
     "verify:renderer-assets": "node scripts/verify-renderer-assets.mjs",
+    "verify:geo-renderer": "node scripts/verify-geo-renderer.mjs",
     "verify:eda-layout-webgl": "pnpm --filter @file-viewer/eda-layout build && node scripts/verify-eda-layout-webgl.mjs",
     "verify:on-demand-boundaries": "node scripts/verify-on-demand-boundaries.mjs",
     "verify:vite-plugin-auto-scan": "pnpm --filter @file-viewer/vite-plugin build && node scripts/verify-vite-plugin-auto-scan.mjs",

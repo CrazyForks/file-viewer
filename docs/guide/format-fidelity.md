@@ -38,7 +38,7 @@
 | Excalidraw | 使用官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` | 保持官方导出优先，rough.js 兜底 |
 | CAD | Autodesk 官方 viewer 路线也把 DWG / DXF / DWF / DWFx 作为独立查看格式处理；前端离线链路委托 `@flyfish-dev/cad-viewer`，DWG 使用 Worker + LibreDWG WASM，DWF/DWFx/XPS 使用 native DWF renderer | 继续跟随 cad-viewer 升级，viewer 只负责资源路径、生命周期和统一 toolbar |
 | XMind | `@file-viewer/renderer-mindmap` 解析 XMind 8 XML / XMind 2020+ JSON 包结构，使用 SVG/DOM 脑图阅读器 | 继续增强只读预览体验，当前已使用 `@panzoom/panzoom` 提供拖拽平移、从节点卡片起手拖拽、移动端双指缩放、滚轮锚点缩放、键盘平移、统一工具栏状态同步、容器 resize 自动适配和用户交互后的视角保留 |
-| GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON；core 默认安装不再携带 `@tmcw/togeojson` / `shpjs` | 当前可作为离线地理附件快速预览；底图、投影转换和空间分析交给业务 GIS |
+| GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON；core 默认安装不再携带 `@tmcw/togeojson` / `shpjs` / `maplibre-gl` / `proj4` | 使用离线 MapLibre 空底图渲染点线面叠加层，支持 GeoJSON `crs`、`options.geo.projection`、Web Mercator 推断、GCJ-02 / BD-09 转换和 SVG fallback；空间分析仍交给业务 GIS |
 | Image / HEIC | core 继续保留 PNG/JPEG/SVG/WebP 等浏览器原生图片预览；HEIC/HEIF 转换依赖体积和兼容性更重，适合独立 renderer 承接 | `heic2any` 已从 core 直接依赖中移除，HEIC/HEIF 和完整图片链路由 `@file-viewer/renderer-image` 或 preset 装配 |
 | GDSII | `@file-viewer/eda-layout` 提供 GDSII record parser 和 WebGL draw batch，`@file-viewer/renderer-eda` 读取 library、structure、boundary、path、text、sref/aref 和坐标边界，小图输出 SVG，大元素集输出 WebGL canvas | 当前可作为 GDSII 版图快速预览；层控制、层级实例展开和 tile 增量加载继续在 `@file-viewer/eda-layout` 中演进 |
 
@@ -61,7 +61,7 @@
 | STEP / IGES / IFC / 3DM / BREP | STEP/IGES/BREP 可走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` + Three.js Rhino3dmLoader | 已拆出 `@file-viewer/geometry-engine` 维护格式签名、推荐内核和提示文本；`@file-viewer/renderer-3d` 只按需消费该轻量边界，不把这些重量级几何内核放进 core 默认路径 |
 | Draw.io / Excalidraw / Mermaid / PlantUML | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容；Mermaid 使用官方 SVG renderer；PlantUML 默认离线预览源码，可选接入自托管 SVG 服务 | 已拆成 `@file-viewer/renderer-drawing` 独立维护，继续离线 vendor 分发；PlantUML 完整图形渲染推荐企业内网自托管服务端点 |
 | Presentation / PPTX | OOXML 演示文稿的复杂度适合独立 engine + renderer 双层维护，避免 core 被解析器、主题和媒体链路拖重 | `@file-viewer/renderer-presentation` 暴露标准 renderer 插件，`@file-viewer/pptx` 继续作为可单独优化的 native PPTX 内核 |
-| GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 WGS84 GeoJSON | 已拆 `@file-viewer/renderer-geo` 并从 core 直接依赖中移除转换库，后续在该包中继续补投影提示、海量要素抽稀和真实公开样本 |
+| GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 GeoJSON，MapLibre 可承接离线矢量叠加层 | 已拆 `@file-viewer/renderer-geo` 并从 core 直接依赖中移除转换和地图库；当前补齐 CRS 归一化、MapLibre 叠加层、SVG fallback 和解析 harness，后续继续补海量要素抽稀和真实公开样本 |
 | Typst | 官方 Rust 编译器生态已可通过 `typst.ts` 在浏览器 WASM 编译并渲染为 SVG/PDF | 保持 `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、超时和资源错误提示 |
 
 ## 外部调研依据

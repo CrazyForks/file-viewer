@@ -1435,13 +1435,13 @@ code {
 
 .qr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .qr-card {
   min-width: 0;
-  padding: 14px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.82);
@@ -1452,10 +1452,10 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 196px;
+  height: 142px;
   overflow: hidden;
-  padding: 8px;
-  margin-bottom: 12px;
+  padding: 6px;
+  margin-bottom: 10px;
   border: 1px solid rgba(16, 24, 39, 0.1);
   border-radius: 7px;
   background: #fff;

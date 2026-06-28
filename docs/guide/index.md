@@ -81,7 +81,7 @@
 - EML / MSG / MBOX 邮件支持头信息、HTML/文本正文、附件下载和附件继续预览。
 - OLB / DRA / GDSII / OASIS 由 `@file-viewer/renderer-eda` 独立承接；GDSII 可生成 SVG / WebGL 快速版图，OASIS 文本夹具可生成 SVG，真实二进制 OASIS / Cadence 高保真几何保留独立 WASM 内核路线。
 - CAD 使用 `@flyfish-dev/cad-viewer`，支持 DWG / DXF / DWF / DWFx / XPS；DWG 通过 Worker + LibreDWG WASM 按需解析，DWF/DWFx/XPS 通过 native renderer 渲染，避免阻塞主线程。
-- 地理数据支持 GeoJSON、KML、GPX 和 SHP，按需转为 GeoJSON 后用离线 SVG 地图预览边界、轨迹和点位。
+- 地理数据支持 GeoJSON、KML、GPX 和 SHP，按需转为 GeoJSON 后做 CRS 归一化，并用离线 MapLibre 矢量地图叠加边界、轨迹和点位。
 - 3D 模型走 `@file-viewer/renderer-3d` + Three.js loaders，支持 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等常见浏览器渲染格式。
 - Excalidraw 使用官方 `@excalidraw/excalidraw` 导出 SVG，draw.io 默认走随 viewer assets 分发的官方 diagrams.net 离线 viewer，Mermaid 走官方 `mermaid` SVG 渲染，PlantUML 默认离线源码预览，也可配置自托管 SVG 服务；这些绘图链路都支持拖拽平移和统一缩放。
 - EPUB 使用 `epubjs` 提供目录和滚动阅读，UMD 作为电子书格式解析目录和压缩正文，音频使用浏览器原生播放器打开，MIDI 会展示轨道和时长信息，HLS 视频按需加载 `hls.js`。

@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/react-full",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "private": false,
   "type": "module",
   "description": "Full React package for Flyfish File Viewer with the complete preset enabled by default.",
@@ -60,8 +60,8 @@
     "react": ">=17 <20"
   },
   "dependencies": {
-    "@file-viewer/preset-all": "workspace:^2.1.10",
-    "@file-viewer/react": "workspace:^2.1.10"
+    "@file-viewer/preset-all": "workspace:^2.1.11",
+    "@file-viewer/react": "workspace:^2.1.11"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

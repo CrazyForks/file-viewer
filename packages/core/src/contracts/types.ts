@@ -314,6 +314,12 @@ export type FileViewerMessageKey =
   | 'geo.geometryTypes'
   | 'geo.aria'
   | 'geo.loading'
+  | 'geo.projection'
+  | 'geo.engine'
+  | 'geo.engine.maplibre'
+  | 'geo.engine.svg'
+  | 'geo.error.projection'
+  | 'geo.action.fit'
   | 'model.toolbar.fit'
   | 'model.toolbar.rotate'
   | 'model.toolbar.wireframe'
@@ -610,6 +616,32 @@ export interface FileViewerDataOptions {
   sqlWasmUrl?: string;
 }
 
+export interface FileViewerGeoOptions {
+  /**
+   * Source coordinate reference system. GeoJSON normally uses WGS84, but many
+   * business exports carry Web Mercator, GCJ-02, BD-09, or legacy CRS metadata.
+   *
+   * Accepts values such as `EPSG:4326`, `EPSG:3857`, `CRS:84`, `GCJ02`,
+   * `BD09`, or a proj4 definition string.
+   */
+  projection?: string;
+  /**
+   * Defaults to true. When no CRS is declared and coordinates exceed longitude
+   * or latitude ranges, the geo renderer treats Web Mercator-sized values as
+   * EPSG:3857 before rendering.
+   */
+  inferProjection?: boolean;
+  /**
+   * Defaults to true. Disable only for environments without reliable WebGL,
+   * where the SVG fallback is preferred.
+   */
+  preferMapEngine?: boolean;
+  /**
+   * Padding in CSS pixels when fitting the dataset bounds in the map viewport.
+   */
+  fitPadding?: number;
+}
+
 export interface FileViewerDrawingOptions {
   /**
    * Self-hosted diagrams.net viewer script.
@@ -772,6 +804,7 @@ export interface FileViewerOptions {
   docx?: FileViewerDocxOptions;
   spreadsheet?: FileViewerSpreadsheetOptions;
   typst?: FileViewerTypstOptions;
+  geo?: FileViewerGeoOptions;
   data?: FileViewerDataOptions;
   drawing?: FileViewerDrawingOptions;
   cad?: FileViewerCadOptions;
