@@ -26,6 +26,7 @@ export type {
   ViewerMountOptions,
   ViewerOptions,
   ViewerPdfOptions,
+  ViewerPresentationOptions,
   ViewerSpreadsheetOptions,
   ViewerSearchOptions,
   ViewerThemeMode,

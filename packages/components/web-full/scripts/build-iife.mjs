@@ -43,6 +43,7 @@ await rm(rendererOutDir, { recursive: true, force: true })
 await mkdir(rendererOutDir, { recursive: true })
 
 await build({
+  base: './',
   configFile: false,
   publicDir: false,
   logLevel: 'warn',
@@ -93,6 +94,7 @@ bucket[renderer.id] = renderer
 `, 'utf8')
 
   await build({
+    base: './',
     configFile: false,
     publicDir: false,
     logLevel: 'warn',

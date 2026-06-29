@@ -29,8 +29,8 @@ const options = {
 ## Capabilities
 
 - Supports `.xlsx`, `.xltx`, `.xlsm`, `.xlsb`, `.xls`, `.xlt`, `.xltm`, `.csv`, `.ods`, `.fods`, and `.numbers`.
-- Uses main-thread parsing by default to avoid worker stalls caused by local servers, mobile WebViews, MIME configuration, or strict CSP.
-- Can opt into the static worker path with `options.spreadsheet.worker: true` and `options.spreadsheet.workerUrl`.
+- Defaults to `options.spreadsheet.worker: 'auto'`: small files keep the main-thread compatibility path, while files at or above `options.spreadsheet.workerAutoThreshold` (1MB by default) automatically try the static worker.
+- Can force the static worker with `options.spreadsheet.worker: true`, disable auto worker with `worker: false`, and override custom static paths with `options.spreadsheet.workerUrl`.
 - Supports multiple sheets, horizontally scrollable sheet tabs, merged cells, row and column sizing, borders, fills, alignment, text color, workbook images, the global zoom provider, and optional header drag column resizing.
 - Uses virtual rendering for interaction. Host components usually hide full-document print for spreadsheets to avoid printing only the current viewport.
 

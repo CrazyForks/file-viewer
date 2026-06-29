@@ -1,5 +1,7 @@
 import type { PptxWorkerFactoryOptions } from './types';
 
+const defaultPptxWorkerUrl = new URL('./worker/pptx.worker.js', import.meta.url);
+
 export const createPptxWorker = (options: PptxWorkerFactoryOptions = {}) => {
   if (options.workerFactory) {
     return options.workerFactory();
@@ -11,7 +13,7 @@ export const createPptxWorker = (options: PptxWorkerFactoryOptions = {}) => {
     });
   }
 
-  return new Worker(new URL('./worker/pptx.worker.js', import.meta.url), {
+  return new Worker(defaultPptxWorkerUrl, {
     type: 'module',
   });
 };

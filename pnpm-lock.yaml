@@ -1176,8 +1176,8 @@ importers:
         specifier: workspace:^2.1.13
         version: link:../doc
       '@file-viewer/docx':
-        specifier: ^0.3.15
-        version: 0.3.15
+        specifier: ^0.3.16
+        version: 0.3.16
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -1810,8 +1810,8 @@ packages:
     resolution: {integrity: sha512-nULYsQxkWHnbmHvcs+efMkJ4/9TtvNyFeLyHdeGxW0zHs6P+jYVqcRff9A6Vq9w9JXeDRnRh2VKvTtS19GW2qA==}
     engines: {node: '>=10'}
 
-  '@file-viewer/docx@0.3.15':
-    resolution: {integrity: sha512-feRmbtorpE89ANNJGkWLAnTF1wlViytrln2DkoB0vD6HS9+b54LbKkSdTyZhqUb80lkZ+kpm/zHAE4u/EJM1pQ==}
+  '@file-viewer/docx@0.3.16':
+    resolution: {integrity: sha512-TniYvAtaTQuLw6u4v1cO8lqg1NyAid9rZDiM4oTAl6QRgO8jTk/6JZ831qcQclMzogyuytiot9qChS4zzoe76g==}
 
   '@floating-ui/core@1.7.5':
     resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
@@ -6300,7 +6300,7 @@ snapshots:
 
   '@excalidraw/random-username@1.1.0': {}
 
-  '@file-viewer/docx@0.3.15':
+  '@file-viewer/docx@0.3.16':
     dependencies:
       jszip: 3.10.1
 

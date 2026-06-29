@@ -182,11 +182,14 @@ export default async function renderPptx(
     errorMessage = '';
     progressiveReady = false;
     syncUi();
+    const presentationOptions = context?.options?.presentation;
 
     try {
       const nextViewer = await PptxViewer.open(buffer, surface, {
         fitMode: 'contain',
         zoomPercent,
+        workerUrl: presentationOptions?.workerUrl,
+        workerType: presentationOptions?.workerType,
         zipLimits: RECOMMENDED_ZIP_LIMITS,
         lazySlides: true,
         lazyMedia: true,

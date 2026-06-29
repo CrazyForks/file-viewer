@@ -94,6 +94,7 @@ type WorkerConstructor = new (scriptURL: string | URL, options?: WorkerOptions) 
 type SpreadsheetMessageListener = EventListenerOrEventListenerObject | null;
 
 const EXCEL_IMAGE_SCROLLBAR_GUARD = 18;
+const DEFAULT_SPREADSHEET_WORKER_AUTO_THRESHOLD = 1 * 1024 * 1024;
 
 const spreadsheetStyle = `
 .excel-wrapper{position:relative;width:100%;height:100%;display:flex;flex-direction:column;background:#fff;color:#172033;font-family:Aptos,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}
@@ -259,16 +260,171 @@ class MainThreadSpreadsheetWorker {
   }
 }
 
+class AutoFallbackSpreadsheetWorker {
+  public onmessage: ((event: MessageEvent) => void) | null = null;
+  public onerror: ((event: ErrorEvent) => void) | null = null;
+
+  private destroyed = false;
+  private usingFallback = false;
+  private hasPrimaryMessage = false;
+  private active: Worker;
+  private readonly pendingMessages: unknown[] = [];
+  private readonly listeners = new Map<string, Set<SpreadsheetMessageListener>>();
+
+  constructor(
+    primary: Worker,
+    private readonly createFallback: () => Worker
+  ) {
+    this.active = primary;
+    this.attach(primary);
+  }
+
+  addEventListener(type: string, listener: SpreadsheetMessageListener) {
+    if (!this.listeners.has(type)) {
+      this.listeners.set(type, new Set());
+    }
+    this.listeners.get(type)?.add(listener);
+  }
+
+  removeEventListener(type: string, listener: SpreadsheetMessageListener) {
+    this.listeners.get(type)?.delete(listener);
+  }
+
+  terminate() {
+    this.destroyed = true;
+    this.detach(this.active);
+    this.active.terminate();
+    this.pendingMessages.length = 0;
+    this.listeners.clear();
+  }
+
+  postMessage(message: unknown) {
+    if (this.destroyed) {
+      return;
+    }
+    if (!this.usingFallback && !this.hasPrimaryMessage) {
+      this.pendingMessages.push(message);
+    }
+    this.active.postMessage(message);
+  }
+
+  private readonly handleMessage = (event: MessageEvent) => {
+    if (this.destroyed) {
+      return;
+    }
+    if (!this.usingFallback) {
+      this.hasPrimaryMessage = true;
+      this.pendingMessages.length = 0;
+    }
+    this.onmessage?.(event);
+    this.dispatch('message', event);
+  };
+
+  private readonly handleError = (event: ErrorEvent) => {
+    if (this.destroyed) {
+      return;
+    }
+    if (!this.usingFallback && !this.hasPrimaryMessage) {
+      this.switchToFallback(event);
+      return;
+    }
+    this.onerror?.(event);
+    this.dispatch('error', event);
+  };
+
+  private attach(worker: Worker) {
+    worker.addEventListener('message', this.handleMessage);
+    worker.addEventListener('error', this.handleError);
+  }
+
+  private detach(worker: Worker) {
+    worker.removeEventListener('message', this.handleMessage);
+    worker.removeEventListener('error', this.handleError);
+  }
+
+  private dispatch(type: string, event: Event) {
+    this.listeners.get(type)?.forEach(listener => callListener(listener, event));
+  }
+
+  private switchToFallback(event: ErrorEvent) {
+    const messages = this.pendingMessages.splice(0);
+    this.detach(this.active);
+    this.active.terminate();
+    this.usingFallback = true;
+    this.hasPrimaryMessage = false;
+
+    try {
+      this.active = this.createFallback();
+      this.attach(this.active);
+      console.warn(
+        '[file-viewer] Spreadsheet Worker 自动模式启动失败，已回退到主线程解析。',
+        event.message || event.type
+      );
+      messages.forEach(message => this.active.postMessage(message));
+    } catch (fallbackError) {
+      const targetGlobal = typeof window !== 'undefined' ? window : undefined;
+      const ErrorEventCtor = targetGlobal?.ErrorEvent ||
+        (typeof ErrorEvent !== 'undefined' ? ErrorEvent : undefined);
+      const message = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+      const nextEvent = ErrorEventCtor
+        ? new ErrorEventCtor('error', { message, error: fallbackError })
+        : ({ type: 'error', message, error: fallbackError } as ErrorEvent);
+      this.onerror?.(nextEvent);
+      this.dispatch('error', nextEvent);
+    }
+  }
+}
+
 const createMainThreadSpreadsheetWorker = (target: HTMLDivElement) => {
   return new MainThreadSpreadsheetWorker(getTargetWindow(target)) as unknown as Worker;
 };
 
+const getSpreadsheetWorkerMode = (context?: FileRenderContext) => {
+  return context?.options?.spreadsheet?.worker ?? 'auto';
+};
+
+const shouldUseSpreadsheetWorker = (
+  byteLength: number,
+  context?: FileRenderContext
+) => {
+  const spreadsheetOptions = context?.options?.spreadsheet;
+  const workerMode = getSpreadsheetWorkerMode(context);
+  if (workerMode === true) {
+    return true;
+  }
+  if (workerMode === false) {
+    return false;
+  }
+
+  const threshold = typeof spreadsheetOptions?.workerAutoThreshold === 'number' &&
+    Number.isFinite(spreadsheetOptions.workerAutoThreshold) &&
+    spreadsheetOptions.workerAutoThreshold >= 0
+    ? spreadsheetOptions.workerAutoThreshold
+    : DEFAULT_SPREADSHEET_WORKER_AUTO_THRESHOLD;
+  return byteLength >= threshold;
+};
+
+const wrapAutoSpreadsheetWorker = (
+  worker: Worker,
+  target: HTMLDivElement,
+  context?: FileRenderContext
+) => {
+  if (getSpreadsheetWorkerMode(context) !== 'auto') {
+    return worker;
+  }
+  return new AutoFallbackSpreadsheetWorker(
+    worker,
+    () => createMainThreadSpreadsheetWorker(target)
+  ) as unknown as Worker;
+};
+
 const createSpreadsheetWorkerFactory = (
   target: HTMLDivElement,
+  bufferByteLength: number,
   context?: FileRenderContext
 ): FileViewerWorkerFactory => {
   return () => {
-    if (context?.options?.spreadsheet?.worker !== true) {
+    if (!shouldUseSpreadsheetWorker(bufferByteLength, context)) {
       return createMainThreadSpreadsheetWorker(target);
     }
 
@@ -285,10 +441,18 @@ const createSpreadsheetWorkerFactory = (
     );
 
     try {
-      return new (WorkerCtor as WorkerConstructor)(workerUrl, { type: 'module' });
+      return wrapAutoSpreadsheetWorker(
+        new (WorkerCtor as WorkerConstructor)(workerUrl, { type: 'module' }),
+        target,
+        context
+      );
     } catch (moduleWorkerError) {
       try {
-        return new (WorkerCtor as WorkerConstructor)(workerUrl);
+        return wrapAutoSpreadsheetWorker(
+          new (WorkerCtor as WorkerConstructor)(workerUrl),
+          target,
+          context
+        );
       } catch (classicWorkerError) {
         console.warn(
           '[file-viewer] Spreadsheet Worker 无法创建，已回退到主线程解析。',
@@ -506,7 +670,7 @@ const renderFileViewerSpreadsheet = async (
   const resizableRows = context?.options?.spreadsheet?.resizableRows === true;
 
   const controller = createFileViewerWorkerController(
-    createSpreadsheetWorkerFactory(target, context),
+    createSpreadsheetWorkerFactory(target, buffer.byteLength, context),
     { logErrors: false }
   );
 

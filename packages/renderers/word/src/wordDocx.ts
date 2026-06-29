@@ -28,7 +28,7 @@ const DOCX_WORKER_UNSAFE_PROTOCOLS = new Set(['file:', 'about:', 'data:'])
 const DOCX_MIN_SCALE = 0.24
 const DOCX_MAX_SCALE = 3
 const DOCX_ZOOM_STEP = 0.15
-const DOCX_VENDOR_ASSET_VERSION = '0.3.15'
+const DOCX_VENDOR_ASSET_VERSION = '0.3.16'
 const ZIP_SIGNATURE_PK = 0x504b
 
 const loadLibrary = (() => {
@@ -225,7 +225,7 @@ const DOCX_RESPONSIVE_CSS = `
 }
 .docx-fit-viewer .docx-flow-frame > section.docx {
   height: auto !important;
-  min-height: 0 !important;
+  min-height: var(--docx-page-height, auto) !important;
   overflow: visible !important;
 }
 .docx-fit-viewer .docx-page-frame > section.docx > article,

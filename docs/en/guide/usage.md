@@ -123,7 +123,8 @@ Every renderer below can be passed through `options.renderers`:
 | `docx.workerTimeout` | Worker startup timeout. The default is 5000ms so unsupported paths, MIME, CSP, or WebView environments fall back quickly. |
 | `docx.progressive` | Lets the renderer yield between batches to improve first content and scroll responsiveness on large documents. |
 | `docx.visualPagination` | Optional page-like preview. Default DOCX rendering is continuous flow to avoid breaking complex tables and directories. |
-| `spreadsheet.worker` / `spreadsheet.workerUrl` | Spreadsheet worker is opt-in; default parsing favors compatibility with local servers and mobile WebViews. |
+| `spreadsheet.worker` | Spreadsheet worker mode. The default `auto` keeps small files on the main-thread compatibility path and automatically tries the worker once file size reaches `spreadsheet.workerAutoThreshold`; explicit `true` / `false` values still take precedence. |
+| `spreadsheet.workerAutoThreshold` / `spreadsheet.workerUrl` | Large-file threshold for `worker: 'auto'` in bytes, default 1MB, plus the self-hosted Excel/XLSX worker URL. |
 | `spreadsheet.resizableColumns` | Allows users to drag spreadsheet header edges to inspect truncated text. |
 | `pdf.streaming` / `pdf.rangeChunkSize` | Controls URL-based progressive PDF loading and PDF.js range chunk size. |
 | `pdf.toolbar` | Shows or hides the PDF renderer's own page / zoom / rotation toolbar. Useful for comparison layouts. |

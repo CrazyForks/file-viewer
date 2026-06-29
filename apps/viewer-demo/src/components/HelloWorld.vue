@@ -15,7 +15,10 @@ import {
   ZoomIn,
   ZoomOut
 } from '@lucide/vue'
-import { DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH } from '@file-viewer/core'
+import {
+  DEFAULT_FILE_VIEWER_ARCHIVE_WORKER_PATH,
+  DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH
+} from '@file-viewer/core'
 import { allRenderers } from '@file-viewer/preset-all'
 import { listenForFile } from '@/components/utils'
 import type {
@@ -985,6 +988,8 @@ const viewerOptions = computed((): FileViewerOptions => {
     ...runtime.archive
   }
   options.spreadsheet = {
+    worker: 'auto',
+    workerUrl: `/${DEFAULT_FILE_VIEWER_SPREADSHEET_WORKER_PATH}`,
     resizableColumns: true,
     resizableRows: true,
     ...runtime.spreadsheet

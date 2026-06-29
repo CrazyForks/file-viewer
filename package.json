@@ -76,6 +76,7 @@
     "verify:demo-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-demo-browser-smoke.mjs",
     "verify:component-demo-output": "node scripts/verify-wrapper-demo-output.mjs",
     "verify:component-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-wrapper-browser-smoke.mjs",
+    "verify:web-full-iife-pptx": "npm exec --yes --package playwright -- node scripts/verify-web-full-iife-pptx-subpath.mjs",
     "verify:browser-smoke": "pnpm build:component-demo && pnpm verify:demo-browser-smoke && pnpm verify:component-browser-smoke",
     "verify:branch-roles": "node scripts/verify-branch-roles.mjs",
     "verify:core-api": "node scripts/verify-core-api.mjs",
