@@ -718,3 +718,7 @@ npm publish --access public
 本项目使用 `Apache-2.0` 许可证。
 
 二开或商用时，请按许可证要求保留版权、许可证和来源说明，并注明项目来源为 Flyfish Viewer / `@flyfish-group/file-viewer3` 或 `@flyfish-group/file-viewer`。如果你基于本项目修复了通用问题或增强了通用能力，也欢迎通过 issue / PR 一起贡献回来，让这套预览能力继续变得更稳。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=flyfish-dev/file-viewer&type=Date)](https://star-history.com/#flyfish-dev/file-viewer&Date)
