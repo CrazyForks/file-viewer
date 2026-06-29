@@ -11,7 +11,7 @@ This file tracks the concrete evidence for the long-term GitHub exposure work:
 | Area | Status | Evidence |
 | --- | --- | --- |
 | README first screen | Done | `README.md`, `README.en.md` use the internal/private browser-native positioning, clear CTAs, Demo / Docs / Quick Start / Supported Formats. |
-| 206+ formats as evidence | Done | README moves 206+ extensions and 24 preview pipelines into positioning/highlights/support matrix evidence, not the only pitch. |
+| 206 extensions as evidence | Done | README moves 206 extensions and 24 preview pipelines into positioning/highlights/support matrix evidence, not the only pitch. |
 | GitHub Topics | Done | `pnpm github:topics:plan` returns no add/remove changes; GitHub remote topics match the desired discovery set. |
 | Social Preview asset | Done | `.github/social-preview.png` is a branded 1280x640 PNG with the File Viewer logo mark; `pnpm github:social-preview:render` verifies dimensions. |
 | Social Preview remote upload | Done | `pnpm github:social-preview:check` reports `usesCustomOpenGraphImage: yes`; GitHub remote Open Graph image is the uploaded 1280x640 custom card. |

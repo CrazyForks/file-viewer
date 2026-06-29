@@ -12,7 +12,7 @@ File Viewer 的长期定位:
 
 - H1 使用 `File Viewer`，匹配用户搜索和仓库名。
 - 第一屏只讲三件事: 内网 / 私有化附件预览、无需服务端转码、Demo / Docs / Quick Start。
-- `206+ 扩展名、24 条预览链路` 放在亮点或格式矩阵里作为证据。
+- `206 个扩展名、24 条预览链路` 放在亮点或格式矩阵里作为证据。
 - README 同时给中文和英文入口，英文口径使用 `browser-native file viewer for internal web apps`。
 
 ## GitHub Description
