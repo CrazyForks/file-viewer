@@ -8,6 +8,7 @@
 - 所有标准 renderer loader 自动注册通用 view-state provider，未写专属适配的格式也能记录 / 恢复 renderer、缩放和滚动比例
 - PDF 提供页码、页数、缩放、旋转、滚动和导航状态；XMind、Geo、3D、CAD 追加画布 pan、地图中心、相机视角或底层视图快照等高交互状态
 - 程序化恢复使用 `source: 'api'` / `action: 'restore'`，并抑制中间滚动和缩放回弹事件，避免操作端和展示端互相触发
+- README、中英文使用文档、快速开始和格式能力页已统一说明 view-state、真实 zoom 状态和 PPTX Worker 自托管配置，方便几轮修复后对外口径保持一致
 
 ## 当前主线缩放状态准确性修复
 

@@ -11,7 +11,7 @@
 - PDF, OFD, images, audio, video, Markdown, source code, text, JSON/YAML/TOML/XML/SQL, archives, email, EPUB, Mermaid, Excalidraw, draw.io, and common Office/OpenDocument files.
 - CAD preview is powered by `@flyfish-dev/cad-viewer` through `@file-viewer/renderer-cad`; DWG, DXF, DWF, and DWFx assets stay self-hostable.
 - Word preview uses `@file-viewer/renderer-word` and the self-maintained `@file-viewer/docx` path for readable stream-style DOCX rendering.
-- Presentation preview uses `@file-viewer/renderer-presentation` and the standalone `@file-viewer/pptx` engine.
+- Presentation preview uses `@file-viewer/renderer-presentation` and the standalone `@file-viewer/pptx` engine, with self-hostable worker configuration for offline and strict-CSP deployments.
 
 ## Structure-first Lines
 
@@ -33,4 +33,3 @@ pnpm verify:format-support
 pnpm verify:smoke-matrix
 pnpm verify:renderer-assets
 ```
-

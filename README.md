@@ -612,7 +612,7 @@ docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 - 预览器会填满父容器，请为父容器提供稳定高度
 - 使用 `url` 预览时，目标资源需要允许浏览器访问；跨域场景下需要正确配置 CORS
 - 如果下载地址本身没有明确扩展名，建议先在业务侧取回文件，再包装成 `File`
-- PPTX 渲染器已拆分为独立包 `@file-viewer/pptx` / `flyfish-dev/pptxjs`，会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；复杂 Office 特效仍建议用真实业务文件做回归
+- PPTX 渲染器已拆分为独立包 `@file-viewer/pptx` / `flyfish-dev/pptxjs`，会尽量还原常见组合图形、旋转/翻转、主题背景、图片裁剪和 EMF 矢量图片；内网、严格 CSP、自托管 CDN 或旧 WebView 可通过 `options.presentation.workerUrl` / `options.presentation.workerType` 固定 PPTX Worker；复杂 Office 特效仍建议用真实业务文件做回归
 - OFD、Typst、XMind、压缩包、邮件、OLB/DRA/GDS/OASIS、CAD、地理数据、3D 模型、绘图、EPUB、UMD、PDF、Office、Markdown、音视频、HLS、HEIC、字体/数据资产和代码高亮渲染器都按需异步加载，只有命中格式时才拉取对应代码块；Typst compiler / renderer WASM 和默认字体可通过 `options.typst.compilerWasmUrl`、`options.typst.rendererWasmUrl`、`options.typst.fontAssetsUrl` 指向自托管地址，默认仅在打开 `.typ` / `.typst` 时加载
 - 普通业务优先通过 `options.preset` 装配 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering` 或 `@file-viewer/preset-all`；多个能力包直接使用 `preset: [officePreset, engineeringPreset]`。`builtinRenderers` 仅作为高级基线控制或历史兼容开关保留；UMD / EPUB 电子书均由 `@file-viewer/renderer-epub` 按需提供
 - `options.archive` 一般只需要配置 `cache`、`workerTimeoutMs` 和体积上限；预览器会先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`。手机 WebView、本地临时服务器、MIME 或 CSP 导致 Worker 初始化超时时，会继续降级到 ZIP/TAR/GZIP 兼容模式，避免压缩包一直停在 loading。只有静态目录、CDN 路径或 WASM 位置特殊时，才需要显式传 `archive.workerUrl` / `archive.wasmUrl`

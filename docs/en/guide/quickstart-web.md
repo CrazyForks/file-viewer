@@ -224,4 +224,4 @@ For intranet or strict-CSP deployments, copy runtime assets into your own public
 npx file-viewer-copy-assets ./public/file-viewer
 ```
 
-The command verifies worker, WASM, PDF, CAD, Typst, Archive, Data, DOCX, Spreadsheet, and Draw.io assets. Runtime options such as `options.pdf.workerUrl`, `options.archive.wasmUrl`, `options.docx.workerUrl`, `options.typst.compilerWasmUrl`, and `options.drawing.viewerScriptUrl` can point to self-hosted URLs.
+The command verifies worker, WASM, PDF, CAD, Typst, Archive, Data, DOCX, Spreadsheet, PPTX, and Draw.io assets. Runtime options such as `options.pdf.workerUrl`, `options.presentation.workerUrl`, `options.archive.wasmUrl`, `options.docx.workerUrl`, `options.typst.compilerWasmUrl`, and `options.drawing.viewerScriptUrl` can point to self-hosted URLs.
