@@ -462,6 +462,10 @@ function indexNodes(content) {
 async function processNodesInSlide(nodeKey, nodeValue, nodes, warpObj, source, sType, groupContext) {
   var result = "";
 
+  if (isHiddenDrawingNode(nodeValue)) {
+    return result;
+  }
+
   switch (nodeKey) {
     case "p:sp":    // Shape, Text
       result = await processSpNode(nodeValue, nodes, warpObj, source, sType, groupContext);
@@ -540,6 +544,20 @@ function mapLineSizeToPx(value, axis, groupContext, fallback) {
 
 function getTransformBool(value) {
   return value === true || value === "1" || value === "true";
+}
+
+function getDrawingNonVisualAttrs(node) {
+  return getTextByPathList(node, ["p:nvSpPr", "p:cNvPr", "attrs"]) ||
+    getTextByPathList(node, ["p:nvPicPr", "p:cNvPr", "attrs"]) ||
+    getTextByPathList(node, ["p:nvGrpSpPr", "p:cNvPr", "attrs"]) ||
+    getTextByPathList(node, ["p:nvCxnSpPr", "p:cNvPr", "attrs"]) ||
+    getTextByPathList(node, ["p:nvGraphicFramePr", "p:cNvPr", "attrs"]) ||
+    {};
+}
+
+function isHiddenDrawingNode(node) {
+  var attrs = getDrawingNonVisualAttrs(node);
+  return getTransformBool(attrs["hidden"]);
 }
 
 function getGroupTransformContext(xfrmNode, parentGroupContext) {
@@ -1102,7 +1120,8 @@ function getBlipCropStyles(blipFillNode) {
   if (srcRect === undefined) {
     return {
       container: "overflow:hidden;",
-      image: "display:block;width:100%;height:100%;object-fit:fill;max-width:none;max-height:none;"
+      image: "display:block;width:100%;height:100%;object-fit:fill;max-width:none;max-height:none;",
+      svg: { x: 0, y: 0, width: 100, height: 100 }
     };
   }
 
@@ -1116,15 +1135,22 @@ function getBlipCropStyles(blipFillNode) {
   if (visibleWidth <= 0 || visibleHeight <= 0) {
     return {
       container: "overflow:hidden;",
-      image: "display:block;width:100%;height:100%;object-fit:fill;max-width:none;max-height:none;"
+      image: "display:block;width:100%;height:100%;object-fit:fill;max-width:none;max-height:none;",
+      svg: { x: 0, y: 0, width: 100, height: 100 }
     };
   }
 
+  var imageWidth = 10000 / visibleWidth;
+  var imageHeight = 10000 / visibleHeight;
+  var imageLeft = -left / visibleWidth * 100;
+  var imageTop = -top / visibleHeight * 100;
+
   return {
     container: "overflow:hidden;",
-    image: "position:absolute;max-width:none;max-height:none;width:" + (10000 / visibleWidth) +
-      "%;height:" + (10000 / visibleHeight) + "%;left:" + (-left / visibleWidth * 100) +
-      "%;top:" + (-top / visibleHeight * 100) + "%;"
+    image: "position:absolute;max-width:none;max-height:none;width:" + imageWidth +
+      "%;height:" + imageHeight + "%;left:" + imageLeft +
+      "%;top:" + imageTop + "%;",
+    svg: { x: imageLeft, y: imageTop, width: imageWidth, height: imageHeight }
   };
 }
 
@@ -1132,6 +1158,17 @@ function getBlipEffectStyles(blipFillNode) {
   var duotone = getTextByPathList(blipFillNode, ["a:blip", "a:duotone"]);
   if (duotone !== undefined) {
     return "filter:grayscale(1);";
+  }
+  return "";
+}
+
+function getPicturePresetClipStyles(picNode) {
+  var preset = getTextByPathList(picNode, ["p:spPr", "a:prstGeom", "attrs", "prst"]);
+  if (preset === "ellipse") {
+    return "border-radius:50%;";
+  }
+  if (preset === "roundRect") {
+    return "border-radius:8px;";
   }
   return "";
 }
@@ -8677,6 +8714,147 @@ function shapeArc(cX, cY, rX, rY, stAng, endAng, isClose) {
   dData += (isClose ? " z" : "");
   return dData;
 }
+
+function getCustomGeometryPathData(custGeomNode, w, h) {
+  var pathNodes = asArray(getTextByPathList(custGeomNode, ["a:pathLst", "a:path"]));
+  var paths = [];
+
+  pathNodes.forEach(function (pathNode) {
+    var attrs = pathNode["attrs"] || {};
+    var maxX = toFiniteNumber(attrs["w"], 21600);
+    var maxY = toFiniteNumber(attrs["h"], 21600);
+    var cX = maxX ? (1 / maxX) * w : 0;
+    var cY = maxY ? (1 / maxY) * h : 0;
+    var commands = [];
+
+    asArray(getTextByPathList(pathNode, ["a:moveTo"])).forEach(function (moveToItem) {
+      asArray(getTextByPathList(moveToItem, ["a:pt"])).forEach(function (pt) {
+        var ptAttrs = pt["attrs"] || {};
+        if (ptAttrs["x"] === undefined || ptAttrs["y"] === undefined) {
+          return;
+        }
+        commands.push({
+          type: "movto",
+          order: toFiniteNumber(ptAttrs["order"], commands.length),
+          x: ptAttrs["x"],
+          y: ptAttrs["y"]
+        });
+      });
+    });
+
+    asArray(pathNode["a:lnTo"]).forEach(function (lnToItem) {
+      asArray(getTextByPathList(lnToItem, ["a:pt"])).forEach(function (pt) {
+        var ptAttrs = pt["attrs"] || {};
+        if (ptAttrs["x"] === undefined || ptAttrs["y"] === undefined) {
+          return;
+        }
+        commands.push({
+          type: "lnto",
+          order: toFiniteNumber(ptAttrs["order"], commands.length),
+          x: ptAttrs["x"],
+          y: ptAttrs["y"]
+        });
+      });
+    });
+
+    asArray(pathNode["a:cubicBezTo"]).forEach(function (cubicBezToNode) {
+      var pts = [];
+      asArray(cubicBezToNode["a:pt"]).forEach(function (pt) {
+        var ptAttrs = pt["attrs"] || {};
+        if (ptAttrs["x"] !== undefined && ptAttrs["y"] !== undefined) {
+          pts.push({
+            x: ptAttrs["x"],
+            y: ptAttrs["y"]
+          });
+        }
+      });
+      if (pts.length === 3) {
+        commands.push({
+          type: "cubicBezTo",
+          order: toFiniteNumber(getTextByPathList(cubicBezToNode, ["attrs", "order"]), commands.length),
+          cubBzPt: pts
+        });
+      }
+    });
+
+    asArray(pathNode["a:arcTo"]).forEach(function (arcToNode) {
+      var arcAttrs = arcToNode["attrs"] || {};
+      if (
+        arcAttrs["hR"] === undefined ||
+        arcAttrs["wR"] === undefined ||
+        arcAttrs["stAng"] === undefined ||
+        arcAttrs["swAng"] === undefined
+      ) {
+        return;
+      }
+      commands.push({
+        type: "arcTo",
+        order: toFiniteNumber(arcAttrs["order"], commands.length),
+        hR: arcAttrs["hR"],
+        wR: arcAttrs["wR"],
+        stAng: arcAttrs["stAng"],
+        swAng: arcAttrs["swAng"]
+      });
+    });
+
+    asArray(pathNode["a:close"]).forEach(function (closeItem) {
+      commands.push({
+        type: "close",
+        order: toFiniteNumber(getTextByPathList(closeItem, ["attrs", "order"]), commands.length)
+      });
+    });
+
+    commands.sort(function (a, b) {
+      return a.order - b.order;
+    });
+
+    var d = "";
+    commands.forEach(function (command) {
+      if (command.type == "movto") {
+        var spX = toFiniteNumber(command.x, NaN) * cX;
+        var spY = toFiniteNumber(command.y, NaN) * cY;
+        if (Number.isFinite(spX) && Number.isFinite(spY)) {
+          d += " M" + formatSvgNumber(spX) + "," + formatSvgNumber(spY);
+        }
+      } else if (command.type == "lnto") {
+        var lx = toFiniteNumber(command.x, NaN) * cX;
+        var ly = toFiniteNumber(command.y, NaN) * cY;
+        if (Number.isFinite(lx) && Number.isFinite(ly)) {
+          d += " L" + formatSvgNumber(lx) + "," + formatSvgNumber(ly);
+        }
+      } else if (command.type == "cubicBezTo") {
+        var cx1 = toFiniteNumber(command.cubBzPt[0].x, NaN) * cX;
+        var cy1 = toFiniteNumber(command.cubBzPt[0].y, NaN) * cY;
+        var cx2 = toFiniteNumber(command.cubBzPt[1].x, NaN) * cX;
+        var cy2 = toFiniteNumber(command.cubBzPt[1].y, NaN) * cY;
+        var cx3 = toFiniteNumber(command.cubBzPt[2].x, NaN) * cX;
+        var cy3 = toFiniteNumber(command.cubBzPt[2].y, NaN) * cY;
+        if ([cx1, cy1, cx2, cy2, cx3, cy3].every(Number.isFinite)) {
+          d += " C" + formatSvgNumber(cx1) + "," + formatSvgNumber(cy1) +
+            " " + formatSvgNumber(cx2) + "," + formatSvgNumber(cy2) +
+            " " + formatSvgNumber(cx3) + "," + formatSvgNumber(cy3);
+        }
+      } else if (command.type == "arcTo") {
+        var hR = toFiniteNumber(command.hR, NaN) * cX;
+        var wR = toFiniteNumber(command.wR, NaN) * cY;
+        var stAng = toFiniteNumber(command.stAng, NaN) / 60000;
+        var swAng = toFiniteNumber(command.swAng, NaN) / 60000;
+        if ([hR, wR, stAng, swAng].every(Number.isFinite)) {
+          d += shapeArc(wR, hR, wR, hR, stAng, stAng + swAng, false);
+        }
+      } else if (command.type == "close") {
+        d += " Z";
+      }
+    });
+
+    if (d && !/NaN/.test(d)) {
+      paths.push(d);
+    }
+  });
+
+  return paths;
+}
+
 function shapeSnipRoundRect(w, h, adj1, adj2, shapeType, adjType) {
   /*
             shapeType: snip,round
@@ -8843,15 +9021,49 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
     return "";
   }
   var cropStyles = getBlipCropStyles(node["p:blipFill"]);
+  var blipEffectStyles = getBlipEffectStyles(node["p:blipFill"]);
+  var customGeometryPaths = [];
+  var customGeometrySize = { width: 100, height: 100 };
+  var customGeometryNode = getTextByPathList(node, ["p:spPr", "a:custGeom"]);
+  if (customGeometryNode !== undefined && xfrmNode !== undefined) {
+    var extAttrs = getTextByPathList(xfrmNode, ["a:ext", "attrs"]) || {};
+    var picWidth = mapGroupSizeToPx(extAttrs["cx"], "x", groupContext);
+    var picHeight = mapGroupSizeToPx(extAttrs["cy"], "y", groupContext);
+    if (Number.isFinite(picWidth) && Number.isFinite(picHeight) && picWidth > 0 && picHeight > 0) {
+      customGeometrySize = { width: picWidth, height: picHeight };
+      customGeometryPaths = getCustomGeometryPathData(customGeometryNode, picWidth, picHeight);
+    }
+  }
   rtrnData = "<div class='block content' style='" +
     ((mediaProcess && audioPlayerFlag) ? getPosition(audioObjc, node, undefined, undefined, sType, groupContext) : getPosition(xfrmNode, node, undefined, undefined, sType, groupContext)) +
     ((mediaProcess && audioPlayerFlag) ? getSize(audioObjc, undefined, undefined, groupContext) : getSize(xfrmNode, undefined, undefined, groupContext)) +
     " z-index: " + order + ";" +
     "transform: rotate(" + rotate + "deg);" +
-    (((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag) ? cropStyles.container : "") +
+    (((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag) ? cropStyles.container + getPicturePresetClipStyles(node) : "") +
     "'>";
   if ((vdoNode === undefined && audioNode === undefined) || !mediaProcess || !mediaSupportFlag) {
-    rtrnData += "<img src='" + imageDataUrl + "' style='" + cropStyles.image + getBlipEffectStyles(node["p:blipFill"]) + "'/>";
+    if (customGeometryPaths.length > 0) {
+      var picClipId = "pptx_pic_clip_" + ((warpObj && warpObj.slideNumber) || "0") + "_" +
+        (getTextByPathList(node, ["p:nvPicPr", "p:cNvPr", "attrs", "id"]) || order || customGeometryPaths.length);
+      var svgImageX = customGeometrySize.width * cropStyles.svg.x / 100;
+      var svgImageY = customGeometrySize.height * cropStyles.svg.y / 100;
+      var svgImageWidth = customGeometrySize.width * cropStyles.svg.width / 100;
+      var svgImageHeight = customGeometrySize.height * cropStyles.svg.height / 100;
+      rtrnData += "<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 " +
+        formatSvgNumber(customGeometrySize.width) + " " + formatSvgNumber(customGeometrySize.height) +
+        "' preserveAspectRatio='none' style='display:block;width:100%;height:100%;overflow:hidden;'>";
+      rtrnData += "<defs><clipPath id='" + picClipId + "' clipPathUnits='userSpaceOnUse'>";
+      customGeometryPaths.forEach(function (pathData) {
+        rtrnData += "<path d='" + pathData + "' clip-rule='evenodd' fill-rule='evenodd'/>";
+      });
+      rtrnData += "</clipPath></defs>";
+      rtrnData += "<image href='" + imageDataUrl + "' x='" + formatSvgNumber(svgImageX) + "' y='" + formatSvgNumber(svgImageY) +
+        "' width='" + formatSvgNumber(svgImageWidth) + "' height='" + formatSvgNumber(svgImageHeight) +
+        "' preserveAspectRatio='none' clip-path='url(#" + picClipId + ")' style='" + blipEffectStyles + "'/>";
+      rtrnData += "</svg>";
+    } else {
+      rtrnData += "<img src='" + imageDataUrl + "' style='" + cropStyles.image + blipEffectStyles + "'/>";
+    }
   } else if ((vdoNode !== undefined || audioNode !== undefined) && mediaProcess && mediaSupportFlag) {
     if (vdoNode !== undefined && !isVdeoLink) {
       rtrnData += "<video  src='" + vdoBlob + "' controls style='width: 100%; height: 100%'>Your browser does not support the video tag.</video>";
@@ -9017,9 +9229,8 @@ async function genTextBody(textBodyNode, spNode, slideLayoutSpNode, slideMasterS
       prg_height_node = getTextByPathList(slideMasterSpNode, [ "p:spPr", "a:xfrm", "a:ext", "attrs", "cy" ]);
     }
     var sld_prg_width_px = prg_width_node !== undefined ? mapGroupSizeToPx(prg_width_node, "x", groupContext) : NaN;
-    var sld_prg_height_px = prg_height_node !== undefined ? mapGroupSizeToPx(prg_height_node, "y", groupContext) : NaN;
     var sld_prg_width = Number.isFinite(sld_prg_width_px) ? ("width:" + sld_prg_width_px + "px;") : "width:inherit;";
-    var sld_prg_height = Number.isFinite(sld_prg_height_px) ? ("height:" + sld_prg_height_px + "px;") : "";
+    var sld_prg_height = "";
     var prg_dir = getPregraphDir(pNode, textBodyNode, idx, type, warpObj);
     text += "<div style='display: flex;" + sld_prg_width + sld_prg_height + "' class='slide-prgrph " + getHorizontalAlign(pNode, textBodyNode, idx, type, prg_dir, warpObj) + " " +
       prg_dir + " " + cssName + "' >";
@@ -9805,8 +10016,8 @@ async function genSpanElement(node, rIndex, pNode, textBodyNode, pFontStyle, sli
   text_style += "font-size:" + font_size + ";" +
     // marLStr +
     "font-family:" + getFontType(node, type, warpObj, pFontStyle, text, lang, pPrNodeLaout, pPrNodeMaster, lvl) + ";" +
-    "font-weight:" + getFontBold(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) + ";" +
-    "font-style:" + getFontItalic(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) + ";" +
+    "font-weight:" + getFontBold(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster, pNode) + ";" +
+    "font-style:" + getFontItalic(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster, pNode) + ";" +
     "text-decoration:" + getFontDecoration(node, type, slideMasterTextStyles) + ";" +
     "text-align:" + getTextHorizontalAlign(node, pNode, type, warpObj) + ";" +
     "vertical-align:" + getTextVerticalAlign(node, type, slideMasterTextStyles) + ";";
@@ -10959,37 +11170,34 @@ function getVerticalMargins(pNode, textBodyNode, type, idx, warpObj) {
       }
     }
   }
-  var spcBefor = 0, spcAfter = 0, spcLines = 0;
+  var spcBefor = 0, spcAfter = 0;
   var marginTopBottomStr = "";
   if (spcBefNode !== undefined) {
-    spcBefor = parseInt(spcBefNode) / 100;
+    spcBefor = parseInt(spcBefNode) / 100 * fontSizeFactor;
   }
   if (spcAftNode !== undefined) {
-    spcAfter = parseInt(spcAftNode) / 100;
+    spcAfter = parseInt(spcAftNode) / 100 * fontSizeFactor;
   }
 
   if (lnSpcNode !== undefined && fontSize !== undefined) {
     if (lnSpcNodeType == "Pts") {
-      marginTopBottomStr += "padding-top: " + ((parseInt(lnSpcNode) / 100) - fontSize) + "px;";//+ "pt;";
+      var lineHeightPx = parseInt(lnSpcNode) / 100 * fontSizeFactor;
+      if (Number.isFinite(lineHeightPx) && lineHeightPx > 0) {
+        marginTopBottomStr += "line-height: " + lineHeightPx + "px;";
+      }
     } else {
       var fct = parseInt(lnSpcNode) / 100000;
-      spcLines = fontSize * (fct - 1) - fontSize;// fontSize *
-      var pTop = (fct > 1) ? spcLines : 0;
-      var pBottom = (fct > 1) ? fontSize : 0;
-      // marginTopBottomStr += "padding-top: " + spcLines + "pt;";
-      // marginTopBottomStr += "padding-bottom: " + pBottom + "pt;";
-      marginTopBottomStr += "padding-top: " + pBottom + "px;";// + "pt;";
-      marginTopBottomStr += "padding-bottom: " + spcLines + "px;";// + "pt;";
+      if (Number.isFinite(fct) && fct > 0) {
+        marginTopBottomStr += "line-height: " + fct + ";";
+      }
     }
   }
 
-  //if (spcBefNode !== undefined || lnSpcNode !== undefined) {
-  marginTopBottomStr += "margin-top: " + (spcBefor - 1) + "px;";// + "pt;"; //margin-top: + spcLines // minus 1 - to fix space
-  //}
-  if (spcAftNode !== undefined || lnSpcNode !== undefined) {
-    //marginTopBottomStr += "margin-bottom: " + ((spcAfter - fontSize < 0) ? 0 : (spcAfter - fontSize)) + "pt;"; //margin-bottom: + spcLines
-    //marginTopBottomStr += "margin-bottom: " + spcAfter * (1 / 4) + "px;";// + "pt;";
-    marginTopBottomStr += "margin-bottom: " + spcAfter  + "px;";// + "pt;";
+  if (spcBefNode !== undefined) {
+    marginTopBottomStr += "margin-top: " + Math.max(0, spcBefor) + "px;";
+  }
+  if (spcAftNode !== undefined) {
+    marginTopBottomStr += "margin-bottom: " + Math.max(0, spcAfter) + "px;";
   }
 
   //console.log("getVerticalMargins 2 fontSize:", fontSize, "lnSpcNode:", lnSpcNode, "spcLines:", spcLines, "spcBefor:", spcBefor, "spcAfter:", spcAfter)
@@ -11302,6 +11510,34 @@ function quoteCssFontFamily(fontName) {
   return "\"" + String(fontName).replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\"";
 }
 
+function getCssFontFamilies(fontName) {
+  var cssFont = quoteCssFontFamily(fontName);
+  if (cssFont === undefined) {
+    return [];
+  }
+
+  var normalized = String(fontName).toLowerCase();
+  var fallbacks = [];
+  if (normalized === "aharoni") {
+    fallbacks = [ "Arial", "Helvetica Neue", "sans-serif" ];
+  } else if (normalized === "poppins bold" || normalized === "poppins extrabold") {
+    fallbacks = [ "Poppins", "Arial", "Helvetica Neue", "sans-serif" ];
+  } else if (normalized === "poppins light" || normalized === "poppins" || normalized === "poppins regular") {
+    fallbacks = [ "Arial", "Helvetica Neue", "sans-serif" ];
+  } else if (normalized === "微软雅黑" || normalized === "microsoft yahei") {
+    fallbacks = [ "Microsoft YaHei", "PingFang SC", "Helvetica Neue", "Arial", "sans-serif" ];
+  }
+
+  var families = [cssFont];
+  fallbacks.forEach(function (fallback) {
+    var fallbackCss = quoteCssFontFamily(fallback);
+    if (fallbackCss !== undefined && families.indexOf(fallbackCss) === -1) {
+      families.push(fallbackCss);
+    }
+  });
+  return families;
+}
+
 function getDefaultFontIdx(type, pFontStyle) {
   var fontIdx = getTextByPathList(pFontStyle, ["attrs", "idx"]);
   if (fontIdx === "major" || fontIdx === "minor") {
@@ -11330,10 +11566,11 @@ function getFontType(node, type, warpObj, pFontStyle, text, lang, pPrNodeLaout, 
   var ordered = [slots[preferred], slots.latin, slots.ea, slots.cs, slots.sym];
   var families = [];
   ordered.forEach(function (fontName) {
-    var cssFont = quoteCssFontFamily(fontName);
-    if (cssFont !== undefined && families.indexOf(cssFont) === -1) {
-      families.push(cssFont);
-    }
+    getCssFontFamilies(fontName).forEach(function (cssFont) {
+      if (families.indexOf(cssFont) === -1) {
+        families.push(cssFont);
+      }
+    });
   });
 
   return families.length ? families.join(",") : "inherit";
@@ -11371,6 +11608,32 @@ async function getFontColorPr(node, pNode, lstStyle, pFontStyle, lvl, idx, type,
       var shpFill = rPrNode["a:gradFill"];
       color = getGradientFill(shpFill, warpObj);
       colorType = "gradient";
+    }
+  }
+  if (color === undefined) {
+    var paragraphDefRPr = getTextByPathList(pNode, ["a:pPr", "a:defRPr"]);
+    if (paragraphDefRPr !== undefined) {
+      filTyp = getFillType(paragraphDefRPr);
+      if (filTyp == "SOLID_FILL") {
+        var solidFillNode = paragraphDefRPr["a:solidFill"];
+        color = getSolidFill(solidFillNode, undefined, undefined, warpObj);
+        var highlightNode = paragraphDefRPr["a:highlight"];
+        if (highlightNode !== undefined) {
+          highlightColor = getSolidFill(highlightNode, undefined, undefined, warpObj);
+        }
+        colorType = "solid";
+      } else if (filTyp == "PATTERN_FILL") {
+        var pattFill = paragraphDefRPr["a:pattFill"];
+        color = getPatternFill(pattFill, warpObj);
+        colorType = "pattern";
+      } else if (filTyp == "PIC_FILL") {
+        color = await getBgPicFill(paragraphDefRPr, "slideBg", warpObj, undefined, undefined);
+        colorType = "pic";
+      } else if (filTyp == "GRADIENT_FILL") {
+        var shpFill = paragraphDefRPr["a:gradFill"];
+        color = getGradientFill(shpFill, warpObj);
+        colorType = "gradient";
+      }
     }
   }
   if (color === undefined && getTextByPathList(lstStyle, ["a:lvl" + lvl + "pPr", "a:defRPr"]) !== undefined) {
@@ -11700,8 +11963,11 @@ function getFontSize(node, textBodyNode, pFontStyle, lvl, type, warpObj) {
   return isNaN(fontSize) ? ((type == "br") ? "initial" : "inherit") : (fontSize * fontSizeFactor + "px");// + "pt");
 }
 
-function getFontBold(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) {
+function getFontBold(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster, pNode) {
   var bold = getTextByPathList(node, ["a:rPr", "attrs", "b"]);
+  if (bold === undefined) {
+    bold = getTextByPathList(pNode, ["a:pPr", "a:defRPr", "attrs", "b"]);
+  }
   if (bold === undefined) {
     bold = getTextByPathList(pPrNodeLaout, ["a:defRPr", "attrs", "b"]);
   }
@@ -11711,8 +11977,11 @@ function getFontBold(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMas
   return (bold === "1" || bold === true) ? "bold" : ((bold === "0" || bold === false) ? "normal" : "inherit");
 }
 
-function getFontItalic(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster) {
+function getFontItalic(node, type, slideMasterTextStyles, pPrNodeLaout, pPrNodeMaster, pNode) {
   var italic = getTextByPathList(node, ["a:rPr", "attrs", "i"]);
+  if (italic === undefined) {
+    italic = getTextByPathList(pNode, ["a:pPr", "a:defRPr", "attrs", "i"]);
+  }
   if (italic === undefined) {
     italic = getTextByPathList(pPrNodeLaout, ["a:defRPr", "attrs", "i"]);
   }
