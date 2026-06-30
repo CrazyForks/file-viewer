@@ -170,7 +170,7 @@ function componentSurfaceRows(locale) {
       [
         'Vue 3 `@file-viewer/vue3`',
         '`url`、`file`、`options`',
-        '`load-start`、`load-complete`、`unload-start`、`unload-complete`、`operation-before`、`operation-cancel`、`operation-availability-change`、`search-change`、`location-change`、`zoom-change`',
+        '`load-start`、`load-complete`、`unload-start`、`unload-complete`、`operation-before`、`operation-cancel`、`operation-availability-change`、`search-change`、`location-change`、`zoom-change`、`view-state-change`',
         '模板 `ref` 暴露 `FileViewerExpose`；适合声明式接入。`Blob` / `ArrayBuffer` 建议包装成带扩展名的 `File` 后传给 `file`。'
       ],
       [
@@ -222,7 +222,7 @@ function componentSurfaceRows(locale) {
     [
       'Vue 3 `@file-viewer/vue3`',
       '`url`, `file`, `options`',
-      '`load-start`, `load-complete`, `unload-start`, `unload-complete`, `operation-before`, `operation-cancel`, `operation-availability-change`, `search-change`, `location-change`, `zoom-change`',
+      '`load-start`, `load-complete`, `unload-start`, `unload-complete`, `operation-before`, `operation-cancel`, `operation-availability-change`, `search-change`, `location-change`, `zoom-change`, `view-state-change`',
       'Template refs expose `FileViewerExpose`. For `Blob` / `ArrayBuffer`, prefer wrapping it as a named `File` so extension detection stays deterministic.'
     ],
     [
@@ -537,7 +537,7 @@ function lifecycleRows(locale) {
       ['`unload-complete` / `hooks.onUnloadComplete`', '旧文档释放完成后触发，reason 会标识 `replace`、`reset` 或 `component-unmount`。'],
       ['`operation-before` / `operation-cancel`', '下载、打印、HTML 导出和缩放前后触发；`beforeOperation` 返回 `false` 可取消操作。'],
       ['`operation-availability-change`', '当前格式是否可下载、可打印、可导出 HTML、可缩放发生变化时触发。'],
-      ['`search-change` / `location-change` / `zoom-change`', '搜索命中、定位锚点和缩放状态变化时触发，用于外层同步 UI。']
+      ['`search-change` / `location-change` / `zoom-change` / `view-state-change`', '搜索命中、定位锚点、缩放状态和完整视图快照变化时触发，用于外层同步 UI、投屏或恢复阅读进度。']
     ]
   }
   return [
@@ -547,7 +547,7 @@ function lifecycleRows(locale) {
     ['`unload-complete` / `hooks.onUnloadComplete`', 'Fires after the previous document is released. The reason is `replace`, `reset`, or `component-unmount`.'],
     ['`operation-before` / `operation-cancel`', 'Fires around download, print, HTML export, and zoom actions. Returning `false` from `beforeOperation` cancels the action.'],
     ['`operation-availability-change`', 'Fires when download, print, HTML export, or zoom support changes for the active format.'],
-    ['`search-change` / `location-change` / `zoom-change`', 'Fires when search matches, document anchors, or zoom state changes so host UIs can stay in sync.']
+    ['`search-change` / `location-change` / `zoom-change` / `view-state-change`', 'Fires when search matches, document anchors, zoom state, or full view-state snapshots change so host UIs, display screens, and reading-position restore flows can stay in sync.']
   ]
 }
 
@@ -583,20 +583,20 @@ function assetRows(locale) {
     return [
       ['通用 viewer assets', 'Pure Web 包提供 `file-viewer-copy-assets`，可把 Worker、WASM、vendor 和示例资源复制到业务静态目录。'],
       ['CAD / DWG / DXF / DWF', '按需配置 `options.cad.wasmPath`、`workerUrl`、`dwfWasmUrl`、`dxfEncoding`，支持自托管和内网部署。'],
-      ['PDF / DOCX / Excel', '按需配置 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.docx.workerUrl`、`options.docx.workerJsZipUrl`、`options.spreadsheet.workerUrl`；PDF 默认探测真实静态 Worker，不可用时懒加载包内 handler 兜底；DOCX 默认自动选择 Worker 或主线程解析，Electron `file://` 等本地不安全协议会自动回退；Excel 默认 `worker: auto`，大文件达到 `workerAutoThreshold` 自动启用 Worker，列宽拖拽可通过 `options.spreadsheet.resizableColumns` 显式开启。'],
+      ['PDF / DOCX / Excel / PPTX', '按需配置 `options.pdf.workerUrl`、`options.pdf.cMapUrl`、`options.pdf.wasmUrl`、`options.pdf.standardFontDataUrl`、`options.docx.workerUrl`、`options.docx.workerJsZipUrl`、`options.spreadsheet.workerUrl`、`options.presentation.workerUrl` / `options.presentation.workerType`；PDF 默认探测真实静态 Worker，不可用时懒加载包内 handler 兜底；DOCX 默认自动选择 Worker 或主线程解析，Electron `file://` 等本地不安全协议会自动回退；Excel 默认 `worker: auto`，大文件达到 `workerAutoThreshold` 自动启用 Worker，列宽拖拽可通过 `options.spreadsheet.resizableColumns` 显式开启；PPTX 默认按需创建模块 Worker，严格 CSP、旧 WebView 或自托管 CDN 场景可固定 Worker 地址。'],
       ['Typst / SQLite / Archive', '按需配置 Typst compiler/renderer WASM、`data.sqlWasmUrl`、`archive.workerUrl` / `archive.wasmUrl`；Typst 仅使用本地 WASM 真实渲染，不访问公共 CDN。'],
       ['Drawing', 'Draw.io 默认使用随 viewer assets 分发的官方 diagrams.net 离线 viewer；路径特殊时可通过 `options.drawing.viewerScriptUrl` 覆盖，`preferOfficial:false` 才切到内置 SVG 兜底。'],
-      ['离线部署', '运行时不依赖公共 CDN 或第三方在线资源；`file-viewer-copy-assets` 会复制 PDF、CAD、Typst、SQLite、压缩包、Draw.io、DOCX worker/JSZip 和 Office worker/vendor 资产。'],
+      ['离线部署', '运行时不依赖公共 CDN 或第三方在线资源；`file-viewer-copy-assets` 会复制 PDF、CAD、Typst、SQLite、压缩包、Draw.io、DOCX worker/JSZip、PPTX worker 和 Office worker/vendor 资产。'],
       ['部署原则', '默认只在命中特定格式时异步加载对应依赖；没有命中的格式不会拉取重型 Worker、WASM 或解析库。']
     ]
   }
   return [
     ['Shared viewer assets', 'The Pure Web package ships `file-viewer-copy-assets` to copy workers, WASM, vendor files, and examples into your static directory.'],
     ['CAD / DWG / DXF / DWF', 'Configure `options.cad.wasmPath`, `workerUrl`, `dwfWasmUrl`, and `dxfEncoding` for self-hosted or intranet deployment.'],
-    ['PDF / DOCX / Excel', 'Configure `options.pdf.workerUrl`, `options.pdf.cMapUrl`, `options.pdf.wasmUrl`, `options.pdf.standardFontDataUrl`, `options.docx.workerUrl`, `options.docx.workerJsZipUrl`, and `options.spreadsheet.workerUrl`; PDF probes the real static worker first and lazy-loads the packaged handler when unavailable; DOCX chooses worker or main-thread parsing automatically, Electron `file://` and other unsafe local protocols fall back without user configuration; Excel defaults to `worker: auto`, enabling Worker automatically for files at or above `workerAutoThreshold`, and header drag column resizing is controlled by `options.spreadsheet.resizableColumns`.'],
+    ['PDF / DOCX / Excel / PPTX', 'Configure `options.pdf.workerUrl`, `options.pdf.cMapUrl`, `options.pdf.wasmUrl`, `options.pdf.standardFontDataUrl`, `options.docx.workerUrl`, `options.docx.workerJsZipUrl`, `options.spreadsheet.workerUrl`, and `options.presentation.workerUrl` / `options.presentation.workerType`; PDF probes the real static worker first and lazy-loads the packaged handler when unavailable; DOCX chooses worker or main-thread parsing automatically, Electron `file://` and other unsafe local protocols fall back without user configuration; Excel defaults to `worker: auto`, enabling Worker automatically for files at or above `workerAutoThreshold`, and header drag column resizing is controlled by `options.spreadsheet.resizableColumns`; PPTX creates a module Worker on demand and can pin the worker URL/type for strict CSP, legacy WebViews, or self-hosted CDNs.'],
     ['Typst / SQLite / Archive', 'Configure Typst compiler/renderer WASM, `data.sqlWasmUrl`, and `archive.workerUrl` / `archive.wasmUrl` as needed; Typst renders through local WASM only and never falls back to a public CDN.'],
     ['Drawing', 'Draw.io uses the official diagrams.net offline viewer shipped with viewer assets by default; override `options.drawing.viewerScriptUrl` for custom paths, or set `preferOfficial:false` for the built-in SVG fallback.'],
-    ['Offline deployment', 'Runtime preview code does not depend on public CDN or third-party online assets; `file-viewer-copy-assets` copies PDF, CAD, Typst, SQLite, archive, Draw.io, DOCX worker/JSZip, and Office worker/vendor assets.'],
+    ['Offline deployment', 'Runtime preview code does not depend on public CDN or third-party online assets; `file-viewer-copy-assets` copies PDF, CAD, Typst, SQLite, archive, Draw.io, DOCX worker/JSZip, PPTX worker, and Office worker/vendor assets.'],
     ['Deployment principle', 'Heavy workers, WASM files, and parser libraries stay lazy-loaded and are only requested when the active file type needs them.']
   ]
 }
@@ -664,6 +664,10 @@ function generatedWrapperBlock(locale, wrapper) {
       markdownTable(['配置', '说明'], toolbarOptionRows('zh')),
       '',
       '完全自定义工具栏时，推荐关闭内置工具栏并使用组件 ref / controller 暴露的标准 API。不要在预览器外层用 CSS `transform: scale()` 做缩放；PDF、Excel、CAD、canvas 和文本层格式都应通过内部缩放 provider 保持坐标正确。',
+      '',
+      '缩放状态由各格式 renderer 的内部 provider 上报。首屏自适应、容器尺寸变化或 PDF / Word / 图片等异步布局完成后，内置工具栏会显示真实缩放比例，而不是固定显示 `100%`；自定义工具栏也应监听 `zoom-change` / `operation-availability-change`，或读取 `getZoomState()` / `getOperationAvailability()`。',
+      '',
+      '视图状态同步用于投屏、双端协同和恢复阅读进度。所有标准 renderer loader 都会获得通用 view-state provider，至少记录 `renderer`、缩放和滚动位置；PDF、XMind、Geo、3D、CAD 等高交互路径会补充页码、导航、画布 pan、地图中心、相机视角或底层视图快照。初始化可传 `options.initialViewState`，运行中监听 `view-state-change`；Pure Web / Vue3 controller 还可直接调用 `getViewState()` 与 `applyViewState(state, { source: "api", action: "restore" })`。',
       '',
       markdownTable(['生态', '推荐方式'], customToolbarRows('zh')),
       '',
@@ -733,6 +737,10 @@ function generatedWrapperBlock(locale, wrapper) {
     '',
     'For fully custom toolbars, hide the built-in toolbar and call the standard ref / controller APIs from your own UI. Do not implement zoom with an outer CSS `transform: scale()`; PDF, Excel, CAD, canvas-based, and text-layer renderers should use their internal zoom providers to keep coordinates correct.',
     '',
+    'Zoom state is reported by each renderer provider. After first-screen fit, container resize, or asynchronous PDF / Word / image layout, built-in toolbars show the real scale instead of assuming `100%`. Custom toolbars should listen to `zoom-change` / `operation-availability-change`, or read `getZoomState()` / `getOperationAvailability()`.',
+    '',
+    'View-state sync is designed for projection systems, remote-control displays, side-by-side review, and reading-position restore. Every standard renderer loader gets a generic view-state provider that records at least `renderer`, zoom, and scroll position; PDF, XMind, Geo, 3D, and CAD add page, navigation, canvas pan, map center, camera, or native view snapshots. Pass `options.initialViewState` for first render, listen to `view-state-change` while running, and use `getViewState()` / `applyViewState(state, { source: "api", action: "restore" })` on Pure Web / Vue3 controllers when an imperative restore API is needed.',
+    '',
     markdownTable(['Ecosystem', 'Recommended pattern'], customToolbarRows('en')),
     '',
     '## Lifecycle And Operation Events',
@@ -789,6 +797,10 @@ function generatedPublicBlock(locale) {
       '',
       markdownTable(['工具栏配置', '说明'], toolbarOptionRows('zh')),
       '',
+      '缩放状态由各格式 renderer 的内部 provider 上报。首屏自适应、容器尺寸变化或 PDF / Word / 图片等异步布局完成后，内置工具栏会显示真实缩放比例，而不是固定显示 `100%`；自定义工具栏也应监听 `zoom-change` / `operation-availability-change`，或读取 `getZoomState()` / `getOperationAvailability()`。',
+      '',
+      '视图状态同步用于投屏、双端协同和恢复阅读进度。所有通过标准 renderer loader 挂载的格式都会获得通用 view-state provider，至少能记录 `renderer`、当前缩放和滚动位置；PDF、XMind、Geo、3D、CAD 等高交互路径会补充页码、导航、画布 pan、地图中心、相机视角或底层视图快照。初始化可传 `options.initialViewState`，运行中监听 `view-state-change`；Pure Web / Vue3 controller 可直接调用 `getViewState()` 和 `applyViewState(state, { source: "api", action: "restore" })`。',
+      '',
       `共享格式矩阵当前声明 ${rendererDefinitions.length} 条预览链路、${supportedExtensions.length} 个扩展名。完整能力通过 renderer / preset 按需装配，格式说明见本文“支持格式”和官方文档: https://doc.file-viewer.app/guide/formats`,
       publicMarkers.end
     ].join('\n')
@@ -817,6 +829,10 @@ function generatedPublicBlock(locale) {
     'The built-in toolbar can be used as-is, or hidden with `toolbar:false` so your own UI can call the same ref, hook, controller, action, or jQuery plugin APIs.',
     '',
     markdownTable(['Toolbar config', 'Description'], toolbarOptionRows('en')),
+    '',
+    'Zoom state is reported by each renderer provider. After first-screen fit, container resize, or asynchronous PDF / Word / image layout, built-in toolbars show the real scale instead of assuming `100%`. Custom toolbars should listen to `zoom-change` / `operation-availability-change`, or read `getZoomState()` / `getOperationAvailability()`.',
+    '',
+    'View-state sync is designed for projection systems, remote-control displays, side-by-side review, and reading-position restore. Every standard renderer path registers a generic provider that records at least `renderer`, zoom, and scroll position; PDF, XMind, Geo, 3D, and CAD add page, navigation, canvas pan, map center, camera, or native view snapshots. Pass `options.initialViewState` for first render, listen to `view-state-change` while running, and call `getViewState()` / `applyViewState(state, { source: "api", action: "restore" })` on Pure Web / Vue3 controllers when an imperative restore API is needed.',
     '',
     `The shared format matrix currently declares ${rendererDefinitions.length} preview pipelines and ${supportedExtensions.length} file extensions. Full capability is assembled through renderer packages or presets. See the full format guide in this README and the official documentation: https://doc.file-viewer.app/guide/formats`,
     publicMarkers.end
