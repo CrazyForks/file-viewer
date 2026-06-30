@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-workspace",
-  "version": "2.1.13",
+  "version": "2.1.14",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
