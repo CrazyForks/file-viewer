@@ -417,7 +417,7 @@ fileViewerRenderers({
 | Word / DOCX / DOC / RTF / ODT | `@file-viewer/renderer-word` 作为标准 renderer 插件，底层按需加载自研 `@file-viewer/docx`、`msdoc-viewer` 和 RTF/OpenDocument 兼容链路。 | core 已移除 `@file-viewer/docx`、`msdoc-viewer`、`rtf.js`、`linkedom` 等 Word 直接依赖，Word 完整预览统一通过 renderer-word 或 preset-all 装配。 |
 | OFD                         | 使用 `@file-viewer/renderer-ofd` + `DLTech21/ofd.js` 源码链路在线预览，避开 npm dist 授权 WASM 分支；vendor 源码随 renderer 包离线分发。                  | core 已移除 OFD 兼容入口、`jszip`、`ofd-xml-parser` 和 OFD vendor，OFD 完整预览统一通过 renderer-ofd 或 preset-all 装配。 |
 | Typst                       | 使用官方 Typst Rust/WASM 生态在浏览器内编译并渲染，不退化为源码查看。                                                                                         | `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、字体和缓存策略。                          |
-| Draw.io / diagrams.net / Mermaid / PlantUML | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、Excalidraw 官方导出、Mermaid 官方 SVG 渲染和 PlantUML 离线源码预览 / 可配置 SVG 服务为基准，优先保证离线或自托管预览，不依赖公网 CDN。 | 绘图类格式统一在该包内维护 pan/zoom、主题适配、打印和 HTML 导出；PlantUML 需要完整图形渲染时再配置自托管 `plantumlServerUrl`。 |
+| Draw.io / diagrams.net / Mermaid / PlantUML | `@file-viewer/renderer-drawing` 以 diagrams.net 官方离线 viewer 包、Excalidraw rough.js 只读 SVG 兜底、Mermaid 官方 SVG 渲染和 PlantUML 离线源码预览 / 可配置 SVG 服务为基准，优先保证离线或自托管预览，不依赖公网 CDN。 | 绘图类格式统一在该包内维护 pan/zoom、主题适配、打印和 HTML 导出；PlantUML 需要完整图形渲染时再配置自托管 `plantumlServerUrl`。 |
 | OpenDocument / WPS 兼容格式 | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析；高保真 Office 兼容方向预留 LibreOffice WASM 路线。                                                                      | Office renderer 拆出后，复杂版式可继续独立演进为 WASM 后端。                                             |
 | XMind                       | 解析现代 `content.json` 和经典 `content.xml`，渲染层使用 `@panzoom/panzoom` 提供可拖拽、移动端双指缩放、定位的只读画布；官方 XMind TS/SVG viewer 可作为后续高保真对照，但不直接引入不可控交互。 | core 已移除 XMind 兼容入口和 `@ljheee/xmind-parser` 直接依赖，`@file-viewer/renderer-mindmap` 单独维护 XMind/FreeMind/OPML 等思维导图体验。 |
 | GeoJSON / KML / GPX / SHP   | GeoJSON 直接读取，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON，CRS 归一化后用离线 MapLibre 矢量地图渲染叠加层，WebGL 不可用时回退 SVG。 | core 已移除 geo 兼容入口和 `@tmcw/togeojson` / `shpjs` / `maplibre-gl` / `proj4` 直接依赖，`@file-viewer/renderer-geo` 单独维护地理数据预览体验。 |
@@ -543,7 +543,7 @@ pnpm audit:renderer-deps -- --json
 | GDS/OASIS | GDSII 已做记录级解析，小图输出 SVG，大元素集输出 WebGL canvas；OASIS 文本夹具可输出 SVG，真实二进制 OASIS 先做安全结构索引和诊断。 | OASIS 完整几何继续走独立 WASM/增量渲染路线，不进入 core 首屏链路。 |
 | DWF/DWFx/CAD | CAD 能力由 `@file-viewer/renderer-cad` 和 `@flyfish-dev/cad-viewer` 承接，WASM/Worker 资源通过资产 manifest 自托管。 | 随 cad-viewer 持续升级 DWF/DWFx、DWG/DXF 体验，core 只保留协议和资源发现。 |
 | Typst | `@file-viewer/renderer-typst` 按需加载 Typst WASM 编译、SVG 渲染和本地字体资产。 | 保持离线 WASM / 字体配置入口，后续评估更轻量只读渲染内核。 |
-| Draw.io / Excalidraw / Mermaid / PlantUML | Draw.io 使用 diagrams.net 离线 viewer 与安全 SVG fallback；Excalidraw 使用官方 restore/exportToSvg 链路；Mermaid 使用官方 SVG renderer；PlantUML 默认离线源码预览，可接入自托管 SVG 服务。 | 保持 vendor 离线随包分发；PlantUML 需要完整图形渲染时推荐企业内网自托管服务端点，避免依赖公共公网服务。 |
+| Draw.io / Excalidraw / Mermaid / PlantUML | Draw.io 使用 diagrams.net 离线 viewer 与安全 SVG fallback；Excalidraw 默认使用 rough.js 只读 SVG，运行环境提供官方 ESM 模块时尝试 restore/exportToSvg；Mermaid 使用官方 SVG renderer；PlantUML 默认离线源码预览，可接入自托管 SVG 服务。 | 保持 vendor 离线随包分发；PlantUML 需要完整图形渲染时推荐企业内网自托管服务端点，避免依赖公共公网服务。 |
 | OpenDocument | 常规 ODT/ODS/ODP 走 ZIP+XML 结构解析和 Office renderer 兼容链路。 | 复杂版式继续评估 WebODF / LibreOffice WASM，不进入 core 默认依赖。 |
 
 ## 终态验收门禁

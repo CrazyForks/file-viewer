@@ -82,7 +82,7 @@ export const rendererModularizationLines = [
     phase: 3,
     status: 'extracted',
     renderers: ['drawing'],
-    dependencies: ['@excalidraw/excalidraw', 'roughjs', 'mermaid', 'plantuml-encoder', '@panzoom/panzoom'],
+    dependencies: ['roughjs', 'mermaid', 'plantuml-encoder', '@panzoom/panzoom'],
   },
   {
     id: 'engineering-mindmap',

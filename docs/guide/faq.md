@@ -135,7 +135,7 @@ const file = new File([blobOrBuffer], 'report.xlsx')
 
 ## Excalidraw 和 draw.io 是怎么预览的
 
-`.excalidraw` 走官方 `@excalidraw/excalidraw` 包的 `exportToSvg`，`.drawio` / `.dio` 默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线预览。项目会在加载 `vendor/drawio/viewer-static.min.js` 前，把 styles、shapes、stencils、img、mxgraph 和 math 路径全部指向本地 `vendor/drawio/`，不会访问 diagrams.net 公网脚本或公共 CDN。官方 viewer 加载失败、超时，或显式设置 `options.drawing.preferOfficial = false` 时，才会回退到内置 SVG 安全预览。
+`.excalidraw` 默认走 `roughjs` 只读 SVG 预览，运行环境已提供官方 `@excalidraw/excalidraw` ESM 模块时会优先尝试 `exportToSvg`；`.drawio` / `.dio` 默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线预览。项目会在加载 `vendor/drawio/viewer-static.min.js` 前，把 styles、shapes、stencils、img、mxgraph 和 math 路径全部指向本地 `vendor/drawio/`，不会访问 diagrams.net 公网脚本或公共 CDN。官方 viewer 加载失败、超时，或显式设置 `options.drawing.preferOfficial = false` 时，才会回退到内置 SVG 安全预览。
 
 diagrams.net 官方仓库没有维护最新 npm viewer 包；官方文档推荐的离线集成方式就是复制仓库里的 `viewer-static.min.js` 自托管。项目内置的是官方 `v30.2.5` release 的 viewer 文件和配套资源，不使用已经滞后的第三方 `drawio-offline` 包。
 

@@ -259,6 +259,16 @@ const appendRenderedSvg = (target: HTMLElement, svg: SVGSVGElement, mode: 'offic
   target.appendChild(svg);
 };
 
+const importOptionalExcalidraw = async () => {
+  const dynamicImport = new Function('specifier', 'return import(specifier)') as (
+    specifier: string
+  ) => Promise<{
+    exportToSvg: (options: Record<string, unknown>) => Promise<SVGSVGElement> | SVGSVGElement;
+    restore: (...args: any[]) => { appState: any; elements: any[]; files?: Record<string, unknown> };
+  }>;
+  return dynamicImport('@excalidraw/excalidraw');
+};
+
 const suppressExcalidrawWorkerWarning = () => {
   const originalError = console.error;
   const patchedError = (...args: unknown[]) => {
@@ -521,7 +531,7 @@ const renderOfficialExcalidraw = async (
   // 实际会继续使用主线程导出，这里只屏蔽这条已知噪声。
   const restoreConsole = suppressExcalidrawWorkerWarning();
   const restoreTimer = setTimeout(restoreConsole, EXCALIDRAW_OFFICIAL_TIMEOUT + 1000);
-  const { exportToSvg, restore } = await import('@excalidraw/excalidraw');
+  const { exportToSvg, restore } = await importOptionalExcalidraw();
   try {
     const restored = restore({
       elements: elements as any,

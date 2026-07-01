@@ -24,7 +24,7 @@
 | `mindmap.xmind` | Project-generated with `@ljheee/xmind-parser` | Apache-2.0 | XMind 2020+ package fixture for sheet tabs, tree layout, labels, notes, links, search, zoom, print and HTML export smoke tests |
 | `architecture.mermaid` | Project-authored Mermaid fixture | Apache-2.0 | Mermaid architecture and flowchart route for official renderer, theme and Panzoom smoke tests |
 | `sequence.plantuml` | Project-authored PlantUML fixture | Apache-2.0 | PlantUML sequence route for encoder, configurable SVG endpoint, theme shell and Panzoom smoke tests |
-| `flow.excalidraw` | `https://github.com/neo4j-labs/agent-memory/blob/main/docs/assets/images/diagrams/excalidraw/poleo-model.excalidraw` | Apache-2.0 | Real Excalidraw scene for official restore/export smoke tests |
+| `flow.excalidraw` | `https://github.com/neo4j-labs/agent-memory/blob/main/docs/assets/images/diagrams/excalidraw/poleo-model.excalidraw` | Apache-2.0 | Real Excalidraw scene for read-only SVG smoke tests |
 | `process.drawio` | `https://github.com/jgraph/drawio-diagrams/blob/dev/blog/data-flow.drawio` | Apache-2.0 | Official draw.io sample for diagrams.net viewer smoke tests |
 | `book.umd` | 项目内生成的最小 UMD 文本电子书 fixture | Apache-2.0 | UMD ebook metadata, table-of-contents and zlib text smoke tests |
 | `document.odt` | `https://wiki.documentfoundation.org/File:Book-template-0-2.odt` | CC-BY-SA-3.0 / LGPL-3.0+ / MPL-1.1 | Real The Document Foundation ODT template for OpenDocument text route smoke tests |
@@ -69,7 +69,7 @@
 - `architecture.mermaid` 和 `sequence.plantuml` 是项目内绘制的最小但完整的架构图/时序图样例，用于验证 Mermaid 官方 renderer、PlantUML SVG 服务、主题容器、拖拽平移和统一缩放。
 - `design.psd` 由项目内使用 `ag-psd` 生成，覆盖多图层、图层显隐、重绘、透明背景和缩放链路。
 - `change.patch` 用于验证 `diff2html` 左右比对视图；`repository.bundle` 用于验证浏览器端 Git bundle header、refs、commit/tree/blob 解析和 delta pack 边界提示。
-- `flow.excalidraw` 先经过 `@excalidraw/excalidraw` 的官方 `restore`，再用 `exportToSvg` 输出只读预览，以兼容公开样例中常见的精简字段。
+- `flow.excalidraw` 默认使用 rough.js 输出只读 SVG；运行环境提供官方 Excalidraw ESM 模块时会优先尝试 `restore` + `exportToSvg`。
 - `process.drawio` 由 diagrams.net 官方 `GraphViewer` 解析，组件不自行实现 draw.io 方言解析。
 - `audio.mp3` 与 `audio.ogg` 只用于验证浏览器原生音频播放能力；不同浏览器对编码的支持存在差异。
 - `melody.mid` 是最小 MIDI fixture，用于验证 `@tonejs/midi` 只在 MIDI 命中时按需加载并展示轨道、时长和音符摘要。

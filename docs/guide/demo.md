@@ -243,7 +243,7 @@ pnpm --filter @flyfish-group/file-viewer-component-demo preview
 
 3D 模型示例覆盖 glTF、OBJ、STL、PLY 四条最常用的浏览器模型入口；FBX、DAE、3DS、3MF、AMF、USD/USDZ、KMZ、PCD、VRML/WRL、XYZ、VTK/VTP 等扩展名也已经注册到 `@file-viewer/renderer-3d`。STEP/IGES/IFC/3DM/BREP 会通过 `@file-viewer/geometry-engine` 展示签名识别和转换原因，后续按 OpenCascade / web-ifc / rhino3dm 等独立 WASM 包路线接入，建议用客户真实模型补充回归。XMind 样例用于验证多 sheet 脑图、目录、标签、备注、链接、Panzoom 画布拖拽平移、移动端双指缩放、适配画布、搜索、缩放和导出链路。
 
-Excalidraw 使用官方 `@excalidraw/excalidraw` 的 `restore` 补齐真实公开文件中常见的精简字段，再通过 `exportToSvg` 生成只读 SVG；draw.io / diagrams.net 文件默认使用随 viewer assets 分发的官方 `GraphViewer` 离线预览，styles、shapes、stencils、img、mxgraph 和 math 资源都来自本地 `vendor/drawio/`。如果官方 viewer 加载异常，会自动回退内置 SVG 预览；内网路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管脚本。
+Excalidraw 默认使用 `roughjs` 生成只读 SVG，运行环境提供官方 Excalidraw ESM 模块时会优先尝试 `restore` 与 `exportToSvg`；draw.io / diagrams.net 文件默认使用随 viewer assets 分发的官方 `GraphViewer` 离线预览，styles、shapes、stencils、img、mxgraph 和 math 资源都来自本地 `vendor/drawio/`。如果官方 viewer 加载异常，会自动回退内置 SVG 预览；内网路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管脚本。
 
 压缩包样例用于验证 `libarchive.js` Worker、目录读取、按需解压、IndexedDB 缓存和内部文件继续预览。邮件样例用于验证 EML / MSG / MBOX 的头信息、正文切换、附件下载和附件预览。地理数据样例用于验证 GeoJSON/KML/GPX 到 MapLibre 矢量叠加层、CRS 归一化和 SVG fallback 的链路；在线 Demo 默认启用 OpenFreeMap 公开底图，私有化或内网接入仍可把 `options.geo.basemap` / `options.geo.tileUrl` 改成离线、自托管或镜像地址。OLB / DRA 样例用于验证 EDA 文件结构树、对象候选、属性、诊断和可读字符串索引；GDS 样例用于验证标准 GDSII 记录解析和 SVG 版图预览；OAS / OASIS 样例用于验证可读 OASIS 文本夹具 SVG 版图与真实二进制 OASIS 的安全结构诊断边界。SQLite、WASM 和 ICO 样例用于验证资产/数据预览链路不会影响普通文档首屏。
 

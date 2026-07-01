@@ -5,7 +5,7 @@ Standalone Draw.io, Excalidraw, Mermaid, and PlantUML renderer for Flyfish File 
 ## Highlights
 
 - Uses the bundled diagrams.net offline viewer for `drawio` / `dio` files.
-- Uses Excalidraw's official `restore` and `exportToSvg` APIs, with a `roughjs` SVG fallback.
+- Renders `excalidraw` as a stable read-only SVG through `roughjs` by default. If the runtime provides the official `@excalidraw/excalidraw` ESM module, the renderer tries `restore` and `exportToSvg` first and falls back automatically.
 - Lazy-loads the official `mermaid` renderer for `mermaid` / `mmd` files and outputs theme-aware SVG.
 - Keeps `plantuml` / `puml` files fully offline by default with an SVG source preview; configure `options.drawing.plantumlServerUrl` for full PlantUML SVG rendering through a self-hosted endpoint. When that endpoint is unavailable, the renderer still falls back to the offline preview instead of a blank view or broken image.
 - Mermaid and PlantUML previews use `@panzoom/panzoom` for drag panning, Ctrl/Command wheel zoom, and common toolbar zoom sync.

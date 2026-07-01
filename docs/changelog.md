@@ -110,7 +110,7 @@
 - 地理数据已从 core 兼容入口中移出，`@file-viewer/core` 不再默认安装 `@tmcw/togeojson`、`shpjs`、`maplibre-gl` 和 `proj4`；GeoJSON / KML / GPX / SHP 预览统一由 `@file-viewer/renderer-geo` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 30 降到 28
 - HEIC / HEIF 转换能力已从 core 轻量图片入口中移出，`@file-viewer/core` 不再默认安装 `heic2any`；普通图片仍保留浏览器原生预览，HEIC / HEIF 和完整图片链路统一由 `@file-viewer/renderer-image` 或 `@file-viewer/preset-all` 装配，core 直接渲染依赖从 28 降到 27
 - Vue3 原生组件渲染桥接层改为按当前 `options.renderers`、`options.rendererMode` 和 `options.builtinRenderers` 创建临时 renderer registry，`@file-viewer/preset-all` / 独立 renderer 包会在组件路径真实生效，避免 XMind、Geo、HEIC 等已从 core 移出的格式在 Demo 中误显示“不支持”
-- 新增 `@file-viewer/renderer-drawing` 独立 renderer 包，覆盖 Draw.io / diagrams.net 离线 viewer、Excalidraw 官方 SVG 导出、rough.js 兜底、统一缩放、打印和 HTML 导出，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
+- 新增 `@file-viewer/renderer-drawing` 独立 renderer 包，覆盖 Draw.io / diagrams.net 离线 viewer、Excalidraw rough.js 只读 SVG 兜底、统一缩放、打印和 HTML 导出，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-3d` 独立 renderer 包，基于 Three.js loaders 承接 GLTF/GLB、OBJ、STL、PLY、FBX、DAE、3DS、3MF、USD/USDZ、点云和 VTK 等 WebGL 预览，并由 `@file-viewer/preset-all` 与 `@file-viewer/vite-plugin` 自动聚合
 - 新增 `@file-viewer/renderer-data` 独立 renderer 包，承接字体、PSD、AI/EPS、SQLite、Parquet、Avro、WASM 和 WebArchive 的安全结构预览，SQLite WASM 由 `@file-viewer/vite-plugin` 复制到离线 assets
 - 新增 `@file-viewer/renderer-eda` 独立 renderer 包，承接 OLB、DRA、GDSII、OASIS 结构预览；标准 GDSII 可用纯前端记录解析生成 SVG 快速版图，大元素集会自动切到 WebGL canvas，OASIS / Cadence 高保真几何继续按独立 WASM 内核路线维护
@@ -372,7 +372,7 @@
 - 新增 `.epub` 预览，使用 `epubjs` 按需解析 EPUB 包、目录和滚动阅读，并避开部分浏览器超宽分页白板问题
 - 新增 `.umd` 电子书预览，按 UMD 文件结构解析元数据、章节目录和 zlib 压缩正文
 - 新增 `.mp3`、`.mpeg`、`.wav`、`.ogg`、`.oga`、`.opus`、`.m4a`、`.aac`、`.flac`、`.weba` 音频入口，使用浏览器原生播放器
-- 新增 `.excalidraw` 预览，使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 能力按需生成只读 SVG
+- 新增 `.excalidraw` 预览，默认使用 rough.js 按需生成只读 SVG，运行环境提供官方 Excalidraw ESM 模块时可优先尝试 `exportToSvg`
 - 新增 `.drawio` / `.dio` 预览，默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线处理 mxGraphModel / mxfile；也可通过 `options.drawing.viewerScriptUrl` 覆盖自托管脚本，异常时回退内置 SVG
 - 补充 Demo 示例文件、格式矩阵、FAQ 和接入说明
 

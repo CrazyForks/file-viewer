@@ -5,7 +5,7 @@ Flyfish File Viewer 的独立绘图渲染器，覆盖 `drawio`、`dio`、`excali
 ## 特性
 
 - `drawio` / `dio` 默认使用随 viewer assets 分发的 diagrams.net offline viewer。
-- `excalidraw` 使用官方 `restore` 与 `exportToSvg`，失败时回退到 `roughjs` 只读 SVG。
+- `excalidraw` 默认使用 `roughjs` 生成稳定只读 SVG；如果运行环境已提供官方 `@excalidraw/excalidraw` ESM 模块，会优先尝试 `restore` 与 `exportToSvg`，失败时自动回退。
 - `mermaid` / `mmd` 按需加载官方 `mermaid`，输出主题适配 SVG。
 - `plantuml` / `puml` 默认保持离线 SVG 源码预览；需要完整 PlantUML 渲染时，可通过 `options.drawing.plantumlServerUrl` 指向自托管 SVG 端点，端点不可用时仍会回落到离线预览，避免白屏或 broken image。
 - Mermaid / PlantUML 预览使用 `@panzoom/panzoom` 提供拖拽平移、Ctrl/Command 滚轮缩放和统一工具栏缩放联动。

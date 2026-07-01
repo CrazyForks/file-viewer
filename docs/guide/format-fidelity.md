@@ -27,7 +27,7 @@
 | GDSII / OASIS | GDSII 有公开记录结构和 TinyTapeout/gdsii 这类 TS parser，也有 GDS2WebGL / GDSJam 等浏览器 WebGL viewer 证明路线可行；KLayout 明确覆盖 GDS 和 OASIS，但完整 OASIS 几何涉及 SEMI 二进制标准、重复结构、压缩块和层级展开，前端完整实现应拆成专业内核。 | `@file-viewer/eda-layout` 已拆出 GDSII record parser、GDSII WebGL triangle/line/point typed-array 批次、OASIS 可读文本夹具解析和真实二进制 OASIS 检测边界；`@file-viewer/renderer-eda` 小图用 SVG，大元素集自动使用 WebGL canvas。真实 SEMI 二进制 OAS/OASIS 继续做安全结构索引和诊断，后续在该 engine 包内演进 WASM/增量渲染。 |
 | OLB / DRA | Cadence 文档确认 OLB 是 OrCAD Capture 的 symbol library，DRA 属于 Allegro drawing / footprint 生态；公开规格不完整，未发现可直接开箱即用的官方 Web viewer SDK。公开可持续路线仍是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器 WASM 化，或按真实样本逐步 TS 移植；OpenAllegroParser 文档也显示部分 padstack 数据可从嵌入 ZIP/JSON 线索恢复。 | `@file-viewer/eda-orcad` 已拆出 CFB 检测、文本采样、十六进制预览和字符串抽取等底层能力；当前仍只声明结构预览，高保真符号/封装图形继续在独立 engine 包中长期维护，不塞进 core。 |
 | OpenDocument | ODF 是 ZIP 包承载 XML 内容的开放格式；`odf-kit` 已提供浏览器/Node 纯 JS 读取与 HTML 转换路线，可作为后续 ODT/ODS/ODP 深化预览候选。 | 当前 Word/OpenDocument 链路优先做安全结构和正文预览；需要更高还原度时，应在 `@file-viewer/renderer-word` 内部按需引入 ODF 专用解析层，而不是进入 core。 |
-| Draw.io / Excalidraw / Mermaid / PlantUML | diagrams.net 官方仓库和离线 viewer 仍是 draw.io 最佳只读预览来源；Excalidraw 官方 `restore` + `exportToSvg` 仍是最兼容真实 `.excalidraw` 文件的链路；Mermaid 使用官方 SVG renderer；PlantUML 默认离线源码预览，可通过 `plantuml-encoder` 与自托管 SVG 服务端点输出完整图形。 | 保持 `@file-viewer/renderer-drawing` 的离线 vendor 分发和官方导出优先策略，失败时才走安全 SVG 兜底；PlantUML 端点未配置或不可用时会显示离线 SVG 源码预览。 |
+| Draw.io / Excalidraw / Mermaid / PlantUML | diagrams.net 官方仓库和离线 viewer 仍是 draw.io 最佳只读预览来源；Excalidraw 官方 `restore` + `exportToSvg` 兼容性高但会引入 React peer 依赖；Mermaid 使用官方 SVG renderer；PlantUML 默认离线源码预览，可通过 `plantuml-encoder` 与自托管 SVG 服务端点输出完整图形。 | `@file-viewer/renderer-drawing` 默认用 rough.js 兜底 Excalidraw 以保护 full 包跨框架安装体验，并在运行环境提供官方 ESM 模块时优先尝试官方导出；PlantUML 端点未配置或不可用时会显示离线 SVG 源码预览。 |
 
 ## 已确认的完整链路
 
@@ -35,7 +35,7 @@
 | --- | --- | --- |
 | Typst | 使用 `@myriaddreamin/typst.ts` 浏览器 WASM 编译和 SVG 渲染，直接读取 `.typ` / `.typst` 源文件 | 保持现有链路，重点补齐资源包、字体、依赖文件错误提示和回归样本 |
 | Draw.io | 使用官方 diagrams.net `viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 全部自托管 | 保持离线 viewer 优先，内置 SVG 仅作为失败兜底 |
-| Excalidraw | 使用官方 `@excalidraw/excalidraw` 的 `restore` + `exportToSvg` | 保持官方导出优先，rough.js 兜底 |
+| Excalidraw | 默认使用 rough.js 输出只读 SVG；运行环境提供官方 ESM 模块时尝试 `restore` + `exportToSvg` | 优先保证 full 包不污染 Vue/Svelte/Web 安装；官方模块不可用时稳定兜底 |
 | CAD | Autodesk 官方 viewer 路线也把 DWG / DXF / DWF / DWFx 作为独立查看格式处理；前端离线链路委托 `@flyfish-dev/cad-viewer`，DWG 使用 Worker + LibreDWG WASM，DWF/DWFx/XPS 使用 native DWF renderer | 继续跟随 cad-viewer 升级，viewer 只负责资源路径、生命周期和统一 toolbar |
 | XMind | `@file-viewer/renderer-mindmap` 解析 XMind 8 XML / XMind 2020+ JSON 包结构，使用 SVG/DOM 脑图阅读器 | 继续增强只读预览体验，当前已使用 `@panzoom/panzoom` 提供拖拽平移、从节点卡片起手拖拽、移动端双指缩放、滚轮锚点缩放、键盘平移、统一工具栏状态同步、容器 resize 自动适配和用户交互后的视角保留 |
 | GeoJSON / KML / GPX / SHP | 独立 `@file-viewer/renderer-geo`，GeoJSON 直接读，KML/GPX 转 GeoJSON，SHP 走 Shapefile 到 GeoJSON；core 默认安装不再携带 `@tmcw/togeojson` / `shpjs` / `maplibre-gl` / `proj4` | 默认使用离线 MapLibre 空底图渲染点线面叠加层，可通过 `options.geo.tileUrl` / `options.geo.basemap` 接公网、内网或离线自托管底图；支持 GeoJSON `crs`、`options.geo.projection`、Web Mercator 推断、GCJ-02 / BD-09 转换和 SVG fallback；空间分析仍交给业务 GIS |
@@ -59,7 +59,7 @@
 | OLB / DRA / PSM | Cadence 格式没有稳定官方 Web SDK；公开可用路线主要是 OpenOrCadParser / OpenAllegroParser 这类 C++ 解析器，后续可以 Emscripten/WASM 化或按样本逐步 TS 移植 | 当前只声明为结构预览，不虚标完整图形；底层能力已拆到 `@file-viewer/eda-orcad`，后续像 PPTX 一样长期维护 |
 | GDSII / OASIS | GDSII 已可按 record parser 生成 SVG/WebGL；OASIS 是 SEMI 二进制版图格式，支持压缩块、重复结构和更复杂索引，完整渲染更适合参考 KLayout/KWeb 或自研 WebGL/WASM pipeline | GDSII 当前提供 SVG 快速预览和大元素集 WebGL canvas；OASIS 可读文本夹具已可生成 SVG，真实二进制 OASIS 继续结构索引，底层能力已拆到 `@file-viewer/eda-layout`，后续做 WASM/增量渲染 |
 | STEP / IGES / IFC / 3DM / BREP | STEP/IGES/BREP 可走 OpenCascade / OCCT WASM，IFC 走 `web-ifc` / That Open 生态，3DM 走 `rhino3dm` + Three.js Rhino3dmLoader | 已拆出 `@file-viewer/geometry-engine` 维护格式签名、推荐内核和提示文本；`@file-viewer/renderer-3d` 只按需消费该轻量边界，不把这些重量级几何内核放进 core 默认路径 |
-| Draw.io / Excalidraw / Mermaid / PlantUML | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 使用官方 restore/export 工具保持真实文件兼容；Mermaid 使用官方 SVG renderer；PlantUML 默认离线预览源码，可选接入自托管 SVG 服务 | 已拆成 `@file-viewer/renderer-drawing` 独立维护，继续离线 vendor 分发；PlantUML 完整图形渲染推荐企业内网自托管服务端点 |
+| Draw.io / Excalidraw / Mermaid / PlantUML | Draw.io 最佳链路是自托管 diagrams.net offline viewer；Excalidraw 默认使用 rough.js 只读 SVG，运行环境提供官方 ESM 模块时尝试官方 restore/export；Mermaid 使用官方 SVG renderer；PlantUML 默认离线预览源码，可选接入自托管 SVG 服务 | 已拆成 `@file-viewer/renderer-drawing` 独立维护，继续离线 vendor 分发；PlantUML 完整图形渲染推荐企业内网自托管服务端点 |
 | Presentation / PPTX | OOXML 演示文稿的复杂度适合独立 engine + renderer 双层维护，避免 core 被解析器、主题和媒体链路拖重 | `@file-viewer/renderer-presentation` 暴露标准 renderer 插件，`@file-viewer/pptx` 继续作为可单独优化的 native PPTX 内核 |
 | GeoJSON / KML / GPX / SHP | KML/GPX 有稳定 toGeoJSON 转换路线，Shapefile 可用纯 JS 解析到 GeoJSON，MapLibre 可承接离线矢量叠加层 | 已拆 `@file-viewer/renderer-geo` 并从 core 直接依赖中移除转换和地图库；当前补齐 CRS 归一化、MapLibre 叠加层、SVG fallback 和解析 harness，后续继续补海量要素抽稀和真实公开样本 |
 | Typst | 官方 Rust 编译器生态已可通过 `typst.ts` 在浏览器 WASM 编译并渲染为 SVG/PDF | 保持 `@file-viewer/renderer-typst` 独立维护 compiler/renderer WASM、超时和资源错误提示 |

@@ -46,7 +46,7 @@
 | 地理数据 | `geojson`、`kml`、`gpx`、`shp` | `@file-viewer/renderer-geo` + GeoJSON 标准化 + CRS 归一化 + MapLibre 矢量叠加层 | GeoJSON 直接读取，KML/GPX 使用 `@tmcw/togeojson` 转换，SHP 使用 `shpjs`；默认离线空底图，可通过 `options.geo.tileUrl` / `options.geo.basemap` 启用公网、内网或离线自托管瓦片；支持 Web Mercator 推断、`options.geo.projection` 和 SVG fallback | 地理附件、轨迹、边界、点位和轻量 GIS 数据 |
 | 3D 模型 | `glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`ifc`、`3dm` | `@file-viewer/renderer-3d` + Three.js loaders | WebGL 交互预览，支持轨道控制、适配视图、网格/坐标轴、线框和自动旋转；工程 CAD/BIM 格式会给出转换原因 | 设计模型、点云、三维资产、工程模型 |
 | XMind 脑图 | `xmind` | `@file-viewer/renderer-mindmap` + `@ljheee/xmind-parser` + `@panzoom/panzoom` | 支持 XMind 8 XML 与 XMind 2020+ JSON 包结构，展示多 sheet、节点树、标签、备注、超链接、标记、图片、目录侧栏，并通过成熟 Panzoom 画布提供拖拽平移、移动端双指缩放、Ctrl/Command 滚轮锚点缩放、键盘平移、统一 toolbar 状态同步、适配画布、搜索、打印和 HTML 导出 | 脑图、规划图、知识结构、会议纪要 |
-| Excalidraw | `excalidraw` | `@file-viewer/renderer-drawing` + `@excalidraw/excalidraw` | 独立绘图 renderer 按需加载官方 `restore` 兼容真实公开文件，再通过 `exportToSvg` 输出只读 SVG 预览；官方导出不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
+| Excalidraw | `excalidraw` | `@file-viewer/renderer-drawing` + `roughjs` | 独立绘图 renderer 默认输出稳定只读 SVG；运行环境已提供官方 `@excalidraw/excalidraw` ESM 模块时会优先尝试 `restore` + `exportToSvg`，不可用时使用 rough.js 安全兜底 | 白板草图、产品沟通图、流程草稿 |
 | draw.io | `drawio`、`dio` | `@file-viewer/renderer-drawing` + 官方 diagrams.net `GraphViewer` 离线预览 | 独立绘图 renderer 默认加载随 viewer assets 分发的 `vendor/drawio/viewer-static.min.js`，并把 styles、shapes、stencils、img、mxgraph、math 都固定到本地目录；失败时回退安全 SVG | 流程图、架构图、业务泳道图 |
 | Mermaid | `mermaid`、`mmd` | `@file-viewer/renderer-drawing` + 官方 `mermaid` | 命中 Mermaid 时才按需加载官方渲染器，输出主题适配 SVG，并使用 `@panzoom/panzoom` 支持拖动、Ctrl/Command 滚轮缩放、统一缩放工具栏和重置 | 架构图、流程图、状态图、序列图 |
 | PlantUML | `plantuml`、`puml` | `@file-viewer/renderer-drawing` + 离线 SVG 源码预览 + 可自托管 PlantUML SVG 服务 | 默认不访问外网并显示源码预览；需要完整图形时可通过 `options.drawing.plantumlServerUrl` 指向内网 PlantUML SVG 服务；预览层支持拖动、缩放和主题容器适配 | UML 时序图、组件图、部署图 |
@@ -154,7 +154,7 @@
 
 ### 绘图文件
 
-- `excalidraw` 使用 `@file-viewer/renderer-drawing` 按需加载官方 `@excalidraw/excalidraw` 包的 `restore` 与 `exportToSvg` 能力，输出只读 SVG 预览，不手写 Excalidraw 图元解析器。
+- `excalidraw` 使用 `@file-viewer/renderer-drawing` 输出只读 SVG；默认走 `roughjs` 稳定兜底，运行环境已提供官方 `@excalidraw/excalidraw` ESM 模块时会优先尝试 `restore` 与 `exportToSvg`。
 - `drawio` 和 `dio` 默认使用官方 diagrams.net `GraphViewer` 离线预览，`viewer-static.min.js` 与 styles、shapes、stencils、img、mxgraph、math 资源随 viewer assets 分发到 `vendor/drawio/`。
 - 如果你的静态目录前缀特殊，可以通过 `options.drawing.viewerScriptUrl` 指定自托管 `viewer-static.min.js` 地址；组件会根据该脚本目录推导同级离线资源目录。官方 viewer 加载失败或超时时仍会回退到本地 SVG；确实希望使用轻量兜底时，可设置 `options.drawing.preferOfficial = false`。
 

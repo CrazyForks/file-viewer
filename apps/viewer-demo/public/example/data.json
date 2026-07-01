@@ -20,7 +20,7 @@
     {
       "group": "drawing",
       "extensions": ["dxf", "dwg", "dwf", "dwfx", "xps", "geojson", "kml", "gpx", "shp", "excalidraw", "drawio", "dio"],
-      "notes": ["CAD uses @flyfish-dev/cad-viewer", "DWG uses Worker + LibreDWG WASM", "DWF/DWFx/XPS use native dwf-viewer", "Excalidraw uses @excalidraw/excalidraw", "draw.io uses diagrams.net GraphViewer"]
+      "notes": ["CAD uses @flyfish-dev/cad-viewer", "DWG uses Worker + LibreDWG WASM", "DWF/DWFx/XPS use native dwf-viewer", "Excalidraw uses a roughjs SVG fallback", "draw.io uses diagrams.net GraphViewer"]
     },
     {
       "group": "model",

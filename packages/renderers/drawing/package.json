@@ -60,7 +60,6 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@excalidraw/excalidraw": "^0.18.1",
     "@file-viewer/core": "workspace:^2.1.14",
     "@panzoom/panzoom": "^4.6.2",
     "mermaid": "^11.15.0",

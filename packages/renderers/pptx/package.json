@@ -49,6 +49,7 @@
       "import": "./dist/worker.js",
       "default": "./dist/worker.js"
     },
+    "./worker/pptx.worker.js": "./dist/worker/pptx.worker.js",
     "./styles.css": "./dist/styles/pptxjs.css",
     "./package.json": "./package.json"
   },

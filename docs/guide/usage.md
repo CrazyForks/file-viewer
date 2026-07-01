@@ -579,7 +579,7 @@ const options = {
 
 坐标系默认归一化到 WGS84。标准 GeoJSON 按 `EPSG:4326` 读取；带 `crs` 的 GeoJSON 会按声明转换；未声明但坐标超出经纬度范围时会自动推断 Web Mercator；业务系统也可以通过 `options.geo.projection` 显式指定 `EPSG:3857`、`EPSG:4490`、`GCJ02`、`BD09` 或 proj4 字符串。WebGL 不可用时会回退 SVG 矢量预览。海量要素抽稀或空间分析仍建议在业务 GIS 模块中处理。
 
-`.excalidraw` 会使用官方 `@excalidraw/excalidraw` 的 `exportToSvg` 生成只读 SVG 预览；`.drawio` / `.dio` 默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线预览。静态路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管 `viewer-static.min.js`，组件会把同目录下的 styles、shapes、stencils、img、mxgraph 和 math 资源用于离线渲染；官方 viewer 异常时会回退内置 SVG。
+`.excalidraw` 默认使用 `roughjs` 生成只读 SVG 预览，运行环境提供官方 `@excalidraw/excalidraw` ESM 模块时会优先尝试 `exportToSvg`；`.drawio` / `.dio` 默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线预览。静态路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管 `viewer-static.min.js`，组件会把同目录下的 styles、shapes、stencils、img、mxgraph 和 math 资源用于离线渲染；官方 viewer 异常时会回退内置 SVG。
 
 `.epub` 会使用 `epubjs` 解析电子书包、目录和章节资源，并在浏览器内提供只读滚动阅读。阅读器会默认打开第一个正文章节，避免停留在封面或空白包装页。
 
