@@ -414,8 +414,8 @@ const DEFAULT_TOOLBAR_ZOOM_STATE: FileViewerZoomState = {
 };
 
 const WEB_VIEWER_STYLE = `
-.file-viewer-web-shell{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;background:transparent}
-.file-viewer-web-content{position:relative;flex:1 1 auto;min-height:0;min-width:0}
+.file-viewer-web-shell{position:relative;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:transparent;box-sizing:border-box}
+.file-viewer-web-content{position:relative;flex:1 1 auto;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain}
 .file-viewer-web-toolbar{flex:0 0 auto;min-height:45px;display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;padding:6px 10px;border-bottom:1px solid rgba(20,35,53,.06);background:rgba(255,255,255,.92);box-sizing:border-box;z-index:20}
 .file-viewer-web-toolbar[hidden]{display:none!important}
 .file-viewer-web-toolbar[data-toolbar-position="bottom-right"]{position:absolute;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));min-height:42px;padding:6px;border:1px solid rgba(20,35,53,.1);border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 18px 44px rgba(15,23,42,.16);backdrop-filter:blur(16px)}
@@ -493,6 +493,7 @@ export const mountViewer = (
   toolbarEl.className = 'file-viewer-web-toolbar';
   const contentEl = documentRef.createElement('div');
   contentEl.className = 'file-viewer-web-content';
+  contentEl.dataset.viewerScrollContainer = 'true';
   shell.append(toolbarEl, contentEl);
   container.replaceChildren(styleEl, shell);
 
@@ -801,6 +802,9 @@ export const mountViewer = (
         fetchFile: coreOptions.fetchFile,
         signal: controller?.signal,
       });
+      if (disposed || controller?.signal.aborted || abortController !== controller) {
+        return null;
+      }
       return await instance.load(resolvedSource);
     } catch (error) {
       if (isAbortError(error) && controller?.signal.aborted) {

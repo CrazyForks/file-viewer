@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-web",
-  "version": "2.1.16",
+  "version": "2.1.17",
   "private": false,
   "type": "module",
   "description": "Private-deploy pure web component for Flyfish Viewer",
@@ -35,7 +35,7 @@
   },
   "funding": {
     "type": "individual",
-    "url": "https://dev.flyfish.group/shop"
+    "url": "https://dev.flyfish.group/donate?source=npm"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -72,7 +72,7 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@file-viewer/web": "workspace:^2.1.16"
+    "@file-viewer/web": "workspace:^2.1.17"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",

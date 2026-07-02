@@ -2,6 +2,38 @@
 
 File Viewer is a pure frontend file preview component for internal tools, intranet systems, and private deployments. It is designed for quick business-file preview, triage, search, print, export, and self-hosted delivery. It is not a professional editor, and it does not promise native-app fidelity for every complex file.
 
+## Open-source component vs commercial edition
+
+The open-source File Viewer and the commercial edition are not mutually exclusive. The open-source edition provides browser-native, multi-format, offline-ready preview. The commercial edition comes from the Flyfish Office product line and replaces the Office document capability with a self-developed native document engine, giving the same File Viewer integration a `file-viewer-pro` style Office experience.
+
+| Dimension | Open-source File Viewer | Commercial / file-viewer-pro path |
+| --- | --- | --- |
+| Formats | Covers 200+ extensions across PDF/OFD, Office, CAD, Typst, archives, email, diagrams, media, 3D, and data assets through `preset-lite`, `preset-office`, `preset-engineering`, and `preset-all` | Strengthens the Word, Excel, and PowerPoint deep end. It can replace the Word / Spreadsheet / Presentation capability in `preset-office` while PDF, OFD, CAD, Archive, and other formats continue to use open-source renderers |
+| Fidelity | Optimized for readable, searchable, printable previews embedded in business systems. DOCX is currently flow-first, and Excel/PPTX target common preview needs rather than native Office pixel parity | The self-developed native document engine targets pagination, fonts, tables, shapes, headers/footers, comments/revisions, and complex deck layouts for contracts, reports, archives, and formal delivery |
+| Performance | A light core plus lazy renderer loading keeps most attachment centers responsive. Worker/WASM assets load on demand, while extreme large files should be validated with real samples | Large documents, large spreadsheets, and complex decks get Worker parsing, paginated or chunked rendering, virtual scrolling, caching, and memory tuning to keep the main thread smooth |
+| Licensing and support | Apache-2.0 open source and usable in commercial products. Community issues, sponsorship, and priority support can help, but final launch validation remains with the product team | Commercial licensing, private delivery, priority support, sample regression, and custom compatibility work for teams that need clear ownership, delivery timelines, and enterprise support |
+
+## Replacing the Office capability
+
+Commercial delivery provides a pluggable Office preset or renderer set. Your app keeps the same Vue, React, Svelte, jQuery, Web Component, or Vanilla JS component entry. Themes, watermarks, toolbar behavior, search, events, and non-Office formats stay on the same File Viewer contracts; only the Word, Excel, and PowerPoint rendering path switches to the commercial engine.
+
+```ts
+import FileViewer from '@file-viewer/vue3'
+import engineeringPreset from '@file-viewer/preset-engineering'
+import { commercialOfficePreset } from './vendor/file-viewer-pro-office'
+
+const viewerOptions = {
+  rendererMode: 'replace',
+  preset: [
+    commercialOfficePreset,
+    engineeringPreset
+  ],
+  theme: 'light'
+}
+```
+
+The actual package name and delivery channel depend on the commercial license. The stable pattern is what matters here: `core`, component packages, and non-Office renderers remain unchanged, while the Office preset / renderer can be replaced by the commercial engine.
+
 ## File Viewer vs conversion services
 
 | Approach | Strengths | Limits |

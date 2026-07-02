@@ -189,6 +189,6 @@ pnpm release:ecosystem:pack
 
 ## 开源总仓库与支持
 
-开源总仓库用于分发可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例和 release tarball。私有 Gitea 继续作为完整聚合仓，保留统一发布自动化、内部集成历史和优先支持上下文；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水。
+开源总仓库用于分发可直接运行的主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例和 release tarball。私有 Gitea 继续作为完整聚合仓，保留统一发布自动化、内部集成历史和优先支持上下文；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)，请我们喝杯柠檬水。
 
 二开或商用时，请保留 Flyfish Viewer / `@flyfish-group/file-viewer3` 或 `@flyfish-group/file-viewer` 的来源说明、许可证和版权信息。通用问题修复和通用增强建议通过 issue / PR 贡献回来。

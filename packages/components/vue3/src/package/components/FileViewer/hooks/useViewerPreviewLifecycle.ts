@@ -8,6 +8,7 @@ import {
 interface UseViewerPreviewLifecycleOptions {
   getFile: () => unknown;
   getUrl: () => unknown;
+  getSourceFilename?: () => unknown;
   refreshPreview: () => Promise<void> | void;
   cancelPreview: (reason: FileViewerLifecycleContext['reason']) => void;
   resetLoading: () => void;
@@ -24,13 +25,14 @@ interface UseViewerPreviewLifecycleOptions {
 export const useViewerPreviewLifecycle = ({
   getFile,
   getUrl,
+  getSourceFilename,
   refreshPreview,
   cancelPreview,
   resetLoading,
   stopZoomObserver,
   stopViewStateObserver
 }: UseViewerPreviewLifecycleOptions) => {
-  watch([getFile, getUrl], () => {
+  watch([getFile, getUrl, getSourceFilename || (() => undefined)], () => {
     void runFileViewerPreviewSourceChange({
       onRefreshPreview: refreshPreview
     })

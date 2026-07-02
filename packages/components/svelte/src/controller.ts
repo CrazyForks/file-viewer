@@ -459,6 +459,9 @@ export const mountViewer = (
         fetchFile: coreOptions.fetchFile,
         signal: controller?.signal,
       });
+      if (disposed || controller?.signal.aborted || abortController !== controller) {
+        return null;
+      }
       return await instance.load(resolvedSource);
     } catch (error) {
       if (isAbortError(error) && controller?.signal.aborted) {

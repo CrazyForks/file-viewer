@@ -240,7 +240,7 @@ Vite projects can add `@file-viewer/vite-plugin` to auto-discover installed pres
 | Release downloads | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
 | Docker image | `flyfishdev/file-viewer:latest` |
 | Linux Do friend link | [linux.do](https://linux.do) |
-| Sponsorship and priority support | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
+| Sponsorship and priority support | [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github) |
 
 ## Supported Formats
 
@@ -571,7 +571,7 @@ The shared format matrix currently declares 24 preview pipelines and 206 file ex
 
 Flyfish Viewer remains Apache-2.0 open source. The open-source edition is designed for general Web preview, intranet deployment, attachment centers, and lightweight integration. If you need higher fidelity, stronger performance, private delivery, custom compatibility work, or priority support, you can sponsor the project and learn about the commercial native document engine through the links below.
 
-- Sponsorship and priority support: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- Sponsorship and priority support: [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)
 - Commercial edition: [product.flyfish.group](https://product.flyfish.group/)
 - Commercial demo: [office.flyfish.dev](https://office.flyfish.dev/)
 - Flyfish Open Source Studio: [flyfish.dev](https://flyfish.dev/)
@@ -713,9 +713,9 @@ This public repository now carries the open-source core, demo source, standard c
 
 The private Gitea workspace remains valuable as the complete aggregate repository with unified release automation, integration history, sponsorship, and priority support:
 
-[https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+[https://dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)
 
-The shop is now a lemonade-level sponsorship and priority support channel. Public GitHub repositories stay split by package; the private aggregate workspace is still useful for teams that want one consolidated source tree and faster maintainer help.
+The sponsor link is now a direct lemonade-level sponsorship and priority support channel. Public GitHub repositories stay split by package; the private aggregate workspace is still useful for teams that want one consolidated source tree and faster maintainer help.
 
 ## License and Attribution
 

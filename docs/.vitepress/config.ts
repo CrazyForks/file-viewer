@@ -24,7 +24,7 @@ const enNav = [
       { text: 'npm Svelte', link: 'https://www.npmjs.com/package/@file-viewer/svelte' },
       { text: 'GitHub Repository', link: 'https://github.com/flyfish-dev/file-viewer' },
       { text: 'GitHub Wiki', link: 'https://github.com/flyfish-dev/file-viewer/wiki' },
-      { text: 'Sponsor / Priority Support', link: 'https://dev.flyfish.group/shop' }
+      { text: 'Sponsor / Priority Support', link: 'https://dev.flyfish.group/sponsor?source=github' }
     ]
   }
 ]
@@ -173,7 +173,7 @@ export default defineConfig({
           { text: 'GitHub 开源总仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
           { text: 'GitHub Wiki', link: 'https://github.com/flyfish-dev/file-viewer/wiki' },
           { text: 'Gitee 开源总仓库', link: 'https://gitee.com/flyfish-dev/file-viewer' },
-          { text: '打赏与优先支持', link: 'https://dev.flyfish.group/shop' }
+          { text: '打赏与优先支持', link: 'https://dev.flyfish.group/sponsor?source=github' }
         ]
       }
     ],

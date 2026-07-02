@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/doc",
-  "version": "2.1.16",
+  "version": "2.1.17",
   "private": false,
   "type": "module",
   "description": "Browser-native legacy MS-DOC (.doc) parser and HTML renderer extracted from the public msdoc-viewer 0.2.0 line.",
@@ -36,7 +36,7 @@
   },
   "funding": {
     "type": "individual",
-    "url": "https://dev.flyfish.group/shop"
+    "url": "https://dev.flyfish.group/donate?source=npm"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",

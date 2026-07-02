@@ -59,7 +59,7 @@ Registry links:
 - [`@file-viewer/preset-all`](https://www.npmjs.com/package/@file-viewer/preset-all)
 - [`@file-viewer/vite-plugin`](https://www.npmjs.com/package/@file-viewer/vite-plugin)
 
-The package metadata points to the public repositories, documentation, issue trackers, Apache-2.0 license, and sponsorship URL.
+The package metadata points to the public repositories, documentation, issue trackers, Apache-2.0 license, and npm donation URL: [dev.flyfish.group/donate?source=npm](https://dev.flyfish.group/donate?source=npm).
 `@file-viewer/core` stays lightweight and does not install Word or native PPTX engines directly.
 Use `@file-viewer/preset-lite`, `@file-viewer/preset-office`, or `@file-viewer/preset-engineering` for product-shaped bundles; use individual renderer packages for the smallest custom install, or `@file-viewer/preset-all` when you want the same full renderer matrix as the official demo.
 `@file-viewer/pptx` is the standalone engine package for custom renderer work.
@@ -128,4 +128,4 @@ pnpm verify:cloudflare-compression
 
 Flyfish Viewer remains Apache-2.0 open source. Sponsorship helps fund compatibility work, private deployment support, and priority issue handling:
 
-- [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)

@@ -474,6 +474,7 @@ function prepareDocxCloneForExport(target: HTMLDivElement) {
  */
 export default async function(buffer: ArrayBuffer, target: HTMLDivElement, context?: FileRenderContext): Promise<AppWrapper> {
   assertValidDocxPackage(buffer)
+  target.innerHTML = ''
 
   let hasNotifiedProgressiveRender = false
   const notifyProgressiveRender = () => {

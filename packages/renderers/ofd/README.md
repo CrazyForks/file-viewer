@@ -41,7 +41,7 @@ const options = {
 
 ## 迁移说明
 
-OFD 渲染已经从 `@file-viewer/core` 移入本包，`jszip`、`ofd-xml-parser` 和 DLTech21/ofd.js vendor 只由 `@file-viewer/renderer-ofd` 承接。只安装 core 或标准组件包时不会再拉取 OFD 解析依赖；需要 OFD 预览时请显式装配本 renderer，或使用 `@file-viewer/preset-all`。
+OFD 渲染已经从 `@file-viewer/core` 移入本包，`jszip`、本地 XML 解析逻辑和 DLTech21/ofd.js vendor 只由 `@file-viewer/renderer-ofd` 承接。只安装 core 或标准组件包时不会再拉取 OFD 解析依赖；需要 OFD 预览时请显式装配本 renderer，或使用 `@file-viewer/preset-all`。
 
 ## 文档
 

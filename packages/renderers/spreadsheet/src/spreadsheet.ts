@@ -89,6 +89,8 @@ type EVirtTableConstructor = new (
   options: { data: unknown[]; columns: unknown[]; config: unknown }
 ) => EVirtTableInstance;
 
+type EVirtTableModuleRecord = Record<string, unknown>;
+
 type WorkerConstructor = new (scriptURL: string | URL, options?: WorkerOptions) => Worker;
 
 type SpreadsheetMessageListener = EventListenerOrEventListenerObject | null;
@@ -138,11 +140,43 @@ const spreadsheetStyle = `
 @media (max-width:720px){.excel-wrapper .toolbar{align-items:stretch;flex-direction:column}.excel-wrapper .btn-group{flex:0 0 auto}.excel-wrapper .summary{max-width:none;white-space:normal}.excel-wrapper .sheet-loading{left:12px;right:12px;bottom:58px;justify-content:center}.excel-wrapper .loading-card{margin:18px;flex-direction:column;text-align:center}}
 `;
 
+const isEVirtTableConstructor = (value: unknown): value is EVirtTableConstructor => {
+  return typeof value === 'function';
+};
+
+const asModuleRecord = (value: unknown): EVirtTableModuleRecord | null => {
+  return value && typeof value === 'object'
+    ? value as EVirtTableModuleRecord
+    : null;
+};
+
+export const resolveEVirtTableConstructor = (module: unknown): EVirtTableConstructor => {
+  const record = asModuleRecord(module);
+  const defaultRecord = asModuleRecord(record?.default);
+  const moduleExportsRecord = asModuleRecord(record?.['module.exports']);
+  const candidates = [
+    module,
+    record?.default,
+    record?.EVirtTable,
+    record?.['module.exports'],
+    defaultRecord?.default,
+    defaultRecord?.EVirtTable,
+    moduleExportsRecord?.default,
+    moduleExportsRecord?.EVirtTable,
+  ];
+  const constructor = candidates.find(isEVirtTableConstructor);
+
+  if (!constructor) {
+    const keys = record ? Object.keys(record).join(', ') : typeof module;
+    throw new Error(`Unable to resolve e-virt-table constructor from module exports: ${keys}`);
+  }
+
+  return constructor;
+};
+
 const loadEVirtTable = async (): Promise<EVirtTableConstructor> => {
-  const module = await import('e-virt-table') as unknown as {
-    default?: EVirtTableConstructor;
-  };
-  return module.default || (module as unknown as EVirtTableConstructor);
+  const module = await import('e-virt-table');
+  return resolveEVirtTableConstructor(module);
 };
 
 const getTargetWindow = (target: HTMLDivElement) => {

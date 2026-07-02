@@ -240,7 +240,7 @@ Vite 项目可额外安装 `@file-viewer/vite-plugin`，自动发现已安装 pr
 | Release 下载 | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
 | Docker 镜像 | `flyfishdev/file-viewer:latest` |
 | Linux Do 友链 | [linux.do](https://linux.do) |
-| 打赏与优先支持 | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
+| 打赏与优先支持 | [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github) |
 
 ## 支持格式
 
@@ -559,7 +559,7 @@ const options = {
 
 Flyfish Viewer 会持续保持 Apache-2.0 开源。开源版适合通用 Web 预览、内网部署、业务附件中心和轻量级集成；如果你需要更高还原度、更极致性能、私有化交付、定制适配或优先技术支持，可以通过下面入口请我们喝杯柠檬水，也可以了解商业版原生文档引擎。
 
-- 打赏与优先支持: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
+- 打赏与优先支持: [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)
 - 商业版介绍: [product.flyfish.group](https://product.flyfish.group/)
 - 商业版 Demo: [office.flyfish.dev](https://office.flyfish.dev/)
 - 飞鱼开源工作室: [flyfish.dev](https://flyfish.dev/)
@@ -705,7 +705,7 @@ npm publish --access public
 
 如果 npm 账号启用了 MFA，请使用交互式终端完成浏览器确认后再等待发布结果。
 
-开源总仓库会提交 core、Demo、标准组件包、兼容包和文档源码；完整 Demo、component demo、文档静态站和样例构建产物改由 GitHub Release 或 Cloudflare Pages 分发，避免普通 clone 被大体积静态产物拖慢。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新源码快照的干净历史。私有 Gitea 仍作为完整聚合仓，保留统一发布脚本、内部集成历史和优先技术支持；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop)，请我们喝杯柠檬水。
+开源总仓库会提交 core、Demo、标准组件包、兼容包和文档源码；完整 Demo、component demo、文档静态站和样例构建产物改由 GitHub Release 或 Cloudflare Pages 分发，避免普通 clone 被大体积静态产物拖慢。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新源码快照的干净历史。私有 Gitea 仍作为完整聚合仓，保留统一发布脚本、内部集成历史和优先技术支持；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)，请我们喝杯柠檬水。
 
 ## 文档导航
 

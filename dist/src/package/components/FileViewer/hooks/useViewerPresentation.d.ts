@@ -4,6 +4,7 @@ interface UseViewerPresentationOptions {
     filename: Ref<string>;
     getFile: () => FileRef | undefined;
     getUrl: () => string | undefined;
+    getSourceFilename?: () => string | undefined;
     getOptions: () => FileViewerOptions | undefined;
 }
 interface UseViewerErrorStateOptions {
@@ -18,7 +19,7 @@ interface UseViewerErrorStateOptions {
  * 文件名、扩展名、主题和工具栏默认值仍由 core 规则决定；
  * 这里仅把 Vue props/ref 组合成模板和其他 hooks 需要的响应式状态。
  */
-export declare const useViewerPresentation: ({ filename, getFile, getUrl, getOptions }: UseViewerPresentationOptions) => {
+export declare const useViewerPresentation: ({ filename, getFile, getUrl, getSourceFilename, getOptions }: UseViewerPresentationOptions) => {
     displayFilename: ComputedRef<string>;
     currentExtend: ComputedRef<string>;
     normalizedToolbar: ComputedRef<import('@file-viewer/core').FileViewerToolbarOptions>;

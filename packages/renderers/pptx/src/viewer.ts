@@ -1,7 +1,7 @@
 import { renderPptxPostProcessing } from './chart';
 import { resolvePptxEngineOptions, RECOMMENDED_ZIP_LIMITS } from './options';
 import { ensurePptxViewerStyles } from './styles';
-import type { PptxViewerOptions, PptxWorkerMessage } from './types';
+import type { PptxSlideSize, PptxViewerOptions, PptxWorkerMessage } from './types';
 import { createPptxWorker } from './worker';
 
 const clamp = (value: number, min: number, max: number) => {
@@ -32,6 +32,57 @@ const appendHtml = (container: HTMLElement, html: string) => {
   return nodes[0] || null;
 };
 
+const DEFAULT_INITIAL_SLIDES = 3;
+const DEFAULT_BATCH_SIZE = 4;
+const DEFAULT_OVERSCAN_VIEWPORTS = 1.5;
+const DEFAULT_SLIDE_HEIGHT = 540;
+const DEFAULT_SLIDE_GAP = 50;
+
+type SlideWindowOptions = {
+  initialSlides: number;
+  batchSize: number;
+  overscanViewport: number;
+};
+
+type SlideViewport = {
+  top: number;
+  bottom: number;
+  height: number;
+};
+
+type WindowedSlideRecord = {
+  slideNumber: number;
+  html: string;
+  slot: HTMLDivElement;
+  element: Element | null;
+  estimatedHeight: number;
+  rendered: boolean;
+  notified: boolean;
+  postProcessed: boolean;
+};
+
+const toPositiveInteger = (
+  value: number | undefined,
+  fallback: number,
+  min = 1,
+  max = Number.MAX_SAFE_INTEGER,
+) => {
+  const numeric = typeof value === 'number' && Number.isFinite(value)
+    ? Math.floor(value)
+    : fallback;
+  return clamp(numeric, min, max);
+};
+
+const toPositiveNumber = (
+  value: number | undefined,
+  fallback: number,
+  min = 0,
+  max = Number.MAX_SAFE_INTEGER,
+) => {
+  const numeric = typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+  return clamp(numeric, min, max);
+};
+
 export class PptxViewer {
   static async open(
     buffer: ArrayBuffer,
@@ -55,8 +106,15 @@ export class PptxViewer {
   private userZoomPercent = 100;
   private currentZoomPercent = 100;
   private thumbnailElement: HTMLImageElement | null = null;
+  private slideSize: PptxSlideSize | null = null;
+  private slideRecords: WindowedSlideRecord[] = [];
+  private slideWindowTarget: HTMLElement | Window | null = null;
+  private slideWindowListeners: Array<{ target: EventTarget; type: string; listener: EventListener }> = [];
+  private slideWindowFrame = 0;
+  private charts: unknown = null;
   private disposed = false;
   private completed = false;
+  private readonly handleSlideWindowChange = () => this.scheduleSlideWindowUpdate();
 
   private constructor(buffer: ArrayBuffer, target: HTMLElement, options: PptxViewerOptions) {
     this.buffer = buffer;
@@ -83,6 +141,7 @@ export class PptxViewer {
     ensurePptxViewerStyles(this.target.ownerDocument || document);
     this.target.replaceChildren(this.scaleBox);
     this.attachResizeObserver();
+    this.attachSlideWindowListeners();
     this.startWorker();
   }
 
@@ -101,12 +160,20 @@ export class PptxViewer {
     if (this.resizeFrame) {
       this.target.ownerDocument.defaultView?.cancelAnimationFrame(this.resizeFrame);
     }
+    if (this.slideWindowFrame) {
+      this.target.ownerDocument.defaultView?.cancelAnimationFrame(this.slideWindowFrame);
+    }
+    this.detachSlideWindowListeners();
     this.target.replaceChildren();
   }
 
   private startWorker() {
     this.worker?.terminate();
     this.completed = false;
+    this.charts = null;
+    this.slideSize = null;
+    this.slideRecords = [];
+    this.content.replaceChildren();
     this.content.dataset.renderState = 'loading';
     this.worker = createPptxWorker(this.options);
     this.worker.addEventListener('message', event => this.processMessage(event.data));
@@ -127,9 +194,13 @@ export class PptxViewer {
     switch (message.type) {
       case 'slide': {
         this.clearThumbnail();
-        const element = appendHtml(this.content, String(message.data || ''));
-        this.scheduleResize();
-        this.options.onSlideRendered?.(Number(message.slide_num || 0), element);
+        if (this.shouldWindowSlides()) {
+          this.appendWindowedSlide(String(message.data || ''), Number(message.slide_num || 0));
+        } else {
+          const element = appendHtml(this.content, String(message.data || ''));
+          this.scheduleResize();
+          this.options.onSlideRendered?.(Number(message.slide_num || 0), element);
+        }
         break;
       }
       case 'pptx-thumb':
@@ -137,6 +208,8 @@ export class PptxViewer {
         this.options.onThumbnail?.(String(message.data || ''));
         break;
       case 'slideSize':
+        this.slideSize = (message.data || {}) as PptxSlideSize;
+        this.syncWindowedPlaceholderHeights();
         this.options.onSlideSize?.((message.data || {}) as any);
         break;
       case 'globalCSS':
@@ -188,17 +261,350 @@ export class PptxViewer {
     this.thumbnailElement = null;
   }
 
+  private shouldWindowSlides() {
+    return Boolean(this.options.lazySlides || this.options.listOptions?.windowed);
+  }
+
+  private getSlideWindowOptions(): SlideWindowOptions {
+    const listOptions = this.options.listOptions || {};
+    return {
+      initialSlides: toPositiveInteger(listOptions.initialSlides, DEFAULT_INITIAL_SLIDES, 1, 20),
+      batchSize: toPositiveInteger(listOptions.batchSize, DEFAULT_BATCH_SIZE, 1, 20),
+      overscanViewport: toPositiveNumber(
+        listOptions.overscanViewport,
+        DEFAULT_OVERSCAN_VIEWPORTS,
+        0.25,
+        6,
+      ),
+    };
+  }
+
+  private getEstimatedSlideHeight() {
+    const sizeHeight = Number(this.slideSize?.height);
+    const measuredHeight = this.slideRecords.find(record => record.estimatedHeight > 0)?.estimatedHeight;
+    return Math.ceil(
+      (Number.isFinite(sizeHeight) && sizeHeight > 0
+        ? sizeHeight + DEFAULT_SLIDE_GAP
+        : measuredHeight || DEFAULT_SLIDE_HEIGHT + DEFAULT_SLIDE_GAP)
+    );
+  }
+
+  private appendWindowedSlide(html: string, slideNumber: number) {
+    const record = this.createWindowedSlideRecord(html, slideNumber || this.slideRecords.length + 1);
+    this.slideRecords.push(record);
+    this.content.append(record.slot);
+
+    if (this.slideRecords.length <= this.getSlideWindowOptions().initialSlides) {
+      this.renderSlideRecord(record);
+    }
+
+    this.scheduleResize();
+    this.scheduleSlideWindowUpdate();
+  }
+
+  private createWindowedSlideRecord(html: string, slideNumber: number): WindowedSlideRecord {
+    const slot = this.target.ownerDocument.createElement('div');
+    const estimatedHeight = this.getEstimatedSlideHeight();
+    slot.className = 'flyfish-pptx-slide-slot';
+    slot.dataset.slideNumber = String(slideNumber);
+    slot.style.minHeight = `${estimatedHeight}px`;
+
+    return {
+      slideNumber,
+      html,
+      slot,
+      element: null,
+      estimatedHeight,
+      rendered: false,
+      notified: false,
+      postProcessed: false,
+    };
+  }
+
+  private renderSlideRecord(record: WindowedSlideRecord) {
+    if (record.rendered || this.disposed) {
+      return;
+    }
+
+    record.slot.replaceChildren();
+    record.element = appendHtml(record.slot, record.html);
+    record.rendered = true;
+    record.postProcessed = false;
+    this.updateMeasuredSlideHeight(record);
+
+    if (!record.notified) {
+      record.notified = true;
+      this.options.onSlideRendered?.(record.slideNumber, record.element);
+    }
+
+    if (this.completed) {
+      void this.postProcessSlideRecord(record).finally(() => this.scheduleResize());
+    }
+
+    this.scheduleResize();
+  }
+
+  private unmountSlideRecord(record: WindowedSlideRecord) {
+    if (!record.rendered) {
+      return;
+    }
+
+    this.updateMeasuredSlideHeight(record);
+    record.slot.replaceChildren();
+    record.element = null;
+    record.rendered = false;
+    record.postProcessed = false;
+  }
+
+  private updateMeasuredSlideHeight(record: WindowedSlideRecord) {
+    const HTMLElementCtor = this.target.ownerDocument.defaultView?.HTMLElement || HTMLElement;
+    if (!(record.element instanceof HTMLElementCtor)) {
+      return;
+    }
+
+    const view = this.target.ownerDocument.defaultView || window;
+    const computed = view.getComputedStyle(record.element);
+    const marginTop = parseFloat(computed.marginTop) || 0;
+    const marginBottom = parseFloat(computed.marginBottom) || 0;
+    const measuredHeight = Math.ceil(record.element.offsetHeight + marginTop + marginBottom);
+    const nextHeight = Math.max(measuredHeight, record.estimatedHeight, 1);
+    record.estimatedHeight = nextHeight;
+    record.slot.style.minHeight = `${nextHeight}px`;
+  }
+
+  private syncWindowedPlaceholderHeights() {
+    if (!this.shouldWindowSlides() || !this.slideRecords.length) {
+      return;
+    }
+
+    const estimatedHeight = this.getEstimatedSlideHeight();
+    for (const record of this.slideRecords) {
+      if (!record.rendered && record.estimatedHeight < estimatedHeight) {
+        record.estimatedHeight = estimatedHeight;
+        record.slot.style.minHeight = `${estimatedHeight}px`;
+      }
+    }
+    this.scheduleResize();
+  }
+
+  private scheduleSlideWindowUpdate() {
+    if (!this.shouldWindowSlides() || this.disposed) {
+      return;
+    }
+
+    const view = this.target.ownerDocument.defaultView || window;
+    if (this.slideWindowFrame) {
+      view.cancelAnimationFrame(this.slideWindowFrame);
+    }
+    this.slideWindowFrame = view.requestAnimationFrame(() => this.updateSlideWindow());
+  }
+
+  private updateSlideWindow() {
+    this.slideWindowFrame = 0;
+    if (!this.shouldWindowSlides() || !this.slideRecords.length || this.disposed) {
+      return;
+    }
+
+    const windowOptions = this.getSlideWindowOptions();
+    const indexesToRender = this.getWindowedSlideIndexes(windowOptions);
+    let changed = false;
+
+    this.slideRecords.forEach((record, index) => {
+      if (indexesToRender.has(index)) {
+        const wasRendered = record.rendered;
+        this.renderSlideRecord(record);
+        changed ||= !wasRendered;
+      } else if (record.rendered) {
+        this.unmountSlideRecord(record);
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      this.scheduleResize();
+    }
+  }
+
+  private getWindowedSlideIndexes(windowOptions: SlideWindowOptions) {
+    const viewport = this.getSlideViewport();
+    const maxMountedSlides = Math.max(
+      windowOptions.initialSlides,
+      windowOptions.initialSlides + windowOptions.batchSize * 4,
+      12,
+    );
+    const selected = new Set<number>();
+
+    for (let index = 0; index < Math.min(windowOptions.initialSlides, this.slideRecords.length); index += 1) {
+      selected.add(index);
+    }
+
+    const candidates = this.slideRecords
+      .map((record, index) => ({
+        index,
+        distance: this.getDistanceFromViewport(record, viewport, windowOptions.overscanViewport),
+      }))
+      .filter(candidate => candidate.distance !== Number.POSITIVE_INFINITY)
+      .sort((a, b) => a.distance - b.distance || a.index - b.index);
+
+    const closestFallback = candidates[0];
+    for (const candidate of candidates) {
+      if (candidate.distance > 0 && selected.size >= windowOptions.initialSlides) {
+        continue;
+      }
+      selected.add(candidate.index);
+    }
+
+    if (closestFallback) {
+      selected.add(closestFallback.index);
+    }
+
+    if (selected.size <= maxMountedSlides) {
+      return selected;
+    }
+
+    const capped = new Set<number>();
+    for (let index = 0; index < Math.min(windowOptions.initialSlides, this.slideRecords.length); index += 1) {
+      capped.add(index);
+    }
+    for (const candidate of candidates) {
+      if (capped.size >= maxMountedSlides) {
+        break;
+      }
+      capped.add(candidate.index);
+    }
+    return capped;
+  }
+
+  private getDistanceFromViewport(
+    record: WindowedSlideRecord,
+    viewport: SlideViewport,
+    overscanViewport: number,
+  ) {
+    const rect = record.slot.getBoundingClientRect();
+    const overscan = viewport.height * overscanViewport;
+    const top = viewport.top - overscan;
+    const bottom = viewport.bottom + overscan;
+
+    if (rect.bottom >= top && rect.top <= bottom) {
+      return 0;
+    }
+
+    if (rect.bottom < top) {
+      return top - rect.bottom;
+    }
+
+    if (rect.top > bottom) {
+      return rect.top - bottom;
+    }
+
+    return Number.POSITIVE_INFINITY;
+  }
+
+  private getSlideViewport(): SlideViewport {
+    const view = this.target.ownerDocument.defaultView || window;
+    const HTMLElementCtor = view.HTMLElement;
+
+    if (this.slideWindowTarget instanceof HTMLElementCtor) {
+      const rect = this.slideWindowTarget.getBoundingClientRect();
+      const height = Math.max(1, rect.height || this.slideWindowTarget.clientHeight || view.innerHeight || 1);
+      return {
+        top: rect.top,
+        bottom: rect.top + height,
+        height,
+      };
+    }
+
+    const height = Math.max(
+      1,
+      view.innerHeight || this.target.ownerDocument.documentElement.clientHeight || DEFAULT_SLIDE_HEIGHT,
+    );
+    return {
+      top: 0,
+      bottom: height,
+      height,
+    };
+  }
+
+  private attachSlideWindowListeners() {
+    if (!this.shouldWindowSlides()) {
+      return;
+    }
+
+    this.detachSlideWindowListeners();
+    const view = this.target.ownerDocument.defaultView || window;
+    this.slideWindowTarget = this.findSlideWindowTarget();
+    this.addSlideWindowListener(view, 'scroll');
+    this.addSlideWindowListener(view, 'resize');
+
+    if (this.slideWindowTarget && this.slideWindowTarget !== view) {
+      this.addSlideWindowListener(this.slideWindowTarget, 'scroll');
+    }
+  }
+
+  private addSlideWindowListener(target: EventTarget, type: string) {
+    target.addEventListener(type, this.handleSlideWindowChange, { passive: true });
+    this.slideWindowListeners.push({ target, type, listener: this.handleSlideWindowChange });
+  }
+
+  private detachSlideWindowListeners() {
+    for (const { target, type, listener } of this.slideWindowListeners) {
+      target.removeEventListener(type, listener);
+    }
+    this.slideWindowListeners = [];
+    this.slideWindowTarget = null;
+  }
+
+  private findSlideWindowTarget(): HTMLElement | Window {
+    const view = this.target.ownerDocument.defaultView || window;
+    let element = this.target.parentElement;
+
+    while (element && element !== this.target.ownerDocument.body && element !== this.target.ownerDocument.documentElement) {
+      const style = view.getComputedStyle(element);
+      if (/(auto|scroll|overlay)/.test(`${style.overflowY} ${style.overflow}`)) {
+        return element;
+      }
+      element = element.parentElement;
+    }
+
+    return view;
+  }
+
+  private async postProcessRenderedContent(charts: unknown) {
+    if (!this.shouldWindowSlides()) {
+      await renderPptxPostProcessing(charts, this.content);
+      return;
+    }
+
+    await Promise.all(
+      this.slideRecords
+        .filter(record => record.rendered)
+        .map(record => this.postProcessSlideRecord(record)),
+    );
+  }
+
+  private async postProcessSlideRecord(record: WindowedSlideRecord) {
+    if (!record.rendered || record.postProcessed || this.disposed) {
+      return;
+    }
+
+    await renderPptxPostProcessing(this.charts, record.slot);
+    record.postProcessed = true;
+    this.updateMeasuredSlideHeight(record);
+  }
+
   private async complete(charts: unknown) {
     if (this.disposed || this.completed) {
       return;
     }
 
     this.completed = true;
+    this.charts = charts;
     this.content.dataset.renderState = 'ready';
     this.worker?.terminate();
     this.worker = null;
+    this.scheduleSlideWindowUpdate();
     this.scheduleResize();
-    await renderPptxPostProcessing(charts, this.content);
+    await this.postProcessRenderedContent(charts);
     this.scheduleResize();
     this.options.onRenderComplete?.();
   }
@@ -220,7 +626,10 @@ export class PptxViewer {
       return;
     }
 
-    this.resizeObserver = new ResizeObserver(() => this.scheduleResize());
+    this.resizeObserver = new ResizeObserver(() => {
+      this.scheduleResize();
+      this.scheduleSlideWindowUpdate();
+    });
     this.resizeObserver.observe(this.target);
     if (this.target.parentElement) {
       this.resizeObserver.observe(this.target.parentElement);
@@ -236,16 +645,11 @@ export class PptxViewer {
   }
 
   private resize() {
-    const HTMLElementCtor = this.target.ownerDocument.defaultView?.HTMLElement || HTMLElement;
-    const slides = Array.from(this.content.children).filter((child): child is HTMLElement => {
-      return child instanceof HTMLElementCtor && (child.classList.contains('slide') || child.tagName === 'SECTION');
-    });
+    const slides = this.getMountedSlideElements();
 
-    if (!slides.length) {
-      return;
-    }
-
-    const slideWidth = Math.max(...slides.map(slide => slide.offsetWidth), 0);
+    const sizeWidth = Number(this.slideSize?.width);
+    const fallbackWidth = Number.isFinite(sizeWidth) && sizeWidth > 0 ? sizeWidth : 0;
+    const slideWidth = Math.max(...slides.map(slide => slide.offsetWidth), fallbackWidth);
     if (!slideWidth) {
       return;
     }
@@ -262,5 +666,36 @@ export class PptxViewer {
     this.scaleBox.style.width = `${Math.ceil(slideWidth * effectiveScale)}px`;
     this.scaleBox.style.height = `${Math.ceil(this.content.scrollHeight * effectiveScale)}px`;
     this.scaleBox.style.minHeight = '';
+  }
+
+  private getMountedSlideElements() {
+    const HTMLElementCtor = this.target.ownerDocument.defaultView?.HTMLElement || HTMLElement;
+    const slides: HTMLElement[] = [];
+
+    for (const child of Array.from(this.content.children)) {
+      if (!(child instanceof HTMLElementCtor)) {
+        continue;
+      }
+
+      if (this.isSlideElement(child)) {
+        slides.push(child);
+        continue;
+      }
+
+      if (!child.classList.contains('flyfish-pptx-slide-slot')) {
+        continue;
+      }
+
+      const firstChild = child.firstElementChild;
+      if (firstChild instanceof HTMLElementCtor && this.isSlideElement(firstChild)) {
+        slides.push(firstChild);
+      }
+    }
+
+    return slides;
+  }
+
+  private isSlideElement(element: HTMLElement) {
+    return element.classList.contains('slide') || element.tagName === 'SECTION';
   }
 }
