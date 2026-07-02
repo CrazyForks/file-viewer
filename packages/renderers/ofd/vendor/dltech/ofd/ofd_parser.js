@@ -19,17 +19,75 @@
  */
 
 import JsZip from "jszip";
-import parser from 'ofd-xml-parser';
 import {parseStBox, getExtensionByPath, replaceFirstSlash} from "./ofd_util.js";
 import {Jbig2Image} from '../jbig2/jbig2.js';
 
 const ensureBrowserGlobal = () => {
-    // ofd-xml-parser 是从 DLTech21/ofd.js 继承下来的 CommonJS 包，内部读取 Node 风格 global。
+    // DLTech21/ofd.js 的一部分遗留逻辑读取 Node 风格 global。
     // 浏览器端把它映射到 globalThis，避免解析 XML 时抛出 global is not defined。
     if (!globalThis.global) {
         globalThis.global = globalThis;
     }
     globalThis.xmlParseFlag = 0;
+}
+
+const appendChildValue = function (target, key, value) {
+    if (Object.prototype.hasOwnProperty.call(target, key)) {
+        target[key] = Array.isArray(target[key])
+            ? target[key].concat(value)
+            : [target[key], value];
+        return;
+    }
+    target[key] = value;
+}
+
+const parseXmlElement = function (element, options) {
+    const attrPrefix = options.attributeNamePrefix ?? '@_';
+    const result = {};
+    if (options.ignoreAttributes !== true) {
+        for (const attr of Array.from(element.attributes || [])) {
+            result[`${attrPrefix}${attr.name}`] = attr.value;
+        }
+    }
+
+    const textParts = [];
+    for (const child of Array.from(element.childNodes || [])) {
+        if (child.nodeType === 1) {
+            appendChildValue(result, child.nodeName, parseXmlElement(child, options));
+            continue;
+        }
+        if (child.nodeType === 3 || child.nodeType === 4) {
+            textParts.push(child.nodeValue || '');
+        }
+    }
+
+    const text = textParts.join('').trim();
+    if (text) {
+        if (Object.keys(result).length === 0) {
+            return text;
+        }
+        result['#text'] = text;
+    }
+    return result;
+}
+
+const parseXmlToJson = function (xmlData, options = {}) {
+    const DOMParserCtor = globalThis.DOMParser;
+    if (typeof DOMParserCtor !== 'function') {
+        throw new Error('OFD XML parser requires DOMParser in the current runtime');
+    }
+    const document = new DOMParserCtor().parseFromString(xmlData, 'application/xml');
+    const parserError = document.getElementsByTagName('parsererror')[0];
+    if (parserError) {
+        throw new Error(parserError.textContent || 'OFD XML parse failed');
+    }
+    const root = document.documentElement;
+    if (!root) {
+        return {};
+    }
+    return {
+        [root.nodeName]: parseXmlElement(root, options)
+    };
 }
 
 const asArray = function (value) {
@@ -486,7 +544,7 @@ const getJsonFromXmlContent = async function (zip, xmlName) {
                 parseNodeValue: false,
                 trimValues: false
             };
-            let jsonObj = parser.parse(content, ops);
+            let jsonObj = parseXmlToJson(content, ops);
             let result = {'xml': content, 'json': jsonObj};
             resolve(result);
         }, function error(e) {

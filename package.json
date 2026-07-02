@@ -84,6 +84,8 @@
     "verify:issue72-web-full-iife": "pnpm --filter @file-viewer/web-full build && ISSUE72_WEB_FULL_SOURCE=local-pack npm exec --yes --package playwright -- node scripts/verify-issue72-web-full-iife-custom-element.mjs",
     "verify:issue73-mobile-pptx-windowing": "pnpm --filter @file-viewer/pptx build && npm exec --yes --package playwright -- node scripts/verify-issue73-mobile-pptx-windowing.mjs",
     "verify:issue74-docx-blob-matrix": "pnpm --filter @file-viewer/core build && pnpm --filter @file-viewer/renderer-word build && pnpm --filter @file-viewer/preset-all build && pnpm build:component-packages && npm exec --yes --package playwright -- node scripts/verify-issue74-docx-blob-component-matrix.mjs",
+    "verify:issue75-spreadsheet-matrix": "pnpm --filter @file-viewer/core build && pnpm --filter @file-viewer/renderer-spreadsheet build && node scripts/verify-issue75-evirt-resolution.mjs && pnpm --filter @file-viewer/preset-all build && pnpm build:component-packages && npm exec --yes --package playwright -- node scripts/verify-issue75-spreadsheet-component-matrix.mjs",
+    "verify:issue76-ofd-matrix": "pnpm --filter @file-viewer/core build && pnpm --filter @file-viewer/renderer-ofd build && pnpm --filter @file-viewer/preset-all build && pnpm build:component-packages && npm exec --yes --package playwright -- node scripts/verify-issue76-ofd-component-matrix.mjs",
     "generate:release-matrix": "node scripts/generate-release-matrix.mjs",
     "verify:release-links:source": "node scripts/verify-release-links.mjs --mode=source",
     "verify:release-links:dist": "node scripts/verify-release-links.mjs --mode=dist",
