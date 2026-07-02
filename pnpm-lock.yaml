@@ -204,6 +204,22 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4(typescript@6.0.3)
 
+  apps/web-demo:
+    dependencies:
+      '@file-viewer/core':
+        specifier: workspace:^2.1.16
+        version: link:../../packages/core
+      '@file-viewer/preset-all':
+        specifier: workspace:^2.1.16
+        version: link:../../packages/presets/all
+      '@file-viewer/web':
+        specifier: workspace:^2.1.16
+        version: link:../../packages/components/web
+    devDependencies:
+      vite:
+        specifier: ^8.0.16
+        version: 8.0.16(@types/node@25.9.2)(esbuild@0.27.7)(sass@1.100.0)
+
   packages/compat/msdoc-viewer:
     dependencies:
       '@file-viewer/doc':
