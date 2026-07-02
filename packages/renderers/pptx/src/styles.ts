@@ -36,10 +36,12 @@ export const pptxViewerCss = `
 .flyfish-pptx-scale-box{position:relative;box-sizing:border-box;max-width:100%;margin:0 auto;min-width:0}
 .flyfish-pptx-content{position:absolute;top:0;left:0;box-sizing:border-box;max-width:none;min-width:0;transform-origin:top left;will-change:transform}
 .flyfish-pptx-content[data-render-state="loading"]{opacity:.82}
+.flyfish-pptx-slide-slot{display:flow-root;box-sizing:border-box;width:100%;min-width:0}
 .flyfish-pptx-content .slide{background:#fff;box-shadow:0 18px 36px rgba(18,35,52,.12)}
 .flyfish-pptx-thumbnail{display:block;box-sizing:border-box;width:min(960px,100%);height:auto;margin:0 auto 28px;border-radius:12px;background:#fff;box-shadow:0 18px 36px rgba(18,35,52,.14)}
 ${legacyPptxCss}
 .flyfish-pptx-content > .slide:last-of-type{margin-bottom:0}
+.flyfish-pptx-slide-slot:last-of-type > .slide{margin-bottom:0}
 `;
 
 const PPTX_STYLE_ID = 'flyfish-pptx-native-style';

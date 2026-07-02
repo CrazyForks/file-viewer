@@ -1103,6 +1103,10 @@ export interface FileViewerDocumentChunk {
 export interface FileViewerComponentProps {
   file?: FileViewerFileRef;
   url?: string;
+  name?: string;
+  filename?: string;
+  type?: string;
+  size?: number;
   options?: FileViewerOptions;
 }
 

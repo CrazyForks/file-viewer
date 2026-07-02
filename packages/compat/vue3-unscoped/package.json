@@ -1,6 +1,6 @@
 {
   "name": "file-viewer3",
-  "version": "2.1.16",
+  "version": "2.1.17",
   "private": false,
   "type": "module",
   "description": "Compatibility alias package for Flyfish File Viewer Vue 3",
@@ -33,7 +33,7 @@
   },
   "funding": {
     "type": "individual",
-    "url": "https://dev.flyfish.group/shop"
+    "url": "https://dev.flyfish.group/donate?source=npm"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -60,7 +60,7 @@
     "vue": ">=3.3 <4"
   },
   "dependencies": {
-    "@file-viewer/vue3": "workspace:^2.1.16"
+    "@file-viewer/vue3": "workspace:^2.1.17"
   },
   "license": "Apache-2.0"
 }

@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, type Component } from 'vue'
 import type { Mesh, Object3D, Scene, WebGLRenderer } from 'three'
+import hljs from 'highlight.js/lib/core'
+import bash from 'highlight.js/lib/languages/bash'
+import javascript from 'highlight.js/lib/languages/javascript'
+import typescript from 'highlight.js/lib/languages/typescript'
+import xml from 'highlight.js/lib/languages/xml'
 import {
   ArrowRight,
   BadgeCheck,
@@ -16,6 +21,7 @@ import {
   FileSpreadsheet,
   FileText,
   Gem,
+  GitBranch,
   HandCoins,
   HeartHandshake,
   Languages,
@@ -27,7 +33,9 @@ import {
   PanelTop,
   QrCode,
   Radar,
+  Replace,
   Rocket,
+  Scale,
   SearchCheck,
   ShieldCheck,
   ShoppingCart,
@@ -37,6 +45,7 @@ import {
 } from '@lucide/vue'
 
 type Locale = 'zh' | 'en'
+type HighlightLanguage = 'bash' | 'javascript' | 'typescript' | 'xml'
 
 type LinkItem = {
   label: string
@@ -73,6 +82,20 @@ type Capability = {
   icon: Component
 }
 
+type CommercialComparisonItem = {
+  dimension: string
+  openSource: string
+  commercial: string
+  icon: Component
+}
+
+type CommercialRouteStep = {
+  label: string
+  title: string
+  detail: string
+  icon: Component
+}
+
 type QrItem = {
   label: string
   note: string
@@ -86,6 +109,7 @@ type QuickStartItem = {
   title: string
   summary: string
   language: string
+  highlightLanguage: HighlightLanguage
   code: string
   href: string
   tone: string
@@ -116,10 +140,15 @@ const compareUrl = 'https://demo.file-viewer.app/compare.html'
 const githubUrl = 'https://github.com/flyfish-dev/file-viewer'
 const releasesUrl = 'https://github.com/flyfish-dev/file-viewer/releases'
 const dockerDocsUrl = `${docsUrl}guide/docker`
-const shopUrl = 'https://dev.flyfish.group/shop'
+const sponsorUrl = 'https://dev.flyfish.group/sponsor?source=github'
 const studioUrl = 'https://flyfish.dev/'
 const commercialUrl = 'https://product.flyfish.group/'
 const commercialDemoUrl = 'https://office.flyfish.dev/'
+
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('xml', xml)
 
 const locale = ref<Locale>('zh')
 const localeStorageKey = 'flyfish-file-viewer-site-locale'
@@ -175,10 +204,10 @@ const copy = {
     docsTitle: '接入文档，快速参阅关键能力。',
     docsIntro:
       '从快速开始进入，集中查阅模块化装配、格式矩阵、组件参数、主题水印、搜索定位、打印导出、Docker、Release 与私有化部署。',
-    commercialTitle: '需要更高还原度和极致性能？选择商业版原生文档引擎。',
+    commercialTitle: '免费组件与商业版的边界，一眼看清。',
     commercialIntro:
-      '商业版来自本地 office 产品线，采用自研原生文档引擎，面向严肃企业场景提供 Word、Excel、PowerPoint 的高还原渲染、Worker 解析、分页布局、虚拟滚动和更稳定的大文件体验。',
-    commercialCta: '查看商业版',
+      '开源 File Viewer 负责浏览器原生、多格式、可离线部署的通用预览；商业版来自 Flyfish Office 自研原生文档引擎，专注 Word、Excel、PowerPoint 的高还原、大文件性能、授权交付和优先支持。两者不是二选一：商业版可以作为可替换的 Office 能力接入现有 File Viewer 组件，获得 file-viewer-pro 体验。',
+    commercialCta: '了解商业授权',
     supportTitle: '喜欢这个项目，或者需要优先支持？请请我们喝杯柠檬水。',
     supportIntro:
       '开源版会持续维护；如果你需要更快响应、商业选型建议、私有化落地或定制能力，欢迎打赏后通过客服二维码联系我们。',
@@ -223,10 +252,10 @@ const copy = {
     docsTitle: 'Integration docs for fast technical reference.',
     docsIntro:
       'Start from quickstart and jump into modular assembly, format matrix, component options, themes, watermarks, search anchors, print/export, Docker, Release downloads, and self-hosted deployment.',
-    commercialTitle: 'Need higher fidelity and extreme performance? Choose the commercial native document engine.',
+    commercialTitle: 'Open-source component or commercial edition? Make the boundary obvious.',
     commercialIntro:
-      'The commercial edition is powered by the local office product line: a self-developed native document engine for serious enterprise Word, Excel, and PowerPoint rendering, Worker parsing, pagination, virtual scrolling, and stable large-file performance.',
-    commercialCta: 'View Commercial Edition',
+      'The open-source File Viewer focuses on browser-native, multi-format, offline-ready preview. The commercial edition comes from the Flyfish Office product line and focuses on Word, Excel, and PowerPoint fidelity, large-file performance, licensed delivery, and priority support. They are not mutually exclusive: the commercial engine can replace the Office capability inside the same File Viewer integration to deliver a file-viewer-pro experience.',
+    commercialCta: 'Commercial Licensing',
     supportTitle: 'If File Viewer helps, sponsor the project and contact us for priority support.',
     supportIntro:
       'The open-source edition will keep moving. For faster response, commercial evaluation, private deployment, or custom work, sponsor the project and reach us through the support QR code.',
@@ -429,7 +458,7 @@ const portalLinks = computed<LinkItem[]>(() =>
         { label: 'npm 生态包', href: 'https://www.npmjs.com/search?q=%40file-viewer', note: 'core、renderer、preset 与标准组件包', icon: PackageCheck },
         { label: 'Docker 部署', href: dockerDocsUrl, note: 'amd64 / arm64 一键部署文档与示例', icon: Cloud },
         { label: '商业版引擎', href: commercialUrl, note: '自研原生 Office 引擎，高还原与极致性能', icon: Gem },
-        { label: '飞鱼小铺', href: shopUrl, note: '打赏项目，并获得优先技术支持', icon: HandCoins },
+        { label: '打赏支持', href: sponsorUrl, note: '打赏项目，并获得优先技术支持', icon: HandCoins },
         { label: '飞鱼开源工作室', href: studioUrl, note: '了解 Flyfish Dev 的产品与服务', icon: Building2 }
       ]
     : [
@@ -440,13 +469,30 @@ const portalLinks = computed<LinkItem[]>(() =>
         { label: 'npm packages', href: 'https://www.npmjs.com/search?q=%40file-viewer', note: 'core, renderer, preset, and standard component packages', icon: PackageCheck },
         { label: 'Docker deployment', href: dockerDocsUrl, note: 'amd64 / arm64 deployment for docs and examples', icon: Cloud },
         { label: 'Commercial engine', href: commercialUrl, note: 'Native Office engine for high fidelity and extreme performance', icon: Gem },
-        { label: 'Support shop', href: shopUrl, note: 'Sponsor the project and receive priority technical support', icon: HandCoins },
+        { label: 'Sponsor', href: sponsorUrl, note: 'Sponsor the project and receive priority technical support', icon: HandCoins },
         { label: 'Flyfish Dev', href: studioUrl, note: 'Explore Flyfish Dev products and services', icon: Building2 }
       ]
 )
 
 function snippetImport(statement: string) {
   return `im${'port'} ${statement}`
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
+function highlightSnippet(code: string, language: HighlightLanguage) {
+  try {
+    return hljs.highlight(code, { language, ignoreIllegals: true }).value
+  } catch {
+    return escapeHtml(code)
+  }
 }
 
 const quickStartItems = computed<QuickStartItem[]>(() => [
@@ -459,6 +505,7 @@ const quickStartItems = computed<QuickStartItem[]>(() => [
       ? 'CDN full 包默认启用完整格式矩阵，也保留命令式 mountViewer，适合传统页面、POC 和低门槛接入。'
       : 'The CDN full bundle enables the complete matrix by default and keeps an imperative mountViewer API for classic pages and POCs.',
     language: 'HTML',
+    highlightLanguage: 'xml',
     href: `${docsUrl}guide/quickstart-web`,
     tone: 'violet',
     icon: MonitorPlay,
@@ -492,6 +539,7 @@ controller.zoomIn()
       ? 'full 包默认启用完整矩阵，仍保持 Vue 插件、组件 props、事件和 ref/controller 的原生体验。'
       : 'The full package enables the complete matrix while keeping native Vue plugin, props, events, and ref/controller APIs.',
     language: 'Vue SFC',
+    highlightLanguage: 'typescript',
     href: `${docsUrl}guide/quickstart-vue3`,
     tone: 'green',
     icon: PanelTop,
@@ -520,6 +568,7 @@ createApp(App).use(FileViewer).mount('#app')
       ? '标准包保持最轻入口，格式能力通过 preset 或单 renderer 注入，适合控制安装体积。'
       : 'The standard package stays light; presets or single renderers control the installed capability set.',
     language: 'Vue SFC',
+    highlightLanguage: 'typescript',
     href: `${docsUrl}guide/quickstart-vue3`,
     tone: 'green',
     icon: PanelTop,
@@ -550,6 +599,7 @@ createApp(App).use(FileViewer).mount('#app')
       ? '默认完整矩阵，同时保留 React 组件、hooks、事件回调和 ref/controller，便于组合权限和业务工具栏。'
       : 'Complete matrix by default, with React components, hooks, callbacks, and ref/controller APIs for business toolbars.',
     language: 'TSX',
+    highlightLanguage: 'typescript',
     href: `${docsUrl}guide/quickstart-react`,
     tone: 'blue',
     icon: Rocket,
@@ -582,6 +632,7 @@ export function Preview() {
       ? 'Svelte 组件独立依赖 core，full 包默认启用完整矩阵，并保留同样的 options、事件、主题、搜索、缩放和打印导出能力。'
       : 'The Svelte component depends directly on core; the full package enables the complete matrix and keeps the same options, events, themes, search, zoom, print, and export APIs.',
     language: 'Svelte',
+    highlightLanguage: 'xml',
     href: `${docsUrl}guide/quickstart-svelte`,
     tone: 'cyan',
     icon: Zap,
@@ -609,6 +660,7 @@ ${'<\\/script>'}
       ? 'Vue legacy 组件保持同样的 props、事件和样式入口，适合存量 Vue2 系统逐步升级预览能力。'
       : 'Vue legacy packages keep the same props, events, and style entry for existing Vue 2 systems.',
     language: 'Vue 2',
+    highlightLanguage: 'javascript',
     href: `${docsUrl}guide/quickstart-vue2`,
     tone: 'amber',
     icon: Layers3,
@@ -642,6 +694,7 @@ new Vue({
       ? '面向传统多页应用和渐进式改造，保留 controller、事件解绑、销毁和运行时更新能力。'
       : 'For classic multi-page apps and progressive migration, with controller, event cleanup, destroy, and runtime updates.',
     language: 'JavaScript',
+    highlightLanguage: 'javascript',
     href: `${docsUrl}guide/ecosystem#jquery`,
     tone: 'orange',
     icon: Wrench,
@@ -674,6 +727,7 @@ controller.load({ url: '/files/contract.pdf' })`
       ? 'Vite 不会仅因安装包而自动运行插件；在 vite.config.ts 注册后，插件会免手写 import 激活已安装 preset。'
       : 'Vite will not run a plugin just because it is installed; after vite.config.ts registration, installed presets activate without manual imports.',
     language: 'Vite',
+    highlightLanguage: 'typescript',
     href: `${docsUrl}guide/on-demand-renderers`,
     tone: 'blue',
     icon: Layers3,
@@ -701,6 +755,7 @@ export default defineConfig({
       ? 'PDF、CAD、Typst、Archive、Draw.io、DOCX、表格和 SQLite 等资源都可复制到业务自己的静态目录。'
       : 'PDF, CAD, Typst, Archive, Draw.io, DOCX, spreadsheet, and SQLite assets can live under your own static path.',
     language: 'Shell',
+    highlightLanguage: 'bash',
     href: `${docsUrl}guide/distribution`,
     tone: 'cyan',
     icon: Boxes,
@@ -732,6 +787,172 @@ const commercialFeatures = computed<Capability[]>(() =>
         { title: 'Large-file performance first', detail: 'Worker parsing, asynchronous rendering, virtual scrolling, and windowed data paths reduce main-thread blocking.', icon: Zap },
         { title: 'Serious commercial support', detail: 'For contract archives, report centers, knowledge bases, and enterprise products that demand stronger fidelity.', icon: HeartHandshake }
       ]
+)
+
+const commercialComparison = computed<CommercialComparisonItem[]>(() =>
+  isZh.value
+    ? [
+        {
+          dimension: '文件格式',
+          openSource:
+            '覆盖 206 个扩展名，包含 PDF/OFD、Office、CAD、Typst、压缩包、邮件、绘图、媒体、3D 和数据资产；通过 lite / office / engineering / all preset 按需启用。',
+          commercial:
+            '重点增强 Word、Excel、PowerPoint 深水区，可替换 office preset 中的 Word / Spreadsheet / Presentation 能力；PDF、OFD、CAD、Archive 等其它格式继续由开源 renderer 承接。',
+          icon: FileText
+        },
+        {
+          dimension: '还原度',
+          openSource:
+            '目标是可读、可搜索、可打印、可嵌入业务系统；DOCX 当前偏流式阅读，Excel/PPTX 覆盖常见业务预览，不承诺原生 Office 逐像素一致。',
+          commercial:
+            '自研原生文档引擎面向分页、字体、表格、图形、页眉页脚、批注修订和复杂演示布局，适合合同、报告、档案和正式交付预览。',
+          icon: Scale
+        },
+        {
+          dimension: '性能',
+          openSource:
+            '轻 core + renderer 按需加载，Worker/WASM 懒加载，适合大多数附件中心和在线预览；极端大文件需要结合真实样本做回归。',
+          commercial:
+            '针对大文档、大表格和复杂 PPT 做 Worker 解析、分页/分块渲染、虚拟滚动、缓存和内存调优，优先保障主线程流畅。',
+          icon: Zap
+        },
+        {
+          dimension: '授权与支持',
+          openSource:
+            'Apache-2.0 开源，可用于商业项目；社区 issue、打赏和优先支持可协助定位，但上线验收与兼容性风险由项目自行把控。',
+          commercial:
+            '商业授权、私有交付、优先技术支持、样本回归和定制兼容路线，适合需要明确责任边界、交付周期和企业支持的场景。',
+          icon: ShieldCheck
+        }
+      ]
+    : [
+        {
+          dimension: 'Formats',
+          openSource:
+            'Covers 206 extensions across PDF/OFD, Office, CAD, Typst, archives, email, diagrams, media, 3D, and data assets through lite / office / engineering / all presets.',
+          commercial:
+            'Strengthens the Word, Excel, and PowerPoint deep end. It can replace the Word / Spreadsheet / Presentation capability in the office preset while PDF, OFD, CAD, Archive, and other formats continue to use open-source renderers.',
+          icon: FileText
+        },
+        {
+          dimension: 'Fidelity',
+          openSource:
+            'Optimized for readable, searchable, printable previews embedded in business systems. DOCX is currently flow-first, and Excel/PPTX target common preview needs rather than native Office pixel parity.',
+          commercial:
+            'The self-developed native document engine targets pagination, fonts, tables, shapes, headers/footers, comments/revisions, and complex deck layouts for contracts, reports, archives, and formal delivery.',
+          icon: Scale
+        },
+        {
+          dimension: 'Performance',
+          openSource:
+            'A light core plus lazy renderer loading keeps most attachment centers responsive. Worker/WASM assets load on demand, while extreme large files should be validated with real samples.',
+          commercial:
+            'Large documents, large spreadsheets, and complex decks get Worker parsing, paginated or chunked rendering, virtual scrolling, caching, and memory tuning to keep the main thread smooth.',
+          icon: Zap
+        },
+        {
+          dimension: 'Licensing and support',
+          openSource:
+            'Apache-2.0 open source and usable in commercial products. Community issues, sponsorship, and priority support can help, but final launch validation remains with the product team.',
+          commercial:
+            'Commercial licensing, private delivery, priority support, sample regression, and custom compatibility work for teams that need clear ownership, delivery timelines, and enterprise support.',
+          icon: ShieldCheck
+        }
+      ]
+)
+
+const commercialRouteSteps = computed<CommercialRouteStep[]>(() =>
+  isZh.value
+    ? [
+        {
+          label: 'Step 01',
+          title: '保留现有组件入口',
+          detail: 'Vue、React、Svelte、jQuery、Web Component 或 Vanilla JS 接入方式不变，业务仍使用同一套 options、事件和 controller。',
+          icon: PanelTop
+        },
+        {
+          label: 'Step 02',
+          title: '替换 Office 能力',
+          detail: '将开源 office preset 中的 Word、Spreadsheet、Presentation renderer 替换为商业版 Office preset / renderer。',
+          icon: Replace
+        },
+        {
+          label: 'Step 03',
+          title: '继续组合其它格式',
+          detail: 'PDF、OFD、CAD、Archive、Email、Drawing、3D、Data 等仍可通过开源 preset 或单 renderer 与商业 Office 能力并列装配。',
+          icon: GitBranch
+        },
+        {
+          label: 'Step 04',
+          title: '获得 file-viewer-pro 效果',
+          detail: '同一个 FileViewer 外壳内获得商业版 Office 高还原、大文件性能、授权交付和优先支持体验。',
+          icon: Sparkles
+        }
+      ]
+    : [
+        {
+          label: 'Step 01',
+          title: 'Keep the same component entry',
+          detail: 'Vue, React, Svelte, jQuery, Web Component, and Vanilla JS integrations keep the same options, events, and controller contract.',
+          icon: PanelTop
+        },
+        {
+          label: 'Step 02',
+          title: 'Replace the Office capability',
+          detail: 'Swap the open-source Word, Spreadsheet, and Presentation renderers from the office preset with the commercial Office preset or renderer set.',
+          icon: Replace
+        },
+        {
+          label: 'Step 03',
+          title: 'Keep composing other formats',
+          detail: 'PDF, OFD, CAD, Archive, Email, Drawing, 3D, Data, and other formats can still be assembled through open-source presets or single renderers.',
+          icon: GitBranch
+        },
+        {
+          label: 'Step 04',
+          title: 'Deliver a file-viewer-pro experience',
+          detail: 'The same FileViewer shell gains commercial Office fidelity, large-file performance, licensed delivery, and priority support.',
+          icon: Sparkles
+        }
+      ]
+)
+
+const commercialRouteCode = computed(() =>
+  isZh.value
+    ? `${snippetImport("FileViewer from '@file-viewer/vue3'")}
+${snippetImport("engineeringPreset from '@file-viewer/preset-engineering'")}
+${snippetImport("{ commercialOfficePreset } from './vendor/file-viewer-pro-office'")}
+
+const viewerOptions = {
+  rendererMode: 'replace',
+  preset: [
+    commercialOfficePreset,
+    engineeringPreset
+  ],
+  theme: 'light'
+}
+
+<FileViewer
+  url="/files/report.docx"
+  :options="viewerOptions"
+/>`
+    : `${snippetImport("FileViewer from '@file-viewer/vue3'")}
+${snippetImport("engineeringPreset from '@file-viewer/preset-engineering'")}
+${snippetImport("{ commercialOfficePreset } from './vendor/file-viewer-pro-office'")}
+
+const viewerOptions = {
+  rendererMode: 'replace',
+  preset: [
+    commercialOfficePreset,
+    engineeringPreset
+  ],
+  theme: 'light'
+}
+
+<FileViewer
+  url="/files/report.docx"
+  :options="viewerOptions"
+/>`
 )
 
 const qrItems = computed<QrItem[]>(() =>
@@ -1475,7 +1696,11 @@ onBeforeUnmount(() => {
               <span />
               <strong>{{ item.language }}</strong>
             </div>
-            <pre><code>{{ item.code }}</code></pre>
+            <pre><code
+              class="hljs"
+              :class="`language-${item.highlightLanguage}`"
+              v-html="highlightSnippet(item.code, item.highlightLanguage)"
+            ></code></pre>
           </article>
         </div>
 
@@ -1539,11 +1764,13 @@ onBeforeUnmount(() => {
     </section>
 
     <section id="commercial" class="commercial-section" aria-labelledby="commercial-title">
-      <div class="commercial-copy">
-        <p class="section-kicker">Commercial edition</p>
-        <h2 id="commercial-title">{{ currentCopy.commercialTitle }}</h2>
-        <p>{{ currentCopy.commercialIntro }}</p>
-        <div class="inline-actions">
+      <div class="commercial-heading">
+        <div>
+          <p class="section-kicker">Commercial edition</p>
+          <h2 id="commercial-title">{{ currentCopy.commercialTitle }}</h2>
+          <p>{{ currentCopy.commercialIntro }}</p>
+        </div>
+        <div class="commercial-heading-actions">
           <a class="button primary" :href="commercialUrl" target="_blank" rel="noreferrer">
             <span>{{ currentCopy.commercialCta }}</span>
             <ShoppingCart :size="18" />
@@ -1554,7 +1781,72 @@ onBeforeUnmount(() => {
           </a>
         </div>
       </div>
-      <div class="commercial-grid">
+
+      <div class="commercial-summary-grid" aria-label="Edition summary">
+        <article class="commercial-summary-card open-source-card">
+          <span>{{ isZh ? '免费开源组件' : 'Open-source component' }}</span>
+          <strong>{{ isZh ? '多格式覆盖，前端原生，Apache-2.0' : 'Multi-format, browser-native, Apache-2.0' }}</strong>
+          <p>{{ isZh ? '适合业务附件中心、内网预览、轻量集成和需要私有化部署的通用文件查看。' : 'Best for attachment centers, intranet preview, lightweight integration, and self-hosted general file viewing.' }}</p>
+        </article>
+        <article class="commercial-summary-card pro-card">
+          <span>{{ isZh ? '商业版 Office 引擎' : 'Commercial Office engine' }}</span>
+          <strong>{{ isZh ? '替换 Office 能力，获得 file-viewer-pro 效果' : 'Replace Office capability for a file-viewer-pro experience' }}</strong>
+          <p>{{ isZh ? '适合高还原合同、报表、演示稿、大文件、企业授权和需要优先技术支持的严肃场景。' : 'Best for high-fidelity contracts, reports, decks, large files, enterprise licensing, and priority support.' }}</p>
+        </article>
+      </div>
+
+      <div class="commercial-comparison" :aria-label="isZh ? '免费版与商业版对比' : 'Open-source and commercial comparison'">
+        <div class="comparison-row comparison-row-head" aria-hidden="true">
+          <span>{{ isZh ? '维度' : 'Dimension' }}</span>
+          <span>{{ isZh ? '免费 File Viewer 组件' : 'Open-source File Viewer' }}</span>
+          <span>{{ isZh ? '商业版 / file-viewer-pro 路线' : 'Commercial / file-viewer-pro path' }}</span>
+        </div>
+        <article v-for="item in commercialComparison" :key="item.dimension" class="comparison-row">
+          <div class="comparison-dimension">
+            <component :is="item.icon" :size="22" />
+            <strong>{{ item.dimension }}</strong>
+          </div>
+          <p>
+            <span class="comparison-mobile-label">{{ isZh ? '免费组件' : 'Open source' }}</span>
+            {{ item.openSource }}
+          </p>
+          <p class="comparison-pro">
+            <span class="comparison-mobile-label">{{ isZh ? '商业版' : 'Commercial' }}</span>
+            {{ item.commercial }}
+          </p>
+        </article>
+      </div>
+
+      <div class="commercial-route">
+        <div class="route-copy">
+          <p class="section-kicker">Replacement path</p>
+          <h3>{{ isZh ? '不推翻现有接入，只替换 Office 引擎。' : 'Do not rebuild the integration. Replace the Office engine.' }}</h3>
+          <p>{{ isZh ? '商业版交付时提供可插拔的 Office preset / renderer。业务保留 FileViewer 组件、主题、水印、工具栏、搜索、事件和其它格式能力，只把 Word、Excel、PowerPoint 的渲染链路切到商业引擎。' : 'Commercial delivery provides a pluggable Office preset or renderer set. The product keeps the FileViewer component, themes, watermarks, toolbar, search, events, and non-Office renderers while Word, Excel, and PowerPoint switch to the commercial engine.' }}</p>
+        </div>
+        <div class="route-steps">
+          <article v-for="step in commercialRouteSteps" :key="step.label" class="route-step">
+            <span>{{ step.label }}</span>
+            <component :is="step.icon" :size="22" />
+            <h4>{{ step.title }}</h4>
+            <p>{{ step.detail }}</p>
+          </article>
+        </div>
+        <div class="commercial-code-panel">
+          <div class="code-toolbar">
+            <span />
+            <span />
+            <span />
+            <strong>{{ isZh ? '替换路线示例' : 'Replacement example' }}</strong>
+          </div>
+          <pre><code
+            class="hljs language-typescript"
+            v-html="highlightSnippet(commercialRouteCode, 'typescript')"
+          ></code></pre>
+          <p>{{ isZh ? '实际包名和交付方式以商业授权交付为准；这里展示的是稳定的 File Viewer preset 替换模式。' : 'The actual package name and delivery channel depend on the commercial license; this shows the stable File Viewer preset replacement pattern.' }}</p>
+        </div>
+      </div>
+
+      <div class="commercial-grid commercial-feature-grid">
         <article v-for="item in commercialFeatures" :key="item.title" class="commercial-card">
           <component :is="item.icon" :size="24" />
           <h3>{{ item.title }}</h3>
@@ -1615,9 +1907,9 @@ onBeforeUnmount(() => {
         <h2>{{ currentCopy.supportTitle }}</h2>
         <p>{{ currentCopy.supportIntro }}</p>
         <div class="footer-links">
-          <a :href="shopUrl" target="_blank" rel="noreferrer">
+          <a :href="sponsorUrl" target="_blank" rel="noreferrer">
             <HandCoins :size="16" />
-            {{ isZh ? '飞鱼小铺' : 'Support shop' }}
+            {{ isZh ? '打赏支持' : 'Sponsor' }}
           </a>
           <a :href="studioUrl" target="_blank" rel="noreferrer">
             <Rocket :size="16" />

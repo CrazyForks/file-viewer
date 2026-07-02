@@ -22,7 +22,7 @@ const sharedRequiredLinks = [
   branchRoles.publicMainRepository.gitee,
   wrapperManifest.corePackage.github,
   wrapperManifest.corePackage.gitee,
-  'https://dev.flyfish.group/shop'
+  'https://dev.flyfish.group/sponsor?source=github'
 ]
 
 const localeReadmes = [

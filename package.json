@@ -1,6 +1,6 @@
 {
   "name": "@flyfish-group/file-viewer-workspace",
-  "version": "2.1.16",
+  "version": "2.1.17",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.0.9",
@@ -40,7 +40,7 @@
   },
   "funding": {
     "type": "individual",
-    "url": "https://dev.flyfish.group/shop"
+    "url": "https://dev.flyfish.group/donate?source=npm"
   },
   "scripts": {
     "cad:copy-wasm": "node scripts/copy-cad-wasm.mjs",
@@ -80,7 +80,10 @@
     "verify:component-browser-smoke": "npm exec --yes --package playwright -- node scripts/verify-wrapper-browser-smoke.mjs",
     "verify:web-full-iife-pptx": "npm exec --yes --package playwright -- node scripts/verify-web-full-iife-pptx-subpath.mjs",
     "verify:issue71-full-rendering-smoke": "npm exec --yes --package playwright -- node scripts/verify-issue71-full-rendering-smoke.mjs",
-    "verify:issue72-web-full-iife": "npm exec --yes --package playwright -- node scripts/verify-issue72-web-full-iife-custom-element.mjs",
+    "verify:issue71-component-matrix-smoke": "npm exec --yes --package playwright -- node scripts/verify-issue71-component-matrix-smoke.mjs",
+    "verify:issue72-web-full-iife": "pnpm --filter @file-viewer/web-full build && ISSUE72_WEB_FULL_SOURCE=local-pack npm exec --yes --package playwright -- node scripts/verify-issue72-web-full-iife-custom-element.mjs",
+    "verify:issue73-mobile-pptx-windowing": "pnpm --filter @file-viewer/pptx build && npm exec --yes --package playwright -- node scripts/verify-issue73-mobile-pptx-windowing.mjs",
+    "verify:issue74-docx-blob-matrix": "pnpm --filter @file-viewer/core build && pnpm --filter @file-viewer/renderer-word build && pnpm --filter @file-viewer/preset-all build && pnpm build:component-packages && npm exec --yes --package playwright -- node scripts/verify-issue74-docx-blob-component-matrix.mjs",
     "generate:release-matrix": "node scripts/generate-release-matrix.mjs",
     "verify:release-links:source": "node scripts/verify-release-links.mjs --mode=source",
     "verify:release-links:dist": "node scripts/verify-release-links.mjs --mode=dist",

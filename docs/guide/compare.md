@@ -2,6 +2,38 @@
 
 File Viewer 的定位是企业后台、内网和私有化场景里的纯前端文件预览组件。它适合“业务附件快速查看、初筛、检索、打印、导出和自托管交付”，但不替代专业编辑器，也不承诺把所有复杂文件做到像原生软件一样高还原。
 
+## 免费开源组件与商业版的边界
+
+开源 File Viewer 和商业版不是二选一关系。开源版负责浏览器原生、多格式、可离线部署的通用预览；商业版来自 Flyfish Office 自研原生文档引擎，重点替换 Office 文档能力，让同一个 File Viewer 集成获得接近 `file-viewer-pro` 的 Office 预览效果。
+
+| 维度 | 免费 File Viewer 组件 | 商业版 / file-viewer-pro 路线 |
+| --- | --- | --- |
+| 文件格式 | 覆盖 PDF/OFD、Office、CAD、Typst、压缩包、邮件、绘图、媒体、3D、数据资产等 200+ 扩展名；通过 `preset-lite`、`preset-office`、`preset-engineering`、`preset-all` 按需启用 | 重点增强 Word、Excel、PowerPoint 深水区，可替换 `preset-office` 中的 Word / Spreadsheet / Presentation 能力；PDF、OFD、CAD、Archive 等其它格式继续由开源 renderer 承接 |
+| 还原度 | 目标是可读、可搜索、可打印、可嵌入业务系统；DOCX 当前偏流式阅读，Excel/PPTX 覆盖常见业务预览，不承诺原生 Office 逐像素一致 | 自研原生文档引擎面向分页、字体、表格、图形、页眉页脚、批注修订和复杂演示布局，适合合同、报告、档案和正式交付预览 |
+| 性能 | 轻 core + renderer 按需加载，Worker/WASM 懒加载，适合大多数附件中心和在线预览；极端大文件需要结合真实样本做回归 | 针对大文档、大表格和复杂 PPT 做 Worker 解析、分页/分块渲染、虚拟滚动、缓存和内存调优，优先保障主线程流畅 |
+| 授权与支持 | Apache-2.0 开源，可用于商业项目；社区 issue、打赏和优先支持可协助定位，但上线验收与兼容性风险由项目自行把控 | 商业授权、私有交付、优先技术支持、样本回归和定制兼容路线，适合需要明确责任边界、交付周期和企业支持的场景 |
+
+## 商业版替换 Office 能力的路线
+
+商业版交付时提供可插拔的 Office preset / renderer。业务侧保留原来的 Vue、React、Svelte、jQuery、Web Component 或 Vanilla JS 组件入口，也保留主题、水印、工具栏、搜索、事件和其它格式能力，只把 Word、Excel、PowerPoint 的渲染链路切到商业引擎。
+
+```ts
+import FileViewer from '@file-viewer/vue3'
+import engineeringPreset from '@file-viewer/preset-engineering'
+import { commercialOfficePreset } from './vendor/file-viewer-pro-office'
+
+const viewerOptions = {
+  rendererMode: 'replace',
+  preset: [
+    commercialOfficePreset,
+    engineeringPreset
+  ],
+  theme: 'light'
+}
+```
+
+实际包名和交付方式以商业授权交付为准。上面的重点是稳定的替换模式：`core`、组件包和非 Office renderer 不变，Office preset / renderer 可被商业版替换。
+
 ## 和服务端转码方案的差异
 
 | 方案 | 优点 | 局限 |

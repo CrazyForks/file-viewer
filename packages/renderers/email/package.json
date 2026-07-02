@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/renderer-email",
-  "version": "2.1.16",
+  "version": "2.1.17",
   "private": false,
   "type": "module",
   "description": "Standalone email renderer plugin for Flyfish File Viewer with EML, MSG, MBOX, attachments, and nested previews.",
@@ -35,7 +35,7 @@
   },
   "funding": {
     "type": "individual",
-    "url": "https://dev.flyfish.group/shop"
+    "url": "https://dev.flyfish.group/donate?source=npm"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -59,7 +59,7 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:^2.1.16",
+    "@file-viewer/core": "workspace:^2.1.17",
     "@kenjiuno/msgreader": "^1.28.0",
     "postal-mime": "^2.7.4"
   },

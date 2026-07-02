@@ -14,6 +14,7 @@ interface UseViewerPresentationOptions {
   filename: Ref<string>;
   getFile: () => FileRef | undefined;
   getUrl: () => string | undefined;
+  getSourceFilename?: () => string | undefined;
   getOptions: () => FileViewerOptions | undefined;
 }
 
@@ -34,10 +35,11 @@ export const useViewerPresentation = ({
   filename,
   getFile,
   getUrl,
+  getSourceFilename,
   getOptions
 }: UseViewerPresentationOptions) => {
   const presentationState = computed(() => resolveFileViewerPresentationState({
-    filename: filename.value,
+    filename: getSourceFilename?.() || filename.value,
     file: getFile(),
     url: getUrl(),
     options: getOptions()

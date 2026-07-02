@@ -8,11 +8,11 @@
 
 ## 支持方式
 
-### 飞鱼小铺
+### 打赏与优先支持
 
-如果你希望获得更多产品与服务支持，也可以前往官方商城:
+如果你希望获得更多产品与服务支持，可以直接使用官方打赏入口:
 
-[进入飞鱼小铺](https://dev.flyfish.group/shop)
+[进入打赏入口](https://dev.flyfish.group/sponsor?source=github)
 
 ### 用户交流群
 

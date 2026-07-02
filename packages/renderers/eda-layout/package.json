@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/eda-layout",
-  "version": "2.1.16",
+  "version": "2.1.17",
   "private": false,
   "type": "module",
   "description": "Pure TypeScript EDA layout inspection engine for Flyfish File Viewer with GDSII quick preview primitives and OASIS upgrade boundaries.",
@@ -35,7 +35,7 @@
   },
   "funding": {
     "type": "individual",
-    "url": "https://dev.flyfish.group/shop"
+    "url": "https://dev.flyfish.group/donate?source=npm"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",

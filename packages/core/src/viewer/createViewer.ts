@@ -47,6 +47,8 @@ import {
   createFileRenderHandlerLoader,
   applyFileViewerRenderSurfaceState,
   createFileViewerRenderSurfaceState,
+  createFileViewerRenderTarget,
+  removeFileViewerRenderTarget,
 } from '../rendering/handler';
 import { createFileViewerCoreRendererRegistry } from '../renderers/index';
 import { createFileViewerRequestScope } from '../source/loading';
@@ -181,6 +183,7 @@ export const createViewer = (
   let installedAutoRenderersEnabled = resolveAutoRenderersEnabled(options);
   let installedAutoRendererVersion = -1;
   let currentSource: NormalizedFileViewerSource | null = null;
+  let currentRenderTarget: HTMLElement | null = null;
   const renderSurfaceState = createFileViewerRenderSurfaceState<RendererSession>();
   const requestScope = createFileViewerRequestScope();
   const documentTarget = {
@@ -278,6 +281,36 @@ export const createViewer = (
     if (forcedWatermarkContainerPosition) {
       container.style.position = '';
       forcedWatermarkContainerPosition = false;
+    }
+  };
+
+  const removeRenderTarget = (target = currentRenderTarget) => {
+    if (!target) {
+      return;
+    }
+    removeFileViewerRenderTarget(container, target);
+    if (currentRenderTarget === target) {
+      currentRenderTarget = null;
+    }
+  };
+
+  const createRenderTarget = (fillHeight = true) => {
+    const target = createFileViewerRenderTarget(container);
+    if (fillHeight) {
+      target.style.height = '100%';
+    }
+    currentRenderTarget = target;
+    return target;
+  };
+
+  const disposeStaleSession = async (
+    session: RendererSession | null | undefined,
+    target: HTMLElement
+  ) => {
+    try {
+      await session?.destroy?.();
+    } finally {
+      removeRenderTarget(target);
     }
   };
 
@@ -476,14 +509,21 @@ export const createViewer = (
   viewStateController.observe();
 
   const destroyCurrent = async (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
-    if (!currentSource) {
+    const session = renderSurfaceState.session;
+    const target = currentRenderTarget;
+
+    if (!currentSource && !session && !target) {
       return;
     }
+
     const source = currentSource;
     const startedAt = Date.now();
     const version = requestScope.getCurrentVersion();
-    await emitLifecycle(options, createOptions.onEvent, 'unload-start', source, version, startedAt, reason);
-    await renderSurfaceState.session?.destroy?.();
+    if (source) {
+      await emitLifecycle(options, createOptions.onEvent, 'unload-start', source, version, startedAt, reason);
+    }
+    await session?.destroy?.();
+    removeRenderTarget(target || undefined);
     currentSource = null;
     applyFileViewerRenderSurfaceState(renderSurfaceState, {
       session: null,
@@ -494,25 +534,33 @@ export const createViewer = (
     zoomController.clearProvider();
     viewStateController.clearProvider();
     emitZoomAndOperationAvailabilityChange();
-    await emitLifecycle(options, createOptions.onEvent, 'unload-complete', source, version, startedAt, reason);
+    if (source) {
+      await emitLifecycle(options, createOptions.onEvent, 'unload-complete', source, version, startedAt, reason);
+    }
   };
 
   return {
     container,
     async load(source: FileViewerSource) {
+      const version = requestScope.requestController.createVersion();
       await destroyCurrent('replace');
       await ensureRendererPluginsInstalled();
 
+      if (!requestScope.isCurrentRequest(version)) {
+        return null;
+      }
+
       const normalized = normalizeSource(source);
       currentSource = normalized;
-      const version = requestScope.requestController.createVersion();
 
       const renderer = registry.getByExtension(normalized.extension);
       const startedAt = Date.now();
       await emitLifecycle(options, createOptions.onEvent, 'load-start', normalized, version, startedAt);
 
+      const target = createRenderTarget(renderer?.id !== 'office-presentation');
+
       if (!renderer?.load) {
-        renderMissingRendererState(container, normalized.extension, options);
+        renderMissingRendererState(target, normalized.extension, options);
         applyFileViewerRenderSurfaceState(renderSurfaceState, { session: null });
         syncWatermarkOverlay();
         emitZoomAndOperationAvailabilityChange();
@@ -520,15 +568,33 @@ export const createViewer = (
         return null;
       }
 
-      const session = await renderer.load({
-        source: normalized,
-        surface: { container },
-        options,
-        signal: createOptions.signal,
-        registerExportAdapter: adapter => {
-          applyFileViewerRenderSurfaceState(renderSurfaceState, { exportAdapter: adapter });
-        },
-      });
+      let session: RendererSession | undefined;
+      try {
+        session = await renderer.load({
+          source: normalized,
+          surface: { container: target },
+          options,
+          signal: createOptions.signal,
+          registerExportAdapter: adapter => {
+            if (requestScope.isCurrentRequest(version)) {
+              applyFileViewerRenderSurfaceState(renderSurfaceState, { exportAdapter: adapter });
+            }
+          },
+        });
+      } catch (error) {
+        if (!requestScope.isCurrentRequest(version)) {
+          removeRenderTarget(target);
+          return null;
+        }
+        removeRenderTarget(target);
+        throw error;
+      }
+
+      if (!requestScope.isCurrentRequest(version)) {
+        await disposeStaleSession(session, target);
+        return null;
+      }
+
       applyFileViewerRenderSurfaceState(renderSurfaceState, { session });
       syncWatermarkOverlay();
       zoomController.refreshProvider();
@@ -539,6 +605,7 @@ export const createViewer = (
       return session;
     },
     async destroy(reason = 'component-unmount') {
+      requestScope.requestController.createVersion();
       await destroyCurrent(reason);
       documentActions.destroyDocumentFeatures();
       zoomController.destroy();

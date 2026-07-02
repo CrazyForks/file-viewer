@@ -255,6 +255,9 @@ export const createFileViewerRenderTarget = (
 ) => {
   const target = container.ownerDocument.createElement('div');
   target.className = options.className || DEFAULT_FILE_VIEWER_RENDER_TARGET_CLASS;
+  target.style.width = '100%';
+  target.style.minWidth = '0';
+  target.style.minHeight = '0';
   container.appendChild(target);
   return target;
 };

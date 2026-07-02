@@ -79,6 +79,7 @@ const {
   filename,
   getFile: () => props.file,
   getUrl: () => props.url,
+  getSourceFilename: () => props.filename || props.name,
   getOptions: () => props.options
 })
 
@@ -231,6 +232,7 @@ const {
 } = useViewerSourceLoading({
   getFile: () => props.file,
   getUrl: () => props.url,
+  getSourceFilename: () => props.filename || props.name,
   getOptions: () => props.options,
   filename,
   currentFile,
@@ -305,6 +307,7 @@ defineExpose(publicApi)
 useViewerPreviewLifecycle({
   getFile: () => props.file,
   getUrl: () => props.url,
+  getSourceFilename: () => props.filename || props.name,
   refreshPreview,
   cancelPreview,
   resetLoading,

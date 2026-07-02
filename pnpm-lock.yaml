@@ -111,6 +111,9 @@ importers:
       '@lucide/vue':
         specifier: ^1.17.0
         version: 1.17.0(vue@3.5.35(typescript@6.0.3))
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
       three:
         specifier: ^0.184.0
         version: 0.184.0
@@ -223,7 +226,7 @@ importers:
   packages/compat/msdoc-viewer:
     dependencies:
       '@file-viewer/doc':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/doc
     devDependencies:
       typescript:
@@ -233,7 +236,7 @@ importers:
   packages/compat/react:
     dependencies:
       '@file-viewer/react':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../components/react
     devDependencies:
       '@types/react':
@@ -249,7 +252,7 @@ importers:
   packages/compat/vue2.7:
     dependencies:
       '@file-viewer/vue2.7':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../components/vue2.7
       vue:
         specifier: '>=2.7 <3'
@@ -258,13 +261,13 @@ importers:
   packages/compat/vue3-scoped:
     dependencies:
       '@file-viewer/vue3':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../components/vue3
 
   packages/compat/vue3-unscoped:
     dependencies:
       '@file-viewer/vue3':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../components/vue3
       vue:
         specifier: '>=3.3 <4'
@@ -273,7 +276,7 @@ importers:
   packages/compat/web:
     dependencies:
       '@file-viewer/web':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../components/web
     devDependencies:
       '@types/node':
@@ -289,7 +292,7 @@ importers:
   packages/components/jquery:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       jquery:
         specifier: '>=3 <5'
@@ -305,10 +308,10 @@ importers:
   packages/components/jquery-full:
     dependencies:
       '@file-viewer/jquery':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../jquery
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       jquery:
         specifier: '>=3 <5'
@@ -324,7 +327,7 @@ importers:
   packages/components/react:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
     devDependencies:
       '@types/react':
@@ -340,10 +343,10 @@ importers:
   packages/components/react-full:
     dependencies:
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       '@file-viewer/react':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../react
     devDependencies:
       '@types/react':
@@ -359,7 +362,7 @@ importers:
   packages/components/react-legacy:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
     devDependencies:
       '@types/react':
@@ -375,10 +378,10 @@ importers:
   packages/components/react-legacy-full:
     dependencies:
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       '@file-viewer/react-legacy':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../react-legacy
     devDependencies:
       '@types/react':
@@ -394,7 +397,7 @@ importers:
   packages/components/svelte:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
     devDependencies:
       svelte:
@@ -407,10 +410,10 @@ importers:
   packages/components/svelte-full:
     dependencies:
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       '@file-viewer/svelte':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../svelte
     devDependencies:
       svelte:
@@ -423,7 +426,7 @@ importers:
   packages/components/vue2.6:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
     devDependencies:
       typescript:
@@ -436,10 +439,10 @@ importers:
   packages/components/vue2.6-full:
     dependencies:
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       '@file-viewer/vue2.6':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../vue2.6
     devDependencies:
       typescript:
@@ -452,7 +455,7 @@ importers:
   packages/components/vue2.7:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
     devDependencies:
       typescript:
@@ -465,10 +468,10 @@ importers:
   packages/components/vue2.7-full:
     dependencies:
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       '@file-viewer/vue2.7':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../vue2.7
     devDependencies:
       typescript:
@@ -481,7 +484,7 @@ importers:
   packages/components/vue3:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@lucide/vue':
         specifier: ^1.17.0
@@ -524,10 +527,10 @@ importers:
   packages/components/vue3-full:
     dependencies:
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       '@file-viewer/vue3':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../vue3
     devDependencies:
       typescript:
@@ -540,7 +543,7 @@ importers:
   packages/components/web:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
     devDependencies:
       '@types/node':
@@ -559,70 +562,70 @@ importers:
   packages/components/web-full:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/preset-all':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../presets/all
       '@file-viewer/renderer-3d':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/3d
       '@file-viewer/renderer-archive':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/archive
       '@file-viewer/renderer-cad':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/cad
       '@file-viewer/renderer-data':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/data
       '@file-viewer/renderer-drawing':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/drawing
       '@file-viewer/renderer-eda':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/eda
       '@file-viewer/renderer-email':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/email
       '@file-viewer/renderer-epub':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/ebook
       '@file-viewer/renderer-geo':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/geo
       '@file-viewer/renderer-image':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/image
       '@file-viewer/renderer-media':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/media
       '@file-viewer/renderer-mindmap':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/mindmap
       '@file-viewer/renderer-ofd':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/ofd
       '@file-viewer/renderer-pdf':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/pdf
       '@file-viewer/renderer-presentation':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/presentation
       '@file-viewer/renderer-spreadsheet':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/spreadsheet
       '@file-viewer/renderer-text':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/text
       '@file-viewer/renderer-typst':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/typst
       '@file-viewer/renderer-word':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/word
       '@file-viewer/web':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../web
     devDependencies:
       '@types/node':
@@ -644,64 +647,64 @@ importers:
   packages/presets/all:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/renderer-3d':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/3d
       '@file-viewer/renderer-archive':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/archive
       '@file-viewer/renderer-cad':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/cad
       '@file-viewer/renderer-data':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/data
       '@file-viewer/renderer-drawing':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/drawing
       '@file-viewer/renderer-eda':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/eda
       '@file-viewer/renderer-email':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/email
       '@file-viewer/renderer-epub':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/ebook
       '@file-viewer/renderer-geo':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/geo
       '@file-viewer/renderer-image':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/image
       '@file-viewer/renderer-media':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/media
       '@file-viewer/renderer-mindmap':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/mindmap
       '@file-viewer/renderer-ofd':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/ofd
       '@file-viewer/renderer-pdf':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/pdf
       '@file-viewer/renderer-presentation':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/presentation
       '@file-viewer/renderer-spreadsheet':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/spreadsheet
       '@file-viewer/renderer-text':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/text
       '@file-viewer/renderer-typst':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/typst
       '@file-viewer/renderer-word':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/word
     devDependencies:
       typescript:
@@ -711,34 +714,34 @@ importers:
   packages/presets/engineering:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/renderer-3d':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/3d
       '@file-viewer/renderer-archive':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/archive
       '@file-viewer/renderer-cad':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/cad
       '@file-viewer/renderer-data':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/data
       '@file-viewer/renderer-drawing':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/drawing
       '@file-viewer/renderer-eda':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/eda
       '@file-viewer/renderer-geo':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/geo
       '@file-viewer/renderer-mindmap':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/mindmap
       '@file-viewer/renderer-typst':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/typst
     devDependencies:
       typescript:
@@ -748,16 +751,16 @@ importers:
   packages/presets/lite:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/renderer-image':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/image
       '@file-viewer/renderer-media':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/media
       '@file-viewer/renderer-text':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/text
     devDependencies:
       typescript:
@@ -767,22 +770,22 @@ importers:
   packages/presets/office:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/renderer-ofd':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/ofd
       '@file-viewer/renderer-pdf':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/pdf
       '@file-viewer/renderer-presentation':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/presentation
       '@file-viewer/renderer-spreadsheet':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/spreadsheet
       '@file-viewer/renderer-word':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../renderers/word
     devDependencies:
       typescript:
@@ -804,10 +807,10 @@ importers:
   packages/renderers/3d:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/geometry-engine':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../geometry-engine
       three:
         specifier: ^0.184.0
@@ -823,7 +826,7 @@ importers:
   packages/renderers/archive:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       jszip:
         specifier: ^3.10.1
@@ -839,7 +842,7 @@ importers:
   packages/renderers/cad:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@flyfish-dev/cad-viewer':
         specifier: ^0.6.4
@@ -852,7 +855,7 @@ importers:
   packages/renderers/data:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       ag-psd:
         specifier: ^30.1.1
@@ -880,7 +883,7 @@ importers:
   packages/renderers/drawing:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@panzoom/panzoom':
         specifier: ^4.6.2
@@ -902,7 +905,7 @@ importers:
   packages/renderers/ebook:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       epubjs:
         specifier: ^0.3.93
@@ -921,13 +924,13 @@ importers:
   packages/renderers/eda:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/eda-layout':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../eda-layout
       '@file-viewer/eda-orcad':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../eda-orcad
       cfb:
         specifier: ^1.2.2
@@ -952,7 +955,7 @@ importers:
   packages/renderers/email:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@kenjiuno/msgreader':
         specifier: ^1.28.0
@@ -968,7 +971,7 @@ importers:
   packages/renderers/geo:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@tmcw/togeojson':
         specifier: ^7.1.2
@@ -996,7 +999,7 @@ importers:
   packages/renderers/image:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       heic2any:
         specifier: ^0.0.4
@@ -1009,7 +1012,7 @@ importers:
   packages/renderers/media:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@tonejs/midi':
         specifier: ^2.0.28
@@ -1025,7 +1028,7 @@ importers:
   packages/renderers/mindmap:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@ljheee/xmind-parser':
         specifier: ^1.1.3
@@ -1044,7 +1047,7 @@ importers:
   packages/renderers/ofd:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       jszip:
         specifier: ^3.10.1
@@ -1060,7 +1063,7 @@ importers:
   packages/renderers/pdf:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       pdfjs-dist:
         specifier: ^6.0.227
@@ -1107,10 +1110,10 @@ importers:
   packages/renderers/presentation:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/pptx':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../pptx
     devDependencies:
       typescript:
@@ -1120,7 +1123,7 @@ importers:
   packages/renderers/spreadsheet:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       e-virt-table:
         specifier: ^1.3.26
@@ -1142,7 +1145,7 @@ importers:
   packages/renderers/text:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       diff2html:
         specifier: ^3.4.56
@@ -1164,7 +1167,7 @@ importers:
   packages/renderers/typst:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@myriaddreamin/typst-ts-renderer':
         specifier: 0.7.0
@@ -1183,10 +1186,10 @@ importers:
   packages/renderers/word:
     dependencies:
       '@file-viewer/core':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../../core
       '@file-viewer/doc':
-        specifier: workspace:^2.1.16
+        specifier: workspace:^2.1.17
         version: link:../doc
       '@file-viewer/docx':
         specifier: ^0.3.16

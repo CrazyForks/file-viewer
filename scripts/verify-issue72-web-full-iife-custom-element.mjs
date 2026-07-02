@@ -1,5 +1,5 @@
 import { createReadStream, existsSync, statSync } from 'node:fs'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
@@ -97,6 +97,42 @@ async function resolveWebFullDist(tempRoot) {
   if (sourceMode === 'local') {
     return localWebFullDist
   }
+  if (sourceMode === 'local-pack') {
+    const packDir = resolve(tempRoot, 'local-pack')
+    const appDir = resolve(tempRoot, 'local-pack-app')
+    await mkdir(packDir, { recursive: true })
+    await mkdir(appDir, { recursive: true })
+    const localPackagePaths = await collectFileViewerPackagePaths()
+    const tarballs = new Map()
+    for (const packageName of localPackagePaths.keys()) {
+      tarballs.set(packageName, await packLocalPackage(packageName, localPackagePaths, packDir))
+    }
+    const packedWebFull = tarballs.get('@file-viewer/web-full')
+    if (!packedWebFull) {
+      fail(`Could not pack local @file-viewer/web-full into ${packDir}`)
+    }
+    await writeFile(resolve(appDir, 'package.json'), `${JSON.stringify({
+      name: 'issue72-web-full-local-pack',
+      private: true,
+      type: 'module',
+      dependencies: {
+        '@file-viewer/web-full': `file:${packedWebFull}`
+      }
+    }, null, 2)}\n`)
+    const overrideLines = Array.from(tarballs.entries())
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([packageName, tarball]) => `  ${JSON.stringify(packageName)}: ${JSON.stringify(`file:${tarball}`)}`)
+    await writeFile(resolve(appDir, 'pnpm-workspace.yaml'), [
+      'packages:',
+      '  - .',
+      'overrides:',
+      ...overrideLines,
+      ''
+    ].join('\n'))
+    console.log('[issue72-web-full-iife] Installing packed local @file-viewer/web-full tarball')
+    await spawnCommand('pnpm', ['install', '--ignore-scripts'], { cwd: appDir, pipe: true })
+    return resolve(appDir, 'node_modules/@file-viewer/web-full/dist')
+  }
   if (sourceMode === 'tarball') {
     if (!existsSync(tarballPath)) {
       fail(`Missing web-full tarball: ${tarballPath}`)
@@ -108,7 +144,7 @@ async function resolveWebFullDist(tempRoot) {
     return resolve(extractDir, 'package/dist')
   }
   if (sourceMode !== 'registry' && sourceMode !== 'tarball') {
-    fail('ISSUE72_WEB_FULL_SOURCE must be "local", "registry", or "tarball".')
+    fail('ISSUE72_WEB_FULL_SOURCE must be "local", "local-pack", "registry", or "tarball".')
   }
 
   const appDir = resolve(tempRoot, 'registry-app')
@@ -124,6 +160,49 @@ async function resolveWebFullDist(tempRoot) {
   console.log(`[issue72-web-full-iife] Installing @file-viewer/web-full@${packageVersion}`)
   await spawnCommand('pnpm', ['install', '--ignore-scripts'], { cwd: appDir, pipe: true })
   return resolve(appDir, 'node_modules/@file-viewer/web-full/dist')
+}
+
+async function collectFileViewerPackagePaths() {
+  const collected = new Map()
+  const visit = async dir => {
+    const packageJsonPath = resolve(dir, 'package.json')
+    if (existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'))
+      if (packageJson.name?.startsWith('@file-viewer/') && packageJson.private !== true) {
+        collected.set(packageJson.name, dir)
+        return
+      }
+    }
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || ['dist', 'node_modules'].includes(entry.name)) {
+        continue
+      }
+      await visit(resolve(dir, entry.name))
+    }
+  }
+  await visit(resolve(root, 'packages'))
+  return collected
+}
+
+async function packLocalPackage(packageName, packagePaths, packDir) {
+  const packagePath = packagePaths.get(packageName)
+  if (!packagePath) {
+    fail(`Could not locate local package path for ${packageName}.`)
+  }
+  console.log(`[issue72-web-full-iife] Packing ${packageName}`)
+  await spawnCommand('pnpm', ['--filter', packageName, 'pack', '--pack-destination', packDir], {
+    pipe: true
+  })
+  const packageJson = JSON.parse(await readFile(resolve(packagePath, 'package.json'), 'utf8'))
+  const expectedPrefix = packageJson.name.replace(/^@/, '').replace('/', '-')
+  const files = (await readdir(packDir))
+    .filter(file => file.endsWith('.tgz'))
+    .map(file => resolve(packDir, file))
+  const matches = files.filter(file => file.includes(`${expectedPrefix}-${packageJson.version}.tgz`))
+  if (!matches.length) {
+    fail(`Could not find packed tarball for ${packageName} in ${packDir}.`)
+  }
+  return matches[0]
 }
 
 function createHtml({ sourceUrl, fileName, appHeight = '100%' }) {

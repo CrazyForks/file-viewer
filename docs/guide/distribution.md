@@ -22,7 +22,7 @@
 | 自托管静态资源 | `file-viewer/assets/*`、`file-viewer/vendor/*`、`file-viewer/wasm/*` | Worker、WASM、示例文件和重型渲染器资源，按需自托管 |
 | GitHub 开源总仓库 | [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer) | 一站式入口: README、LICENSE、主 Demo 源码、core、标准组件包、兼容包、文档源码、构建产物、示例和 release tarball |
 | Gitee 开源总仓库 | [gitee.com/flyfish-dev/file-viewer](https://gitee.com/flyfish-dev/file-viewer) | 国内镜像目标，使用干净历史控制仓库体积；如远端配额阻塞，以 GitHub 开源总仓库和 release 为准 |
-| 打赏与优先支持 | [https://dev.flyfish.group/shop](https://dev.flyfish.group/shop) | 请我们喝杯柠檬水后，可获得完整聚合仓访问、优先技术支持和维护协助 |
+| 打赏与优先支持 | [https://dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github) | 请我们喝杯柠檬水后，可获得完整聚合仓访问、优先技术支持和维护协助 |
 
 ## npm 安装
 
