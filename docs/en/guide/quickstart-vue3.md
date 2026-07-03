@@ -39,6 +39,49 @@ createApp(App).use(FileViewer).mount('#app')
 />
 ```
 
+## Dialogs And Component Teardown
+
+The Vue 3 component can be mounted inside Element Plus dialogs, drawers, route tabs, and `v-if` blocks. When a dialog should release the active document after closing, let the host actually unmount the component. For Element Plus, use `destroy-on-close`:
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import officePreset from '@file-viewer/preset-office'
+
+const visible = ref(false)
+const url = ref('/files/contract.pdf')
+const options = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+</script>
+
+<template>
+  <el-dialog v-model="visible" destroy-on-close width="80vw">
+    <div class="dialog-viewer-shell">
+      <file-viewer
+        :url="url"
+        :options="options"
+        @unload-complete="event => console.log(event.reason)"
+      />
+    </div>
+  </el-dialog>
+</template>
+
+<style scoped>
+.dialog-viewer-shell {
+  height: 70vh;
+  min-height: 0;
+}
+</style>
+```
+
+On Vue unmount, the component automatically cancels active loading, destroys the current renderer session, clears the rendered DOM, stops zoom and view-state observers, and emits `unload-complete` with `reason: "component-unmount"`. Host code does not need to clear the inner container manually.
+
+If the dialog only hides the component, for example with `v-show` or without `destroy-on-close`, the viewer instance stays alive and keeps the current document. That is useful when the product wants to preserve reading position. For explicit teardown while keeping the surrounding component alive, call `viewerRef.value?.destroy()` and recreate the viewer component when previewing again.
+
 ## Universal Renderer Assembly
 
 The Vue package stays lightweight. Concrete PDF, Office, CAD, Typst, archive, and engineering capabilities are injected through presets or renderer packages. This path works in Vite, Webpack, Rspack, Rollup, Umi, and internal component libraries:

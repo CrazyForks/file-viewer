@@ -167,6 +167,49 @@ function onChange(event: Event) {
 </style>
 ```
 
+### 放在弹窗或条件渲染中
+
+Vue3 组件可以直接放进 Element Plus `el-dialog`、抽屉、路由页签或 `v-if` 条件块。推荐让外层弹窗在关闭时真正销毁组件，例如 Element Plus 使用 `destroy-on-close`：
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import officePreset from '@file-viewer/preset-office'
+
+const visible = ref(false)
+const url = ref('/files/contract.pdf')
+const options = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+</script>
+
+<template>
+  <el-dialog v-model="visible" destroy-on-close width="80vw">
+    <div class="dialog-viewer-shell">
+      <file-viewer
+        :url="url"
+        :options="options"
+        @unload-complete="event => console.log(event.reason)"
+      />
+    </div>
+  </el-dialog>
+</template>
+
+<style scoped>
+.dialog-viewer-shell {
+  height: 70vh;
+  min-height: 0;
+}
+</style>
+```
+
+组件在 Vue 卸载时会自动取消仍在进行的加载请求、销毁当前 renderer session、清空预览内容、停止缩放和视图状态监听，并触发 `unload-complete`，`reason` 为 `component-unmount`。业务侧不需要手动清空 DOM，也不需要在 `el-dialog` 外再保存内部容器引用。
+
+如果弹窗只用 `v-show` 或没有开启 `destroy-on-close`，组件实例会继续保留，关闭后不会释放当前文档；这适合保留阅读进度。若业务确实要在保留组件实例的同时主动释放资源，可以通过模板 `ref` 调用 `viewerRef.value?.destroy()`，再通过重新创建组件或重新传入文件恢复预览。
+
 ## 参数行为
 
 | 参数 | 类型 | 说明 |
@@ -200,7 +243,7 @@ file.value = new File([blob], 'contract.pdf', { type: blob.type })
 />
 ```
 
-`toolbar.print` / `toolbar.zoom` 表示业务允许显示打印和缩放按钮，最终按钮还会结合当前文件类型、渲染完成状态、导出适配器和缩放 provider 动态显隐。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身页码、缩放和目录导航栏。Word / PDF 会输出完整页面；表格、压缩包、邮件、EPUB、音视频、3D / 模型等不适合直接打印的链路会自动隐藏打印按钮，Excel 等虚拟表格不会被外层 CSS 强行缩放。
+`toolbar.print` / `toolbar.zoom` 表示业务允许显示打印和缩放按钮，最终按钮还会结合当前文件类型、渲染完成状态、导出适配器和缩放 provider 动态显隐。`toolbar.position` 支持 `auto`、`top`、`top-center`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身页码、缩放和目录导航栏；需要顶部水平居中时传 `top-center`。Word / PDF 会输出完整页面；表格、压缩包、邮件、EPUB、音视频、3D / 模型等不适合直接打印的链路会自动隐藏打印按钮，Excel 等虚拟表格不会被外层 CSS 强行缩放。
 
 ## 常见接入建议
 

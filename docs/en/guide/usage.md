@@ -162,6 +162,10 @@ const options = {
 
 Built-in operation keys are `download`, `print`, `export-html`, `zoom-in`, `zoom-out`, and `zoom-reset`. `toolbar.items` only controls the built-in toolbar UI, so teams can replace selected buttons with their own native controls. `toolbar.permissions` is a hard gate: a `false` value blocks both the built-in toolbar and direct controller / ref API calls before custom `beforeOperation` hooks run. Returning `false` from any guard cancels the operation.
 
+Component teardown follows the host framework lifecycle. Vue 3 / Vue 2 component unmount, React unmount, Web Component `disconnectedCallback`, Svelte action `destroy`, and jQuery plugin `destroy` all enter the same controller teardown path: active loading is cancelled, the renderer session is destroyed, rendered DOM is cleared, zoom/search/view-state observers are stopped, and `unload-start` / `unload-complete` fire with `reason: "component-unmount"`. In Element Plus `el-dialog destroy-on-close`, route switches, tab closing, or `v-if` removal, host code does not need to clear the viewer container manually.
+
+When the host only hides the viewer, such as `v-show`, a dialog without `destroy-on-close`, or KeepAlive, the active document remains mounted. Use this when preserving reading position is desired. If the product needs explicit teardown while keeping the surrounding component alive, call `destroy()` on the component ref or controller, then recreate the viewer before previewing again.
+
 ## Lifecycle Hooks
 
 ```ts

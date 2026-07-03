@@ -262,7 +262,7 @@ const options = {
 | `toolbar: false` | 隐藏内置工具栏，但不关闭下载、打印、导出、缩放等 controller API，适合完全自定义业务工具栏。 |
 | `toolbar: true` | 使用默认内置工具栏，下载、打印、HTML 导出和缩放按钮都会按能力动态显隐。 |
 | `download` / `print` / `exportHtml` / `zoom` | 表达业务是否允许展示对应按钮；最终仍会结合文件类型、渲染完成状态、导出适配器和缩放 provider 计算真实可用性。 |
-| `position` | `auto`、`top`、`bottom-right`。默认 `auto`，PDF 自动悬浮右下角，减少和 PDF 自身页码 / 目录工具栏冲突。 |
+| `position` | `auto`、`top`、`top-center`、`bottom-right`。默认 `auto`，PDF 自动悬浮右下角，减少和 PDF 自身页码 / 目录工具栏冲突；需要顶部水平居中时传 `top-center`。 |
 | `beforeOperation` | 工具栏层统一前置校验，会在 `options.beforeOperation` 后执行。返回 `false` 或抛错都会取消本次操作。 |
 | `beforeDownload` / `beforePrint` / `beforeExportHtml` | 单按钮前置校验；适合下载权限、打印审计、导出水印确认等细粒度业务规则。 |
 

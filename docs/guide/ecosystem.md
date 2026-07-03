@@ -126,7 +126,8 @@ export default {
 | `toolbar: false` | 隐藏内置工具栏，但不关闭下载、打印、导出、缩放等 API，适合完全自定义工具栏 |
 | `toolbar: true` | 使用默认工具栏，按钮仍按当前格式能力动态显隐 |
 | `toolbar.download` / `print` / `exportHtml` / `zoom` | 表达业务是否允许展示对应按钮；最终还会结合文件类型、渲染完成状态、导出适配器和缩放 provider 计算真实可用性 |
-| `toolbar.position` | `auto`、`top`、`bottom-right`。默认 `auto`，PDF 自动悬浮右下角，避免和 PDF 自身页码 / 目录工具栏冲突 |
+| `toolbar.order` | 调整内置工具栏分组顺序，默认 `['search', 'zoom', 'download', 'print', 'exportHtml']`；例如 `['zoom', 'search', 'download', 'print']` 可让缩放排在搜索前，未列出的项按默认顺序追加 |
+| `toolbar.position` | `auto`、`top`、`top-center`、`bottom-right`。默认 `auto`，PDF 自动悬浮右下角，其他格式保持顶部靠右；需要顶部水平居中时传 `top-center` |
 | `toolbar.beforeOperation` | 工具栏层统一前置校验，会在 `options.beforeOperation` 后执行 |
 | `toolbar.beforeDownload` / `beforePrint` / `beforeExportHtml` | 单按钮前置校验，适合下载权限、打印审计和导出确认 |
 
@@ -579,9 +580,9 @@ npx file-viewer-copy-assets ./public/file-viewer
 | 能力 | 说明 |
 | --- | --- |
 | 输入 | `url`、`file`、`buffer`、`name`、`filename`、`type`、`size` |
-| 事件 | `onEvent` / `viewerEvent`，包含加载开始、加载完成、卸载开始、卸载完成、错误、搜索、缩放、位置变化等上下文 |
+| 事件 | `onEvent` / `viewerEvent`，包含加载开始、加载完成、卸载开始、卸载完成、错误、搜索、缩放、fit、位置变化等上下文 |
 | 状态 | React `useFileViewerState`、controller `subscribe()`，其他生态可通过事件和 controller 获取 |
-| 操作 | `downloadOriginalFile()`、`printRenderedHtml()`、`exportRenderedHtml()`、`zoomIn()`、`zoomOut()`、`resetZoom()` |
+| 操作 | `downloadOriginalFile()`、`printRenderedHtml()`、`exportRenderedHtml()`、`zoomIn()`、`zoomOut()`、`resetZoom()`、`fitToView()` |
 | 搜索定位 | `searchDocument()`、`clearDocumentSearch()`、`nextSearchResult()`、`previousSearchResult()`、`collectDocumentAnchors()`、`scrollToAnchor()`、`scrollToLine()` |
 | AI 友好能力 | `getDocumentTextChunks()` 返回文本块、页码、行号、锚点和 label 上下文，业务侧可用于向量化、溯源和召回高亮 |
 | 权限前置 | `options.beforeOperation` 可在下载、打印、导出、缩放等操作前返回 `true` / `false` 或 Promise，便于做权限校验 |

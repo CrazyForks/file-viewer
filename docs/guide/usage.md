@@ -168,6 +168,11 @@ const options = {
     maxMatches: 1000,
     caseSensitive: false
   },
+  fit: {
+    mode: 'width',
+    resize: 'until-interaction',
+    padding: 16
+  },
   ai: {
     collectText: true,
     chunkSize: 1200,
@@ -196,7 +201,8 @@ const options = {
 | `preset` | 通用 preset 装配入口，支持传入 `@file-viewer/preset-lite`、`@file-viewer/preset-office`、`@file-viewer/preset-engineering`、`@file-viewer/preset-all` 的默认导出，也支持 `preset: [officePreset, engineeringPreset]` 数组组合。这个方式不依赖 Vite，适合 Webpack、Rspack、Rollup、Umi、传统多页应用、微前端和内部组件库；`presets` 仅作为早期 2.x 草案的兼容 alias 保留 |
 | `renderers` / `rendererMode` | 按需单 renderer package 或自定义 renderer 装配入口。`rendererMode: 'replace'` 从空 registry 开始，适合与 `preset` / `renderers` 组成清晰的显式能力集；`extend` 会在当前内置集合上追加 |
 | `builtinRenderers` | 高级内置基线开关，支持 `all`、`lite`、`none`。普通快速接入无需设置；只有需要保留历史全量基线、只启用 core 原生低成本链路，或做极细 registry 控制时再使用 |
-| `toolbar` | `true`、`false` 或对象；声明是否显示下载原文件、打印完整渲染结果、导出渲染后 HTML 和统一缩放按钮。传 `false` 会隐藏内置工具栏，但 ref / controller 上的下载、打印、导出、缩放 API 仍可用于自定义业务工具栏。`toolbar.items` 可按 `download`、`print`、`export-html`、`zoom-in`、`zoom-out`、`zoom-reset` 精确控制内置按钮显隐；`toolbar.permissions` 使用同一套 key 做强权限控制，设为 `false` 时内置按钮和外部 API 调用都会被拦截。`toolbar.zoom` 可单独关闭缩放按钮组；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
+| `toolbar` | `true`、`false` 或对象；声明是否显示下载原文件、打印完整渲染结果、导出渲染后 HTML 和统一缩放按钮。传 `false` 会隐藏内置工具栏，但 ref / controller 上的下载、打印、导出、缩放 API 仍可用于自定义业务工具栏。`toolbar.order` 可按 `search`、`zoom`、`download`、`print`、`exportHtml` 调整内置工具栏分组顺序，默认 `['search', 'zoom', 'download', 'print', 'exportHtml']`，未列出的项会按默认顺序追加；`toolbar.items` 可按 `download`、`print`、`export-html`、`zoom-in`、`zoom-out`、`zoom-reset` 精确控制内置按钮显隐；`toolbar.permissions` 使用同一套 key 做强权限控制，设为 `false` 时内置按钮和外部 API 调用都会被拦截。`toolbar.zoom` 可单独关闭缩放按钮组；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`top-center`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部靠右；需要顶部水平居中时传 `top-center`。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
+| `fit` | 显式内容适配策略。未传时保持各 renderer 历史首屏行为；传字符串时支持 `'auto'`、`'contain'`、`'cover'`、`'width'`、`'height'`、`'actual'`、`'scale-down'`，传对象时可配置 `{ mode, resize, padding, minScale, maxScale }`。`resize` 默认 `'until-interaction'`：首屏和容器变化自动适配，用户手动缩放、平移或调用 `applyViewState()` 后停止覆盖；`'always'` 会持续跟随容器，`'initial'` 只做首屏。自定义工具栏可调用 `fitToView('width')` 主动重新适配 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
 | `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层或 canvas |
 | `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码、锚点和 label 上下文，业务侧可用于向量化、溯源、来源定位、召回高亮和审计 |
@@ -333,6 +339,7 @@ const options = {
   },
   toolbar: {
     position: 'bottom-right',
+    order: ['zoom', 'search', 'download', 'print'],
     download: true,
     print: true,
     exportHtml: true,
@@ -349,9 +356,13 @@ const options = {
 }
 ```
 
-内置操作当前包括 `download`、`print`、`export-html`、`zoom-in`、`zoom-out` 和 `zoom-reset`。`toolbar.items` 只控制内置工具栏展示，适合把默认按钮交给业务 UI 接管；`toolbar.permissions` 是强权限门禁，会在 `options.beforeOperation` 之前执行，外部自定义按钮调用 controller API 时同样生效。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意权限项为 `false` 或任意钩子返回 `false` 都会取消本次操作。预览器还会在文件切换、渲染完成和能力变化时抛出 `operation-availability-change`，宿主可以用它同步外部下载、打印、HTML 和缩放按钮；缩放后的最终比例会通过 `zoom-change` 回传，适合 DOCX / PPTX 这类下一帧重排后才拿到有效比例的格式。
+内置工具栏分组当前包括 `search`、`zoom`、`download`、`print` 和 `exportHtml`，可通过 `toolbar.order` 调整显示顺序；它只负责排序，不负责隐藏。内置操作当前包括 `download`、`print`、`export-html`、`zoom-in`、`zoom-out` 和 `zoom-reset`。`toolbar.items` 只控制内置工具栏展示，适合把默认按钮交给业务 UI 接管；`toolbar.permissions` 是强权限门禁，会在 `options.beforeOperation` 之前执行，外部自定义按钮调用 controller API 时同样生效。`options.beforeOperation` 是全局前置钩子，`toolbar.beforeOperation` 会在工具栏层统一执行，`toolbar.beforeDownload` / `toolbar.beforePrint` / `toolbar.beforeExportHtml` 可以对单个按钮做精确控制。任意权限项为 `false` 或任意钩子返回 `false` 都会取消本次操作。预览器还会在文件切换、渲染完成和能力变化时抛出 `operation-availability-change`，宿主可以用它同步外部下载、打印、HTML 和缩放按钮；缩放后的最终比例会通过 `zoom-change` 回传，适合 DOCX / PPTX 这类下一帧重排后才拿到有效比例的格式。
 
-首屏默认会按当前容器自适应文档宽高，因此初始比例不一定是 `100%`。PDF、Word/DOCX、图片等 renderer 会在页面加载、首屏 fit、图片 natural size 读取、容器 resize 或内部重排完成后重新上报真实 `scale` / `label`；内置工具栏和 `getOperationAvailability()` 会同步更新 `zoomIn`、`zoomOut`、`zoomReset` 是否可用。自定义工具栏不要把首屏状态写死成 `100%`，应以 `zoom-change` 或 `getZoomState()` 的值为准。
+组件生命周期会和所属框架保持一致。Vue3 / Vue2 组件销毁、React 组件卸载、Web Component `disconnectedCallback`、Svelte action `destroy`、jQuery 插件 `destroy` 都会进入同一套 controller 销毁流程：取消当前加载请求，销毁 renderer session，清空预览 DOM，停止缩放、搜索和视图状态监听，并触发 `unload-start` / `unload-complete`，`reason` 为 `component-unmount`。因此在 Element Plus `el-dialog destroy-on-close`、路由切换、页签关闭或 `v-if` 条件移除时，不需要业务侧再手动清空预览容器。
+
+如果外层只是隐藏组件，例如 `v-show`、未开启 `destroy-on-close` 的弹窗或 KeepAlive 场景，组件不会自动释放当前文档，这通常用于保留阅读状态。确实需要主动释放时，可以调用组件 ref 或 controller 上的 `destroy()`；销毁后再继续预览，建议重新创建组件实例或重新挂载 controller。
+
+未显式传 `options.fit` 时，首屏继续沿用各 renderer 的历史默认策略，因此 PDF 仍默认适配宽度，图片仍默认 scale-down，表格和代码保持可读优先。传入 `fit` 后，core 会统一编排 renderer 自己的 zoom / view provider，不在宿主外层套 CSS `transform`。PDF、Word/DOCX、图片等 renderer 会在页面加载、显式 fit、图片 natural size 读取、容器 resize 或内部重排完成后重新上报真实 `scale` / `label`；内置工具栏和 `getOperationAvailability()` 会同步更新 `zoomIn`、`zoomOut`、`zoomReset` 是否可用。自定义工具栏不要把首屏状态写死成 `100%`，应以 `zoom-change`、`fit-change` 或 `getZoomState()` 的值为准。
 
 自定义工具栏不要在预览器外层套 `transform: scale()`。这会破坏虚拟表格、canvas、PDF 文本层或 CAD 交互坐标。请通过组件 ref 调用标准缩放 API：
 
@@ -361,6 +372,7 @@ const state = viewerRef.value?.getZoomState()
 await viewerRef.value?.zoomIn()
 await viewerRef.value?.zoomOut()
 await viewerRef.value?.resetZoom()
+await viewerRef.value?.fitToView('width')
 ```
 
 各框架的自定义方式略有不同：Vanilla JS / Pure Web 优先使用 `<flyfish-file-viewer>` 元素实例或 controller，Vue3 使用模板 `ref` 和独立 emit，Vue2 使用 `$refs` 与 `viewer-event`，React 推荐 `useFileViewer()`，Svelte 使用 `bind:this` 或 action，jQuery 使用插件方法 / controller。完整属性矩阵和每种框架的自定义工具栏示例见 [生态组件总览](/guide/ecosystem#工具栏定制)。

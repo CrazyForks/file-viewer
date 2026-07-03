@@ -32,7 +32,9 @@ createApp(App).use(FileViewer).mount('#app')
 </template>
 ```
 
-The component instance exposes `downloadOriginalFile()`, `printRenderedHtml()`, `exportRenderedHtml()`, `zoomIn()`, `zoomOut()`, `resetZoom()`, `searchDocument()`, `clearDocumentSearch()`, `nextSearchResult()`, `previousSearchResult()`, `collectDocumentAnchors()`, `scrollToAnchor()`, `scrollToLine()`, and `getDocumentTextChunks()`. The historical packages `@flyfish-group/file-viewer3` and `file-viewer3` remain supported for compatibility with existing projects; new integrations should prefer the standard component package package `@file-viewer/vue3`.
+The component instance exposes `destroy()`, `downloadOriginalFile()`, `printRenderedHtml()`, `exportRenderedHtml()`, `zoomIn()`, `zoomOut()`, `resetZoom()`, `searchDocument()`, `clearDocumentSearch()`, `nextSearchResult()`, `previousSearchResult()`, `collectDocumentAnchors()`, `scrollToAnchor()`, `scrollToLine()`, and `getDocumentTextChunks()`. The historical packages `@flyfish-group/file-viewer3` and `file-viewer3` remain supported for compatibility with existing projects; new integrations should prefer the standard component package package `@file-viewer/vue3`.
+
+The Vue 3 component follows host lifecycle teardown. Inside Element Plus `el-dialog destroy-on-close`, `v-if`, route tabs, or drawers, unmounting the component cancels active loading, destroys the renderer session, clears the rendered DOM, and emits `unload-complete` with `reason: "component-unmount"`. If a dialog only hides the component, such as `v-show` or no `destroy-on-close`, the active document stays mounted. For explicit cleanup while keeping the surrounding component alive, call `viewerRef.value?.destroy()` through the template ref.
 
 ## Capabilities
 
@@ -247,7 +249,7 @@ The table below lists the real props, event channel, and customization entry for
 | `toolbar: false` | Hides the built-in toolbar without disabling controller APIs such as download, print, export, and zoom. Use this for a fully custom business toolbar. |
 | `toolbar: true` | Uses the default built-in toolbar. Download, print, HTML export, and zoom buttons are still shown only when the active renderer supports them. |
 | `download` / `print` / `exportHtml` / `zoom` | Expresses whether the host allows a button. Final availability is still computed from file type, render readiness, export adapter, and zoom provider state. |
-| `position` | `auto`, `top`, or `bottom-right`. The default `auto` floats PDF actions at bottom right to avoid conflicting with the PDF page / outline toolbar. |
+| `position` | `auto`, `top`, `top-center`, or `bottom-right`. The default `auto` floats PDF actions at bottom right to avoid conflicting with the PDF page / outline toolbar; use `top-center` to center the top toolbar horizontally. |
 | `beforeOperation` | Toolbar-level preflight that runs after `options.beforeOperation`. Returning `false` or throwing cancels the operation. |
 | `beforeDownload` / `beforePrint` / `beforeExportHtml` | Operation-specific preflight for download permission, print audit, export confirmation, and similar business rules. |
 
@@ -282,7 +284,7 @@ View-state sync is designed for projection systems, remote-control displays, sid
 
 | API | Description |
 | --- | --- |
-| `load` / `update` / `reload` / `destroy` | Imperatively load, update, reload, and destroy the viewer. |
+| `destroy()` | Explicitly destroys the current viewer, releasing the renderer session, DOM, and internal observers. Normal Vue component unmount calls this automatically. |
 | `downloadOriginalFile()` | Downloads the original file while respecting toolbar and `beforeOperation` checks. |
 | `printRenderedHtml()` | Prints the complete rendered document using the best available per-format print adapter. |
 | `exportRenderedHtml()` | Exports rendered HTML for archiving, audit, or offline review. |

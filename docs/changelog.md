@@ -2,6 +2,18 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## 当前主线 ViewerOptions.fit 统一适配能力
+
+- `ViewerOptions` 新增 `fit`，支持 `auto`、`contain`、`cover`、`width`、`height`、`actual` 和 `scale-down`；未传 `fit` 时继续保持各 renderer 历史首屏行为，避免轻量接入被默认策略改变
+- `fit` 对象形态支持 `{ mode, resize, padding, minScale, maxScale }`，其中 `resize` 默认 `until-interaction`：首屏和容器变化自动适配，用户手动缩放、平移或恢复视图后停止覆盖用户视角
+- core 扩展 zoom / view-state provider 合约，新增 `fitToView()` controller/ref API 和 `fit-change` 事件；Web Component 支持 `<flyfish-file-viewer fit="width">`
+- PDF、图片、CAD、XMind、Geo 和 3D renderer 接入专属 fit provider，其他标准 renderer 通过通用 view-state provider 走内部 zoom provider 兜底；压缩包和邮件内嵌预览继承父级 `options.fit`
+- Demo 新增 fit 模式切换入口，新增 `pnpm verify:issue81-fit` 浏览器回归入口，覆盖显式 fit、resize、用户缩放暂停自动适配和 `fitToView()` 主动重算
+
+## 当前主线工具栏定制能力
+
+- `toolbar.position` 新增 `top-center`，支持顶部操作栏水平居中；原有 `top` 继续保持顶部靠右，`auto` 和 `bottom-right` 行为不变，兼容已有接入
+
 ## 当前主线视图状态同步能力
 
 - 新增统一 `initialViewState`、`view-state-change`、`getViewState()` 和 `applyViewState()` 协议，面向投屏、远端协同、双栏对比和阅读进度恢复

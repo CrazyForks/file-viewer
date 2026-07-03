@@ -32,7 +32,9 @@ createApp(App).use(FileViewer).mount('#app')
 </template>
 ```
 
-组件实例支持 `downloadOriginalFile()`、`printRenderedHtml()`、`exportRenderedHtml()`、`zoomIn()`、`zoomOut()`、`resetZoom()`、`searchDocument()`、`clearDocumentSearch()`、`nextSearchResult()`、`previousSearchResult()`、`collectDocumentAnchors()`、`scrollToAnchor()`、`scrollToLine()` 和 `getDocumentTextChunks()`。历史包名 `@flyfish-group/file-viewer3` 和 `file-viewer3` 会继续同步维护，用于兼容旧项目；新项目建议优先使用标准组件包 `@file-viewer/vue3`。
+组件实例支持 `destroy()`、`downloadOriginalFile()`、`printRenderedHtml()`、`exportRenderedHtml()`、`zoomIn()`、`zoomOut()`、`resetZoom()`、`searchDocument()`、`clearDocumentSearch()`、`nextSearchResult()`、`previousSearchResult()`、`collectDocumentAnchors()`、`scrollToAnchor()`、`scrollToLine()` 和 `getDocumentTextChunks()`。历史包名 `@flyfish-group/file-viewer3` 和 `file-viewer3` 会继续同步维护，用于兼容旧项目；新项目建议优先使用标准组件包 `@file-viewer/vue3`。
+
+Vue3 组件会跟随宿主生命周期自动释放资源。放在 Element Plus `el-dialog destroy-on-close`、`v-if`、路由页签或抽屉中时，组件卸载会取消当前加载、销毁 renderer session、清空预览 DOM，并触发 `unload-complete`，`reason` 为 `component-unmount`。如果弹窗只是隐藏组件，例如 `v-show` 或未开启 `destroy-on-close`，预览器会继续保留当前文档；需要主动释放时可通过模板 `ref` 调用 `viewerRef.value?.destroy()`。
 
 ## 能力范围
 
@@ -250,7 +252,7 @@ const options = {
 | `toolbar: false` | 隐藏内置工具栏，但不关闭下载、打印、导出、缩放等 controller API，适合完全自定义业务工具栏。 |
 | `toolbar: true` | 使用默认内置工具栏，下载、打印、HTML 导出和缩放按钮都会按能力动态显隐。 |
 | `download` / `print` / `exportHtml` / `zoom` | 表达业务是否允许展示对应按钮；最终仍会结合文件类型、渲染完成状态、导出适配器和缩放 provider 计算真实可用性。 |
-| `position` | `auto`、`top`、`bottom-right`。默认 `auto`，PDF 自动悬浮右下角，减少和 PDF 自身页码 / 目录工具栏冲突。 |
+| `position` | `auto`、`top`、`top-center`、`bottom-right`。默认 `auto`，PDF 自动悬浮右下角，减少和 PDF 自身页码 / 目录工具栏冲突；需要顶部水平居中时传 `top-center`。 |
 | `beforeOperation` | 工具栏层统一前置校验，会在 `options.beforeOperation` 后执行。返回 `false` 或抛错都会取消本次操作。 |
 | `beforeDownload` / `beforePrint` / `beforeExportHtml` | 单按钮前置校验；适合下载权限、打印审计、导出水印确认等细粒度业务规则。 |
 
@@ -285,7 +287,7 @@ const options = {
 
 | API | 说明 |
 | --- | --- |
-| `load` / `update` / `reload` / `destroy` | 命令式控制文档加载、参数更新、重新加载和销毁。 |
+| `destroy()` | 主动销毁当前预览器，释放 renderer session、DOM 和内部监听；普通 Vue 组件卸载会自动调用。 |
 | `downloadOriginalFile()` | 下载原始文件，遵循 toolbar 与 `beforeOperation` 权限校验。 |
 | `printRenderedHtml()` | 打印当前完整渲染内容，优先使用各格式的高保真打印适配器。 |
 | `exportRenderedHtml()` | 导出当前渲染后的 HTML，用于归档、审计和离线查看。 |

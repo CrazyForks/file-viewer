@@ -23,6 +23,7 @@ import { allRenderers } from '@file-viewer/preset-all'
 import { listenForFile } from '@/components/utils'
 import type {
   FileViewerFileRef as FileRef,
+  FileViewerFitMode,
   FileViewerOperationAvailability,
   FileViewerOptions,
   FileViewerPublicApi as FileViewerExpose,
@@ -72,6 +73,7 @@ const controlPanelRef = ref<HTMLElement | null>(null)
 const sampleMenuPlacement = ref<'bottom' | 'top'>('bottom')
 const sampleMenuMaxHeight = ref('min(52vh, 520px)')
 const watermarkEnabled = ref(false)
+const fitMode = ref<FileViewerFitMode | 'default'>('default')
 const runtimeOptions = shallowRef<FileViewerOptions>({})
 const mobileControlsOpen = ref(false)
 const mobileActionsOpen = ref(false)
@@ -152,6 +154,15 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     zoomOut: '缩小预览',
     zoomIn: '放大预览',
     resetZoom: '还原比例',
+    fitMode: '适配',
+    fitDefault: '默认',
+    fitAuto: '自动',
+    fitContain: '完整',
+    fitCover: '铺满',
+    fitWidth: '宽度',
+    fitHeight: '高度',
+    fitActual: '100%',
+    fitScaleDown: '缩小',
     download: '下载',
     downloadTitle: '下载原始文件',
     print: '打印',
@@ -203,6 +214,15 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     zoomOut: 'Zoom out',
     zoomIn: 'Zoom in',
     resetZoom: 'Reset zoom',
+    fitMode: 'Fit',
+    fitDefault: 'Default',
+    fitAuto: 'Auto',
+    fitContain: 'Contain',
+    fitCover: 'Cover',
+    fitWidth: 'Width',
+    fitHeight: 'Height',
+    fitActual: '100%',
+    fitScaleDown: 'Scale down',
     download: 'Download',
     downloadTitle: 'Download original file',
     print: 'Print',
@@ -964,6 +984,17 @@ const showExternalToolbar = computed(() => {
   return toolbar.download || toolbar.print || toolbar.exportHtml || toolbar.zoom
 })
 
+const fitModeOptions = computed<Array<{ value: FileViewerFitMode | 'default'; label: string }>>(() => [
+  { value: 'default', label: demoCopy.value.fitDefault },
+  { value: 'auto', label: demoCopy.value.fitAuto },
+  { value: 'contain', label: demoCopy.value.fitContain },
+  { value: 'width', label: demoCopy.value.fitWidth },
+  { value: 'height', label: demoCopy.value.fitHeight },
+  { value: 'cover', label: demoCopy.value.fitCover },
+  { value: 'actual', label: demoCopy.value.fitActual },
+  { value: 'scale-down', label: demoCopy.value.fitScaleDown }
+])
+
 const viewerActionDisabled = computed(() => !file.value && !preview.value)
 
 const viewerSearchSummary = computed(() => {
@@ -999,6 +1030,12 @@ const viewerOptions = computed((): FileViewerOptions => {
     ...runtime.geo
   }
   options.drawing = { ...runtime.drawing }
+  if (fitMode.value !== 'default') {
+    options.fit = {
+      mode: fitMode.value,
+      resize: 'until-interaction'
+    }
+  }
   options.toolbar = hidden.value ? runtime.toolbar ?? true : false
   options.watermark = watermarkEnabled.value
     ? {
@@ -1066,6 +1103,19 @@ function triggerViewerAction(action: ViewerAction) {
     viewerZoomState.value = state
     viewerAvailability.value = fileViewerRef.value?.getOperationAvailability() || viewerAvailability.value
   })
+}
+
+async function selectFitMode(event: Event) {
+  const value = (event.target as HTMLSelectElement).value as FileViewerFitMode | 'default'
+  fitMode.value = value
+  await nextTick()
+  if (value !== 'default') {
+    const result = await fileViewerRef.value?.fitToView(value)
+    if (result?.applied) {
+      viewerZoomState.value = fileViewerRef.value?.getZoomState() || viewerZoomState.value
+      viewerAvailability.value = fileViewerRef.value?.getOperationAvailability() || viewerAvailability.value
+    }
+  }
 }
 
 async function runViewerSearch() {
@@ -1609,6 +1659,18 @@ function updateSampleMenuGeometry() {
             </div>
             <div class='viewer-path'>{{ displayPath }}</div>
             <div class='viewer-tools'>
+              <label class='viewer-fit-control' :title='demoCopy.fitMode'>
+                <span>{{ demoCopy.fitMode }}</span>
+                <select :value='fitMode' :aria-label='demoCopy.fitMode' @change='selectFitMode'>
+                  <option
+                    v-for='option in fitModeOptions'
+                    :key='option.value'
+                    :value='option.value'
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+              </label>
               <div v-if='showExternalToolbar' class='viewer-action-group' :aria-label='demoCopy.previewActions'>
                 <template v-if='visibleExternalToolbar.zoom'>
                   <button
@@ -1767,6 +1829,18 @@ function updateSampleMenuGeometry() {
           </div>
 
           <div v-if='mobileActionsOpen' class='mobile-action-panel'>
+            <label class='mobile-fit-control'>
+              <span>{{ demoCopy.fitMode }}</span>
+              <select :value='fitMode' :aria-label='demoCopy.fitMode' @change='selectFitMode'>
+                <option
+                  v-for='option in fitModeOptions'
+                  :key='option.value'
+                  :value='option.value'
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
             <button
               v-if='visibleExternalToolbar.download'
               type='button'
@@ -2914,6 +2988,35 @@ function updateSampleMenuGeometry() {
   gap: 8px;
 }
 
+.viewer-fit-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 3px 4px 3px 10px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #526174;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.viewer-fit-control select,
+.mobile-fit-control select {
+  height: 30px;
+  min-width: 96px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 28px 0 10px;
+  background: rgba(20, 35, 53, 0.06);
+  color: #23465e;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .viewer-search-popover {
   position: absolute;
   z-index: 40;
@@ -3384,6 +3487,18 @@ function updateSampleMenuGeometry() {
   .viewer-action-group {
     border-color: rgba(167, 185, 198, 0.13);
     background: rgba(9, 15, 20, 0.54);
+  }
+
+  .viewer-fit-control {
+    border-color: rgba(167, 185, 198, 0.13);
+    background: rgba(9, 15, 20, 0.54);
+    color: #b8c7d5;
+  }
+
+  .viewer-fit-control select,
+  .mobile-fit-control select {
+    background: rgba(167, 185, 198, 0.1);
+    color: #d7e7ee;
   }
 
   .viewer-search-popover {
@@ -3857,6 +3972,26 @@ function updateSampleMenuGeometry() {
     height: 40px;
     border-radius: 14px;
     font-size: 12px;
+  }
+
+  .mobile-fit-control {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 8px;
+    border-radius: 14px;
+    background: rgba(20, 35, 53, 0.05);
+    color: #526174;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .mobile-fit-control select {
+    width: 100%;
+    min-width: 0;
   }
 
   .mobile-action-panel button:hover,
