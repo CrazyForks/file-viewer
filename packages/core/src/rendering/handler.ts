@@ -144,7 +144,9 @@ export interface RunFileViewerRenderSurfaceMountInput<
   waitForPaint?: () => Promise<unknown> | unknown;
   disposeSession?: (session?: Session | null) => void;
   onStartZoomObserver?: () => void;
+  onStartFitObserver?: () => void;
   onStartViewStateObserver?: () => void;
+  onApplyInitialFit?: () => Promise<unknown> | unknown;
   onRefreshDocumentIndex?: () => Promise<unknown> | unknown;
   onRefreshZoomProvider?: () => void;
   onRefreshViewStateProvider?: () => void;
@@ -168,6 +170,7 @@ export interface RunFileViewerRenderSurfaceClearInput<
   onClearDocumentState?: () => void;
   onStopZoomObserver?: () => void;
   onClearZoomProvider?: () => void;
+  onStopFitObserver?: () => void;
   onStopViewStateObserver?: () => void;
   onClearViewStateProvider?: () => void;
 }
@@ -223,9 +226,12 @@ export interface CreateFileViewerRenderSurfaceActionHandlersInput<
   onStartZoomObserver?: () => void;
   onStopZoomObserver?: () => void;
   onClearZoomProvider?: () => void;
+  onStartFitObserver?: () => void;
+  onStopFitObserver?: () => void;
   onStartViewStateObserver?: () => void;
   onStopViewStateObserver?: () => void;
   onClearViewStateProvider?: () => void;
+  onApplyInitialFit?: () => Promise<unknown> | unknown;
   onRefreshDocumentIndex?: () => Promise<unknown> | unknown;
   onRefreshZoomProvider?: () => void;
   onRefreshViewStateProvider?: () => void;
@@ -491,6 +497,7 @@ export const runFileViewerRenderSurfaceClear = <
   onClearDocumentState,
   onStopZoomObserver,
   onClearZoomProvider,
+  onStopFitObserver,
   onStopViewStateObserver,
   onClearViewStateProvider,
 }: RunFileViewerRenderSurfaceClearInput<Session, UnloadContext>): FileViewerRenderSurfaceClearState<Session, UnloadContext> => {
@@ -509,6 +516,7 @@ export const runFileViewerRenderSurfaceClear = <
     onClearDocumentState?.();
     onStopZoomObserver?.();
     onClearZoomProvider?.();
+    onStopFitObserver?.();
     onStopViewStateObserver?.();
     onClearViewStateProvider?.();
   }
@@ -540,7 +548,9 @@ export const runFileViewerRenderSurfaceMount = async <
   waitForPaint = waitForFileViewerNextPaint,
   disposeSession = disposeFileViewerRendererSession,
   onStartZoomObserver,
+  onStartFitObserver,
   onStartViewStateObserver,
+  onApplyInitialFit,
   onRefreshDocumentIndex,
   onRefreshZoomProvider,
   onRefreshViewStateProvider,
@@ -558,6 +568,7 @@ export const runFileViewerRenderSurfaceMount = async <
 
   const target = createFileViewerRenderTarget(container);
   onStartZoomObserver?.();
+  onStartFitObserver?.();
   onStartViewStateObserver?.();
   await waitForContainer?.();
   await waitForPaint();
@@ -602,6 +613,11 @@ export const runFileViewerRenderSurfaceMount = async <
     void onRefreshDocumentIndex?.();
     onRefreshZoomProvider?.();
     onRefreshViewStateProvider?.();
+    if (onApplyInitialFit) {
+      await onApplyInitialFit();
+      onRefreshZoomProvider?.();
+      onRefreshViewStateProvider?.();
+    }
     return session;
   } catch (error) {
     removeFileViewerRenderTarget(container, target);
@@ -628,9 +644,12 @@ export const createFileViewerRenderSurfaceActionHandlers = <
   onStartZoomObserver,
   onStopZoomObserver,
   onClearZoomProvider,
+  onStartFitObserver,
+  onStopFitObserver,
   onStartViewStateObserver,
   onStopViewStateObserver,
   onClearViewStateProvider,
+  onApplyInitialFit,
   onRefreshDocumentIndex,
   onRefreshZoomProvider,
   onRefreshViewStateProvider,
@@ -669,6 +688,7 @@ export const createFileViewerRenderSurfaceActionHandlers = <
       onClearDocumentState,
       onStopZoomObserver,
       onClearZoomProvider,
+      onStopFitObserver,
       onStopViewStateObserver,
       onClearViewStateProvider,
     });
@@ -697,7 +717,9 @@ export const createFileViewerRenderSurfaceActionHandlers = <
       waitForPaint,
       disposeSession: destroyRenderSession,
       onStartZoomObserver,
+      onStartFitObserver,
       onStartViewStateObserver,
+      onApplyInitialFit,
       onRefreshDocumentIndex,
       onRefreshZoomProvider,
       onRefreshViewStateProvider,
