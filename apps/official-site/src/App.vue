@@ -138,6 +138,8 @@ const docsQuickstartUrl = `${docsUrl}guide/quickstart`
 const demoUrl = 'https://demo.file-viewer.app/'
 const compareUrl = 'https://demo.file-viewer.app/compare.html'
 const githubUrl = 'https://github.com/flyfish-dev/file-viewer'
+const githubApiUrl = 'https://api.github.com/repos/flyfish-dev/file-viewer'
+const githubStarCountFallback = 729
 const releasesUrl = 'https://github.com/flyfish-dev/file-viewer/releases'
 const dockerDocsUrl = `${docsUrl}guide/docker`
 const sponsorUrl = 'https://dev.flyfish.group/sponsor?source=github'
@@ -163,8 +165,44 @@ const demoRevealActive = ref(false)
 const demoFrameLoaded = ref(false)
 const quickStartSectionActive = ref(false)
 const activeQuickStartIndex = ref(0)
+const githubStarCount = ref(githubStarCountFallback)
 const isZh = computed(() => locale.value === 'zh')
 const nextLocaleLabel = computed(() => (isZh.value ? 'EN' : '中文'))
+const githubStarsLabel = computed(() => formatStarCount(githubStarCount.value))
+const githubStarsAriaLabel = computed(() =>
+  isZh.value
+    ? `GitHub 开源总仓，${githubStarsLabel.value} stars`
+    : `GitHub repository, ${githubStarsLabel.value} stars`
+)
+
+function formatStarCount(count: number) {
+  if (count >= 1000000) {
+    return `${Number((count / 1000000).toFixed(1))}m`
+  }
+  if (count >= 1000) {
+    return `${Number((count / 1000).toFixed(1))}k`
+  }
+  return `${count}`
+}
+
+async function loadGithubStarCount() {
+  try {
+    const response = await fetch(githubApiUrl, {
+      headers: {
+        Accept: 'application/vnd.github+json'
+      }
+    })
+    if (!response.ok) {
+      return
+    }
+    const payload = (await response.json()) as { stargazers_count?: unknown }
+    if (typeof payload.stargazers_count === 'number' && Number.isFinite(payload.stargazers_count)) {
+      githubStarCount.value = payload.stargazers_count
+    }
+  } catch {
+    // Keep the baked-in count when GitHub is unavailable or rate limited.
+  }
+}
 
 const copy = {
   zh: {
@@ -1371,6 +1409,7 @@ let topbarResizeObserver: ResizeObserver | undefined
 
 onMounted(async () => {
   locale.value = resolveInitialLocale()
+  void loadGithubStarCount()
   await nextTick()
   topbarResizeObserver = new ResizeObserver(requestPageNavStateUpdate)
   if (topbar.value) {
@@ -1460,8 +1499,9 @@ onBeforeUnmount(() => {
         </a>
       </div>
       <div class="topbar-actions">
-        <a class="nav-icon-button" :href="githubUrl" target="_blank" rel="noreferrer" aria-label="GitHub repository">
+        <a class="nav-icon-button github-star-button" :href="githubUrl" target="_blank" rel="noreferrer" :aria-label="githubStarsAriaLabel">
           <GitHubMark />
+          <span class="github-star-count">{{ githubStarsLabel }}</span>
         </a>
         <button class="language-toggle" type="button" @click="toggleLocale">
           <Languages :size="16" />
