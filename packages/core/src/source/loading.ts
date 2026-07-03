@@ -576,8 +576,10 @@ export interface RunFileViewerPreviewSourceChangeInput {
 export interface RunFileViewerPreviewComponentUnmountInput {
   reason?: FileViewerLifecycleContext['reason'];
   onCancelPreview?: (reason: FileViewerLifecycleContext['reason']) => void;
+  onClearRenderedContent?: (reason: FileViewerLifecycleContext['reason']) => void;
   onResetLoading?: () => void;
   onStopZoomObserver?: () => void;
+  onStopFitObserver?: () => void;
   onStopViewStateObserver?: () => void;
 }
 
@@ -857,13 +859,19 @@ export const runFileViewerPreviewSourceChange = ({
 export const runFileViewerPreviewComponentUnmount = ({
   reason = 'component-unmount',
   onCancelPreview,
+  onClearRenderedContent,
   onResetLoading,
   onStopZoomObserver,
+  onStopFitObserver,
   onStopViewStateObserver,
 }: RunFileViewerPreviewComponentUnmountInput = {}): FileViewerPreviewComponentUnmountState => {
   onCancelPreview?.(reason);
+  if (!onCancelPreview) {
+    onClearRenderedContent?.(reason);
+  }
   onResetLoading?.();
   onStopZoomObserver?.();
+  onStopFitObserver?.();
   onStopViewStateObserver?.();
 
   return {

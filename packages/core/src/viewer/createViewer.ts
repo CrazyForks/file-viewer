@@ -13,6 +13,10 @@ import {
 import { createFileViewerZoomController } from '../features/document/zoom';
 import { createFileViewerViewStateController } from '../features/document/viewState';
 import {
+  createFileViewerFitController,
+  hasFileViewerExplicitInitialViewState,
+} from '../features/document/fit';
+import {
   DEFAULT_FILE_VIEWER_DOWNLOAD_FILENAME,
   DEFAULT_FILE_VIEWER_EXPORT_FILENAME,
   DEFAULT_FILE_VIEWER_PREVIEW_TITLE,
@@ -64,6 +68,9 @@ import type {
   FileViewerDownloadOptions,
   FileViewerEventHandler,
   FileViewerExportHtmlOptions,
+  FileViewerFitMode,
+  FileViewerFitOptions,
+  FileViewerFitResult,
   FileViewerInstance,
   FileViewerLifecycleContext,
   FileViewerOperationType,
@@ -482,14 +489,37 @@ export const createViewer = (
     emitOperationAvailabilityChange();
   };
 
+  const emitFitChange = (result: FileViewerFitResult) => {
+    createOptions.onEvent?.({
+      type: 'fit-change',
+      payload: result,
+    });
+  };
+
   const zoomController = createFileViewerZoomController({
     root: () => container,
     beforeZoom: runBeforeViewerOperation,
     onChange: state => emitZoomAndOperationAvailabilityChange(state),
   });
+  const fitController = createFileViewerFitController({
+    root: () => container,
+    getFit: () => options.fit,
+    onFit: result => {
+      zoomController.refreshProvider();
+      viewStateController.refreshProvider();
+      emitZoomAndOperationAvailabilityChange();
+      emitFitChange(result);
+    },
+  });
   const viewStateController = createFileViewerViewStateController({
     root: () => container,
     onChange: change => {
+      if (
+        (change.source === 'user' || change.source === 'api') &&
+        change.action !== 'fit'
+      ) {
+        fitController.markUserInteraction();
+      }
       createOptions.onEvent?.({ type: 'view-state-change', payload: change });
     },
   });
@@ -507,6 +537,7 @@ export const createViewer = (
   });
   zoomController.observe();
   viewStateController.observe();
+  fitController.observe();
 
   const destroyCurrent = async (reason: FileViewerLifecycleContext['reason'] = 'replace') => {
     const session = renderSurfaceState.session;
@@ -533,6 +564,7 @@ export const createViewer = (
     await documentActions.clearDocumentState();
     zoomController.clearProvider();
     viewStateController.clearProvider();
+    fitController.resetAutoFit();
     emitZoomAndOperationAvailabilityChange();
     if (source) {
       await emitLifecycle(options, createOptions.onEvent, 'unload-complete', source, version, startedAt, reason);
@@ -600,6 +632,11 @@ export const createViewer = (
       zoomController.refreshProvider();
       viewStateController.refreshProvider();
       await documentActions.refreshDocumentIndex({ notify: false });
+      await fitController.applyInitialFit({
+        skip: hasFileViewerExplicitInitialViewState(options.initialViewState),
+      });
+      zoomController.refreshProvider();
+      viewStateController.refreshProvider();
       emitZoomAndOperationAvailabilityChange();
       await emitLifecycle(options, createOptions.onEvent, 'load-complete', normalized, version, startedAt);
       return session;
@@ -610,14 +647,20 @@ export const createViewer = (
       documentActions.destroyDocumentFeatures();
       zoomController.destroy();
       viewStateController.destroy();
+      fitController.destroy();
       removeWatermarkOverlay();
     },
     updateOptions(nextOptions: Partial<FileViewerOptions>) {
+      const previousFit = options.fit;
       options = {
         ...options,
         ...nextOptions,
       };
       syncWatermarkOverlay();
+      if ('fit' in nextOptions && nextOptions.fit !== previousFit) {
+        fitController.resetAutoFit();
+        fitController.scheduleFit('resize');
+      }
     },
     getCapabilities(extension?: string) {
       return getCapabilitiesForExtension(extension);
@@ -679,19 +722,29 @@ export const createViewer = (
       });
     },
     async zoomIn() {
+      fitController.markUserInteraction();
       const state = await zoomController.zoomIn();
       emitZoomAndOperationAvailabilityChange(state);
       return state;
     },
     async zoomOut() {
+      fitController.markUserInteraction();
       const state = await zoomController.zoomOut();
       emitZoomAndOperationAvailabilityChange(state);
       return state;
     },
     async resetZoom() {
+      fitController.markUserInteraction();
       const state = await zoomController.resetZoom();
       emitZoomAndOperationAvailabilityChange(state);
       return state;
+    },
+    async fitToView(fit?: FileViewerFitMode | FileViewerFitOptions) {
+      const result = await fitController.fit(fit, { source: 'api', reason: 'api' });
+      zoomController.refreshProvider();
+      viewStateController.refreshProvider();
+      emitZoomAndOperationAvailabilityChange();
+      return result;
     },
     getZoomState() {
       return zoomController.getState();
@@ -700,6 +753,7 @@ export const createViewer = (
       return viewStateController.getState();
     },
     applyViewState(state: FileViewerViewState, applyOptions?: FileViewerApplyViewStateOptions) {
+      fitController.markUserInteraction();
       return viewStateController.applyState(state, applyOptions);
     },
     search(query: string) {

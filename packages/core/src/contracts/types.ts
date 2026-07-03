@@ -428,11 +428,34 @@ export interface FileViewerI18nOptions {
 
 export type FileViewerFileRef = File | Blob | ArrayBuffer;
 
-export type FileViewerToolbarPosition = 'auto' | 'top' | 'bottom-right';
+export type FileViewerToolbarPosition = 'auto' | 'top' | 'top-center' | 'bottom-right';
+
+export type FileViewerFitMode =
+  | 'auto'
+  | 'contain'
+  | 'cover'
+  | 'width'
+  | 'height'
+  | 'actual'
+  | 'scale-down';
+
+export type FileViewerFitResize = 'until-interaction' | 'always' | 'initial';
+
+export interface FileViewerFitOptions {
+  mode?: FileViewerFitMode;
+  resize?: FileViewerFitResize;
+  padding?: number;
+  minScale?: number;
+  maxScale?: number;
+}
 
 export type FileViewerLifecyclePhase = 'load-start' | 'load-complete' | 'unload-start' | 'unload-complete';
 
 export type FileViewerOperationType = 'download' | 'print' | 'export-html' | 'zoom-in' | 'zoom-out' | 'zoom-reset';
+
+export type FileViewerToolbarItem = 'search' | 'zoom' | 'download' | 'print' | 'exportHtml' | 'export-html';
+
+export type FileViewerResolvedToolbarItem = 'search' | 'zoom' | 'download' | 'print' | 'exportHtml';
 
 export type FileViewerToolbarActionMap = Partial<Record<FileViewerOperationType, boolean>>;
 
@@ -478,6 +501,8 @@ export interface FileViewerToolbarOptions {
   exportHtml?: boolean;
   zoom?: boolean;
   search?: boolean;
+  /** Built-in toolbar group order. Missing entries keep their default relative order. */
+  order?: FileViewerToolbarItem[];
   /** Controls which built-in toolbar actions are displayed without disabling controller APIs. */
   items?: FileViewerToolbarActionMap;
   /** Hard operation permission map. False values block both built-in toolbar and public API calls. */
@@ -914,6 +939,11 @@ export interface FileViewerOptions {
   search?: boolean | FileViewerSearchOptions;
   ai?: boolean | FileViewerAiOptions;
   /**
+   * Explicit content fitting strategy. When omitted, each renderer keeps its
+   * historical first-screen behavior for backward compatibility.
+   */
+  fit?: FileViewerFitMode | FileViewerFitOptions;
+  /**
    * Initial renderer view position used after the document becomes ready.
    *
    * Renderers apply the fields they understand. All standard renderer paths
@@ -1004,11 +1034,33 @@ export interface FileViewerZoomState {
   maxScale?: number;
 }
 
+export interface FileViewerFitRequest extends Required<Pick<FileViewerFitOptions, 'mode' | 'resize' | 'padding'>> {
+  minScale?: number;
+  maxScale?: number;
+  source: FileViewerViewStateChangeSource;
+  reason: 'initial' | 'resize' | 'api' | 'retry';
+  viewportWidth: number;
+  viewportHeight: number;
+  container?: HTMLElement | null;
+}
+
+export interface FileViewerFitResult {
+  applied: boolean;
+  mode: FileViewerFitMode;
+  resize: FileViewerFitResize;
+  scale?: number;
+  source?: FileViewerViewStateChangeSource;
+  reason?: string;
+  provider?: 'view-state' | 'zoom' | 'none' | (string & {});
+  state?: FileViewerViewState;
+}
+
 export interface FileViewerZoomProvider {
   zoomIn: () => FileViewerZoomState | Promise<FileViewerZoomState>;
   zoomOut: () => FileViewerZoomState | Promise<FileViewerZoomState>;
   resetZoom: () => FileViewerZoomState | Promise<FileViewerZoomState>;
   setZoom?: (scale: number) => FileViewerZoomState | Promise<FileViewerZoomState>;
+  fit?: (request: FileViewerFitRequest) => FileViewerFitResult | Promise<FileViewerFitResult>;
   getState: () => FileViewerZoomState;
   subscribe?: (listener: () => void) => () => void;
 }
@@ -1059,6 +1111,7 @@ export type FileViewerViewStateChangeAction =
   | 'zoom-in'
   | 'zoom-out'
   | 'zoom-reset'
+  | 'fit'
   | 'rotation-change'
   | 'rotate-left'
   | 'rotate-right'
@@ -1086,6 +1139,7 @@ export interface FileViewerViewStateProvider {
     state: FileViewerViewState,
     options?: FileViewerApplyViewStateOptions
   ) => FileViewerViewState | Promise<FileViewerViewState>;
+  fit?: (request: FileViewerFitRequest) => FileViewerFitResult | Promise<FileViewerFitResult>;
   subscribe?: (listener: (change: FileViewerViewStateChange) => void) => () => void;
 }
 
@@ -1158,6 +1212,7 @@ export interface FileViewerComponentEventMap {
   'location-change': FileViewerDocumentAnchor | null;
   'zoom-change': FileViewerZoomState;
   'view-state-change': FileViewerViewStateChange;
+  'fit-change': FileViewerFitResult;
 }
 
 export type FileViewerEventType = keyof FileViewerComponentEventMap;
@@ -1183,15 +1238,18 @@ export interface FileViewerComponentEmits {
   (event: 'location-change', anchor: FileViewerComponentEventMap['location-change']): void;
   (event: 'zoom-change', state: FileViewerComponentEventMap['zoom-change']): void;
   (event: 'view-state-change', change: FileViewerComponentEventMap['view-state-change']): void;
+  (event: 'fit-change', result: FileViewerComponentEventMap['fit-change']): void;
 }
 
 export interface FileViewerPublicApi {
+  destroy(): void;
   downloadOriginalFile(): Promise<void>;
   printRenderedHtml(): Promise<void>;
   exportRenderedHtml(): Promise<void>;
   zoomIn(): Promise<FileViewerZoomState>;
   zoomOut(): Promise<FileViewerZoomState>;
   resetZoom(): Promise<FileViewerZoomState>;
+  fitToView(fit?: FileViewerFitMode | FileViewerFitOptions): Promise<FileViewerFitResult>;
   getZoomState(): FileViewerZoomState;
   getViewState(): FileViewerViewState | null;
   applyViewState(
@@ -1379,6 +1437,7 @@ export interface FileViewerInstance {
   zoomIn(): Promise<FileViewerZoomState>;
   zoomOut(): Promise<FileViewerZoomState>;
   resetZoom(): Promise<FileViewerZoomState>;
+  fitToView(fit?: FileViewerFitMode | FileViewerFitOptions): Promise<FileViewerFitResult>;
   getZoomState(): FileViewerZoomState;
   getViewState(): FileViewerViewState | null;
   applyViewState(
