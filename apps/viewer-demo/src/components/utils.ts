@@ -14,6 +14,7 @@ export function listenForFile(callback: ListenCallback) {
   }
   // 允许使用预留的消息机制发送二进制数据，必须在url后添加?name=xxx.xxx&from=xxx
   if (from && typeof name === 'string') {
+    callback(undefined, undefined, viewerOptions)
     window.addEventListener('message', event => {
       const { origin, data: blob } = event
       if (origin === from && blob instanceof Blob) {

@@ -32,7 +32,15 @@ import type {
 } from '@file-viewer/core'
 import brandLogo from '@/assets/logo.png'
 
-const hidden = ref(false)
+const queryParams = new URLSearchParams(window.location.search)
+const isIframeEntry = window.location.pathname.endsWith('/iframe.html') || window.location.pathname.endsWith('/iframe')
+const isEmbedRequest =
+  isIframeEntry ||
+  queryParams.get('embed') === '1' ||
+  queryParams.get('mode') === 'iframe' ||
+  queryParams.has('from')
+
+const hidden = ref(isEmbedRequest)
 const input = ref(true)
 const filename = ref('')
 const file = ref<FileRef | undefined>()
@@ -49,8 +57,7 @@ const normalizeDemoLocale = (value?: string | null): DemoLocale => {
 }
 
 const resolveInitialDemoLocale = (): DemoLocale => {
-  const query = new URLSearchParams(window.location.search)
-  const explicitLocale = query.get('locale') || query.get('lang')
+  const explicitLocale = queryParams.get('locale') || queryParams.get('lang')
   if (explicitLocale) {
     return normalizeDemoLocale(explicitLocale)
   }
@@ -62,7 +69,7 @@ const resolveInitialDemoLocale = (): DemoLocale => {
 }
 
 const demoLocale = ref<DemoLocale>(resolveInitialDemoLocale())
-const url = ref(DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value])
+const url = ref(isEmbedRequest && !queryParams.get('url') ? '' : DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value])
 const preview = ref('')
 const scenarioPickerOpen = ref(false)
 const samplePickerOpen = ref(false)
@@ -1244,7 +1251,9 @@ onMounted(() => {
   document.addEventListener('pointerdown', handleDocumentPointerDown)
   document.addEventListener('keydown', handleDocumentKeydown)
   window.addEventListener('resize', handleWindowResize)
-  openUrlPreview(url.value)
+  if (url.value || !hidden.value) {
+    openUrlPreview(url.value)
+  }
 })
 
 onBeforeUnmount(() => {

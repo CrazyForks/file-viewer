@@ -17,6 +17,7 @@
 | 官方文档/组件主页 | [doc.file-viewer.app](https://doc.file-viewer.app) | 主文档域名，提供组件主页、接入文档、格式说明和开源分发说明 |
 | 在线 Demo | [demo.file-viewer.app](https://demo.file-viewer.app) | 可直接体验完整预览器，用于快速验证能力 |
 | 文档比对 Demo | [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html) | 独立入口，支持左右并排预览、上传、URL、交换、重置、同步滚动、聚焦搜索和行级定位 |
+| 官方 iframe Demo 交付包 | GitHub Release: `file-viewer-v2-*-official-demo-iframe.tar.gz` | 官方 Demo 的可下载构建产物，包含 `iframe.html`、父页面示例、说明文件、样例和离线 Worker/WASM/vendor 资源 |
 | Docker 镜像发布目标 | `flyfishdev/file-viewer:latest` | 可一键部署的 nginx 静态镜像，发布时支持 `linux/amd64` 和 `linux/arm64` |
 | npm 标准生态 | [生态组件总览](/guide/ecosystem) | `@file-viewer/core`、独立 renderer、preset、`@file-viewer/pptx` 原生引擎、Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 全线标准包 |
 | 自托管静态资源 | `file-viewer/assets/*`、`file-viewer/vendor/*`、`file-viewer/wasm/*` | Worker、WASM、示例文件和重型渲染器资源，按需自托管 |
@@ -167,6 +168,35 @@ npm install ./artifacts/flyfish-group-file-viewer-react-*.tgz
 Core、独立 renderer、preset、PPTX 原生引擎、Vanilla JS / Pure Web、Vue3、Vue2.7、Vue2.6、React、React Legacy、jQuery、Svelte 和历史兼容 tarball 都会随开源总仓库一起生成。`file-viewer3` 非 scoped 兼容包仍会同步发布到 npm，但它和 `@flyfish-group/file-viewer3` 包体重复，开源总仓库下载区只保留 `flyfish-group-file-viewer3-*.tgz` 这一份 Vue3 兼容 tarball。React tarball 依赖 web viewer 包，离线安装时请按 npm 依赖关系一起放入本地源或依次安装。
 
 纯离线部署时，除了 npm tarball，也要把 viewer assets 一起发布到业务静态目录。运行 `file-viewer-copy-assets` 会复制 PDF.js worker/CMap/WASM/standard fonts、CAD WASM、Typst WASM/默认字体、SQLite WASM、压缩包 worker 和 Office worker，并生成 `flyfish-viewer-assets.json` 供验收。运行时默认不会访问公共 CDN 或第三方在线静态资源；路径特殊时通过各格式的 `options.*Url` 指向自托管地址。
+
+## 官方 Demo iframe 交付包
+
+客户需要“直接拿官方 Demo 构建产物做 iframe 集成”时，使用 GitHub Release 中的 `file-viewer-v2-*-official-demo-iframe.tar.gz`。这个包不要求业务项目安装 npm 包，解压后把所有文件发布到同一个静态目录即可，目录中的 `assets/`、`vendor/`、`wasm/` 和 `example/` 必须保持相对位置不变。
+
+URL 文件嵌入:
+
+```html
+<iframe
+  src="/file-viewer/iframe.html?embed=1&url=/files/demo.docx"
+  style="width:100%;height:720px;border:0"
+  allow="fullscreen"
+></iframe>
+```
+
+父页面拿到二进制后再传入 iframe:
+
+```html
+<iframe
+  id="viewer"
+  src="/file-viewer/iframe.html?embed=1&from=https%3A%2F%2Fapp.example.com&name=contract.docx"
+></iframe>
+<script>
+  const file = await fetch('/api/files/contract.docx').then(response => response.blob())
+  document.querySelector('#viewer').contentWindow.postMessage(file, 'https://static.example.com')
+</script>
+```
+
+`from` 必须等于父页面 origin，iframe 只接受该 origin 发来的 `Blob`。包内的 `iframe-example.html` 同时覆盖 URL 与本地文件 `postMessage` 两条路径；发布前由 `pnpm release:demo-iframe:pack` 和 `pnpm verify:demo-iframe-artifact` 生成并校验，随后进入 `release:standard:build`、`release:public` 和 GitHub Release 附件校验链路。
 
 部署到 Cloudflare Pages 时，平台会根据访客 `Accept-Encoding` 自动启用边缘压缩。项目的 `scripts/deploy-cloudflare-pages.mjs` 还会在 Direct Upload 前对超过 Pages 单文件限制的 WASM 做 Brotli 预压缩，并在 `_headers` 中写入 `Content-Encoding: br`、`Vary: Accept-Encoding`、`Content-Type: application/wasm` 和长期缓存策略，确保 27MB 级 Typst compiler WASM 仍然通过原始 `.wasm` URL 稳定加载。上线后运行下面的命令确认官网、文档站、Demo 和 Typst WASM 都已经走 Cloudflare 压缩:
 

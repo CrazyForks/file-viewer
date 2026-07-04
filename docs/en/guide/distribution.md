@@ -108,6 +108,35 @@ GitHub Releases can carry:
 For offline or intranet package installs, download the tarballs and install them through a private registry or direct local paths.
 The public GitHub repository keeps source, small release metadata, and lightweight package output in git. Full demo, component demo, docs, and sample-file builds should live in GitHub Releases or Cloudflare Pages deployments instead of expanded top-level directories, so a normal clone stays practical. Use `pnpm release:public -- --expanded-assets` only for one-off delivery or mirror troubleshooting that truly needs expanded static assets.
 
+## Official Demo iframe Artifact
+
+When a customer asks for the official demo build output for iframe integration, use the GitHub Release asset `file-viewer-v2-*-official-demo-iframe.tar.gz`. It does not require installing npm packages in the host application. Extract the whole archive to one static directory and keep `assets/`, `vendor/`, `wasm/`, and `example/` together.
+
+URL-based iframe:
+
+```html
+<iframe
+  src="/file-viewer/iframe.html?embed=1&url=/files/demo.docx"
+  style="width:100%;height:720px;border:0"
+  allow="fullscreen"
+></iframe>
+```
+
+Blob handoff from the parent page:
+
+```html
+<iframe
+  id="viewer"
+  src="/file-viewer/iframe.html?embed=1&from=https%3A%2F%2Fapp.example.com&name=contract.docx"
+></iframe>
+<script>
+  const file = await fetch('/api/files/contract.docx').then(response => response.blob())
+  document.querySelector('#viewer').contentWindow.postMessage(file, 'https://static.example.com')
+</script>
+```
+
+`from` must match the parent origin. The iframe accepts only a `Blob` from that origin and renders it as the provided `name`. The archive also includes `iframe-example.html`, `README.iframe.md`, and `iframe-manifest.json`; `pnpm release:demo-iframe:pack` and `pnpm verify:demo-iframe-artifact` make this artifact part of the standard release flow.
+
 ## Self-hosted Runtime Assets
 
 Copy browser runtime assets into your app:

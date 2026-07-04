@@ -1,9 +1,9 @@
 {
   "version": "2.1.19",
   "package": "@flyfish-group/file-viewer-workspace",
-  "generatedAt": "2026-07-03T18:28:13.351Z",
+  "generatedAt": "2026-07-04T01:32:48.022Z",
   "sourceBranch": "main",
-  "sourceCommit": "3ed5c0e4",
+  "sourceCommit": "aa58c4a8",
   "corePackage": {
     "packageName": "@file-viewer/core",
     "description": "Framework-neutral modular TypeScript file preview core with format registry, renderer orchestration, lifecycle APIs, search, zoom, print, and export.",
@@ -108,6 +108,12 @@
       "role": "library-dist",
       "artifactIncluded": true,
       "description": "Minified Vue 3 library dist archive for direct download checks."
+    },
+    {
+      "name": "file-viewer-v2-2.1.19-official-demo-iframe.tar.gz",
+      "role": "official-demo-iframe",
+      "artifactIncluded": true,
+      "description": "Official demo static build archive for iframe integration and private deployment."
     },
     {
       "name": "file-viewer-v2-2.1.19-demo.tar.gz",

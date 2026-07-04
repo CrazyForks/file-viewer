@@ -47,6 +47,11 @@
       "blocking": true
     },
     {
+      "id": "official-demo-iframe-artifact",
+      "label": "Official iframe demo artifact",
+      "blocking": true
+    },
+    {
       "id": "cloudflare-demo",
       "label": "demo.file-viewer.app",
       "blocking": true
@@ -10886,6 +10891,15 @@
         "vite-plugin",
         "all-renderer-packages"
       ]
+    },
+    {
+      "id": "official-demo-iframe-artifact",
+      "script": "verify:demo-iframe-artifact",
+      "covers": [
+        "official-demo",
+        "iframe",
+        "offline-static-artifact"
+      ]
     }
   ],
   "assetFamilies": [
@@ -10897,6 +10911,7 @@
     "cad-workers-wasm",
     "typst-wasm-fonts",
     "drawio-vendor",
-    "sql-wasm"
+    "sql-wasm",
+    "official-demo-iframe-static-artifact"
   ]
 }

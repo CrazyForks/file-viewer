@@ -381,6 +381,7 @@ GitHub Releases provide all distribution downloads:
 
 | File                                     | Purpose                                                                                    |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `file-viewer-v2-*-official-demo-iframe.tar.gz` | Official iframe demo delivery archive with `iframe.html`, parent-page example, docs, samples, and offline Worker/WASM/vendor assets |
 | `file-viewer-v2-*-demo.tar.gz`           | Main demo static site with the primary viewer and `/compare.html` document comparison page |
 | `file-viewer-v2-*-component-demo.tar.gz` | Vanilla JavaScript / React component demo site                                             |
 | `file-viewer-v2-*-lib-dist.tar.gz`       | Vue 3 library dist for offline inspection or self-hosted packaging                         |
@@ -399,6 +400,18 @@ GitHub Releases provide all distribution downloads:
 | `flyfish-group-file-viewer-*.tgz`        | Vue 2.7 local npm package                                                                  |
 | `flyfish-group-file-viewer-web-*.tgz`    | Historical vanilla JavaScript package with `mountViewer` native mounting and asset tooling |
 | `flyfish-group-file-viewer-react-*.tgz`  | Historical React package with a native React component entry                               |
+
+When a customer only needs the official demo as a self-hosted iframe page, download `file-viewer-v2-*-official-demo-iframe.tar.gz`, extract it to one static directory, and embed:
+
+```html
+<iframe
+  src="/file-viewer/iframe.html?embed=1&url=/files/demo.docx"
+  style="width:100%;height:720px;border:0"
+  allow="fullscreen"
+></iframe>
+```
+
+If the parent application must fetch the file itself, use the `postMessage(Blob)` flow shown in `iframe-example.html`: `iframe.html?embed=1&from=<parent origin>&name=<filename>` stays chrome-free and renders the Blob once the parent posts it.
 
 The unscoped `file-viewer3` historical alias remains part of the npm release flow. The open-source main repository uses `flyfish-group-file-viewer3-*.tgz` as the Vue 3 compatibility tarball to avoid storing duplicate package bodies.
 

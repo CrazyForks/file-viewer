@@ -9,6 +9,7 @@
 ## Demo URLs
 
 - Main demo: [demo.file-viewer.app](https://demo.file-viewer.app)
+- iframe entry: [demo.file-viewer.app/iframe.html?embed=1&url=/example/en/calibre-demo.docx](https://demo.file-viewer.app/iframe.html?embed=1&url=/example/en/calibre-demo.docx)
 - Document comparison: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - Official portal: [file-viewer.app](https://file-viewer.app)
 
@@ -31,6 +32,35 @@
 The demo follows the browser language by default. Chinese browsers open the Chinese sample system; other languages open the English sample system. You can also force the language with `?lang=zh-CN` or `?lang=en-US`.
 
 The English demo uses public real-world samples for DOCX, PDF, PPTX, and XLSX, plus local lightweight fixtures for Markdown, text, logs, CSV, JSON, TypeScript, JavaScript, GeoJSON, glTF, and archive nesting. All files are served from the demo origin so enterprise intranet deployments do not depend on public CDNs at runtime.
+
+## iframe Entry
+
+`iframe.html` is the stable chrome-free entry for customers that want to deploy the official demo build output and embed it in an existing system.
+
+URL-based iframe:
+
+```html
+<iframe
+  src="/file-viewer/iframe.html?embed=1&url=/files/demo.docx"
+  style="width:100%;height:720px;border:0"
+  allow="fullscreen"
+></iframe>
+```
+
+Blob handoff:
+
+```html
+<iframe
+  id="viewer"
+  src="/file-viewer/iframe.html?embed=1&from=https%3A%2F%2Fapp.example.com&name=contract.docx"
+></iframe>
+<script>
+  const file = await fetch('/api/files/contract.docx').then(response => response.blob())
+  document.querySelector('#viewer').contentWindow.postMessage(file, 'https://static.example.com')
+</script>
+```
+
+`from` must match the parent origin. The iframe accepts a `Blob` from that origin, wraps it as a `File` with `name`, and renders it without exposing the full demo shell. For customer delivery, use the GitHub Release asset `file-viewer-v2-*-official-demo-iframe.tar.gz`; it includes `iframe-example.html`, `README.iframe.md`, `iframe-manifest.json`, examples, and offline Worker/WASM/vendor assets.
 
 ## Local Demo
 

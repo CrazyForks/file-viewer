@@ -59,7 +59,8 @@ export default defineConfig(ctx => {
     rollupOptions: {
       input: {
         main: fileURLToPath(new URL('index.html', import.meta.url)),
-        compare: fileURLToPath(new URL('compare.html', import.meta.url))
+        compare: fileURLToPath(new URL('compare.html', import.meta.url)),
+        iframe: fileURLToPath(new URL('iframe.html', import.meta.url))
       }
     },
     outDir: 'dist'

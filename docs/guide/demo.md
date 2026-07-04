@@ -12,6 +12,7 @@
 | 入口 | 地址 | 适合做什么 |
 | --- | --- | --- |
 | 主示例页 | `/` | 切换预置文件、上传本地文件、快速确认各类格式表现 |
+| iframe 嵌入页 | `/iframe.html` 或 `/iframe` | 无 Demo 外壳的官方嵌入入口，支持 `?url=` 和 `postMessage(Blob)` |
 | 文档比对页 | `/compare.html` | 左右并排预览两份文档，支持示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位 |
 | 组件 Demo | `apps/component-demo` | 同时验证 Vanilla JS / Pure Web、React、Vue3、jQuery、Svelte 和 script 标签接入 |
 
@@ -31,6 +32,35 @@ Demo 默认跟随浏览器语言。中文浏览器进入中文样例体系，其
   <img src="/_media/flyfish-viewer-demo.gif" alt="Flyfish Viewer 主示例页、文档预览和文档比对动图" />
   <p class="doc-caption">动图展示主示例页、分组样例文件盒子、Office/PDF 阅读面、PPTX 与文档比对，是最直观的联调入口。</p>
 </div>
+
+## iframe 嵌入页
+
+`iframe.html` 是给客户系统直接嵌入官方 Demo 构建产物用的稳定入口。它复用主 Demo 的完整 renderer、样例、Worker、WASM 和 vendor 资源，但默认隐藏左侧 Demo 控制面板，只保留预览内容。
+
+URL 文件:
+
+```html
+<iframe
+  src="/file-viewer/iframe.html?embed=1&url=/files/demo.docx"
+  style="width:100%;height:720px;border:0"
+  allow="fullscreen"
+></iframe>
+```
+
+父页面传二进制:
+
+```html
+<iframe
+  id="viewer"
+  src="/file-viewer/iframe.html?embed=1&from=https%3A%2F%2Fapp.example.com&name=contract.docx"
+></iframe>
+<script>
+  const file = await fetch('/api/files/contract.docx').then(response => response.blob())
+  document.querySelector('#viewer').contentWindow.postMessage(file, 'https://static.example.com')
+</script>
+```
+
+`from` 必须与父页面 origin 一致，iframe 只接受该来源发来的 `Blob`。正式交付客户时不要只发 `dist/` 散文件，使用 GitHub Release 中的 `file-viewer-v2-*-official-demo-iframe.tar.gz`；包内有 `iframe-example.html`、`README.iframe.md` 和 `iframe-manifest.json`，可直接交给客户部署验收。
 
 ## 文档比对页
 

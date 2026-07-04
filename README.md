@@ -369,6 +369,7 @@ GitHub Release 会同步提供完整下载项:
 
 | 文件                                     | 用途                                                            |
 | ---------------------------------------- | --------------------------------------------------------------- |
+| `file-viewer-v2-*-official-demo-iframe.tar.gz` | 官方 Demo iframe 交付包，包含 `iframe.html`、示例父页面、说明文件、样例和离线 Worker/WASM/vendor 资源 |
 | `file-viewer-v2-*-demo.tar.gz`           | 主 Demo 静态站，解压后即可体验主预览和 `/compare.html` 文档比对 |
 | `file-viewer-v2-*-component-demo.tar.gz` | Vanilla JS / React 原生组件演示站                               |
 | `file-viewer-v2-*-lib-dist.tar.gz`       | Vue3 组件库构建产物，适合离线检查 dist 内容                     |
@@ -387,6 +388,18 @@ GitHub Release 会同步提供完整下载项:
 | `flyfish-group-file-viewer-*.tgz`        | Vue2.7 本地 npm 安装包                                          |
 | `flyfish-group-file-viewer-web-*.tgz`    | 纯 JS 历史兼容包，提供 `mountViewer` 原生挂载和资源复制工具     |
 | `flyfish-group-file-viewer-react-*.tgz`  | React 历史兼容包，提供原生 React 组件入口                       |
+
+客户只想把官方 Demo 当成独立页面嵌入时，优先下载 `file-viewer-v2-*-official-demo-iframe.tar.gz`。解压后把整个目录发布到同一个静态路径，然后使用:
+
+```html
+<iframe
+  src="/file-viewer/iframe.html?embed=1&url=/files/demo.docx"
+  style="width:100%;height:720px;border:0"
+  allow="fullscreen"
+></iframe>
+```
+
+如果文件只能由父页面接口取回，可使用包内 `iframe-example.html` 展示的 `postMessage(Blob)` 方案: `iframe.html?embed=1&from=<父页面 origin>&name=<文件名>` 会保持无 Demo 外壳状态，收到父页面传入的 `Blob` 后按指定文件名预览。
 
 `file-viewer3` 非 scoped 历史兼容包仍会走 npm 发布链路；开源总仓库下载区使用 `flyfish-group-file-viewer3-*.tgz` 作为 Vue3 兼容 tarball，避免重复存储相同包体。
 
