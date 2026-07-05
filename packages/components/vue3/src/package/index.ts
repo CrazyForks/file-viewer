@@ -120,6 +120,8 @@ export type {
   FileViewerApplyViewStateOptions,
   FileViewerArchiveOptions,
   FileViewerBeforeOperation,
+  FileViewerBrandingOptions,
+  FileViewerBrandLicenseInput,
   FileViewerCadDwfLineWeightMode,
   FileViewerCadOptions,
   FileViewerCadRenderer,

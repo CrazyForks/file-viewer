@@ -372,6 +372,20 @@ export type {
 } from './viewer/state';
 
 export {
+  FILE_VIEWER_BRAND_LICENSE_FORMAT,
+  FILE_VIEWER_BRAND_LICENSE_KIND,
+  FILE_VIEWER_BRAND_LICENSE_PERMISSION,
+  FILE_VIEWER_BRAND_LICENSE_PRODUCT,
+  FILE_VIEWER_BRAND_LICENSE_PROJECT,
+  buildFileViewerBrandingInlineStyle,
+  isFileViewerBrandRemovalLicense,
+  resolveFileViewerBrandingPresentationState,
+} from './features/branding';
+export type {
+  FileViewerBrandingPresentationState,
+} from './features/branding';
+
+export {
   buildFileViewerWatermarkBackgroundImage,
   buildFileViewerWatermarkInlineStyle,
   buildFileViewerWatermarkStyle,
@@ -399,6 +413,11 @@ export type {
   FileViewerArchiveOptions,
   FileViewerApplyViewStateOptions,
   FileViewerBeforeOperation,
+  FileViewerBrandingOptions,
+  FileViewerBrandingPosition,
+  FileViewerBrandLicenseBundle,
+  FileViewerBrandLicenseCertificate,
+  FileViewerBrandLicenseInput,
   FileViewerCadDwfLineWeightMode,
   FileViewerCadOptions,
   FileViewerCadRenderer,

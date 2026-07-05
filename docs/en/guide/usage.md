@@ -66,6 +66,7 @@ export const viewerOptions = {
 | `builtinRenderers` | Advanced built-in baseline switch: `all`, `lite`, or `none`. Most quick starts do not need it. |
 | `toolbar` | Built-in operation bar visibility, position, grouped actions, key-based items, permission gates, and button-specific guards. |
 | `watermark` | Text or image watermark source, opacity, spacing, size, rotation, color, and toggle behavior. |
+| `branding` | Built-in Flyfish Viewer attribution badge. Pass `true` to show the default badge, or `{ enabled:false, license }` with the downloaded `flyfish-viewer-license.json` brand-removal authorization package to hide it legitimately. |
 | `search` | Document search, highlighted matches, next / previous navigation, whole-word and case-sensitive behavior. |
 | `ai` | Text chunk collection for vectorization, source tracing, source-aware highlighting, and audit workflows. It does not call a cloud model by itself. |
 | `archive` | Safe extraction limits, IndexedDB cache behavior, worker timeout, nested preview, and self-hosted libarchive paths. |

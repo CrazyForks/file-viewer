@@ -3,16 +3,20 @@ import {
   type FileViewerElement,
   type ViewerEvent,
 } from '@file-viewer/web-full'
+import { getDemoSource } from './demoSource'
 import './styles.css'
 
 defineFileViewerElement()
 
 const viewer = document.getElementById('custom-element-viewer') as FileViewerElement | null
+const demoSource = getDemoSource()
 
 if (!viewer) {
   throw new Error('Missing <flyfish-file-viewer> demo element.')
 }
 
+viewer.src = demoSource.url
+viewer.filename = demoSource.filename
 viewer.options = {
   theme: 'light',
   toolbar: {

@@ -215,6 +215,7 @@ const options = {
 | `toolbar` | `true`、`false` 或对象；声明是否显示下载原文件、打印完整渲染结果、导出渲染后 HTML 和统一缩放按钮。传 `false` 会隐藏内置工具栏，但 ref / controller 上的下载、打印、导出、缩放 API 仍可用于自定义业务工具栏。`toolbar.order` 可按 `search`、`zoom`、`download`、`print`、`exportHtml` 调整内置工具栏分组顺序，默认 `['search', 'zoom', 'download', 'print', 'exportHtml']`，未列出的项会按默认顺序追加；`toolbar.items` 可按 `download`、`print`、`export-html`、`zoom-in`、`zoom-out`、`zoom-reset` 精确控制内置按钮显隐；`toolbar.permissions` 使用同一套 key 做强权限控制，设为 `false` 时内置按钮和外部 API 调用都会被拦截。`toolbar.zoom` 可单独关闭缩放按钮组；真实缩放能力由各渲染器 provider 决定，Excel 等虚拟表格会通过内部列宽、行高和字体重排适配缩放，不会被外层 CSS 强行缩放。`toolbar.position` 支持 `auto`、`top`、`top-center`、`bottom-right`，默认 `auto`，PDF 会自动悬浮到右下角以避开自身导航栏，其他格式保持顶部靠右；需要顶部水平居中时传 `top-center`。打印按钮还会结合当前文件类型、渲染完成状态和导出适配器动态显隐，Excel 等虚拟表格链路会隐藏打印按钮 |
 | `fit` | 显式内容适配策略。未传时保持各 renderer 历史首屏行为；传字符串时支持 `'auto'`、`'contain'`、`'cover'`、`'width'`、`'height'`、`'actual'`、`'scale-down'`，传对象时可配置 `{ mode, resize, padding, minScale, maxScale }`。`resize` 默认 `'until-interaction'`：首屏和容器变化自动适配，用户手动缩放、平移或调用 `applyViewState()` 后停止覆盖；`'always'` 会持续跟随容器，`'initial'` 只做首屏。自定义工具栏可调用 `fitToView('width')` 主动重新适配 |
 | `watermark` | `true`、文字配置或图片配置；支持 `text`、`image`、`opacity`、`rotate`、`gapX/gapY`、`width/height`、字体和颜色 |
+| `branding` | 内置 Flyfish Viewer 品牌角标配置。传 `true` 显示默认角标；需要合法去除角标时，传 `{ enabled:false, license }`，其中 `license` 是飞鱼小铺签发并下载的 `flyfish-viewer-license.json` 字符串或解析后的对象 |
 | `search` | `true`、`false` 或对象；控制搜索能力。对象支持 `caseSensitive`、`wholeWord`、`maxMatches`、`debounce`、`className` 和 `activeClassName`。Word、Markdown、代码等文本类格式使用通用 DOM 高亮，PDF 等特殊格式可以走渲染器原生搜索提供器，避免污染文本层或 canvas |
 | `ai` | AI 友好结构配置；预览器不绑定云端模型，只提供 `getDocumentTextChunks()` 所需的文本切片、行号、页码、锚点和 label 上下文，业务侧可用于向量化、溯源、来源定位、召回高亮和审计 |
 | `archive.workerUrl` | 自定义 libarchive.js Worker 地址。一般不需要配置；预览器会优先尝试当前部署 base 下的 `vendor/libarchive/worker-bundle.js`，失败后自动回退到 ZIP/TAR/GZIP 兼容模式 |
@@ -303,6 +304,8 @@ const options = {
 | 完全未知扩展名 | 才显示真正“不支持此格式” |
 
 图片水印可以传相对路径、业务内网 URL 或 data URL。开启图片水印时，文字水印不会重复绘制；纯离线部署建议使用随业务静态资源发布的图片或 data URL。
+
+如果购买了 Flyfish Viewer 去品牌标识授权，可以把小铺下载的授权 JSON 传给 `options.branding.license`。Custom Element 场景也可以使用 `branding` 与 `brand-license` 属性；授权有效时内置品牌角标会隐藏，授权无效或过期时会继续展示。
 
 Typst 文件通过 `.typ` / `.typst` 扩展名识别。组件会直接读取 Typst 源文件，并在命中格式时按需加载浏览器 WASM 编译器、SVG 渲染链路和默认字体资产；不会自动探测、替换或优先使用同名 PDF。默认 compiler / renderer WASM 随 viewer assets 分发到 `wasm/typst/`，默认字体分发到 `wasm/typst/fonts/`，也可以按私有化部署要求指定自己的地址；运行时不会访问公共 CDN，也不会用源码视图冒充预览成功。若本地 WASM 或字体目录不可用，或浏览器端编译超出预期时间，组件会显示明确的部署或超时错误，便于第一时间修正静态资源路径。
 

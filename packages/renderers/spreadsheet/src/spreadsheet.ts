@@ -90,6 +90,9 @@ type EVirtTableConstructor = new (
 ) => EVirtTableInstance;
 
 type EVirtTableModuleRecord = Record<string, unknown>;
+type EVirtTableGlobal = typeof globalThis & {
+  EVirtTable?: unknown;
+};
 
 type WorkerConstructor = new (scriptURL: string | URL, options?: WorkerOptions) => Worker;
 
@@ -150,10 +153,18 @@ const asModuleRecord = (value: unknown): EVirtTableModuleRecord | null => {
     : null;
 };
 
+const getEVirtTableGlobalCandidate = () => {
+  const globalRecord = typeof globalThis === 'undefined'
+    ? null
+    : globalThis as EVirtTableGlobal;
+  return globalRecord?.EVirtTable;
+};
+
 export const resolveEVirtTableConstructor = (module: unknown): EVirtTableConstructor => {
   const record = asModuleRecord(module);
   const defaultRecord = asModuleRecord(record?.default);
   const moduleExportsRecord = asModuleRecord(record?.['module.exports']);
+  const globalCandidate = getEVirtTableGlobalCandidate();
   const candidates = [
     module,
     record?.default,
@@ -163,6 +174,7 @@ export const resolveEVirtTableConstructor = (module: unknown): EVirtTableConstru
     defaultRecord?.EVirtTable,
     moduleExportsRecord?.default,
     moduleExportsRecord?.EVirtTable,
+    globalCandidate,
   ];
   const constructor = candidates.find(isEVirtTableConstructor);
 
@@ -175,7 +187,7 @@ export const resolveEVirtTableConstructor = (module: unknown): EVirtTableConstru
 };
 
 const loadEVirtTable = async (): Promise<EVirtTableConstructor> => {
-  const module = await import('e-virt-table');
+  const module = await import('e-virt-table/dist/index.es.js');
   return resolveEVirtTableConstructor(module);
 };
 

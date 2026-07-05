@@ -89,6 +89,16 @@
       ></flyfish-file-viewer>
     </main>
 
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search)
+        var sampleUrl = params.get('url') || '/example/word.docx'
+        var sampleName = decodeURIComponent(sampleUrl.split(/[?#]/)[0].split('/').pop() || 'word.docx')
+        var host = document.getElementById('viewer')
+        host.setAttribute('src', sampleUrl)
+        host.setAttribute('filename', sampleName)
+      })()
+    </script>
     <script src="/vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js"></script>
     <script>
       (function () {

@@ -2,9 +2,10 @@ import React, { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import FileViewer from '@file-viewer/react-full'
 import { mountViewer, type ViewerController } from '@file-viewer/web-full'
+import { getDemoSource } from './demoSource'
 import './styles.css'
 
-const docxPreviewUrl = '/example/word.docx'
+const demoSource = getDemoSource()
 
 function WebViewerPanel() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -15,7 +16,8 @@ function WebViewerPanel() {
     }
 
     const controller: ViewerController = mountViewer(containerRef.current, {
-      url: docxPreviewUrl
+      url: demoSource.url,
+      filename: demoSource.filename
     })
 
     return () => {
@@ -67,7 +69,7 @@ function App() {
         <article className="viewer-panel">
           <h2>React Full</h2>
           <div className="viewer-frame">
-            <FileViewer url={docxPreviewUrl} data-testid="react-viewer" />
+            <FileViewer url={demoSource.url} filename={demoSource.filename} data-testid="react-viewer" />
           </div>
         </article>
       </section>

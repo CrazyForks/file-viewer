@@ -82,6 +82,9 @@
       var statusNode = document.getElementById('status')
       var host = document.getElementById('viewer')
       var bundleUrl = '/vendor/file-viewer-web-full/flyfish-file-viewer-web-full.iife.js'
+      var params = new URLSearchParams(window.location.search)
+      var sampleUrl = params.get('url') || '/example/word.docx'
+      var sampleName = decodeURIComponent(sampleUrl.split(/[?#]/)[0].split('/').pop() || 'word.docx')
 
       function setStatus(value) {
         document.body.setAttribute('data-viewer-status', value)
@@ -113,7 +116,8 @@
       loadViewerApi()
         .then(function (api) {
           api.mountViewer(host, {
-            url: '/example/word.docx',
+            url: sampleUrl,
+            filename: sampleName,
             options: {
               theme: 'light',
               toolbar: {

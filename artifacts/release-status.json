@@ -1,30 +1,30 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-05T09:59:42.500Z",
-  "version": "2.1.20",
+  "generatedAt": "2026-07-05T15:29:29.064Z",
+  "version": "2.1.21",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
   "sourceBaseline": {
     "repository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "policy": "private-complete-original-workspace",
-    "authoritativeCommit": "e5d7d9ec4ebe5ad27a89caec6b36f25f82f35fcf",
+    "authoritativeCommit": "06c8f71f6723a440ad6d71f61b4ab9c5ff79888e",
     "localBranch": "main",
-    "localCommit": "f59a8d8c9f338b2eb8f486eb7d4cc95fcf7497f5",
-    "inSync": false,
+    "localCommit": "06c8f71f6723a440ad6d71f61b4ab9c5ff79888e",
+    "inSync": true,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "main",
-    "commit": "f59a8d8c9f338b2eb8f486eb7d4cc95fcf7497f5",
-    "shortCommit": "f59a8d8c",
+    "commit": "06c8f71f6723a440ad6d71f61b4ab9c5ff79888e",
+    "shortCommit": "06c8f71f",
     "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "ok": true,
-    "hash": "e5d7d9ec4ebe5ad27a89caec6b36f25f82f35fcf",
+    "hash": "06c8f71f6723a440ad6d71f61b4ab9c5ff79888e",
     "error": ""
   },
   "openSourceMain": {
@@ -32,33 +32,33 @@
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "a41fb9df1f458bd754a83f543f6f48ffb92cdf1d",
+      "hash": "0ea9f35fd3ca9c9c5c66efe5069f569f83832cdf",
       "error": ""
     },
     "gitee": {
       "url": "https://gitee.com/flyfish-dev/file-viewer",
       "branch": "main",
-      "ok": false,
-      "hash": "",
-      "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+      "ok": true,
+      "hash": "3825a5003c1b1fec0cf9d912a883904f58d78d93",
+      "error": ""
     },
     "inSync": false,
-    "syncMode": "missing",
-    "treeChecked": false,
-    "referenceTree": "",
-    "giteeTree": "",
-    "treeError": "missing public repository head",
+    "syncMode": "stale",
+    "treeChecked": true,
+    "referenceTree": "1d1048211f2160b238444f8ba9a49f76e2a1f2f4",
+    "giteeTree": "ef9e54e70ed3110034a0103cb80e8fee613104c3",
+    "treeError": "",
     "reportHashNote": "The open-source main repository mirrors the current public source tree and records the private source commit in the public commit body for traceability. The observed remote hash can trail until that mirror commit is pushed. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
   },
   "githubRelease": {
-    "ok": true,
-    "tag": "v2.1.20",
-    "url": "https://github.com/flyfish-dev/file-viewer/releases/tag/v2.1.20",
-    "assetCount": 58,
-    "hasManifest": true,
-    "hasStatus": true,
-    "hasSchema": true,
-    "error": ""
+    "ok": false,
+    "tag": "v2.1.21",
+    "url": "",
+    "assetCount": 0,
+    "hasManifest": false,
+    "hasStatus": false,
+    "hasSchema": false,
+    "error": "release not found"
   },
   "componentRepositories": [
     {
@@ -76,7 +76,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-core/' not found"
       }
     },
     {
@@ -94,7 +94,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-web/' not found"
       }
     },
     {
@@ -112,7 +112,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-web-full/' not found"
       }
     },
     {
@@ -130,7 +130,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue3/' not found"
       }
     },
     {
@@ -148,7 +148,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue3-full/' not found"
       }
     },
     {
@@ -166,7 +166,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.7/' not found"
       }
     },
     {
@@ -184,7 +184,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.7-full/' not found"
       }
     },
     {
@@ -202,7 +202,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.6/' not found"
       }
     },
     {
@@ -220,7 +220,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-vue2.6-full/' not found"
       }
     },
     {
@@ -238,7 +238,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react/' not found"
       }
     },
     {
@@ -256,7 +256,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react-full/' not found"
       }
     },
     {
@@ -274,7 +274,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react-legacy/' not found"
       }
     },
     {
@@ -292,7 +292,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-react-legacy-full/' not found"
       }
     },
     {
@@ -310,7 +310,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-jquery/' not found"
       }
     },
     {
@@ -328,7 +328,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-jquery-full/' not found"
       }
     },
     {
@@ -346,7 +346,7 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-svelte/' not found"
       }
     },
     {
@@ -364,253 +364,253 @@
         "branch": "main",
         "ok": false,
         "hash": "",
-        "error": "fatal: could not read Username for 'https://gitee.com': Device not configured"
+        "error": "remote: [session-id] 404 not found!\nfatal: repository 'https://gitee.com/flyfish-dev/file-viewer-svelte-full/' not found"
       }
     }
   ],
   "npmPackages": [
     {
       "packageName": "@file-viewer/core",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-pdf",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-ofd",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-presentation",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/doc",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-word",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-spreadsheet",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-drawing",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-3d",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-mindmap",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-cad",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-typst",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-archive",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-email",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-epub",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-text",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-image",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-media",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-geo",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-data",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/eda-layout",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/eda-orcad",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/geometry-engine",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/renderer-eda",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/pptx",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/preset-all",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/preset-lite",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/preset-office",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/preset-engineering",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vite-plugin",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer3",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "file-viewer3",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer-web",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@flyfish-group/file-viewer-react",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
@@ -623,143 +623,143 @@
     },
     {
       "packageName": "@file-viewer/web",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/web-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue3",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue3-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue2.7",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue2.7-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue2.6",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/vue2.6-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/react",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/react-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/react-legacy",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/react-legacy-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/jquery",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/jquery-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/svelte",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     },
     {
       "packageName": "@file-viewer/svelte-full",
-      "expectedVersion": "2.1.20",
-      "publishedVersion": "2.1.20",
+      "expectedVersion": "2.1.21",
+      "publishedVersion": "2.1.21",
       "ok": true,
       "error": ""
     }
   ],
   "gaps": [
-    "local HEAD f59a8d8c does not match origin/main e5d7d9ec4ebe"
+    "GitHub Release v2.1.21 missing"
   ],
   "gapSummary": {
     "total": 1,
-    "externalBlockers": 0,
-    "localActionable": 1,
+    "externalBlockers": 1,
+    "localActionable": 0,
     "byChannel": {
-      "source-worktree": 1
+      "github-release": 1
     },
-    "externalBlockerChannels": [],
-    "localActionableChannels": [
-      "source-worktree"
-    ]
+    "externalBlockerChannels": [
+      "github-release"
+    ],
+    "localActionableChannels": []
   },
   "gapDetails": [
     {
-      "id": "source-worktree-local-head-f59a8d8c-does-not-match-origin-main-e5d7d9ec4ebe",
-      "channel": "source-worktree",
-      "scope": "local",
-      "externalBlocker": false,
-      "message": "local HEAD f59a8d8c does not match origin/main e5d7d9ec4ebe",
-      "nextAction": "Commit or clean the local source worktree, then rerun the release audit."
+      "id": "github-release-github-release-v2.1.21-missing",
+      "channel": "github-release",
+      "scope": "release-assets",
+      "externalBlocker": true,
+      "message": "GitHub Release v2.1.21 missing",
+      "nextAction": "Upload the missing GitHub Release metadata or artifact and rerun verify:github-release-assets."
     }
   ],
   "nextActions": [
-    "Commit and push the local source/public repository changes, then regenerate the release status report."
+    "Create or update the GitHub Release assets, then rerun `pnpm release:public`."
   ]
 }

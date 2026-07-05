@@ -82,4 +82,5 @@ console.log(`[file-viewer-demo] web full helper assets copied to ${fullHelperTar
 
 await mkdir(exampleTargetDir, { recursive: true })
 await cp(resolve(exampleSourceDir, 'word.docx'), resolve(exampleTargetDir, 'word.docx'))
-console.log(`[file-viewer-demo] docx example copied to ${exampleTargetDir}`)
+await cp(resolve(exampleSourceDir, 'excel.xlsx'), resolve(exampleTargetDir, 'excel.xlsx'))
+console.log(`[file-viewer-demo] docx/xlsx examples copied to ${exampleTargetDir}`)
