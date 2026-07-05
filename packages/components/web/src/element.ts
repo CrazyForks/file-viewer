@@ -1,6 +1,5 @@
 import {
   fileViewerCoreRendererRegistry,
-  type FileViewerBrandLicenseInput,
 } from '@file-viewer/core';
 import {
   mountViewer as mountCoreViewer,
@@ -63,8 +62,6 @@ const observedAttributes = [
   'toolbar',
   'toolbar-position',
   'watermark',
-  'branding',
-  'brand-license',
   'search',
   'fit',
   'density',
@@ -627,27 +624,6 @@ export class FileViewerElement extends ElementBase implements ViewerControllerHa
       options.watermark = watermarkBoolean;
     } else if (watermark) {
       options.watermark = { enabled: true, text: watermark };
-    }
-
-    const branding = this.getAttribute('branding');
-    const brandingJson = parseJsonObject<ViewerOptions['branding']>(branding);
-    const brandingBoolean = parseBooleanLike(branding);
-    if (brandingJson !== undefined) {
-      options.branding = brandingJson;
-    } else if (brandingBoolean !== undefined) {
-      options.branding = brandingBoolean;
-    } else if (branding) {
-      options.branding = { enabled: true, text: branding };
-    }
-
-    const brandLicense = this.getAttribute('brand-license');
-    if (brandLicense) {
-      const license = parseJsonObject<FileViewerBrandLicenseInput>(brandLicense) || brandLicense;
-      options.branding = {
-        ...(typeof options.branding === 'object' && options.branding ? options.branding : {}),
-        enabled: false,
-        license,
-      };
     }
 
     const search = this.getAttribute('search');

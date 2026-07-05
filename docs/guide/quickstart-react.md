@@ -1,29 +1,18 @@
-# React 集成
+# React Integration
 
-<div class="doc-kicker">For React Projects</div>
+<div class="doc-kicker">Native React Component</div>
 
 <p class="doc-lead">
-  React 包提供原生组件体验。组件内部通过共享 core 能力直接挂载完整预览器，
-  props、事件、ref、调试链路都留在 React 项目内。
+  <code>@file-viewer/react</code> exposes a React component and handle APIs while sharing the same core options and renderer packages as other ecosystems.
 </p>
 
-## 安装
-
-新项目优先使用标准包名:
+## Install
 
 ```bash
 npm install @file-viewer/react @file-viewer/preset-office
 ```
 
-历史包名仍同步维护:
-
-```bash
-npm install @flyfish-group/file-viewer-react
-```
-
-React 16.8 / 17 老项目可以使用 `@file-viewer/react-legacy`，props、options 和 controller 语义保持一致。
-
-如果你只安装 `@file-viewer/react`，得到的是最轻的 React 原生组件和 core 基础能力；PDF、Office、CAD、Typst、压缩包等格式能力需要安装对应 preset 或 renderer。非 Vite 项目优先通过 `options.preset` 显式注入：
+Installing only `@file-viewer/react` gives you the lightest React component and core foundation. PDF, Office, CAD, Typst, archive, and other heavy format capabilities come from presets or renderer packages. The stable path for every bundler is to import a preset or renderer and pass it through `options.preset` / `options.renderers`:
 
 ```tsx
 import officePreset from '@file-viewer/preset-office'
@@ -37,9 +26,9 @@ const viewerOptions = {
 }
 ```
 
-宿主 CSS 不可控、低代码平台或微前端混挂时，推荐传 `styleIsolation:'shadow'`。React 包默认保持 light DOM 兼容；完整隔离模式、CSS tokens 和 `::part()` 定制见 [样式隔离与主题定制](/guide/style-isolation)。
+Use `styleIsolation:'shadow'` when host global CSS is uncontrolled, low-code resets are present, or micro-frontends share the page. The React package keeps light-DOM compatibility by default. See [Style Isolation And Customization](/guide/style-isolation) for tokens and `::part()` customization.
 
-Vite 项目可以额外加入插件，插件会自动发现已安装的 `@file-viewer/preset-*` 并省去手动 import：
+Vite projects can add the plugin once to avoid manual preset imports. Vite still requires a one-line plugin registration; after that, `fileViewerRenderers({ copyAssets:true })` auto-discovers installed `@file-viewer/preset-*` packages:
 
 ```bash
 npm install -D @file-viewer/vite-plugin
@@ -58,13 +47,13 @@ export default defineConfig({
 })
 ```
 
-重度用户需要完整能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all` 即可：
+Switch `@file-viewer/preset-office` to `@file-viewer/preset-all` when heavy users need the complete capability set immediately. Non-Vite apps keep passing the preset through `options.preset`; Vite apps keep the same plugin config:
 
 ```bash
 npm install @file-viewer/react @file-viewer/preset-all
 ```
 
-如果希望一个包直接获得完整格式矩阵，使用 full 包即可。React 18 / 19 使用 `@file-viewer/react-full`，React 16.8 / 17 使用 `@file-viewer/react-legacy-full`：
+Use a full package when you want one package to enable the complete matrix. React 18 / 19 uses `@file-viewer/react-full`; React 16.8 / 17 uses `@file-viewer/react-legacy-full`:
 
 ```bash
 npm install @file-viewer/react-full
@@ -88,66 +77,51 @@ export function Preview() {
 }
 ```
 
-需要更强自定义时，再配置 `formats`、`renderers`、`scan:true`、`inject:false` 或 `chunkStrategy:'renderer'`；默认推荐保持 `fileViewerRenderers({ copyAssets:true })`，让插件根据已安装 preset 自动激活能力。
+Use `formats`, `renderers`, `scan:true`, `inject:false`, or `chunkStrategy:'renderer'` only when the product needs explicit control. The recommended default remains `fileViewerRenderers({ copyAssets:true })`, with installed presets auto-activated by the plugin.
 
-## 最短示例
+## Component Usage
 
 ```tsx
-import FileViewer from '@file-viewer/react'
+import { useRef } from 'react'
+import FileViewer, { type FileViewerHandle } from '@file-viewer/react'
 import officePreset from '@file-viewer/preset-office'
 
 export function Preview() {
+  const viewerRef = useRef<FileViewerHandle>(null)
+
   return (
     <div style={{ height: '100vh' }}>
       <FileViewer
-        url="/files/demo.docx"
-        onEvent={(event) => {
-          console.log(event.type, event.payload)
-        }}
+        ref={viewerRef}
+        url="/files/report.pdf"
         options={{
           preset: officePreset,
           rendererMode: 'replace',
           theme: 'light',
           toolbar: { position: 'bottom-right' },
-          watermark: { text: '内部预览', opacity: 0.14 },
-          archive: { cache: true, workerTimeoutMs: 30000 }
+          search: { enabled: true },
+          archive: { cache: true }
         }}
+        onViewerEvent={(event) => console.log(event.type)}
       />
     </div>
   )
 }
 ```
 
-父容器必须有明确高度；预览器会填满父容器。
+## Legacy React
 
-## 预览鉴权文件
+React 16.8 and 17 projects should use:
 
-如果文件必须由宿主系统鉴权下载，请先拿到 `Blob`，再传给组件。传 `Blob` 或 `ArrayBuffer` 时一定要同时传 `name`，用于识别扩展名。
-
-```tsx
-import { useEffect, useState } from 'react'
-import FileViewer, { type FileRef } from '@file-viewer/react'
-
-export function PrivatePreview() {
-  const [file, setFile] = useState<FileRef>()
-
-  useEffect(() => {
-    fetch('/api/files/contract', { credentials: 'include' })
-      .then(response => response.blob())
-      .then(setFile)
-  }, [])
-
-  return (
-    <div style={{ height: '100vh' }}>
-      <FileViewer file={file} name="contract.pdf" />
-    </div>
-  )
-}
+```bash
+npm install @file-viewer/react-legacy
 ```
 
-## 移动端 / H5 / React Native WebView
+The event and options model stays aligned with `@file-viewer/react`.
 
-React 组件支持手机浏览器和 H5 WebView。关键是让承载容器拥有稳定高度，并把通用工具栏放到右下角，减少对文档正文的遮挡。PDF、Word、PPTX、图片、CAD、XMind、Mermaid / PlantUML 等渲染链路都会优先按当前可用宽度做自适应；用户仍可通过组件内部的缩放 provider 做放大、缩小和还原，不建议在外层直接用 CSS `transform: scale()`。
+## Mobile, H5, And React Native WebView
+
+The React component works in mobile browsers and H5 WebViews. Give the host container a stable viewport height, keep `minHeight: 0`, and place the common toolbar at the bottom right so document content stays readable. PDF, Word, PPTX, images, CAD, XMind, Mermaid, PlantUML, and similar renderers fit to the available width first; zoom in/out/reset should go through the viewer controller or built-in toolbar instead of wrapping the rendered content with outer CSS transforms.
 
 ```tsx
 import FileViewer from '@file-viewer/react'
@@ -177,36 +151,8 @@ export function MobilePreview() {
 }
 ```
 
-React Native 不能直接运行 DOM 版组件，请在 `WebView` 中承载 H5 页面或 `@file-viewer/web-full` IIFE 页面，再通过业务桥接传入文件 URL、鉴权 token 或下载后的 Blob URL。推荐把预览页设置为独立路由，并开启 WebView 的 JavaScript、DOM Storage 和文件下载能力；如果业务使用严格 CSP 或离线内网环境，仍按 Web 方案运行 `file-viewer-copy-assets` 或使用 `@file-viewer/vite-plugin` 的 `copyAssets:true` 自托管 Worker / WASM / 字体资源。
+React Native cannot mount the DOM component directly. Use a `WebView` that loads an H5 viewer route or an `@file-viewer/web-full` IIFE page, then pass file URLs, authorization tokens, or Blob URLs through your app bridge. Enable JavaScript, DOM Storage, and the download capability in the WebView. For strict CSP or offline intranet deployments, keep using `file-viewer-copy-assets` or `@file-viewer/vite-plugin` with `copyAssets:true` so worker, WASM, font, and vendor assets are served from your own domain.
 
-## 可用参数
+## Vite And Assets
 
-| 参数 | 类型 | 说明 |
-| --- | --- | --- |
-| `url` | `string` | 可直接被浏览器访问的文件地址 |
-| `file` | `File \| Blob \| ArrayBuffer` | 本地文件或鉴权下载后的二进制内容，优先级高于 `url` |
-| `name` | `string` | `Blob` / `ArrayBuffer` 的文件名，建议带扩展名 |
-| `options` | `FileViewerOptions` | 主题、样式隔离、操作栏、水印、搜索、统一缩放、打印、导出、压缩包 Worker / 缓存 / 体积限制等运行配置 |
-| `onEvent` | `(event) => void` | 接收加载、卸载、操作能力、搜索状态和当前位置变化 |
-
-`options.beforeOperation`、`options.hooks` 等函数型配置可以直接传入 React 组件。下载、打印、导出、缩放等按钮操作会在预览器内部根据文件类型动态显隐，并在执行前触发权限校验钩子。
-
-## 本地调试
-
-仓库内置了 React + 纯 JS + Vue3 + jQuery + Svelte 多入口演示:
-
-```bash
-pnpm dev:components
-```
-
-打开页面后，React 面板应当能显示同一份本地 DOCX 示例，并能触发生命周期事件、搜索、缩放和操作按钮状态变化。
-
-## 自托管资源
-
-React 标准接入不需要额外配置静态页面地址。只有当你希望固定 Worker、WASM 或示例文件的访问路径时，才需要复制资源:
-
-```bash
-npx file-viewer-copy-assets ./public/file-viewer
-```
-
-压缩包、CAD、Typst 等重型格式都会按需加载；部署路径特殊时，可以在 `options.archive`、`options.typst` 或 CAD 相关参数中指定自托管资源地址。
+For production bundles, use `@file-viewer/vite-plugin` or run `npx file-viewer-copy-assets ./public/file-viewer` so worker/WASM assets stay self-hosted.

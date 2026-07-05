@@ -2,8 +2,6 @@ import type {
   FileViewerAiOptions as CoreFileViewerAiOptions,
   FileViewerArchiveOptions as CoreFileViewerArchiveOptions,
   FileViewerBeforeOperation as CoreFileViewerBeforeOperation,
-  FileViewerBrandingOptions as CoreFileViewerBrandingOptions,
-  FileViewerBrandLicenseInput as CoreFileViewerBrandLicenseInput,
   FileViewerCadDwfLineWeightMode as CoreFileViewerCadDwfLineWeightMode,
   FileViewerCadOptions as CoreFileViewerCadOptions,
   FileViewerCadRenderer as CoreFileViewerCadRenderer,
@@ -85,19 +83,6 @@ export type FileRef = FileViewerFileRef;
  * 图片水印可以是 http(s) URL、相对路径或 data URL。
  */
 export type FileViewerWatermarkOptions = CoreFileViewerWatermarkOptions;
-
-/**
- * 内置品牌角标配置。
- *
- * 需要去除 Flyfish Viewer 品牌角标时，传入小铺签发的
- * Flyfish Viewer 去品牌授权包到 `license`。
- */
-export type FileViewerBrandingOptions = CoreFileViewerBrandingOptions;
-
-/**
- * Flyfish Viewer 去品牌授权包输入，可以是下载的 JSON 字符串或解析后的对象。
- */
-export type FileViewerBrandLicenseInput = CoreFileViewerBrandLicenseInput;
 
 /**
  * 预览器内置操作栏位置。

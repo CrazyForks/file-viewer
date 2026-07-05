@@ -1,69 +1,54 @@
-# 快速开始
+# Quickstart
 
 <div class="doc-kicker">Get Running Fast</div>
 
 <p class="doc-lead">
-  如果你现在最想做的是“尽快看到效果”，这一页会先给最短可运行路径。
-  先选生态组件，再按业务文件类型选择 preset 或 renderer；跑通后再进入按需装配、离线资源和工具栏定制。
+  If your first goal is to see the viewer running, this page starts with the shortest runnable path.
+  Pick the native component package first, then add the preset or renderer that matches your file types; after that, tune on-demand assembly, offline assets, and toolbar behavior.
 </p>
 
-## 四步接入
+## Four-step Integration
 
-| 步骤 | 做什么 | 最短答案 |
+| Step | Decision | Fast answer |
 | --- | --- | --- |
-| 1 | 选生态组件 | 最轻入口用 `@file-viewer/web` / `@file-viewer/vue3` / `@file-viewer/react` 等标准包；一步到位用 `@file-viewer/web-full` / `@file-viewer/vue3-full` / `@file-viewer/react-full` 等 full 包 |
-| 2 | 选格式能力 | 标准包按需注入 `preset-lite`、`preset-office`、`preset-engineering` 或 `preset-all`；full 包默认已启用完整矩阵 |
-| 3 | 传入文件和 options | `url="/files/demo.pdf"` 或 `file={file}`，标准包把 `preset` 放进 `options`，full 包可直接传主题、工具栏、水印等业务配置 |
-| 4 | 确认样式隔离 | 宿主 CSS 不可控时优先 Web Component / full 默认 Shadow DOM；框架组件可传 `options.styleIsolation:'shadow'` |
+| 1 | Pick the component package | Use standard packages such as `@file-viewer/web`, `@file-viewer/vue3`, or `@file-viewer/react` for the lightest entry; use full packages such as `@file-viewer/web-full`, `@file-viewer/vue3-full`, or `@file-viewer/react-full` for one-step complete capability. |
+| 2 | Pick the capability layer | Standard packages receive `preset-lite`, `preset-office`, `preset-engineering`, or `preset-all` through options; full packages enable the complete matrix by default. |
+| 3 | Pass the source and options | Use `url="/files/demo.pdf"` or a real `File`; standard packages pass a preset through `options`, while full packages can start with theme, toolbar, watermark, and business options only. |
+| 4 | Confirm style isolation | Prefer the Web Component / full default Shadow DOM when host CSS is uncontrolled; framework packages can pass `options.styleIsolation:'shadow'`. |
 
-本页只保留最短可运行路径。完整 options、renderer 包清单和工具栏/水印/打印/搜索等参数见 [组件用法](/guide/usage)，样式隔离与主题定制见 [样式隔离与主题定制](/guide/style-isolation)，按需装配和 Vite 插件细节见 [模块化与按需装配](/guide/on-demand-renderers)。
-
-## 先选接入路线
-
-| 方案 | 适合谁 | 优点 | 你应该看哪页 |
-| --- | --- | --- | --- |
-| 纯 JS 集成 | 非框架页面、微前端壳、任意 Web 系统 | `<flyfish-file-viewer>` 原生组件，也可用 `mountViewer` 命令式挂载 | [纯 JS 集成](/guide/quickstart-web) |
-| Vue3 组件集成 | Vue 3 项目 | 主推组件体验，完整渲染能力直接进入 Vue 应用 | [Vue3 集成](/guide/quickstart-vue3) |
-| Vue2 组件集成 | Vue2.7 / Vue2.6 项目 | 保留旧业务栈，体验与 Vue3 一致 | [Vue2 集成](/guide/quickstart-vue2) |
-| React 组件集成 | React 16.8 / 17 / 18 / 19 项目 | 原生 React 组件，props、事件和 ref 都能直接调试 | [React 集成](/guide/quickstart-react) |
-| jQuery / Svelte | 老后台、SvelteKit 或轻量页面 | 独立标准组件包，复用同一套 core 和 options | [生态组件总览](/guide/ecosystem) |
-| Core / PPTX 引擎 | 自研组件、深度二开、单独验证 PPTX | framework-neutral 能力与独立 renderer 包 | [生态组件总览](/guide/ecosystem) |
+This page keeps the shortest runnable paths. See [Component Options](/guide/usage) for the full API, renderer package matrix, toolbar, watermark, print, search, lifecycle, and guard options. See [Style Isolation And Customization](/guide/style-isolation) for Shadow DOM, tokens, and parts. See [Modular Assembly](/guide/on-demand-renderers) for on-demand renderers and the Vite plugin.
 
 <div class="doc-callout">
-  <strong>推荐经验:</strong> 先用标准组件包和一个明确的 preset 跑通业务文件，例如 Vue3 + preset-office；确认格式范围后，再收敛到 preset-lite、单 renderer，或扩展到 preset-engineering / preset-all。core 负责底层预览能力和 API，各生态组件负责原生接入体验。
+  <strong>Mobile note:</strong> for H5 and mobile browsers, give the viewer host a stable height such as <code>height:100dvh; min-height:0</code>, and prefer <code>toolbar.position:'bottom-right'</code>. React Native should load a WebView-based H5 viewer route; the DOM component cannot mount directly into native RN views. See the <a href="/guide/quickstart-react#mobile-h5-and-react-native-webview">React mobile example</a>.
 </div>
 
-<div class="doc-callout">
-  <strong>移动端提示:</strong> H5 / 手机浏览器场景请给预览容器设置明确高度，例如 <code>height:100dvh; min-height:0</code>，工具栏建议使用 <code>toolbar.position:'bottom-right'</code>。React Native 请通过 WebView 承载 H5 预览页，DOM 版组件不能直接挂在原生 RN 视图中。详细示例见 <a href="/guide/quickstart-react#移动端--h5--react-native-webview">React 移动端接入</a>。
-</div>
+## Pick The Capability Layer First
 
-## 先理解安装边界
+Installing a standard component package such as `@file-viewer/vue3`, `@file-viewer/react`, or `@file-viewer/web` is the lightest path. It gives you the native framework component, types, controller APIs, and the core foundation; it does not install every heavy PDF, Office, CAD, Typst, archive, or engineering renderer by default.
 
-直接安装 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 这类标准组件包是最轻的接入方式，它们只提供当前框架的原生组件、类型、controller 和 core 基础能力，不会默认把 PDF、Office、CAD、Typst、压缩包等重型渲染依赖全部装进业务项目。
+If you want to validate the complete official demo capability first, use a full package. Full packages import `@file-viewer/preset-all` for you, keep the same component API, and enable the full format matrix by default. For CDN / script-tag pages, prefer `@file-viewer/web-full`: jsDelivr / unpkg distribute the complete IIFE directly from npm, so the host application does not need to carry the full dependency set; the script also resolves bundled workers, WASM files, fonts, and vendor assets relative to its own URL. For intranet, strict-CSP, or fully offline deployments, mirror those assets to your own static domain.
 
-如果你的目标是先完整验收所有格式，可以使用 full 包。full 包内部已引入 `@file-viewer/preset-all`，保留同样的组件 API，但默认具备官方 Demo 的完整格式矩阵。CDN / script 标签场景优先使用 `@file-viewer/web-full`，jsDelivr / unpkg 会直接从 npm 分发完整 IIFE，不需要把完整依赖下载到业务仓库；脚本会按自身 URL 自动定位随包分发的 Worker、WASM、字体和 vendor 资源。内网、严格 CSP 或完全离线部署时，再把这些资源同步到自己的静态域。
-
-| 模式 | 安装示例 | 特点 |
+| Mode | Install | Notes |
 | --- | --- | --- |
-| 最轻标准包 | `npm i @file-viewer/vue3 @file-viewer/preset-office` | 按业务选择 preset / renderer，安装体积最可控 |
-| 完整 full 包 | `npm i @file-viewer/vue3-full` | 默认启用 `preset-all`，适合后台全格式附件中心 |
-| CDN full | `https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js` | 无需本地安装，适合传统页面快速试跑完整矩阵 |
+| Light standard package | `npm i @file-viewer/vue3 @file-viewer/preset-office` | Pick exactly the preset / renderer your product needs |
+| Complete full package | `npm i @file-viewer/vue3-full` | Enables `preset-all` by default for all-format workbenches |
+| CDN full | `https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js` | No local install, ideal for script-tag validation |
 
-需要预览具体文件格式时，再选择一个 preset 或单独 renderer:
+Add a preset or a single renderer package for the file formats your product actually needs:
 
-| 能力包 | 覆盖范围 | 推荐场景 |
+| Package | Coverage | Best fit |
 | --- | --- | --- |
-| `@file-viewer/preset-lite` | 文本、Markdown、代码、图片、音频、视频 | 常见轻附件、IM / 工单附件 |
-| `@file-viewer/preset-office` | PDF、Word、Excel、PowerPoint、OFD、RTF、OpenDocument | OA、审批、知识库、合同归档 |
-| `@file-viewer/preset-engineering` | CAD、3D、绘图、XMind、Geo、Typst、Archive、Data、EDA | 工程图纸、研发附件、设计资产 |
-| `@file-viewer/preset-all` | 官方 Demo 的完整格式矩阵 | 演示站、内部全格式附件中心 |
-| 单个 renderer | 例如 `@file-viewer/renderer-pdf`、`@file-viewer/renderer-word` | 只需要少数格式、追求最小依赖 |
+| `@file-viewer/preset-lite` | Text, Markdown, code, image, audio, video | Lightweight attachment preview |
+| `@file-viewer/preset-office` | PDF, Word, Excel, PowerPoint, OFD, RTF, OpenDocument | OA, approvals, knowledge bases, contracts |
+| `@file-viewer/preset-engineering` | CAD, 3D, drawing, XMind, Geo, Typst, Archive, Data, EDA | Engineering, R&D, design assets |
+| `@file-viewer/preset-all` | Full official demo matrix | Demos and internal all-format workbenches |
+| Single renderer | For example `@file-viewer/renderer-pdf` or `@file-viewer/renderer-word` | Minimal custom format cuts |
 
-最稳定的通用接入方式是显式 import preset 或 renderer，并通过 `options.preset` / `options.renderers` 注入给组件。这个方案不依赖 Vite，适用于 Webpack、Rspack、Rollup、Umi、传统多页应用、微前端壳和内部组件库。Vite 项目可以再使用 `@file-viewer/vite-plugin` 省去手动 import，并自动复制离线资源。
+The most stable integration path is to import a preset or renderer explicitly and pass it through `options.preset` / `options.renderers`. This works in Webpack, Rspack, Rollup, Umi, classic multi-page apps, micro-frontends, and internal component libraries. Vite projects can add `@file-viewer/vite-plugin` later to remove manual imports and copy offline assets automatically.
 
-### 通用方案：options.preset 注入
+### Universal Setup: Inject options.preset
 
-安装当前生态组件包和一个 preset：
+Install the component package and one preset:
 
 ```bash
 pnpm add @file-viewer/vue3 @file-viewer/preset-office
@@ -80,13 +65,13 @@ export const viewerOptions = {
 }
 ```
 
-组件层只需要传同一份 options：
+Pass the same options object to your framework component:
 
 ```vue
 <file-viewer url="/files/demo.docx" :options="viewerOptions" />
 ```
 
-多个能力包直接组合到同一个 `preset` 字段，不需要再学习第二个 options 名称：
+Multiple capability bundles use the same `preset` field as an array, so applications do not need a second option name:
 
 ```ts
 import officePreset from '@file-viewer/preset-office'
@@ -98,7 +83,7 @@ export const viewerOptions = {
 }
 ```
 
-只需要少数格式时，跳过 preset，直接安装单 renderer：
+For the smallest exact cut, skip presets and install a single renderer:
 
 ```bash
 pnpm add @file-viewer/vue3 @file-viewer/renderer-pdf
@@ -113,13 +98,13 @@ export const viewerOptions = {
 }
 ```
 
-如果打开的是支持矩阵内但未装配的格式，预览器会给出应该安装哪个 preset / renderer 的提示；只有真正不在矩阵中的扩展名才提示不支持。
+If a file extension is supported but the required renderer is not assembled, the viewer shows an install-oriented hint instead of a vague unsupported state.
 
-### 一步到位：full 包
+### One-Step Setup: Full Packages
 
-full 包适合希望先获得完整格式体验、再按业务优化体积的团队。它们与标准包暴露同样的 props、事件、controller 和 options，只是默认已启用完整 preset：
+Full packages are for teams that want the complete format experience first and can optimize package size later. They expose the same props, events, controller APIs, and options as standard packages, but `preset-all` is enabled by default:
 
-| 生态 | full 包 | 标准包 |
+| Ecosystem | Full package | Standard package |
 | --- | --- | --- |
 | Vanilla JS / Web Component | `@file-viewer/web-full` | `@file-viewer/web` |
 | Vue 3 | `@file-viewer/vue3-full` | `@file-viewer/vue3` |
@@ -142,11 +127,11 @@ import FileViewer from '@file-viewer/vue3-full'
 <file-viewer url="/files/contract.pdf" :options="{ theme: 'light', toolbar: { position: 'bottom-right' } }" />
 ```
 
-React / Vue2 / Svelte / jQuery 只需要把包名替换为对应 full 包，组件写法保持一致。
+React, Vue 2, Svelte, and jQuery keep the same component shape; only the package name changes.
 
-Vue 3 / Vue 2.7 / Vue 2.6 full 包会默认把离线资产根设为 `/file-viewer/`，并自动补齐 Archive、PDF、DOCX、Excel、PPTX、CAD、Typst、Draw.io 和 SQLite 等资源 URL。也就是说，把 `file-viewer-copy-assets` 复制出的 `vendor/`、`wasm/` 等目录发布到 `/file-viewer/` 后，`@file-viewer/vue3-full`、`@file-viewer/vue2.7-full` 和 `@file-viewer/vue2.6-full` 不需要再手写 `archive.workerUrl` / `archive.wasmUrl`。
+The Vue 3 / Vue 2.7 / Vue 2.6 full packages default their runtime asset base to `/file-viewer/` and pre-fill Archive, PDF, DOCX, Excel, PPTX, CAD, Typst, Draw.io, and SQLite asset URLs. After publishing the `vendor/`, `wasm/`, and related directories copied by `file-viewer-copy-assets` under `/file-viewer/`, `@file-viewer/vue3-full`, `@file-viewer/vue2.7-full`, and `@file-viewer/vue2.6-full` do not need hand-written `archive.workerUrl` / `archive.wasmUrl` values.
 
-如果你的静态目录不是 `/file-viewer/`，在应用启动前改一次默认 base 即可：
+If your static prefix is different, set the default base once during application startup:
 
 ```ts
 import { setDefaultFullAssetBaseUrl } from '@file-viewer/vue3-full'
@@ -154,11 +139,11 @@ import { setDefaultFullAssetBaseUrl } from '@file-viewer/vue3-full'
 setDefaultFullAssetBaseUrl('/static/file-viewer/')
 ```
 
-显式传入的 `options.archive.workerUrl`、`options.pdf.workerUrl` 等仍然优先级更高，方便灰度或多租户静态路径覆盖。
+Explicit options such as `options.archive.workerUrl` or `options.pdf.workerUrl` still win, which keeps tenant-specific or staged static paths easy to override.
 
-### CDN full：完整能力快速试跑
+### CDN Full: Complete Script-Tag Trial
 
-无构建工具或临时验证页面可以直接使用 CDN full 包。CDN 不占用本地项目安装体积，适合演示、POC 和传统后台页面快速试跑：
+No-build pages can load the full CDN bundle directly. It avoids local package installation and is useful for demos, POCs, and classic admin pages:
 
 ```html
 <div id="viewer" style="height:720px"></div>
@@ -175,7 +160,7 @@ setDefaultFullAssetBaseUrl('/static/file-viewer/')
 </script>
 ```
 
-也可以使用原生组件写法：
+The Custom Element route is available as well:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js"></script>
@@ -187,9 +172,9 @@ setDefaultFullAssetBaseUrl('/static/file-viewer/')
 ></flyfish-file-viewer>
 ```
 
-### Vite 插件：免配置自动装配
+### Vite Plugin: Zero-Config Assembly
 
-Vite 项目可以在通用方案基础上安装并注册插件。安装 `@file-viewer/vite-plugin` 和任意 `@file-viewer/preset-*` 后，在 `vite.config.ts` 注册 `fileViewerRenderers({ copyAssets:true })`，插件就会自动发现已安装 preset、注入 renderer virtual module，并复制 Worker / WASM / 字体 / vendor 资源。业务代码可以不再手动 import preset：
+In Vite projects, install and register the plugin in addition to a preset. Once `fileViewerRenderers({ copyAssets:true })` is in `vite.config.ts`, it auto-discovers installed `@file-viewer/preset-*` packages, injects the renderer virtual module, and copies Worker / WASM / font / vendor assets. Application code no longer needs to import the preset manually:
 
 ```bash
 pnpm add @file-viewer/vue3 @file-viewer/preset-office
@@ -204,41 +189,131 @@ export default {
   plugins: [
     fileViewerRenderers({
       copyAssets: true
-      // 无需 preset:'office'，插件会自动发现已安装的 @file-viewer/preset-office。
+      // No preset:'office' needed; the plugin discovers installed @file-viewer/preset-office.
     })
   ]
 }
 ```
 
-重度用户需要最快拥有全部能力时，直接把 preset 换成全量包：
+Heavy users can switch to the complete preset while keeping the same Vite config:
 
 ```bash
 pnpm add @file-viewer/vue3 @file-viewer/preset-all
 pnpm add -D @file-viewer/vite-plugin
 ```
 
-需要自定义时再显式配置：
+Use explicit options only when you need customization:
 
-| 选项 | 适合场景 |
+| Option | Best fit |
 | --- | --- |
-| `copyAssets:true` | 自动复制 Worker、WASM、PDF 字体、CAD、Typst、Archive、Data 等离线资源，推荐生产和内网部署开启 |
-| `formats` / `renderers` | 不使用 preset、或在 preset 外补充少数格式时，生成精确 renderer import |
-| `scan:true` | 让插件扫描 `fileViewerFormats`、`data-file-viewer-formats`、上传 `accept` 等源码 hint |
-| `preset:'auto'` / `autoPresets:true` | 开启 `scan:true` 时仍保持“根据已安装 preset 自动激活能力” |
-| `inject:false` | 关闭自动注入，改为手动导入 `virtual:file-viewer-renderers` 并传给 `options.renderers` |
-| `chunkStrategy:'renderer'` | 按 renderer 拆分 chunk，方便缓存、排查和分析重型格式体积 |
+| `copyAssets:true` | Copies Worker, WASM, PDF font, CAD, Typst, Archive, Data, and other offline assets; recommended for production and intranet deployments |
+| `formats` / `renderers` | Generates exact renderer imports when you do not use a preset, or when a preset needs a few extra formats |
+| `scan:true` | Scans source hints such as `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` attributes |
+| `preset:'auto'` / `autoPresets:true` | Keeps installed preset auto-discovery active while `scan:true` is enabled |
+| `inject:false` | Disables auto injection so you can import `virtual:file-viewer-renderers` and pass `options.renderers` manually |
+| `chunkStrategy:'renderer'` | Splits chunks by renderer for caching, debugging, and heavy-pipeline size analysis |
 
-默认推荐路径是 `fileViewerRenderers({ copyAssets:true })`。只有需要极致裁剪、源码扫描或严格 registry 管理时，才需要显式配置上面的选项。
+The recommended default is `fileViewerRenderers({ copyAssets:true })`. Configure the advanced options only for strict bundle cuts, source-hint scanning, or complete registry control.
 
-## 运行环境
+## Vanilla JavaScript / Web Component
 
-- Node.js `>= 18`
-- 纯 JS、React、Vue2 / Vue3 项目都可以使用 npm、pnpm、yarn 或业务项目已有包管理器
-- 浏览器需要支持现代前端能力，建议优先在最新版 Chrome 或 Edge 中联调
+```bash
+npm install @file-viewer/web @file-viewer/preset-office
+```
 
-## 语言与文案
+```html
+<flyfish-file-viewer
+  id="viewer"
+  src="/files/demo.pdf"
+  filename="demo.pdf"
+  locale="en-US"
+  theme="light"
+  toolbar-position="bottom-right"
+  style="display:block;height:720px"
+></flyfish-file-viewer>
+```
 
-组件默认 `locale: 'auto'`，会根据浏览器语言在中文和英文之间自动选择。需要固定语言或覆盖文案时，直接通过同一套 `options` 传入:
+```ts
+import { defineFileViewerElement } from '@file-viewer/web'
+import officePreset from '@file-viewer/preset-office'
+
+defineFileViewerElement()
+
+const viewer = document.getElementById('viewer')
+viewer.options = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+```
+
+## Vue 3
+
+```bash
+npm install @file-viewer/vue3 @file-viewer/preset-office
+```
+
+```ts
+import { createApp } from 'vue'
+import App from './App.vue'
+import FileViewer from '@file-viewer/vue3'
+
+createApp(App).use(FileViewer).mount('#app')
+```
+
+```vue
+<script setup lang="ts">
+import officePreset from '@file-viewer/preset-office'
+
+const viewerOptions = {
+  preset: officePreset,
+  rendererMode: 'replace',
+  theme: 'light',
+  toolbar: { position: 'bottom-right' }
+}
+</script>
+
+<template>
+  <div style="height: 100vh">
+    <file-viewer url="/files/report.docx" :options="viewerOptions" />
+  </div>
+</template>
+```
+
+## React
+
+```bash
+npm install @file-viewer/react @file-viewer/preset-office
+```
+
+```tsx
+import FileViewer from '@file-viewer/react'
+import officePreset from '@file-viewer/preset-office'
+
+export function Preview() {
+  return (
+    <div style={{ height: '100vh' }}>
+      <FileViewer
+        url="/files/report.pdf"
+        options={{
+          preset: officePreset,
+          rendererMode: 'replace',
+          theme: 'light',
+          toolbar: { position: 'bottom-right' },
+          archive: { cache: true }
+        }}
+      />
+    </div>
+  )
+}
+```
+
+React 16.8/17 projects can use `@file-viewer/react-legacy`.
+
+## Locale And Copy
+
+The viewer defaults to `locale: 'auto'`, which follows the browser language and resolves to Chinese or English. Use the same `options` object across Vanilla JS / Pure Web, Vue, React, jQuery, and Svelte when you need a fixed locale or custom copy:
 
 ```ts
 const options = {
@@ -249,7 +324,7 @@ const options = {
 }
 ```
 
-也可以使用分组写法:
+You can also group locale and copy under `i18n`:
 
 ```ts
 const options = {
@@ -262,9 +337,9 @@ const options = {
 }
 ```
 
-`locale`、`messages` 和 `i18n` 在 Vanilla JS / Pure Web、Vue、React、jQuery、Svelte 标准组件包中保持一致。
+Web Component users can set `locale="en-US"` directly on `<flyfish-file-viewer>`.
 
-完整 `FileViewerMessageKey` 对照可以直接从 core 的内置消息表读取。这个对象和运行时使用同一份文案源，适合生成业务覆盖清单、翻译表或测试断言:
+You can read the complete `FileViewerMessageKey` mapping from core. The exported object is the same copy source used at runtime, so it is the safest way to generate translation sheets, coverage checks, or custom-copy tests for the installed version:
 
 ```ts
 import {
@@ -283,129 +358,37 @@ const rows: Array<{
 }))
 ```
 
-`messages` 只需要覆盖你关心的 key；未覆盖的文案会继续使用当前 `locale` 的内置翻译。加载态、错误态、内置工具栏、PDF / Office / OFD / 压缩包等标准 renderer 的用户可见文案都走同一个 `options.locale` / `options.i18n` 链路。
+`messages` only needs the keys you want to override. Missing keys continue to use the built-in copy for the active `locale`. Loading states, error states, toolbar controls, PDF / Office / OFD / archive surfaces, and standard renderer notices all follow the same `options.locale` / `options.i18n` path.
 
-## 纯 JS 最短路径
+## Authenticated Files
 
-```bash
-npm install @file-viewer/web @file-viewer/preset-office
-```
-
-```html
-<flyfish-file-viewer
-  src="/files/demo.pdf"
-  locale="zh-CN"
-  theme="light"
-  toolbar-position="bottom-right"
-  style="display:block;height:100vh"
-></flyfish-file-viewer>
-
-<script type="module">
-  import { defineFileViewerElement } from '@file-viewer/web'
-  import officePreset from '@file-viewer/preset-office'
-
-  defineFileViewerElement()
-
-  const viewer = document.querySelector('flyfish-file-viewer')
-  viewer.options = {
-    preset: officePreset,
-    rendererMode: 'replace'
-  }
-</script>
-```
-
-传统后台页面或无构建工具项目请使用 IIFE 全局包接入；详细示例见 [纯 JS 集成](/guide/quickstart-web)。
-
-## Vue3 最短路径
-
-```bash
-pnpm add @file-viewer/vue3 @file-viewer/preset-office
-```
+If your app must authenticate before downloading a file, fetch the file in the host app and pass a named `File` to the viewer:
 
 ```ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import FileViewer from '@file-viewer/vue3'
+const blob = await fetch('/api/files/contract', {
+  credentials: 'include'
+}).then(response => response.blob())
 
-createApp(App).use(FileViewer).mount('#app')
+const file = new File([blob], 'contract.pdf', { type: blob.type })
 ```
 
-```vue
-<script setup lang="ts">
-import officePreset from '@file-viewer/preset-office'
+Passing a filename with an extension is important because the viewer uses it to pick the renderer.
 
-const options = {
-  preset: officePreset,
-  rendererMode: 'replace',
-  theme: 'light',
-  toolbar: { position: 'bottom-right' },
-  watermark: { text: '内部预览', opacity: 0.14 }
-}
-</script>
+## Self-host Worker And WASM Assets
 
-<template>
-  <div style="height: 100vh">
-    <file-viewer url="/files/demo.docx" :options="options" />
-  </div>
-</template>
-```
-
-## Vue2 最短路径
-
-Vue2.7 项目优先使用 `@file-viewer/vue2.7`，能力与 Vue3 包保持一致，入口会自动带上样式:
+Most web apps can install the package and run. For intranet, strict CSP, offline, or custom static-prefix deployments, copy viewer assets into your app:
 
 ```bash
-pnpm add @file-viewer/vue2.7 @file-viewer/preset-office
+npx file-viewer-copy-assets ./public/file-viewer
 ```
 
-```ts
-import Vue from 'vue'
-import App from './App.vue'
-import FileViewer from '@file-viewer/vue2.7'
+The copy command verifies PDF, archive, DOCX, spreadsheet, Draw.io, CAD, Typst, SQLite, Worker, WASM, and vendor assets. Runtime options let you point each renderer to your own static paths.
 
-Vue.use(FileViewer)
+## Zero-Dependency Integration: Official Demo iframe
 
-new Vue({
-  render: h => h(App)
-}).$mount('#app')
-```
+If a customer system only needs preview capability and should not install npm packages or change its build pipeline, use the official demo build output directly. Download `file-viewer-v2-*-official-demo-iframe.tar.gz` from GitHub Releases, extract it to one static directory such as `/file-viewer/`, and keep `assets/`, `vendor/`, `wasm/`, and `example/` together.
 
-Vue2.6 老项目使用 `@file-viewer/vue2.6`。完整步骤见 [Vue2 集成](/guide/quickstart-vue2)。
-
-## React 最短路径
-
-```bash
-npm install @file-viewer/react @file-viewer/preset-office
-```
-
-```tsx
-import FileViewer from '@file-viewer/react'
-import officePreset from '@file-viewer/preset-office'
-
-export function Preview() {
-  return (
-    <div style={{ height: '100vh' }}>
-      <FileViewer
-        url="/files/demo.docx"
-        options={{
-          preset: officePreset,
-          rendererMode: 'replace',
-          theme: 'light',
-          toolbar: { position: 'bottom-right' }
-        }}
-      />
-    </div>
-  )
-}
-```
-
-完整步骤见 [React 集成](/guide/quickstart-react)。
-
-## 零依赖集成：官方 Demo iframe
-
-如果客户系统只需要“能预览”，不希望安装 npm 包或改构建链路，可以直接使用官方 Demo 构建产物。下载 GitHub Release 中的 `file-viewer-v2-*-official-demo-iframe.tar.gz`，解压到一个静态目录，例如 `/file-viewer/`，保持 `assets/`、`vendor/`、`wasm/` 和 `example/` 不要拆开。
-
-最简单的 URL 文件预览:
+The simplest URL-based preview:
 
 ```html
 <iframe
@@ -415,7 +398,7 @@ export function Preview() {
 ></iframe>
 ```
 
-如果文件只能由父页面鉴权接口取回，父页面拿到 `Blob` 后再传给 Demo:
+If the parent page must fetch an authenticated file first, pass the resulting `Blob` to the demo:
 
 ```html
 <input id="file" type="file">
@@ -441,12 +424,13 @@ export function Preview() {
 </script>
 ```
 
-`from` 必须等于父页面 origin，Demo 只接受该来源发来的 `Blob`。推荐使用 `/iframe.html` 作为无外壳入口，支持 clean URL 的静态平台也可以写成 `/iframe`；原主 Demo `/index.html` 也保留同一套 `url`、`from`、`name` 和 `postMessage(Blob)` 协议，用于兼容已有客户集成。
+`from` must equal the parent page origin. The demo accepts only a `Blob` from that origin. Prefer `/iframe.html` for the chrome-free entry, or `/iframe` on static hosts that support clean URLs. The original `/index.html` demo entry keeps the same `url`, `from`, `name`, and `postMessage(Blob)` protocol for existing customer integrations.
 
-## 下一步建议
+## Try The Demo Locally
 
-- 想了解 Demo 中每个示例文件的作用: 看 [Demo 说明](/guide/demo)
-- 想查看 Vanilla JS / Pure Web、Vue3、Vue2、React、jQuery、Svelte、Core 和 PPTX 引擎的完整包矩阵: 看 [生态组件总览](/guide/ecosystem)
-- 想明确 `file`、`url`、水印、工具栏、压缩包缓存和导出的参数行为: 看 [组件用法](/guide/usage)
-- 准备做本地验证和打包: 看 [本地开发与打包](/guide/development)
-- 想下载公开源码、成品或了解优先支持: 看 [发布与开源分发](/guide/distribution)
+```bash
+pnpm install
+pnpm dev
+```
+
+The main demo opens at the Vite dev server URL. The zero-dependency iframe entry is available at `/iframe.html`, and the comparison demo is available at `/compare.html`.

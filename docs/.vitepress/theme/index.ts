@@ -1,13 +1,11 @@
 import DefaultTheme from 'vitepress/theme'
-import { inBrowser, useRouter } from 'vitepress'
+import { inBrowser } from 'vitepress'
 import { onMounted } from 'vue'
 import './custom.css'
 
 export default {
   extends: DefaultTheme,
   setup() {
-    const router = useRouter()
-
     onMounted(() => {
       if (!inBrowser) {
         return
@@ -25,9 +23,9 @@ export default {
       const prefersChinese = languages.some(language => language.toLowerCase().startsWith('zh'))
       const redirected = window.sessionStorage.getItem('flyfish-docs-lang-redirect')
 
-      if (!prefersChinese && !redirected) {
-        window.sessionStorage.setItem('flyfish-docs-lang-redirect', 'en')
-        router.go('/en/')
+      if (prefersChinese && !redirected) {
+        window.sessionStorage.setItem('flyfish-docs-lang-redirect', 'zh')
+        window.location.replace('/zh/')
       }
     })
   }

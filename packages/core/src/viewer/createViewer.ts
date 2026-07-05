@@ -57,7 +57,6 @@ import {
 import { createFileViewerCoreRendererRegistry } from '../renderers/index';
 import { createFileViewerRequestScope } from '../source/loading';
 import { normalizeSource } from '../source';
-import { resolveFileViewerBrandingPresentationState } from '../features/branding';
 import { buildFileViewerWatermarkInlineStyle } from '../features/watermark';
 import { createFileViewerUnsupportedState } from './state';
 import type {
@@ -204,7 +203,6 @@ export const createViewer = (
   let watermarkResizeObserver: ResizeObserver | null = null;
   let watermarkMutationObserver: MutationObserver | null = null;
   let watermarkFrame: number | null = null;
-  let brandingEl: HTMLAnchorElement | null = null;
 
   const getContainerWindow = () =>
     container.ownerDocument.defaultView || (typeof window !== 'undefined' ? window : undefined);
@@ -352,44 +350,6 @@ export const createViewer = (
       container.appendChild(watermarkEl);
     }
     startWatermarkObservers();
-  };
-
-  const removeBrandingBadge = () => {
-    brandingEl?.remove();
-    brandingEl = null;
-  };
-
-  const syncBrandingBadge = () => {
-    const state = resolveFileViewerBrandingPresentationState(options.branding);
-    if (!state.visible) {
-      removeBrandingBadge();
-      return;
-    }
-
-    if (!brandingEl || brandingEl.ownerDocument !== container.ownerDocument) {
-      brandingEl = container.ownerDocument.createElement('a');
-      brandingEl.className = 'viewer-branding';
-      brandingEl.target = '_blank';
-      brandingEl.rel = 'noreferrer noopener';
-    }
-    if (state.href) {
-      brandingEl.href = state.href;
-    } else {
-      brandingEl.removeAttribute('href');
-    }
-    brandingEl.textContent = state.text;
-    brandingEl.title = state.title;
-    brandingEl.setAttribute('aria-label', state.title);
-    brandingEl.style.cssText = state.inlineStyle;
-
-    const view = getContainerWindow();
-    if (view?.getComputedStyle && view.getComputedStyle(container).position === 'static' && !container.style.position) {
-      container.style.position = 'relative';
-    }
-
-    if (brandingEl.parentElement !== container) {
-      container.appendChild(brandingEl);
-    }
   };
 
   const ensureRendererPluginsInstalled = async () => {
@@ -644,7 +604,6 @@ export const createViewer = (
         renderMissingRendererState(target, normalized.extension, options);
         applyFileViewerRenderSurfaceState(renderSurfaceState, { session: null });
         syncWatermarkOverlay();
-        syncBrandingBadge();
         emitZoomAndOperationAvailabilityChange();
         await emitLifecycle(options, createOptions.onEvent, 'load-complete', normalized, version, startedAt);
         return null;
@@ -679,7 +638,6 @@ export const createViewer = (
 
       applyFileViewerRenderSurfaceState(renderSurfaceState, { session });
       syncWatermarkOverlay();
-      syncBrandingBadge();
       zoomController.refreshProvider();
       viewStateController.refreshProvider();
       await documentActions.refreshDocumentIndex({ notify: false });
@@ -700,7 +658,6 @@ export const createViewer = (
       viewStateController.destroy();
       fitController.destroy();
       removeWatermarkOverlay();
-      removeBrandingBadge();
     },
     updateOptions(nextOptions: Partial<FileViewerOptions>) {
       const previousFit = options.fit;
@@ -709,7 +666,6 @@ export const createViewer = (
         ...nextOptions,
       };
       syncWatermarkOverlay();
-      syncBrandingBadge();
       if ('fit' in nextOptions && nextOptions.fit !== previousFit) {
         fitController.resetAutoFit();
         fitController.scheduleFit('resize');

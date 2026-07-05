@@ -497,43 +497,6 @@ export interface FileViewerWatermarkOptions {
   fontFamily?: string;
 }
 
-export type FileViewerBrandingPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-
-export interface FileViewerBrandLicenseCertificate {
-  format?: string;
-  product?: string;
-  project?: string;
-  licenseKind?: string;
-  permissions?: string[];
-  expiresAt?: string | null;
-  [key: string]: unknown;
-}
-
-export interface FileViewerBrandLicenseBundle {
-  format?: string;
-  licenseNo?: string;
-  algorithm?: string;
-  publicKey?: string;
-  privateKey?: string;
-  certificate?: FileViewerBrandLicenseCertificate | string;
-  signature?: string;
-  [key: string]: unknown;
-}
-
-export type FileViewerBrandLicenseInput =
-  | string
-  | FileViewerBrandLicenseCertificate
-  | FileViewerBrandLicenseBundle;
-
-export interface FileViewerBrandingOptions {
-  enabled?: boolean;
-  text?: string;
-  href?: string;
-  title?: string;
-  position?: FileViewerBrandingPosition;
-  license?: FileViewerBrandLicenseInput;
-}
-
 export interface FileViewerToolbarOptions {
   download?: boolean;
   print?: boolean;
@@ -1013,11 +976,6 @@ export interface FileViewerOptions {
    */
   presets?: FileViewerRendererPresetInput;
   renderers?: FileViewerRendererPluginInput;
-  /**
-   * Built-in attribution badge. Pass `{ enabled:false, license }` with a
-   * Flyfish Viewer brand-removal authorization package to hide it legitimately.
-   */
-  branding?: boolean | FileViewerBrandingOptions;
   watermark?: boolean | FileViewerWatermarkOptions;
   ui?: FileViewerUiOptions;
   toolbar?: boolean | FileViewerToolbarOptions;

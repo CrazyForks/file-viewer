@@ -195,8 +195,7 @@ hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('typescript', typescript)
 hljs.registerLanguage('xml', xml)
 
-const locale = ref<Locale>('zh')
-const localeStorageKey = 'flyfish-file-viewer-site-locale'
+const locale = ref<Locale>('en')
 const topbar = ref<HTMLElement | null>(null)
 const heroStage = ref<HTMLElement | null>(null)
 const heroCanvas = ref<HTMLCanvasElement | null>(null)
@@ -1125,13 +1124,14 @@ function setLinkHref(selector: string, href: string) {
 
 function updateDocumentMetadata(nextLocale: Locale) {
   const metadata = siteMetadata[nextLocale]
+  const canonical = resolveCanonicalForCurrentPath()
   document.documentElement.lang = metadata.lang
   document.title = metadata.title
-  setLinkHref('link[rel="canonical"]', metadata.canonical)
+  setLinkHref('link[rel="canonical"]', canonical)
   setMetaContent('meta[name="description"]', metadata.description)
   setMetaContent('meta[property="og:title"]', metadata.title)
   setMetaContent('meta[property="og:description"]', metadata.description)
-  setMetaContent('meta[property="og:url"]', metadata.canonical)
+  setMetaContent('meta[property="og:url"]', canonical)
   setMetaContent('meta[property="og:image"]', sitePreviewImageUrl)
   setMetaContent('meta[property="og:image:secure_url"]', sitePreviewImageUrl)
   setMetaContent('meta[property="og:image:alt"]', metadata.imageAlt)
@@ -1148,21 +1148,19 @@ function resolveInitialLocale(): Locale {
     return pathLocale
   }
 
-  const stored = window.localStorage.getItem(localeStorageKey)
-  if (stored === 'zh' || stored === 'en') {
-    return stored
-  }
-
   const languages = navigator.languages?.length
     ? navigator.languages
     : [navigator.language].filter(Boolean)
   return languages.some(language => language.toLowerCase().startsWith('zh')) ? 'zh' : 'en'
 }
 
+function resolveCanonicalForCurrentPath() {
+  return resolveLocaleFromPathname(window.location.pathname) === 'en' ? siteEnglishUrl : siteRootUrl
+}
+
 function toggleLocale() {
   const nextLocale = isZh.value ? 'en' : 'zh'
   locale.value = nextLocale
-  window.localStorage.setItem(localeStorageKey, nextLocale)
   syncBrowserPathForLocale(nextLocale)
 }
 
@@ -1668,7 +1666,6 @@ watch(locale, (nextLocale) => {
 
 onMounted(async () => {
   locale.value = resolveInitialLocale()
-  syncBrowserPathForLocale(locale.value)
   updateDocumentMetadata(locale.value)
   void loadGithubStarCount()
   await nextTick()

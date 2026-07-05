@@ -1,28 +1,28 @@
-# Svelte 集成
+# Svelte Integration
 
-<div class="doc-kicker">For Svelte Projects</div>
+<div class="doc-kicker">Native Svelte Component</div>
 
 <p class="doc-lead">
-  Svelte 包提供原生组件和 action 两种入口。组件适合页面声明式使用，action 适合已有 DOM 容器或轻量工具页。
+  The Svelte package provides both a native component and an action. Use the component for declarative pages and the action for existing DOM containers.
 </p>
 
-## 安装
+## Install
 
-最轻入口按需选择 preset：
+Use the standard package when you want a light entry plus an explicit preset:
 
 ```bash
 npm install @file-viewer/svelte @file-viewer/preset-office
 ```
 
-一步到位完整能力使用 full 包：
+Use the full package when you want the complete matrix by default:
 
 ```bash
 npm install @file-viewer/svelte-full
 ```
 
-`@file-viewer/svelte-full` 默认启用 `@file-viewer/preset-all`，组件、action、事件和 controller API 与标准包一致。
+`@file-viewer/svelte-full` enables `@file-viewer/preset-all` automatically while keeping the same component, action, event, and controller APIs.
 
-## 组件用法
+## Component Usage
 
 ```svelte
 <script lang="ts">
@@ -52,9 +52,9 @@ npm install @file-viewer/svelte-full
 </section>
 ```
 
-宿主 CSS 不可控时可传 `styleIsolation:'shadow'`，让 renderer 内容进入隔离渲染根。Svelte 包默认保持兼容；tokens 和 `::part()` 主题定制见 [样式隔离与主题定制](/guide/style-isolation)。
+Pass `styleIsolation:'shadow'` when host CSS is uncontrolled and renderer content should use an isolated render root. The Svelte package keeps compatibility by default. See [Style Isolation And Customization](/guide/style-isolation) for tokens and `::part()` customization.
 
-full 包写法只替换包名，不需要手动 import preset：
+The full package only changes the import:
 
 ```svelte
 <script lang="ts">
@@ -71,9 +71,9 @@ full 包写法只替换包名，不需要手动 import preset：
 </section>
 ```
 
-## Action 用法
+## Action Usage
 
-如果你不想使用组件，可以直接把 action 挂到已有容器：
+For pages that do not want a component instance, mount the action on any existing container:
 
 ```svelte
 <script lang="ts">
@@ -93,9 +93,9 @@ full 包写法只替换包名，不需要手动 import preset：
 <div use:fileViewer={viewerOptions} style="height: 720px"></div>
 ```
 
-## Vite 自动装配
+## Vite Auto Assembly
 
-SvelteKit / Vite 项目可以注册插件，让已安装 preset 自动激活，并复制 Worker / WASM / 字体 / vendor 资源：
+SvelteKit / Vite projects can register the plugin so installed presets activate automatically and Worker / WASM / font / vendor assets are copied:
 
 ```bash
 npm install -D @file-viewer/vite-plugin
@@ -113,4 +113,4 @@ export default {
 }
 ```
 
-非 Vite 项目继续使用 `options.preset` / `options.renderers` 显式注入能力即可。
+Non-Vite projects can keep using `options.preset` / `options.renderers` explicitly.

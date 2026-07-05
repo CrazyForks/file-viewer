@@ -5,8 +5,7 @@ import {
   createFileViewerTranslator,
   createFileViewerRequestScope,
   reportFileViewerLifecycleHookError,
-  reportFileViewerOperationError,
-  resolveFileViewerBrandingPresentationState
+  reportFileViewerOperationError
 } from '@file-viewer/core'
 import type {
   FileViewerComponentEmits as FileViewerEmits,
@@ -90,8 +89,6 @@ const {
   watermarkStyle,
   watermarkInlineStyle
 } = useViewerWatermark(() => props.options?.watermark)
-
-const brandingState = computed(() => resolveFileViewerBrandingPresentationState(props.options?.branding))
 
 const {
   loading,
@@ -483,18 +480,6 @@ useViewerPreviewLifecycle({
       <div class='viewer-content-shell'>
         <div ref='output' class='content' data-viewer-scroll-root='true' :class='{ hidden: (loading && !progressiveReady) || !!error }' />
         <div v-if='watermarkStyle' class='viewer-watermark' :style='watermarkStyle' />
-        <a
-          v-if='brandingState.visible'
-          class='viewer-branding'
-          :href='brandingState.href || undefined'
-          target='_blank'
-          rel='noreferrer noopener'
-          :title='brandingState.title'
-          :aria-label='brandingState.title'
-          :style='brandingState.inlineStyle'
-        >
-          {{ brandingState.text }}
-        </a>
 
         <div v-if='loading && !progressiveReady' class='state-panel loading-panel'>
           <div class='loading-card'>
