@@ -434,7 +434,7 @@ GitHub Release 会同步提供完整下载项:
 
 下面内容由 `ecosystem/wrappers.json` 和 `packages/core/src/registry/formats.ts` 自动生成。开源总仓库同步 README 时会携带同一份索引，确保用户可以从任意入口找到标准 npm 包、历史兼容包、分散组件仓库和 release 下载物。
 
-核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。开源总仓库提供可运行的主 Demo 源码、core、标准组件包、兼容包、文档源码和 release 索引；完整 Demo、component demo、文档站和样例构建产物通过 GitHub Release 或 Cloudflare Pages 分发，避免普通 clone 被静态产物拖大。私有 Gitea `main` 是完整原始聚合仓，用于统一自动化、内部集成历史、打赏支持和优先技术支持，不等同于 GitHub 开源总仓库。
+核心底座包: `@file-viewer/core`。core 源码已公开，GitHub: https://github.com/flyfish-dev/file-viewer-core，Gitee: https://gitee.com/flyfish-dev/file-viewer-core。开源总仓库提供可运行的主 Demo 源码、core、标准组件包、兼容包、文档源码和 release 索引；官方 Demo iframe 交付包、完整 Demo、component demo、文档站和样例构建产物通过 GitHub Release 或 Cloudflare Pages 分发，避免普通 clone 被静态产物拖大。私有 Gitea `main` 是完整原始聚合仓，用于统一自动化、内部集成历史、打赏支持和优先技术支持，不等同于 GitHub 开源总仓库。
 
 | 框架 | 标准 npm 包 | 入口格式 | GitHub | Gitee | 兼容历史包 |
 | --- | --- | --- | --- | --- | --- |
