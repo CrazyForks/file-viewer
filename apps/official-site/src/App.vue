@@ -156,6 +156,7 @@ const commercialDemoUrl = 'https://office.flyfish.dev/'
 const siteRootUrl = 'https://file-viewer.app/'
 const siteEnglishUrl = `${siteRootUrl}en/`
 const sitePreviewImageUrl = `${siteRootUrl}home-hero-premium.webp`
+const siteLocalePreferenceKey = 'flyfish-site-locale-preference'
 
 type SiteMetadata = {
   lang: string
@@ -1142,16 +1143,41 @@ function updateDocumentMetadata(nextLocale: Locale) {
   setMetaContent('meta[name="twitter:image"]', sitePreviewImageUrl)
 }
 
-function resolveInitialLocale(): Locale {
-  const pathLocale = resolveLocaleFromPathname(window.location.pathname)
-  if (pathLocale) {
-    return pathLocale
+function readStoredLocalePreference(): Locale | undefined {
+  try {
+    const storedLocale = window.localStorage.getItem(siteLocalePreferenceKey)
+    return storedLocale === 'zh' || storedLocale === 'en' ? storedLocale : undefined
+  } catch {
+    return undefined
   }
+}
 
+function writeStoredLocalePreference(nextLocale: Locale) {
+  try {
+    window.localStorage.setItem(siteLocalePreferenceKey, nextLocale)
+  } catch {
+    // Storage can be unavailable in privacy-restricted browsing modes.
+  }
+}
+
+function prefersChineseEnvironment() {
   const languages = navigator.languages?.length
     ? navigator.languages
     : [navigator.language].filter(Boolean)
-  return languages.some(language => language.toLowerCase().startsWith('zh')) ? 'zh' : 'en'
+  return languages.some(language => language.toLowerCase().startsWith('zh'))
+}
+
+function resolveInitialLocale(): Locale {
+  const storedLocale = readStoredLocalePreference()
+  if (storedLocale) {
+    return storedLocale
+  }
+
+  if (prefersChineseEnvironment()) {
+    return 'zh'
+  }
+
+  return resolveLocaleFromPathname(window.location.pathname) ?? 'en'
 }
 
 function resolveCanonicalForCurrentPath() {
@@ -1160,6 +1186,7 @@ function resolveCanonicalForCurrentPath() {
 
 function toggleLocale() {
   const nextLocale = isZh.value ? 'en' : 'zh'
+  writeStoredLocalePreference(nextLocale)
   locale.value = nextLocale
   syncBrowserPathForLocale(nextLocale)
 }
@@ -1666,6 +1693,9 @@ watch(locale, (nextLocale) => {
 
 onMounted(async () => {
   locale.value = resolveInitialLocale()
+  if (readStoredLocalePreference() || prefersChineseEnvironment()) {
+    syncBrowserPathForLocale(locale.value)
+  }
   updateDocumentMetadata(locale.value)
   void loadGithubStarCount()
   await nextTick()
