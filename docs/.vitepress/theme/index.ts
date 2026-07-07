@@ -8,6 +8,7 @@ const githubRepositoryApiUrl = 'https://api.github.com/repos/flyfish-dev/file-vi
 const githubStarsCacheKey = 'flyfish-docs-github-stars'
 const githubStarsFallback = '938'
 const githubStarsCacheTtl = 1000 * 60 * 60 * 6
+const docsLocalePreferenceKey = 'flyfish-docs-locale-preference'
 
 function formatGithubStars(stars: number) {
   if (stars >= 100000) {
@@ -117,6 +118,111 @@ function setupGithubStarButtons() {
   })
 }
 
+type Locale = 'zh' | 'en'
+
+function normalizePathname(pathname: string) {
+  return (pathname || '/').replace(/\/index\.html$/, '/') || '/'
+}
+
+function resolveDocsLocaleFromPathname(pathname: string): Locale {
+  const normalizedPathname = normalizePathname(pathname).toLowerCase()
+  return normalizedPathname === '/zh' || normalizedPathname.startsWith('/zh/') ? 'zh' : 'en'
+}
+
+function resolveEnglishDocsPath(pathname: string) {
+  const normalizedPathname = normalizePathname(pathname)
+  if (normalizedPathname === '/zh' || normalizedPathname === '/zh/') {
+    return '/'
+  }
+  if (normalizedPathname.startsWith('/zh/')) {
+    return normalizedPathname.replace(/^\/zh/, '') || '/'
+  }
+  if (normalizedPathname === '/en' || normalizedPathname === '/en/') {
+    return '/'
+  }
+  if (normalizedPathname.startsWith('/en/')) {
+    return normalizedPathname.replace(/^\/en/, '') || '/'
+  }
+  return normalizedPathname
+}
+
+function resolveDocsPathForLocale(pathname: string, locale: Locale) {
+  const englishPath = resolveEnglishDocsPath(pathname)
+  if (locale === 'en') {
+    return englishPath
+  }
+  return englishPath === '/' ? '/zh/' : `/zh${englishPath}`
+}
+
+function readStoredDocsLocalePreference(): Locale | undefined {
+  try {
+    const storedLocale = window.localStorage.getItem(docsLocalePreferenceKey)
+    return storedLocale === 'zh' || storedLocale === 'en' ? storedLocale : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function writeStoredDocsLocalePreference(locale: Locale) {
+  try {
+    window.localStorage.setItem(docsLocalePreferenceKey, locale)
+  } catch {
+    // Storage can be unavailable in privacy-restricted browsing modes.
+  }
+}
+
+function prefersChineseEnvironment() {
+  const languages = navigator.languages?.length
+    ? navigator.languages
+    : [navigator.language].filter(Boolean)
+  return languages.some(language => language.toLowerCase().startsWith('zh'))
+}
+
+function applyPreferredDocsLocale() {
+  if (window.location.search.includes('no_lang_redirect=1')) {
+    return
+  }
+
+  const preferredLocale = readStoredDocsLocalePreference() ?? (prefersChineseEnvironment() ? 'zh' : undefined)
+  if (!preferredLocale) {
+    return
+  }
+
+  const currentPath = normalizePathname(window.location.pathname)
+  const preferredPath = resolveDocsPathForLocale(currentPath, preferredLocale)
+  if (currentPath === preferredPath) {
+    return
+  }
+
+  window.location.replace(`${preferredPath}${window.location.search}${window.location.hash}`)
+}
+
+function setupDocsLocalePreferenceTracking() {
+  document.addEventListener(
+    'click',
+    event => {
+      const target = event.target instanceof Element
+        ? event.target.closest<HTMLAnchorElement>('a[href]')
+        : null
+      if (!target) {
+        return
+      }
+
+      const targetUrl = new URL(target.href, window.location.href)
+      if (targetUrl.origin !== window.location.origin) {
+        return
+      }
+
+      const currentLocale = resolveDocsLocaleFromPathname(window.location.pathname)
+      const targetLocale = resolveDocsLocaleFromPathname(targetUrl.pathname)
+      if (currentLocale !== targetLocale) {
+        writeStoredDocsLocalePreference(targetLocale)
+      }
+    },
+    true
+  )
+}
+
 export default {
   extends: DefaultTheme,
   setup() {
@@ -126,23 +232,8 @@ export default {
       }
 
       setupGithubStarButtons()
-
-      const path = window.location.pathname.replace(/\/index\.html$/, '/')
-      const isDocsRoot = path === '/' || path === ''
-      if (!isDocsRoot || window.location.search.includes('no_lang_redirect=1')) {
-        return
-      }
-
-      const languages = navigator.languages?.length
-        ? navigator.languages
-        : [navigator.language].filter(Boolean)
-      const prefersChinese = languages.some(language => language.toLowerCase().startsWith('zh'))
-      const redirected = window.sessionStorage.getItem('flyfish-docs-lang-redirect')
-
-      if (prefersChinese && !redirected) {
-        window.sessionStorage.setItem('flyfish-docs-lang-redirect', 'zh')
-        window.location.replace('/zh/')
-      }
+      setupDocsLocalePreferenceTracking()
+      applyPreferredDocsLocale()
     })
   }
 }
