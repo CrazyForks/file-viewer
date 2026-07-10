@@ -597,6 +597,12 @@ export interface FileViewerPdfOptions {
   streaming?: boolean | 'same-origin';
   rangeChunkSize?: number;
   withCredentials?: boolean;
+  /**
+   * Base URL for the self-hosted PDF worker, cMaps, WASM, standard fonts, and
+   * CJK fallback fonts. Useful for SPA routes whose document URL is deeper
+   * than the deployment public path, for example `/workspace/c/`.
+   */
+  assetBaseUrl?: string | URL;
   workerUrl?: string;
   cMapUrl?: string;
   wasmUrl?: string;
@@ -606,6 +612,13 @@ export interface FileViewerPdfOptions {
    * such as Microsoft YaHei without embedding the font data. Defaults to true.
    */
   cjkFontFallback?: boolean;
+  /**
+   * Repairs malformed Identity-H/V CJK fonts that omit ToUnicode when the PDF
+   * also embeds a usable same-family TrueType cmap. Defaults to true. The
+   * repair is applied only to the in-memory preview and never changes the
+   * original file used by download operations.
+   */
+  identityFontRepair?: boolean;
   /**
    * Directory containing `noto-sans-sc.css`, its `files/` font shards, and
    * the bundled font license. The path is resolved against the document base.

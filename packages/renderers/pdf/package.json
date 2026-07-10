@@ -60,6 +60,7 @@
   "dependencies": {
     "@file-viewer/core": "workspace:2.1.25",
     "@fontsource-variable/noto-sans-sc": "5.2.10",
+    "pdf-lib": "1.17.1",
     "pdfjs-dist": "5.4.624"
   },
   "devDependencies": {

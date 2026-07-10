@@ -1,7 +1,9 @@
 const PDF_CJK_FONT_CSS_FILE = 'noto-sans-sc.css';
 const PDF_CJK_FONT_TEMPLATE_FAMILY = 'Noto Sans SC Variable';
 const PDF_CJK_TEXT_RE = /[\u2e80-\u2fff\u3000-\u303f\u3040-\u30ff\u3100-\u312f\u31a0-\u31bf\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/;
+const PDF_CONTROL_TEXT_RE = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g;
 const PDF_CJK_FONT_MAX_PROBE_CHARS = 4096;
+const PDF_IDENTITY_FONT_MIN_CONTROL_CHARS = 2;
 
 type PdfTextContentItem = {
   str?: string;
@@ -12,7 +14,7 @@ type PdfTextContentStyle = {
   fontSubstitution?: string;
 };
 
-type PdfTextContent = {
+export type PdfTextContent = {
   items?: PdfTextContentItem[];
   styles?: Record<string, PdfTextContentStyle>;
 };
@@ -33,6 +35,7 @@ type PdfCjkFontDocumentState = {
 
 export interface PdfCjkFontFallbackManager {
   prepare: () => Promise<boolean>;
+  ensureTextContent: (textContent: PdfTextContent) => Promise<boolean>;
   ensurePage: (page: PdfTextContentPage) => Promise<boolean>;
 }
 
@@ -148,6 +151,56 @@ const extractSubstitutionFamily = (value: string | undefined) => {
     return '';
   }
   return family;
+};
+
+const isKnownCjkFontFamily = (family: string) => {
+  const key = normalizeFontFamilyKey(family);
+  return Boolean(PDF_CJK_LOCAL_FONT_CANDIDATES[key]) ||
+    /(?:cjk|han|song|hei|kai|fang|yahei|ming|gothic|mincho)/i.test(key) ||
+    /[\u3400-\u9fff]/.test(family);
+};
+
+/**
+ * Some PDF generators write TrueType glyph IDs through Identity-H but omit
+ * ToUnicode. PDF.js then exposes those glyph IDs as control characters, so a
+ * replacement font alone cannot recover the intended text.
+ */
+export const detectMalformedIdentityCjkFontFamilies = (
+  textContent: PdfTextContent,
+  resolveFontFamily: (fontName: string) => string = () => ''
+) => {
+  const styles = textContent.styles || {};
+  const families = new Set<string>();
+  for (const item of textContent.items || []) {
+    const text = item.str || '';
+    const controlChars = text.match(PDF_CONTROL_TEXT_RE)?.length || 0;
+    if (controlChars < PDF_IDENTITY_FONT_MIN_CONTROL_CHARS) {
+      continue;
+    }
+    const fontName = item.fontName || '';
+    const resolvedFamily = resolveFontFamily(fontName);
+    const safeResolvedFamily = resolvedFamily.length <= 160 &&
+      !/[\u0000-\u001f\u007f]/.test(resolvedFamily)
+      ? resolvedFamily
+      : '';
+    const family = extractSubstitutionFamily(styles[fontName]?.fontSubstitution) ||
+      safeResolvedFamily;
+    if (family && isKnownCjkFontFamily(family)) {
+      families.add(family);
+    }
+  }
+  return [...families];
+};
+
+export const collectMalformedIdentityFontNames = (textContent: PdfTextContent) => {
+  const fontNames = new Set<string>();
+  for (const item of textContent.items || []) {
+    const controlChars = (item.str || '').match(PDF_CONTROL_TEXT_RE)?.length || 0;
+    if (controlChars >= PDF_IDENTITY_FONT_MIN_CONTROL_CHARS && item.fontName) {
+      fontNames.add(item.fontName);
+    }
+  }
+  return [...fontNames];
 };
 
 const collectPageFontText = (textContent: PdfTextContent) => {
@@ -281,6 +334,25 @@ export const createPdfCjkFontFallbackManager = ({
     return templatePromise;
   };
 
+  const ensureTextContent = async (textContent: PdfTextContent) => {
+    try {
+      const familyChars = collectPageFontText(textContent);
+      if (!familyChars.size) {
+        return false;
+      }
+      const template = await getTemplate();
+      const results = await Promise.all(
+        [...familyChars].map(([family, chars]) => (
+          loadFamilyText(documentRef, documentState, template, family, chars)
+        ))
+      );
+      return results.some(Boolean);
+    } catch (error) {
+      warnOnce('Unable to load an offline fallback for an unembedded PDF CJK font.', error);
+      return false;
+    }
+  };
+
   return {
     async prepare() {
       try {
@@ -291,23 +363,9 @@ export const createPdfCjkFontFallbackManager = ({
         return false;
       }
     },
+    ensureTextContent,
     async ensurePage(page) {
-      try {
-        const familyChars = collectPageFontText(await page.getTextContent());
-        if (!familyChars.size) {
-          return false;
-        }
-        const template = await getTemplate();
-        const results = await Promise.all(
-          [...familyChars].map(([family, chars]) => (
-            loadFamilyText(documentRef, documentState, template, family, chars)
-          ))
-        );
-        return results.some(Boolean);
-      } catch (error) {
-        warnOnce('Unable to load an offline fallback for an unembedded PDF CJK font.', error);
-        return false;
-      }
+      return ensureTextContent(await page.getTextContent());
     },
   };
 };

@@ -430,28 +430,35 @@ export const resolveFileViewerCadAssetUrls = (
 };
 
 export const resolveFileViewerPdfAssetUrls = (
-  options?: Pick<FileViewerPdfOptions, 'workerUrl' | 'cMapUrl' | 'wasmUrl' | 'standardFontDataUrl' | 'cjkFontFallbackPath'> | null,
+  options?: Pick<FileViewerPdfOptions, 'assetBaseUrl' | 'workerUrl' | 'cMapUrl' | 'wasmUrl' | 'standardFontDataUrl' | 'cjkFontFallbackPath'> | null,
   documentBaseUrl?: string
 ): ResolvedFileViewerPdfAssetUrls => {
+  const rawAssetBaseUrl = options?.assetBaseUrl ? String(options.assetBaseUrl) : '';
+  const assetBaseUrl = rawAssetBaseUrl
+    ? new URL(
+        rawAssetBaseUrl.endsWith('/') ? rawAssetBaseUrl : `${rawAssetBaseUrl}/`,
+        documentBaseUrl || DEFAULT_FILE_VIEWER_DOCUMENT_BASE_URL
+      ).href
+    : documentBaseUrl;
   return {
     workerUrl: resolveFileViewerAssetUrl(options?.workerUrl, DEFAULT_FILE_VIEWER_PDF_WORKER_PATH, {
-      documentBaseUrl,
+      documentBaseUrl: assetBaseUrl,
     }),
     cMapUrl: resolveFileViewerAssetUrl(options?.cMapUrl, DEFAULT_FILE_VIEWER_PDF_CMAP_PATH, {
-      documentBaseUrl,
+      documentBaseUrl: assetBaseUrl,
     }),
     wasmUrl: resolveFileViewerAssetUrl(options?.wasmUrl, DEFAULT_FILE_VIEWER_PDF_WASM_PATH, {
-      documentBaseUrl,
+      documentBaseUrl: assetBaseUrl,
     }),
     standardFontDataUrl: resolveFileViewerAssetUrl(
       options?.standardFontDataUrl,
       DEFAULT_FILE_VIEWER_PDF_STANDARD_FONT_PATH,
-      { documentBaseUrl }
+      { documentBaseUrl: assetBaseUrl }
     ),
     cjkFontFallbackPath: resolveFileViewerAssetUrl(
       options?.cjkFontFallbackPath,
       DEFAULT_FILE_VIEWER_PDF_CJK_FONT_FALLBACK_PATH,
-      { documentBaseUrl }
+      { documentBaseUrl: assetBaseUrl }
     ),
   };
 };
