@@ -31,18 +31,22 @@ PDF 预览依赖 PDF.js worker、cMaps、WASM、standard fonts，以及未嵌入
 const options = {
   renderers: pdfRenderer,
   pdf: {
+    assetBaseUrl: '/workspace/',
     workerUrl: '/vendor/pdf/pdf.worker.mjs',
     cMapUrl: '/vendor/pdf/cmaps/',
     wasmUrl: '/vendor/pdf/wasm/',
     standardFontDataUrl: '/vendor/pdf/standard_fonts/',
     cjkFontFallbackPath: '/vendor/pdf/fonts/',
+    identityFontRepair: true,
   },
 }
 ```
 
-默认未显式配置时，渲染器会基于当前文档 `baseURI` 探测 `vendor/pdf/pdf.worker.mjs`，因此 Vite/UMI 等项目部署在 `/workspace/` 这类子路径时会请求 `/workspace/vendor/pdf/pdf.worker.mjs`，不会强制落到站点根路径。如果客户项目没有执行 `file-viewer-copy-assets`、没有使用 `@file-viewer/vite-plugin`，或者本地临时服务器把该路径回退成 HTML，PDF renderer 会自动懒加载包内 PDF.js worker handler 作为兼容兜底，避免 `Setting up fake worker failed` 直接中断预览。需要最佳性能、完整 cMap/standard fonts/WASM 解码或严格离线部署时，仍建议复制 viewer assets 并配置真实静态地址。当前锁定的 PDF.js 5.4 稳定线会通过 `wasmUrl` 本地加载 JBIG2、JPEG 2000、颜色管理等辅助资源；这些资源由 viewer assets 和 Vite 插件统一复制，不依赖公网。
+默认未显式配置时，渲染器优先使用 Vite 等构建器提供的公开基址，并可从页面入口脚本回退识别部署子路径。因此应用部署在 `/workspace/`、当前 SPA 路由为 `/workspace/c/` 时，仍会请求 `/workspace/vendor/pdf/pdf.worker.mjs`。UMI、自定义代理或无法自动识别的构建环境可以设置 `pdf.assetBaseUrl: '/workspace/'` 固定全部 PDF 离线资源的基址。如果项目没有执行 `file-viewer-copy-assets`、没有使用 `@file-viewer/vite-plugin`，或者本地临时服务器把该路径回退成 HTML，PDF renderer 会自动懒加载包内 PDF.js worker handler 作为兼容兜底，避免 `Setting up fake worker failed` 直接中断预览。需要最佳性能、完整 cMap/standard fonts/WASM 解码或严格离线部署时，仍建议复制 viewer assets 并配置真实静态地址。当前锁定的 PDF.js 5.4 稳定线会通过 `wasmUrl` 本地加载 JBIG2、JPEG 2000、颜色管理等辅助资源；这些资源由 viewer assets 和 Vite 插件统一复制，不依赖公网。
 
 `cjkFontFallback` 默认开启。PDF 引用了 `MicrosoftYaHei-Bold`、宋体、黑体或其他中文字体但没有嵌入字体数据时，渲染器优先使用本机字体；本机缺失时，会把原 PDF 字体名映射到本地 Noto Sans SC 可变字体，并根据当前页实际文字只加载需要的 WOFF2 分片。首屏会在字体就绪后再渲染，后续页发现新字形时会自动重绘。可设为 `false` 完全关闭，或用 `cjkFontFallbackPath` 指向同结构的自托管字体目录。
+
+`identityFontRepair` 也默认开启，用于少数把 TrueType 字形 ID 写入 `Identity-H`/`Identity-V`、却遗漏 `ToUnicode` 的异常 PDF。只有检测到中文字体替换和多个控制字符乱码时，渲染器才会懒加载修复模块；若文件内同时嵌入了可用的同族 TrueType 字体，就从其 cmap 重建内存预览所需的 Unicode 映射。修复只作用于预览副本，不覆盖原始文件和下载源；无法安全修复时继续使用原预览。可设为 `false` 关闭。
 
 ## 迁移说明
 

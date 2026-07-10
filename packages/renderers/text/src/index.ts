@@ -28,8 +28,10 @@ export const renderFileViewerCode: FileRenderHandler<FileViewerRenderedInstance,
 
 export const renderFileViewerMarkdown: FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement> = (
   buffer,
-  target
-) => import('./markdown.js').then(({ default: renderMarkdown }) => renderMarkdown(buffer, target));
+  target,
+  _type,
+  context
+) => import('./markdown.js').then(({ default: renderMarkdown }) => renderMarkdown(buffer, target, context));
 
 export const textRenderer: FileViewerRendererPlugin<FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement>> = {
   id: 'file-viewer-renderer-text',

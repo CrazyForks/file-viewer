@@ -1,6 +1,6 @@
 # @file-viewer/renderer-text
 
-Standalone code, text, Markdown, patch, and git bundle renderer package for Flyfish File Viewer. It handles source highlighting, Markdown reading surfaces, side-by-side patch diffs, git bundle inspection, and unified zoom for `.txt`, `.json`, `.ts`, `.vue`, `.log`, `.md`, `.markdown`, `.patch`, `.bundle`, and other code delivery formats.
+Standalone code, text, Markdown, patch, and git bundle renderer package for Flyfish File Viewer. It handles source highlighting, Markdown reading surfaces, embedded Mermaid diagrams in Markdown, side-by-side patch diffs, git bundle inspection, and unified zoom for `.txt`, `.json`, `.ts`, `.vue`, `.log`, `.md`, `.markdown`, `.patch`, `.bundle`, and other code delivery formats.
 
 ## Usage
 

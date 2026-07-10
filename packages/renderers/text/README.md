@@ -1,6 +1,6 @@
 # @file-viewer/renderer-text
 
-Flyfish File Viewer 的独立代码、文本、Markdown、patch 和 git bundle renderer 包。它负责 `.txt`、`.json`、`.ts`、`.vue`、`.log`、`.md`、`.markdown`、`.patch`、`.bundle` 等文本与代码交付文件的源码高亮、Markdown 阅读面、左右比对、bundle 结构查看和统一缩放。
+Flyfish File Viewer 的独立代码、文本、Markdown、patch 和 git bundle renderer 包。它负责 `.txt`、`.json`、`.ts`、`.vue`、`.log`、`.md`、`.markdown`、`.patch`、`.bundle` 等文本与代码交付文件的源码高亮、Markdown 阅读面、Markdown 内嵌 Mermaid 图、左右比对、bundle 结构查看和统一缩放。
 
 ## 用法
 

@@ -47,8 +47,11 @@ import {
 } from '@file-viewer/core/assets';
 import { pdfViewerStyle } from './pdfStyles.js';
 import {
+  collectMalformedIdentityFontNames,
   createPdfCjkFontFallbackManager,
+  detectMalformedIdentityCjkFontFamilies,
   type PdfCjkFontFallbackManager,
+  type PdfTextContent,
   type PdfTextContentPage,
 } from './pdfFontFallback.js';
 
@@ -90,6 +93,19 @@ type PdfWorkerInstance = InstanceType<typeof PdfJsWorker>;
 type PdfResource = {
   loadingTask: PdfLoadingTask;
   worker: PdfWorkerInstance | null;
+};
+type PdfLoadingSource =
+  | { data: ArrayBuffer | Uint8Array }
+  | {
+      url: string;
+      rangeChunkSize: number;
+      withCredentials: boolean;
+    };
+type PdfFontInspectionPage = PdfTextContentPage & {
+  getOperatorList: () => Promise<unknown>;
+  commonObjs: {
+    get: (fontName: string) => { name?: string } | undefined;
+  };
 };
 type ConsoleLike = {
   error: (...data: unknown[]) => void;
@@ -396,6 +412,53 @@ const resolvePdfWorkerUrl = (
   return resolveFileViewerPdfAssetUrls(options, documentBaseUrl).workerUrl;
 };
 
+const readBundlerPublicBaseUrl = () => {
+  try {
+    const value = (import.meta as ImportMeta & {
+      env?: { BASE_URL?: unknown };
+    }).env?.BASE_URL;
+    return typeof value === 'string' ? value.trim() : '';
+  } catch {
+    return '';
+  }
+};
+
+const resolvePdfRuntimeAssetBaseUrl = (documentRef: Document) => {
+  const documentBaseUrl = documentRef.baseURI || documentRef.URL || 'file:///';
+  const bundlerBaseUrl = readBundlerPublicBaseUrl();
+  if (bundlerBaseUrl && bundlerBaseUrl !== '.' && bundlerBaseUrl !== './') {
+    try {
+      return new URL(bundlerBaseUrl.endsWith('/') ? bundlerBaseUrl : `${bundlerBaseUrl}/`, documentBaseUrl).href;
+    } catch {
+      // Continue with DOM-based public-path detection.
+    }
+  }
+
+  // An explicit <base> is authoritative and already reflected by baseURI.
+  if (documentRef.querySelector('base[href]')) {
+    return documentBaseUrl;
+  }
+
+  // Entry scripts remain under the public deployment base when an SPA route
+  // changes document.baseURI. This covers Vite and common UMI/Webpack layouts.
+  for (const script of Array.from(documentRef.querySelectorAll<HTMLScriptElement>('script[src]'))) {
+    try {
+      const scriptUrl = new URL(script.src || script.getAttribute('src') || '', documentBaseUrl);
+      const assetDirectory = scriptUrl.pathname.match(/^(.*\/)(?:assets|static)\/[^/]+$/i);
+      if (assetDirectory) {
+        return new URL(assetDirectory[1], scriptUrl.origin).href;
+      }
+      if (/\/(?:umi|main|index)(?:[.-][^/]*)?\.(?:m?js)$/i.test(scriptUrl.pathname)) {
+        return new URL('./', scriptUrl).href;
+      }
+    } catch {
+      // Ignore unrelated or malformed script URLs.
+    }
+  }
+
+  return documentBaseUrl;
+};
+
 const buildOutlineItems = (
   items: Array<{ title?: string; dest?: string | unknown[] | null; items?: unknown[] }>,
   prefix = 'outline',
@@ -427,7 +490,10 @@ export default async function renderPdf(
     throw new Error(t('pdf.error.browserWindow'));
   }
   const options = context?.options?.pdf;
+  const pdfRuntimeAssetBaseUrl = resolvePdfRuntimeAssetBaseUrl(documentRef);
   const cjkFontFallbackEnabled = options?.cjkFontFallback !== false;
+  const identityFontRepairEnabled = options?.identityFontRepair !== false;
+  const fontInspectionEnabled = cjkFontFallbackEnabled || identityFontRepairEnabled;
   const initialViewState = options?.initialViewState || context?.options?.initialViewState || null;
   const navigationEnabled = options?.navigation !== false;
   const toolbarVisible = options?.toolbar !== false;
@@ -871,7 +937,7 @@ export default async function renderPdf(
   };
 
   const createPdfWorker = async () => {
-    const workerUrl = resolvePdfWorkerUrl(options, documentRef.baseURI || documentRef.URL || undefined);
+    const workerUrl = resolvePdfWorkerUrl(options, pdfRuntimeAssetBaseUrl);
     const hasExplicitWorkerUrl = isConfiguredUrl(options?.workerUrl);
     const shouldUseRealWorker = !!targetWindow?.Worker &&
       (hasExplicitWorkerUrl || await canUseResolvedPdfWorkerUrl(workerUrl));
@@ -1740,10 +1806,9 @@ export default async function renderPdf(
         throw new Error(t('pdf.error.missingSource'));
       }
 
-      const worker = await createPdfWorker();
       const pdfAssets = resolveFileViewerPdfAssetUrls(
         options,
-        documentRef.baseURI || documentRef.URL
+        pdfRuntimeAssetBaseUrl
       );
       if (cjkFontFallbackEnabled) {
         pdfCjkFontFallbackManager = createPdfCjkFontFallbackManager({
@@ -1755,7 +1820,7 @@ export default async function renderPdf(
         });
         restorePdfJsMissingSystemFontWarnings = suppressPdfJsMissingSystemFontWarnings(targetWindow);
       }
-      const source = context?.streamUrl
+      const source: PdfLoadingSource = context?.streamUrl
         ? {
             url: context.streamUrl,
             rangeChunkSize: options?.rangeChunkSize || DEFAULT_PDF_RANGE_CHUNK_SIZE,
@@ -1764,21 +1829,29 @@ export default async function renderPdf(
         : {
             data: buffer,
           };
-      const loadingTask = getDocument({
-        ...source,
-        worker: worker || undefined,
-        cMapUrl: pdfAssets.cMapUrl,
-        wasmUrl: pdfAssets.wasmUrl,
-        standardFontDataUrl: pdfAssets.standardFontDataUrl,
-        useWorkerFetch: true,
-        cMapPacked: true,
-        enableXfa: true,
-        fontExtraProperties: cjkFontFallbackEnabled,
-      });
-      resource = { loadingTask, worker };
+
+      const createLoadingResource = async (
+        loadingSource: PdfLoadingSource
+      ): Promise<PdfResource> => {
+        const worker = await createPdfWorker();
+        const loadingTask = getDocument({
+          ...loadingSource,
+          worker: worker || undefined,
+          cMapUrl: pdfAssets.cMapUrl,
+          wasmUrl: pdfAssets.wasmUrl,
+          standardFontDataUrl: pdfAssets.standardFontDataUrl,
+          useWorkerFetch: true,
+          cMapPacked: true,
+          enableXfa: true,
+          fontExtraProperties: fontInspectionEnabled,
+        });
+        return { loadingTask, worker };
+      };
+
+      resource = await createLoadingResource(source);
       pdfContext.resource = resource;
 
-      const pdfDocument = await loadingTask.promise;
+      let pdfDocument = await resource.loadingTask.promise;
       if (destroyed || requestVersion !== loadVersion || pdfContext.resource !== resource) {
         if (pdfContext.resource === resource) {
           pdfContext.resource = null;
@@ -1787,15 +1860,100 @@ export default async function renderPdf(
         return;
       }
 
+      let firstPageTextContent: PdfTextContent | null = null;
+      let firstPageForInspection: PdfFontInspectionPage | null = null;
+      if (fontInspectionEnabled && pdfDocument.numPages > 0) {
+        const firstPage = await pdfDocument.getPage(1);
+        firstPageForInspection = firstPage as unknown as PdfFontInspectionPage;
+        firstPageTextContent = await firstPageForInspection.getTextContent();
+      }
+
+      if (identityFontRepairEnabled && firstPageTextContent) {
+        const malformedFontNames = collectMalformedIdentityFontNames(firstPageTextContent);
+        if (malformedFontNames.length && firstPageForInspection) {
+          await firstPageForInspection.getOperatorList();
+        }
+        const malformedFontFamilies = new Map<string, string>();
+        for (const fontName of malformedFontNames) {
+          try {
+            const family = firstPageForInspection?.commonObjs.get(fontName)?.name;
+            if (family) {
+              malformedFontFamilies.set(fontName, family);
+            }
+          } catch {
+            // A font object that is still unresolved cannot be repaired safely.
+          }
+        }
+        const candidateFamilies = detectMalformedIdentityCjkFontFamilies(
+          firstPageTextContent,
+          fontName => malformedFontFamilies.get(fontName) || ''
+        );
+        if (candidateFamilies.length) {
+          let replacementResource: PdfResource | null = null;
+          try {
+            const sourceBytes = await pdfDocument.getData();
+            const { repairMalformedIdentityCjkFonts } = await import('./pdfIdentityFontRepair.js');
+            const repaired = await repairMalformedIdentityCjkFonts(sourceBytes, candidateFamilies);
+            if (repaired.repairedFonts > 0) {
+              const previousResource = resource;
+              replacementResource = await createLoadingResource({ data: repaired.bytes });
+              const replacementDocument = await replacementResource.loadingTask.promise;
+              const repairedFirstPage = await replacementDocument.getPage(1);
+              const replacementTextContent = await (
+                repairedFirstPage as unknown as PdfTextContentPage
+              ).getTextContent();
+              if (
+                destroyed ||
+                requestVersion !== loadVersion ||
+                pdfContext.resource !== previousResource
+              ) {
+                await destroyPdfResource(replacementResource);
+                return;
+              }
+
+              resource = replacementResource;
+              replacementResource = null;
+              pdfContext.resource = resource;
+              pdfDocument = replacementDocument;
+              firstPageTextContent = replacementTextContent;
+              await destroyPdfResource(previousResource);
+              console.info(
+                `[file-viewer] Repaired ${repaired.repairedFonts} malformed PDF Identity CJK font mapping(s).`
+              );
+            }
+          } catch (error) {
+            if (replacementResource) {
+              await destroyPdfResource(replacementResource);
+            }
+            console.warn(
+              '[file-viewer] Unable to repair a malformed PDF Identity CJK font; continuing with the original preview.',
+              error
+            );
+          }
+        }
+      }
+
+      if (destroyed || requestVersion !== loadVersion || pdfContext.resource !== resource) {
+        return;
+      }
+
       pageCount = pdfDocument.numPages;
       currentPage = 1;
       pdfContext.document = pdfDocument;
       if (pdfCjkFontFallbackManager && pageCount > 0) {
-        const firstPage = await pdfDocument.getPage(1);
-        await ensurePdfPageCjkFontFallback(
-          1,
-          firstPage as unknown as PdfTextContentPage
-        );
+        if (firstPageTextContent) {
+          pdfCjkFontFallbackPageLoads.set(
+            1,
+            pdfCjkFontFallbackManager.ensureTextContent(firstPageTextContent)
+          );
+          await pdfCjkFontFallbackPageLoads.get(1);
+        } else {
+          const firstPage = await pdfDocument.getPage(1);
+          await ensurePdfPageCjkFontFallback(
+            1,
+            firstPage as unknown as PdfTextContentPage
+          );
+        }
         if (destroyed || requestVersion !== loadVersion || pdfContext.document !== pdfDocument) {
           return;
         }

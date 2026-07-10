@@ -4,7 +4,9 @@ import {
   readFileViewerText as readText,
   registerFileViewerZoomProvider,
   unregisterFileViewerZoomProvider,
+  type FileRenderContext,
   type FileViewerRenderedInstance,
+  type FileViewerThemeMode,
   type FileViewerZoomState,
 } from '@file-viewer/core';
 
@@ -25,6 +27,10 @@ const markdownStyle = `
 .markdown-body tr{background:var(--bgColor-default);border-top:1px solid var(--borderColor-muted)}
 .markdown-body tr:nth-child(2n){background:var(--bgColor-muted)}
 .markdown-body blockquote{padding:0 1em;color:var(--fgColor-muted);border-left:.25em solid var(--borderColor-default)}
+.markdown-mermaid{display:flex;justify-content:center;width:100%;margin:0 0 16px;overflow:auto;border:1px solid var(--borderColor-muted);border-radius:10px;padding:16px;box-sizing:border-box;background:var(--bgColor-default)}
+.markdown-mermaid svg{display:block;max-width:100%;height:auto;margin:auto}
+.markdown-mermaid-error{margin:-8px 0 16px;color:#cf222e;font-size:.875em}
+[data-viewer-theme='dark'] .markdown-mermaid-error{color:#ff7b72}
 [data-viewer-theme='dark'] .markdown-viewer{background:#101820}
 [data-viewer-theme='dark'] .markdown-body{color-scheme:dark;--bgColor-default:#0d1117;--bgColor-muted:#151b23;--bgColor-neutral-muted:#656c7633;--borderColor-default:#3d444d;--borderColor-muted:#3d444db3;--borderColor-neutral-muted:#3d444db3;--fgColor-default:#f0f6fc;--fgColor-muted:#9198a1;--fgColor-accent:#4493f8;background:var(--bgColor-default);border-color:rgba(139,148,158,.26);color:var(--fgColor-default);box-shadow:0 24px 56px rgba(0,0,0,.38)}
 @media (max-width:767px){.markdown-viewer{padding:14px 10px 28px}.markdown-body{padding:22px 18px;border-radius:10px}}
@@ -45,6 +51,99 @@ const applyMarkdownZoom = (host: HTMLElement, zoom: number) => {
   host.style.setProperty('--markdown-max-width', `${980 * zoom}px`);
   host.style.setProperty('--markdown-padding', `${45 * zoom}px`);
   host.style.setProperty('--markdown-font-size', `${16 * zoom}px`);
+};
+
+let mermaidRenderSequence = 0;
+let mermaidRenderQueue: Promise<void> = Promise.resolve();
+
+const isDarkTheme = (documentRef: Document, theme?: FileViewerThemeMode) => {
+  if (theme === 'dark') {
+    return true;
+  }
+  if (theme === 'light') {
+    return false;
+  }
+  return Boolean(documentRef.defaultView?.matchMedia?.('(prefers-color-scheme: dark)').matches);
+};
+
+const sanitizeMermaidSvg = (documentRef: Document, svg: string) => {
+  const Parser = documentRef.defaultView?.DOMParser || DOMParser;
+  const parsed = new Parser().parseFromString(svg, 'image/svg+xml');
+  const parseError = parsed.querySelector('parsererror');
+  if (parseError) {
+    throw new Error(parseError.textContent || 'Unable to parse the Mermaid SVG.');
+  }
+  parsed.querySelectorAll('script,iframe,object,embed').forEach(node => node.remove());
+  parsed.querySelectorAll('*').forEach(node => {
+    for (const attribute of Array.from(node.attributes)) {
+      if (/^on/i.test(attribute.name)) {
+        node.removeAttribute(attribute.name);
+      } else if (/^(?:href|xlink:href|src)$/i.test(attribute.name) && /^\s*javascript:/i.test(attribute.value)) {
+        node.removeAttribute(attribute.name);
+      }
+    }
+  });
+  return documentRef.importNode(parsed.documentElement, true) as unknown as SVGSVGElement;
+};
+
+const renderMermaidSvg = async (
+  documentRef: Document,
+  source: string,
+  theme?: FileViewerThemeMode
+) => {
+  const render = async () => {
+    const mermaidModule = await import('mermaid');
+    const mermaid = mermaidModule.default;
+    const id = `file-viewer-markdown-mermaid-${Date.now()}-${mermaidRenderSequence += 1}`;
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: isDarkTheme(documentRef, theme) ? 'dark' : 'default',
+    });
+    const rendered = await mermaid.render(id, source);
+    return sanitizeMermaidSvg(documentRef, rendered.svg);
+  };
+
+  const result = mermaidRenderQueue.then(render, render);
+  mermaidRenderQueue = result.then(() => undefined, () => undefined);
+  return result;
+};
+
+const renderEmbeddedMermaid = async (
+  article: HTMLElement,
+  theme?: FileViewerThemeMode
+) => {
+  const documentRef = article.ownerDocument;
+  const mermaidBlocks = Array.from(article.querySelectorAll('pre > code')).filter(code =>
+    /(?:^|\s)(?:language|lang)-mermaid(?:\s|$)/i.test(code.className)
+  );
+
+  for (const code of mermaidBlocks) {
+    const pre = code.parentElement;
+    if (!pre) {
+      continue;
+    }
+    const source = code.textContent || '';
+    try {
+      const svg = await renderMermaidSvg(documentRef, source, theme);
+      svg.classList.add('markdown-mermaid-svg');
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', 'Mermaid diagram preview');
+      const shell = documentRef.createElement('div');
+      shell.className = 'markdown-mermaid';
+      shell.dataset.markdownMermaid = 'rendered';
+      shell.appendChild(svg);
+      pre.replaceWith(shell);
+    } catch (error) {
+      pre.classList.add('markdown-mermaid-source-error');
+      const message = documentRef.createElement('p');
+      message.className = 'markdown-mermaid-error';
+      message.setAttribute('role', 'alert');
+      message.textContent = 'Mermaid diagram could not be rendered. The source is shown above.';
+      pre.after(message);
+      console.warn('[file-viewer] Unable to render embedded Mermaid diagram.', error);
+    }
+  }
 };
 
 export const stripMarkdownFrontmatter = (text: string) => {
@@ -71,7 +170,8 @@ export const stripMarkdownFrontmatter = (text: string) => {
 
 export default async function renderMarkdown(
   buffer: ArrayBuffer,
-  target: HTMLDivElement
+  target: HTMLDivElement,
+  context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
   const text = await readText(buffer);
   let zoom = 1;
@@ -87,6 +187,7 @@ export default async function renderMarkdown(
   applyMarkdownZoom(root, zoom);
   root.append(article);
   target.replaceChildren(createStyle(), root);
+  await renderEmbeddedMermaid(article, context?.options?.theme);
 
   const getZoomState = (): FileViewerZoomState => ({
     scale: zoom,

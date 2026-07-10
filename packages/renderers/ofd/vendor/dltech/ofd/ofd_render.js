@@ -418,16 +418,15 @@ export const renderImageOnDiv = function (pageWidth, pageHeight, imgSrc, boundar
     img.setAttribute('width', '100%');
     img.setAttribute('height', '100%');
     div.appendChild(img);
-    const pw = parseFloat(pageWidth.replace('px', ''));
-    const ph = parseFloat(pageHeight.replace('px', ''));
-    const w = boundary.w > pw ? pw : boundary.w;
-    const h = boundary.h > ph ? ph : boundary.h;
     let c = '';
     if (clip) {
         clip = converterBox(clip);
         c = `clip: rect(${clip.y}px, ${clip.w + clip.x}px, ${clip.h + clip.y}px, ${clip.x}px)`
     }
-    div.setAttribute('style', `cursor: pointer; overflow: hidden; position: absolute; left: ${c ? boundary.x : boundary.x < 0 ? 0 : boundary.x}px; top: ${c ? boundary.y : boundary.y < 0 ? 0 : boundary.y}px; width: ${w}px; height: ${h}px; ${c};z-index: ${oid}`)
+    // Preserve the stamp geometry declared by OFD. Oversized or partially
+    // off-page seals are clipped by the page container, matching OFD readers;
+    // shrinking or moving the seal here changes both its position and scale.
+    div.setAttribute('style', `cursor: pointer; overflow: hidden; position: absolute; left: ${boundary.x}px; top: ${boundary.y}px; width: ${boundary.w}px; height: ${boundary.h}px; ${c};z-index: ${oid}`)
     return div;
 }
 
