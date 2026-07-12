@@ -353,25 +353,40 @@ function buildParagraphModel(
   };
 }
 
-function finalizeTableGrid(rows: TableRowBlock[]): void {
+export function finalizeTableGrid(rows: TableRowBlock[]): void {
   for (const row of rows) {
-    for (let i = 0; i < row.cells.length; i += 1) {
-      const cell = row.cells[i]!;
-      const merge = cell.meta?.merge || 0;
-      cell.colIndex = i;
+    row.cells.forEach((cell, index) => {
+      cell.colIndex = index;
       cell.colspan = 1;
       cell.rowspan = 1;
       cell.hidden = false;
+    });
+    for (let i = 0; i < row.cells.length; i += 1) {
+      const cell = row.cells[i]!;
+      const merge = cell.meta?.merge || 0;
       if (merge === 1) {
-        cell.hidden = true;
         continue;
       }
       if (merge > 1) {
         let j = i + 1;
         while (j < row.cells.length && (row.cells[j]!.meta?.merge || 0) === 1) {
           row.cells[j]!.hidden = true;
-          cell.colspan += 1;
+          cell.colspan = (cell.colspan || 1) + 1;
           j += 1;
+        }
+        const lastCell = row.cells[j - 1];
+        if (cell.meta && lastCell?.meta && lastCell !== cell) {
+          cell.meta.rightBoundary = lastCell.meta.rightBoundary;
+          if (cell.meta.leftBoundary != null && cell.meta.rightBoundary != null) {
+            cell.meta.width = Math.max(0, cell.meta.rightBoundary - cell.meta.leftBoundary);
+          }
+          const rightBorder = lastCell.meta.borders?.right;
+          if (rightBorder) {
+            cell.meta.borders = {
+              ...(cell.meta.borders || {}),
+              right: rightBorder,
+            };
+          }
         }
       }
     }
@@ -383,7 +398,6 @@ function finalizeTableGrid(rows: TableRowBlock[]): void {
       if (cell.hidden) continue;
       const vertMerge = cell.meta?.vertMerge || 0;
       if (vertMerge === 1) {
-        cell.hidden = true;
         continue;
       }
       if (vertMerge > 1) {
@@ -404,9 +418,41 @@ function finalizeTableGrid(rows: TableRowBlock[]): void {
           cell.rowspan = (cell.rowspan || 1) + 1;
           nextIndex += 1;
         }
+        const bottomCell = rows[nextIndex - 1]?.cells[cell.colIndex || 0];
+        const bottomBorder = bottomCell?.meta?.borders?.bottom;
+        if (cell.meta && bottomCell?.meta && bottomCell !== cell && bottomBorder) {
+          cell.meta.borders = {
+            ...(cell.meta.borders || {}),
+            bottom: bottomBorder,
+          };
+        }
       }
     }
   }
+}
+
+function resolveTableGridBorders(rows: TableRowBlock[]): void {
+  const hasOwnBorder = (borders: Record<string, unknown>, side: string) => (
+    Object.prototype.hasOwnProperty.call(borders, side)
+  );
+  rows.forEach((row, rowIndex) => {
+    row.cells.forEach((cell) => {
+      if (cell.hidden || !cell.meta) return;
+      const explicit = { ...(cell.meta.borders || {}) };
+      const table = row.state.borders || {};
+      const startColumn = cell.colIndex || 0;
+      const endColumn = startColumn + (cell.colspan || 1);
+      const endRow = rowIndex + (cell.rowspan || 1);
+      const assignFallback = (side: string, border: typeof table.top) => {
+        if (!hasOwnBorder(explicit, side) && border) explicit[side] = border;
+      };
+      assignFallback('top', rowIndex === 0 ? table.top : table.horizontalInside);
+      assignFallback('bottom', endRow >= rows.length ? table.bottom : table.horizontalInside);
+      assignFallback('left', startColumn === 0 ? table.left : table.verticalInside);
+      assignFallback('right', endColumn >= row.cells.length ? table.right : table.verticalInside);
+      cell.meta.borders = explicit;
+    });
+  });
 }
 
 function paragraphToBlock(paragraph: ParagraphModel): ParagraphBlock {
@@ -424,7 +470,7 @@ function paragraphToBlock(paragraph: ParagraphModel): ParagraphBlock {
 function normalizeRowEndOnlyTables(paragraphs: ParagraphModel[]): void {
   for (let index = 0; index < paragraphs.length; index += 1) {
     const rowEnd = paragraphs[index]!;
-    const cellCount = rowEnd.tableState.defTable?.cells?.length || 0;
+    const cellCount = applyTableStateToCells(rowEnd.tableState).length;
     if (!rowEnd.paraState.tableRowEnd || !cellCount) continue;
 
     rowEnd.paraState.inTable = true;
@@ -493,6 +539,7 @@ function buildTableBlock(tableParagraphs: ParagraphModel[]): TableBlock {
   }
 
   finalizeTableGrid(rows);
+  resolveTableGridBorders(rows);
 
   const gridWidthTwips = rows.find((row) => row.gridWidthTwips)?.gridWidthTwips || 0;
   const depth = Math.max(...tableParagraphs.map((paragraph) => getTableDepth(paragraph.paraState)), 1);

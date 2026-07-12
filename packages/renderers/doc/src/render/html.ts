@@ -15,6 +15,7 @@ import type {
   ParagraphBlock,
   TableBlock,
   TableCellBlock,
+  ShadingSpec,
   TextInlineNode,
 } from '../types.js';
 
@@ -45,13 +46,72 @@ function styleObjectToCss(style: CssStyleObject): string {
 }
 
 function borderToCss(border: BorderSpec | undefined | null): string | null {
-  if (!border) return null;
-  const width = Math.max(1, Math.round((((border.lineWidth as number | undefined) ?? 8) / 8) * 1.3333));
+  if (!border || border.nil) return null;
   const borderType = border.borderType as number | undefined;
-  const style = borderType === 6 ? 'double' : borderType === 3 ? 'dotted' : borderType === 2 ? 'dashed' : 'solid';
+  if (!borderType) return null;
+  const lineWidth = Math.max(2, border.lineWidth || 0);
+  const widthPoints = borderType >= 0x40 ? lineWidth : lineWidth / 8;
+  const width = Math.max(1, Math.round(widthPoints * (96 / 72)));
+  const style = borderType === 3
+    ? 'double'
+    : borderType === 6
+      ? 'dotted'
+      : [7, 8, 9].includes(borderType)
+        ? 'dashed'
+        : 'solid';
   const colorIndex = border.color as number | undefined;
-  const color = colorIndex ? COLOR_INDEX_MAP[colorIndex] || '#666' : '#666';
+  const color = border.colorRef != null
+    ? colorRefToCss(border.colorRef)
+    : COLOR_INDEX_MAP[colorIndex || 1] || '#000000';
   return `${width}px ${style} ${color}`;
+}
+
+function colorRefToCss(colorRef: number | undefined): string {
+  if (colorRef == null || (colorRef >>> 24) === 0xff) return '#000000';
+  const red = colorRef & 0xff;
+  const green = (colorRef >>> 8) & 0xff;
+  const blue = (colorRef >>> 16) & 0xff;
+  return `#${[red, green, blue].map(value => value.toString(16).padStart(2, '0')).join('')}`;
+}
+
+const SHADING_PERCENT: Record<number, number> = {
+  2: 5, 3: 10, 4: 20, 5: 25, 6: 30, 7: 40,
+  8: 50, 9: 60, 10: 70, 11: 75, 12: 80, 13: 90,
+};
+
+function mixHexColors(foreground: string, background: string, percent: number): string {
+  const channel = (color: string, offset: number) => Number.parseInt(color.slice(offset, offset + 2), 16);
+  const ratio = Math.max(0, Math.min(100, percent)) / 100;
+  const values = [1, 3, 5].map(offset => Math.round(
+    channel(foreground, offset) * ratio + channel(background, offset) * (1 - ratio)
+  ));
+  return `#${values.map(value => value.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function shadingToCss(shading: ShadingSpec | undefined): CssStyleObject {
+  if (!shading || shading.nil || shading.auto || shading.pattern === 0) return {};
+  const foreground = shading.foregroundColorRef != null
+    ? colorRefToCss(shading.foregroundColorRef)
+    : COLOR_INDEX_MAP[shading.foregroundColorIndex || 1] || '#000000';
+  const background = shading.backgroundColorRef != null
+    ? colorRefToCss(shading.backgroundColorRef)
+    : COLOR_INDEX_MAP[shading.backgroundColorIndex || 8] || '#ffffff';
+  if (shading.pattern === 1) return { 'background-color': foreground };
+  if (SHADING_PERCENT[shading.pattern] != null) {
+    return { 'background-color': mixHexColors(foreground, background, SHADING_PERCENT[shading.pattern]!) };
+  }
+  const stripe = shading.pattern === 14 || shading.pattern === 20
+    ? `repeating-linear-gradient(0deg,${foreground} 0 1px,transparent 1px 4px)`
+    : shading.pattern === 15 || shading.pattern === 21
+      ? `repeating-linear-gradient(90deg,${foreground} 0 1px,transparent 1px 4px)`
+      : shading.pattern === 16 || shading.pattern === 22
+        ? `repeating-linear-gradient(45deg,${foreground} 0 1px,transparent 1px 5px)`
+        : shading.pattern === 17 || shading.pattern === 23
+          ? `repeating-linear-gradient(-45deg,${foreground} 0 1px,transparent 1px 5px)`
+          : null;
+  return stripe
+    ? { 'background-color': background, 'background-image': stripe }
+    : { 'background-color': background };
 }
 
 function paragraphStyleToCss(paraState: ParagraphBlock['paraState']): CssStyleObject {
@@ -82,9 +142,9 @@ function paragraphStyleToCss(paraState: ParagraphBlock['paraState']): CssStyleOb
   const bottom = borderToCss(paraState.borders?.bottom);
   const left = borderToCss(paraState.borders?.left);
   if (top) style['border-top'] = top;
-  if (right) style['border-right'] = right;
+  if (right) style['border-inline-end'] = right;
   if (bottom) style['border-bottom'] = bottom;
-  if (left) style['border-left'] = left;
+  if (left) style['border-inline-start'] = left;
   return style;
 }
 
@@ -245,21 +305,25 @@ function cellStyle(cell: TableCellBlock): CssStyleObject {
   if (cell.meta?.noWrap) style['white-space'] = 'nowrap';
   if (cell.meta?.fitText) style['text-align'] = 'justify';
   if (cell.meta?.vertAlign != null) style['vertical-align'] = cssVerticalAlign(cell.meta.vertAlign);
-  const borderAll = borderToCss(cell.meta?.borders?.all);
-  const top = borderToCss(cell.meta?.borders?.top) || borderAll;
-  const right = borderToCss(cell.meta?.borders?.right) || borderAll;
-  const bottom = borderToCss(cell.meta?.borders?.bottom) || borderAll;
-  const left = borderToCss(cell.meta?.borders?.left) || borderAll;
+  const borders = cell.meta?.borders || {};
+  const borderAll = borderToCss(borders.all);
+  const borderForSide = (side: string) => Object.prototype.hasOwnProperty.call(borders, side)
+    ? borderToCss(borders[side])
+    : borderAll;
+  const top = borderForSide('top');
+  const right = borderForSide('right');
+  const bottom = borderForSide('bottom');
+  const left = borderForSide('left');
   if (top) style['border-top'] = top;
-  if (right) style['border-right'] = right;
+  if (right) style['border-inline-end'] = right;
   if (bottom) style['border-bottom'] = bottom;
-  if (left) style['border-left'] = left;
-  const shadingColor = typeof cell.meta?.shading === 'object' && cell.meta?.shading && 'color' in (cell.meta.shading as Record<string, unknown>)
-    ? (cell.meta.shading as { color?: number }).color
-    : undefined;
-  if (shadingColor && COLOR_INDEX_MAP[shadingColor]) {
-    style['background-color'] = COLOR_INDEX_MAP[shadingColor];
-  }
+  if (left) style['border-inline-start'] = left;
+  const padding = cell.meta?.paddingTwips;
+  if (padding?.top != null) style['padding-top'] = `${twipsToPx(padding.top)}px`;
+  if (padding?.right != null) style['padding-inline-end'] = `${twipsToPx(padding.right)}px`;
+  if (padding?.bottom != null) style['padding-bottom'] = `${twipsToPx(padding.bottom)}px`;
+  if (padding?.left != null) style['padding-inline-start'] = `${twipsToPx(padding.left)}px`;
+  Object.assign(style, shadingToCss(cell.meta?.shading));
   return style;
 }
 
@@ -269,8 +333,22 @@ function tableStyle(block: TableBlock): CssStyleObject {
   if (widthPx) style.width = `${widthPx}px`;
   else style.width = '100%';
   const marginLeft = twipsToPx(block.state?.leftIndent);
-  if (marginLeft) style['margin-left'] = `${marginLeft}px`;
-  style['border-collapse'] = 'collapse';
+  if (marginLeft) style['margin-inline-start'] = `${marginLeft}px`;
+  if (block.state?.rtl) style.direction = 'rtl';
+  const spacing = block.rows.flatMap(row => row.cells).reduce((maximum, cell) => {
+    const value = cell.meta?.spacingTwips;
+    if (!value) return maximum;
+    return {
+      horizontal: Math.max(maximum.horizontal, value.left || 0, value.right || 0),
+      vertical: Math.max(maximum.vertical, value.top || 0, value.bottom || 0),
+    };
+  }, { horizontal: 0, vertical: 0 });
+  if (spacing.horizontal || spacing.vertical) {
+    style['border-collapse'] = 'separate';
+    style['border-spacing'] = `${twipsToPx(spacing.horizontal)}px ${twipsToPx(spacing.vertical)}px`;
+  } else {
+    style['border-collapse'] = 'collapse';
+  }
   style['table-layout'] = 'fixed';
   return style;
 }

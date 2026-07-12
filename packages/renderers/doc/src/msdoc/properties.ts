@@ -196,6 +196,7 @@ export function tablePropsToState(properties: DecodedProperty[]): TableState {
     autoFit: undefined,
     widthBefore: undefined,
     widthAfter: undefined,
+    borders: {},
     defTable: undefined,
     operations: [],
   };
@@ -220,6 +221,7 @@ export function tablePropsToState(properties: DecodedProperty[]): TableState {
       case 'autoFit': state.autoFit = prop.value; break;
       case 'widthBefore': state.widthBefore = prop.value; break;
       case 'widthAfter': state.widthAfter = prop.value; break;
+      case 'tableBorders': state.borders = (prop.value as TableState['borders']) || {}; break;
       case 'defTable': state.defTable = prop.value as TableState['defTable']; break;
       default:
         state.operations.push(prop);
@@ -255,10 +257,11 @@ export function rangeApply<T>(list: T[], range: { first: number; lim: number } |
 
 export function applyTableStateToCells(tableState: TableState): TableCellMeta[] {
   const def = tableState?.defTable;
-  if (!def || !Array.isArray(def.cells)) return [];
-  const cells: TableCellMeta[] = def.cells.map((cell, index) => ({
+  const cells: TableCellMeta[] = (def?.cells || []).map((cell, index) => ({
     index,
-    width: cell?.wWidth as number | undefined,
+    width: def?.rgdxaCenter?.[index + 1] != null && def?.rgdxaCenter?.[index] != null
+      ? Math.max(0, def.rgdxaCenter[index + 1]! - def.rgdxaCenter[index]!)
+      : cell?.wWidth as number | undefined,
     ftsWidth: cell?.tcgrf?.ftsWidth as number | undefined,
     borders: (cell?.borders || {}) as Record<string, BorderSpec>,
     merge: (cell?.tcgrf?.horzMerge as number | undefined) || 0,
@@ -268,12 +271,52 @@ export function applyTableStateToCells(tableState: TableState): TableCellMeta[] 
     noWrap: Boolean(cell?.tcgrf?.noWrap),
     hideMark: Boolean(cell?.tcgrf?.hideMark),
     textFlow: (cell?.tcgrf?.textFlow as number | undefined) || 0,
-    rightBoundary: def.rgdxaCenter?.[index + 1],
-    leftBoundary: def.rgdxaCenter?.[index],
+    rightBoundary: def?.rgdxaCenter?.[index + 1],
+    leftBoundary: def?.rgdxaCenter?.[index],
   }));
+  let geometryChanged = false;
+  const initialLeftBoundary = cells[0]?.leftBoundary || 0;
 
   for (const op of tableState.operations || []) {
     switch (op.name) {
+      case 'insertCells': {
+        // Word commonly emits TDefTable for legacy readers and TInsert for
+        // readers that process sprmPTableProps. They are alternative cell
+        // definitions, not cumulative instructions.
+        if (def?.cells?.length) break;
+        const value = op.value as { itcFirst?: number; ctc?: number; dxaCol?: number } | null;
+        const first = Math.min(cells.length, Math.max(0, value?.itcFirst || 0));
+        const count = Math.min(63 - cells.length, Math.max(0, value?.ctc || 0));
+        const width = Math.max(0, value?.dxaCol || 0);
+        if (count) {
+          cells.splice(first, 0, ...Array.from({ length: count }, (_, offset) => ({
+            index: first + offset,
+            width,
+            borders: {},
+            merge: 0,
+            vertMerge: 0,
+            vertAlign: 0,
+            fitText: false,
+            noWrap: false,
+            hideMark: false,
+            textFlow: 0,
+          })));
+          geometryChanged = true;
+        }
+        break;
+      }
+      case 'deleteCells': {
+        const range = op.value as { first: number; lim: number } | null;
+        if (range) {
+          const first = Math.max(0, range.first || 0);
+          const count = Math.max(0, (range.lim || first) - first);
+          if (count) {
+            cells.splice(first, count);
+            geometryChanged = true;
+          }
+        }
+        break;
+      }
       case 'merge':
         rangeApply(cells, op.value as { first: number; lim: number }, (cell, idx) => {
           const range = op.value as { first: number };
@@ -285,25 +328,79 @@ export function applyTableStateToCells(tableState: TableState): TableCellMeta[] 
         rangeApply(cells, op.value as { first: number; lim: number }, (cell) => { cell.merge = 0; });
         break;
       case 'cellWidth':
-      case 'columnWidth':
         rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => {
           const value = op.value as { width?: number; ftsWidth?: number };
-          cell.width = value.width;
           cell.ftsWidth = value.ftsWidth;
+          // ftsNil and ftsAuto carry no usable preferred width. Preserve the
+          // TDefTable boundary width instead of collapsing the cell to zero.
+          if ((value.ftsWidth === 2 || value.ftsWidth === 3) && value.width != null) {
+            cell.width = value.width;
+          }
         });
         break;
-      case 'vertMerge':
-        rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => { cell.vertMerge = (op.value as { value: number }).value; });
+      case 'columnWidth':
+        rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => {
+          cell.width = Math.max(0, (op.value as { width?: number }).width || 0);
+          geometryChanged = true;
+        });
         break;
+      case 'vertMerge': {
+        const value = op.value as { index?: number; value?: number } | null;
+        const cell = value?.index != null ? cells[value.index] : undefined;
+        if (cell) cell.vertMerge = value?.value || 0;
+        break;
+      }
       case 'vertAlign':
         rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => { cell.vertAlign = (op.value as { value: number }).value; });
         break;
       case 'setBorder':
-        rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => { cell.borders = { ...(cell.borders || {}), all: (op.value as { border: BorderSpec }).border }; });
+        rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => {
+          const value = op.value as { border: BorderSpec; bordersToApply: number };
+          const borders = { ...(cell.borders || {}) };
+          if (value.bordersToApply & 0x01) borders.top = value.border;
+          if (value.bordersToApply & 0x02) borders.left = value.border;
+          if (value.bordersToApply & 0x04) borders.bottom = value.border;
+          if (value.bordersToApply & 0x08) borders.right = value.border;
+          if (value.bordersToApply & 0x10) borders.diagonalDown = value.border;
+          if (value.bordersToApply & 0x20) borders.diagonalUp = value.border;
+          cell.borders = borders;
+        });
         break;
       case 'setShading':
-        rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => { cell.shading = (op.value as { value: unknown }).value; });
+        rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell, index) => {
+          const value = op.value as { range: { first: number }; shading?: TableCellMeta['shading']; odd?: boolean };
+          if (!value.odd || (index - value.range.first) % 2 === 0) cell.shading = value.shading;
+        });
         break;
+      case 'cellPadding':
+      case 'cellSpacing': {
+        const value = op.value as {
+          range?: { first: number; lim: number };
+          sides?: number;
+          ftsWidth?: number;
+          width?: number;
+        } | null;
+        const isTwips = value?.ftsWidth === 3 || (op.name === 'cellSpacing' && value?.ftsWidth === 0x13);
+        if (!value?.range || !isTwips || value.width == null) break;
+        rangeApply(cells, value.range, (cell) => {
+          const key = op.name === 'cellPadding' ? 'paddingTwips' : 'spacingTwips';
+          const sides = { ...(cell[key] || {}) };
+          if ((value.sides || 0) & 0x01) sides.top = value.width;
+          if ((value.sides || 0) & 0x02) sides.left = value.width;
+          if ((value.sides || 0) & 0x04) sides.bottom = value.width;
+          if ((value.sides || 0) & 0x08) sides.right = value.width;
+          cell[key] = sides;
+        });
+        break;
+      }
+      case 'defaultShading': {
+        const value = op.value as { start?: number; values?: TableCellMeta['shading'][] } | null;
+        (value?.values || []).forEach((shading, offset) => {
+          const cell = cells[(value?.start || 0) + offset];
+          if (cell) cell.shading = shading;
+        });
+        break;
+      }
       case 'fitText':
         rangeApply(cells, (op.value as { range: { first: number; lim: number } }).range, (cell) => { cell.fitText = Boolean((op.value as { value: unknown }).value); });
         break;
@@ -317,6 +414,17 @@ export function applyTableStateToCells(tableState: TableState): TableCellMeta[] 
         break;
     }
   }
+
+  if (geometryChanged) {
+    let boundary = initialLeftBoundary;
+    cells.forEach((cell) => {
+      const width = Math.max(0, cell.width || 0);
+      cell.leftBoundary = boundary;
+      boundary += width;
+      cell.rightBoundary = boundary;
+    });
+  }
+  cells.forEach((cell, index) => { cell.index = index; });
 
   return cells;
 }
