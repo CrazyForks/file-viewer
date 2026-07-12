@@ -1,5 +1,6 @@
 import {
   createViewer,
+  normalizeSource,
   readFileViewerBuffer,
   type FileViewerInstance,
   type FileViewerSource,
@@ -10,6 +11,7 @@ import {
   normalizeThumbnailBlob,
   type ReusableFileViewerDomCaptureContext,
 } from './capture.js';
+import { canExtractEmbeddedThumbnail, extractEmbeddedThumbnail } from './embedded/index.js';
 import {
   resolveFileViewerThumbnailConcurrency,
   resolveFileViewerThumbnailOptions,
@@ -186,6 +188,62 @@ const generateInSlot = async (
 
   try {
     const materializedSource = await runWithDeadline(materializeThumbnailSource(source, taskOptions.signal));
+    const normalizedMaterializedSource = normalizeSource(materializedSource);
+    await runWithDeadline(slot.viewer.prepare?.() || Promise.resolve());
+    const preparedRenderer = slot.viewer.getRenderer(normalizedMaterializedSource.extension);
+    if (!preparedRenderer?.load) {
+      throw new FileViewerThumbnailError(
+        'unsupported',
+        `No installed renderer can generate a .${normalizedMaterializedSource.extension || source.type || ''} thumbnail.`
+      );
+    }
+
+    const captureOptions = toCaptureOptions(taskOptions);
+    if (canExtractEmbeddedThumbnail(normalizedMaterializedSource.extension)) {
+      try {
+        const embedded = await runWithDeadline(extractEmbeddedThumbnail(
+          normalizedMaterializedSource,
+          slot.host.ownerDocument,
+          taskOptions.signal
+        ));
+        if (embedded) {
+          const blob = await runWithDeadline(normalizeThumbnailBlob(
+            slot.host.ownerDocument,
+            embedded,
+            taskOptions
+          ));
+          return {
+            blob,
+            width: options.width,
+            height: options.height,
+            mimeType: blob.type,
+            filename: normalizedMaterializedSource.filename,
+            extension: normalizedMaterializedSource.extension,
+            rendererId: preparedRenderer.id,
+            strategy: 'embedded',
+            degraded: false,
+            durationMs: Math.max(0, performance.now() - startedAt),
+          };
+        }
+      } catch (error) {
+        if (
+          error instanceof FileViewerThumbnailError &&
+          (error.code === 'timeout' || error.code === 'aborted')
+        ) {
+          throw error;
+        }
+        if (taskOptions.signal.aborted) {
+          const reason = taskOptions.signal.reason;
+          if (reason instanceof FileViewerThumbnailError) {
+            throw reason;
+          }
+          throw new FileViewerThumbnailError('aborted', 'Thumbnail generation was aborted.', reason);
+        }
+        // Missing, corrupt, or browser-incompatible embedded images are hints,
+        // not fatal document errors. Continue through the renderer fast path.
+      }
+    }
+
     const session = await runWithDeadline(slot.viewer.load(materializedSource, { signal: taskOptions.signal }));
     const normalizedSource = slot.viewer.getSource();
     const renderer = slot.viewer.getRenderer();
@@ -198,13 +256,14 @@ const generateInSlot = async (
 
     await runWithDeadline(waitForCaptureReadiness(slot.host.ownerDocument, taskOptions.signal));
     const adapter = slot.viewer.getThumbnailAdapter?.() || null;
-    const captureOptions = toCaptureOptions(taskOptions);
     const captured = await runWithDeadline((async () => {
       await adapter?.beforeCapture?.(captureOptions);
       throwIfAborted(taskOptions.signal);
 
       let blob = await adapter?.capture?.(captureOptions) || null;
-      let strategy: FileViewerThumbnailResult['strategy'] = 'provider-native';
+      let strategy: FileViewerThumbnailResult['strategy'] = adapter?.captureSource === 'embedded'
+        ? 'embedded'
+        : 'provider-native';
       if (blob) {
         blob = await normalizeThumbnailBlob(slot.host.ownerDocument, blob, taskOptions);
       } else {

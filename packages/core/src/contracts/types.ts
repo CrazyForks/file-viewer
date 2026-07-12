@@ -698,6 +698,8 @@ export interface FileViewerThumbnailCaptureOptions {
 export interface FileRenderThumbnailAdapter {
   /** Prepare lazy content immediately before capture. */
   beforeCapture?: (options: FileViewerThumbnailCaptureOptions) => void | Promise<void>;
+  /** Identifies a capture result that comes from packaged metadata rather than rendered content. */
+  captureSource?: 'embedded' | 'rendered';
   /** A renderer-native fast path. Returning null delegates to the DOM fallback. */
   capture?: (options: FileViewerThumbnailCaptureOptions) => Blob | null | Promise<Blob | null>;
   /** The first page/slide/sheet/cover element used by the DOM fallback. */
@@ -1577,6 +1579,8 @@ export interface FileViewerLoadOptions {
 
 export interface FileViewerInstance {
   readonly container: HTMLElement;
+  /** Installs configured renderer plugins without loading a document. */
+  prepare?(): Promise<void>;
   load(source: FileViewerSource, options?: FileViewerLoadOptions): Promise<RendererSession | null>;
   unload?(reason?: FileViewerLifecycleContext['reason']): Promise<void>;
   destroy(reason?: FileViewerLifecycleContext['reason']): Promise<void>;

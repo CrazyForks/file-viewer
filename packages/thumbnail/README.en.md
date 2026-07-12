@@ -18,11 +18,13 @@ for await (const item of generator.generateStream(files)) {
 await generator.destroy()
 ```
 
-Each item can override `width`, `height`, `format: 'webp' | 'jpeg' | 'png'`, `quality`, `fit`, `background`, `timeoutMs`, and `signal`. `generate()` returns the Blob, actual MIME type, renderer ID, duration, `provider-native | provider-dom | dom-fallback` strategy, and `degraded` state. Batch results remain input-ordered and isolate failures; stream results are completion-ordered, carry the original index, and keep pending Blob results bounded by the concurrency window.
+Each item can override `width`, `height`, `format: 'webp' | 'jpeg' | 'png'`, `quality`, `fit`, `background`, `timeoutMs`, and `signal`. `generate()` returns the Blob, actual MIME type, renderer ID, duration, `embedded | provider-native | provider-dom | dom-fallback` strategy, and `degraded` state. Batch results remain input-ordered and isolate failures; stream results are completion-ordered, carry the original index, and keep pending Blob results bounded by the concurrency window.
 
 Failures use `FileViewerThumbnailError` with stable codes: `browser-required`, `unsupported`, `timeout`, `aborted`, `capture-failed`, `capture-unavailable`, `tainted-canvas`, `empty-output`, `destroyed`, and `invalid-options`.
 
 - Requires a real browser. Server applications must invoke it inside Chromium.
-- PDF and images use native capture; Office, OFD, and ebooks expose a first-content target.
+- Embedded previews take priority over rendering. EPUB uses its declared cover; OOXML and 3MF use package thumbnail relationships; OpenDocument and XMind use their packaged thumbnails; and Apple Numbers uses its Quick Look thumbnail when present.
+- Missing, corrupt, empty, or undecodable embedded images safely fall back to renderer-native or first-content capture.
+- PDF and images use native capture; Office, OFD, and ebooks expose a first-content target when no embedded preview is available.
 - Other renderers use a DOM fallback and return `degraded: true`.
 - Source files and generated thumbnails are never persisted by this package.

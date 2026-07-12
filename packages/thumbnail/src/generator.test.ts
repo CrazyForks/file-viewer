@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 let activeLoads = 0;
 let maxActiveLoads = 0;
 let totalLoads = 0;
+let embeddedThumbnail: Blob | null = null;
 
 vi.mock('./capture.js', () => ({
   captureThumbnailElement: vi.fn(async () => new Blob(['fallback'], { type: 'image/webp' })),
@@ -11,11 +12,22 @@ vi.mock('./capture.js', () => ({
   normalizeThumbnailBlob: vi.fn(async (_document, blob: Blob) => blob),
 }));
 
+vi.mock('./embedded/index.js', () => ({
+  canExtractEmbeddedThumbnail: vi.fn((extension: string) => extension === 'docx'),
+  extractEmbeddedThumbnail: vi.fn(async () => embeddedThumbnail),
+}));
+
 vi.mock('@file-viewer/core', () => ({
+  normalizeSource: vi.fn((source: { filename?: string; type?: string; buffer?: ArrayBuffer }) => ({
+    ...source,
+    filename: source.filename || `preview.${source.type || 'bin'}`,
+    extension: source.type || source.filename?.split('.').pop() || '',
+  })),
   createViewer: vi.fn((host: HTMLElement) => {
     let source: { filename?: string; type?: string } | null = null;
     return {
       container: host,
+      async prepare() {},
       async load(nextSource: { filename?: string; type?: string }, loadOptions?: { signal?: AbortSignal }) {
         source = nextSource;
         activeLoads += 1;
@@ -59,7 +71,10 @@ vi.mock('@file-viewer/core', () => ({
         return { id: 'pdf', load() {} };
       },
       getThumbnailAdapter() {
-        return { capture: async () => new Blob(['thumbnail'], { type: 'image/webp' }) };
+        return {
+          captureSource: source?.filename?.startsWith('cover.') ? 'embedded' : 'rendered',
+          capture: async () => new Blob(['thumbnail'], { type: 'image/webp' }),
+        };
       },
     };
   }),
@@ -72,6 +87,38 @@ describe('thumbnail generator pool', () => {
     activeLoads = 0;
     maxActiveLoads = 0;
     totalLoads = 0;
+    embeddedThumbnail = null;
+  });
+
+  it('returns an embedded thumbnail before loading the renderer', async () => {
+    embeddedThumbnail = new Blob(['cover'], { type: 'image/png' });
+    const generator = createFileViewerThumbnailGenerator({ concurrency: 1 });
+    const result = await generator.generate({
+      filename: 'book.docx',
+      type: 'docx',
+      buffer: new ArrayBuffer(8),
+    });
+
+    expect(result).toMatchObject({
+      strategy: 'embedded',
+      degraded: false,
+      rendererId: 'pdf',
+    });
+    expect(totalLoads).toBe(0);
+    await generator.destroy();
+  });
+
+  it('preserves embedded provenance from a renderer adapter', async () => {
+    const generator = createFileViewerThumbnailGenerator({ concurrency: 1 });
+    const result = await generator.generate({
+      filename: 'cover.umd',
+      type: 'umd',
+      buffer: new ArrayBuffer(8),
+    });
+
+    expect(result).toMatchObject({ strategy: 'embedded', degraded: false });
+    expect(totalLoads).toBe(1);
+    await generator.destroy();
   });
 
   it('keeps ordered batch results while enforcing concurrency', async () => {

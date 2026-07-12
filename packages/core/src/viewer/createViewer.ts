@@ -609,6 +609,9 @@ export const createViewer = (
 
   const instance: FileViewerInstance = {
     container,
+    async prepare() {
+      await ensureRendererPluginsInstalled();
+    },
     async load(source: FileViewerSource, loadOptions = {}) {
       const version = requestScope.requestController.createVersion();
       const requestAbortController = requestScope.requestController.createAbortController();

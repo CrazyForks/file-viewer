@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:2.1.26",
+    "epubjs": "^0.3.93",
+    "jszip": "^3.10.1",
     "modern-screenshot": "^4.7.0"
   },
   "devDependencies": {

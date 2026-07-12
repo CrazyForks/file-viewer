@@ -51,7 +51,7 @@ export interface ResolvedFileViewerThumbnailOptions {
   signal?: AbortSignal;
 }
 
-export type FileViewerThumbnailStrategy = 'provider-native' | 'provider-dom' | 'dom-fallback';
+export type FileViewerThumbnailStrategy = 'embedded' | 'provider-native' | 'provider-dom' | 'dom-fallback';
 
 export interface FileViewerThumbnailResult {
   blob: Blob;

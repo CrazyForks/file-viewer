@@ -403,6 +403,7 @@ export default async function renderEpub(
 
   syncUi();
   context?.registerThumbnailAdapter?.({
+    captureSource: 'embedded',
     beforeCapture: async ({ signal }) => {
       while (status === 'loading' && !disposed) {
         if (signal?.aborted) {

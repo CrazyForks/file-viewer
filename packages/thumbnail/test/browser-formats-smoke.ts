@@ -6,6 +6,7 @@ import spreadsheetRenderer from '../../renderers/spreadsheet/src/index.js';
 import typstRenderer from '../../renderers/typst/src/index.js';
 import wordRenderer from '../../renderers/word/src/index.js';
 import { createFileViewerThumbnailGenerator } from '../src/index.js';
+import JSZip from 'jszip';
 
 const output = document.querySelector('[data-testid="result"]') as HTMLElement;
 const typstCompilerWasmUrl = new URL(
@@ -16,6 +17,33 @@ const typstRendererWasmUrl = new URL(
   '../../renderers/typst/node_modules/@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm',
   import.meta.url
 ).href;
+
+const createEmbeddedPptx = async () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 640;
+  canvas.height = 360;
+  const context = canvas.getContext('2d')!;
+  context.fillStyle = '#7c3aed';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = '#fff';
+  context.font = '700 48px sans-serif';
+  context.textAlign = 'center';
+  context.fillText('EMBEDDED PPTX', canvas.width / 2, canvas.height / 2);
+  const thumbnail = await new Promise<Blob>((resolve, reject) => canvas.toBlob(
+    blob => blob ? resolve(blob) : reject(new Error('Unable to create PPTX thumbnail fixture.')),
+    'image/png'
+  ));
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types" />');
+  zip.file('ppt/presentation.xml', '<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" />');
+  zip.file('_rels/.rels', `
+    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+      <Relationship Id="thumbnail" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail" Target="preview/cover.png" />
+    </Relationships>
+  `);
+  zip.file('preview/cover.png', await thumbnail.arrayBuffer());
+  return zip.generateAsync({ type: 'arraybuffer' });
+};
 
 try {
   const fixtures = [
@@ -41,7 +69,7 @@ try {
       filename: 'book.epub',
       type: 'epub',
       url: '/apps/viewer-demo/public/example/book.epub',
-      expectedStrategy: null,
+      expectedStrategy: 'embedded',
     },
     {
       filename: 'render-fidelity.ofd',
@@ -56,10 +84,10 @@ try {
       expectedStrategy: 'provider-dom',
     },
     {
-      filename: 'sample-presentation.pptx',
+      filename: 'embedded-presentation.pptx',
       type: 'pptx',
-      url: '/apps/viewer-demo/public/example/en/sample-presentation.pptx',
-      expectedStrategy: null,
+      buffer: createEmbeddedPptx,
+      expectedStrategy: 'embedded',
     },
   ] as const;
   const sources = await Promise.all(fixtures.map(async fixture => ({
@@ -67,7 +95,9 @@ try {
     type: fixture.type,
     buffer: 'content' in fixture
       ? new TextEncoder().encode(fixture.content).buffer
-      : await fetch(fixture.url).then(response => response.arrayBuffer()),
+      : 'buffer' in fixture
+        ? await fixture.buffer()
+        : await fetch(fixture.url).then(response => response.arrayBuffer()),
   })));
   const generator = createFileViewerThumbnailGenerator({
     concurrency: 2,

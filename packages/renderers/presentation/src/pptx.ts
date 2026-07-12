@@ -352,6 +352,7 @@ export default async function renderPptx(
   shell.append(loading, error, surface);
   target.replaceChildren(style, shell);
   context?.registerThumbnailAdapter?.({
+    captureSource: 'embedded',
     beforeCapture: async ({ signal }) => {
       const hasFirstVisual = () => Boolean(
         viewer?.thumbnailDataUrl || surface.querySelector('.slide, .flyfish-pptx-thumbnail')

@@ -362,6 +362,7 @@ export default async function renderUmd(
     }
   }
   context?.registerThumbnailAdapter?.({
+    captureSource: 'embedded',
     capture: () => book?.cover
       ? new Blob([copyImageBytes(book.cover)], { type: book.cover.mimeType })
       : null,
