@@ -44,4 +44,15 @@ if (rendered.html.includes('#666')) {
   throw new Error('Rendered GitHub #34 table contains a synthetic gray border')
 }
 
+for (const border of [
+  'border-top:1px solid #000000',
+  'border-inline-start:1px solid #000000',
+  'border-inline-end:1px solid #000000',
+  'border-bottom:1px solid #000000'
+]) {
+  if (!rendered.html.includes(border)) {
+    throw new Error(`Rendered GitHub #34 table is missing its ${border} outer edge`)
+  }
+}
+
 console.log('[doc] GitHub #34 WPS table fixture parsed and rendered successfully.')

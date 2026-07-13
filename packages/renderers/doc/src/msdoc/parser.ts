@@ -433,7 +433,12 @@ export function finalizeTableGrid(rows: TableRowBlock[]): void {
 
 function resolveTableGridBorders(rows: TableRowBlock[]): void {
   const hasOwnBorder = (borders: Record<string, unknown>, side: string) => (
-    Object.prototype.hasOwnProperty.call(borders, side)
+    Object.prototype.hasOwnProperty.call(borders, side) && (() => {
+      const border = borders[side] as { borderType?: number; nil?: boolean } | undefined;
+      // An all-zero BRC is an empty cell-level value and still inherits the
+      // table edge/inside border. NilBrc is the explicit "no border" value.
+      return Boolean(border?.nil || border?.borderType);
+    })()
   );
   rows.forEach((row, rowIndex) => {
     row.cells.forEach((cell) => {
