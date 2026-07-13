@@ -4,17 +4,17 @@
 
 <h1 align="center">Flyfish File Viewer</h1>
 
-<p align="center"><strong>Browser-native, offline-first file preview components for web applications.</strong></p>
+<p align="center"><strong>Open-source, browser-native file viewer for private and internal web apps.</strong></p>
 
 <p align="center">
-  Preview PDF, Office, CAD, archives, email, media, ebooks, diagrams, 3D and data files in the browser—without requiring a server-side conversion service.
+  <strong>206 extensions across 24 preview pipelines.</strong> Preview Office, PDF/OFD, CAD, archives, email, diagrams, 3D, media and data in the browser—without server-side conversion.
 </p>
 
 <p align="center">
   <a href="https://demo.file-viewer.app/"><strong>Live Demo</strong></a> ·
   <a href="https://doc.file-viewer.app/"><strong>Documentation</strong></a> ·
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
-  <a href="https://doc.file-viewer.app/guide/formats"><strong>Format Matrix</strong></a> ·
+  <a href="https://doc.file-viewer.app/guide/formats"><strong>Format Matrix (206 Extensions)</strong></a> ·
   <a href="https://github.com/flyfish-dev/file-viewer/releases"><strong>GitHub Releases</strong></a>
 </p>
 
@@ -33,8 +33,8 @@
 
 <p align="center">
   <a href="https://hub.docker.com/r/flyfishdev/file-viewer"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/flyfishdev/file-viewer?logo=docker"></a>
-  <img alt="206 extension mappings" src="https://img.shields.io/badge/extensions-206-2563eb">
-  <img alt="24 rendering pipelines" src="https://img.shields.io/badge/pipelines-24-7c3aed">
+  <a href="https://doc.file-viewer.app/guide/formats"><img alt="206 supported file extensions" src="https://img.shields.io/badge/file%20extensions-206-2563eb"></a>
+  <a href="https://doc.file-viewer.app/guide/formats"><img alt="24 rendering pipelines" src="https://img.shields.io/badge/preview%20pipelines-24-7c3aed"></a>
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-native-3178c6?logo=typescript&logoColor=white">
   <img alt="offline and self-hosted" src="https://img.shields.io/badge/runtime-offline%20%7C%20self--hosted-168f64">
 </p>
@@ -42,6 +42,21 @@
 <p align="center">
   <a href="https://demo.file-viewer.app/"><img src="docs/public/_media/flyfish-viewer-demo-en.gif" width="920" alt="Flyfish File Viewer English demo showing multi-format browser preview"></a>
 </p>
+
+## Choose By Scenario
+
+**206 extensions across 24 preview pipelines** means you can start with the file problem you have today instead of assembling a different viewer for every attachment type.
+
+| Your product needs to preview | Formats you can look for immediately | Fastest path |
+| --- | --- | --- |
+| Contracts, reports and OA/CRM attachments | PDF/OFD, DOCX/DOC, XLSX/XLS, PPTX, RTF and OpenDocument | [Try the live demo](https://demo.file-viewer.app/) · [`preset-office`](https://doc.file-viewer.app/guide/on-demand-renderers) |
+| Engineering drawings, models and chip/design assets | DWG, DXF, DWF/DWFX, STEP/IFC/3D, OLB/DRA and GDS/OASIS | [`preset-engineering`](https://doc.file-viewer.app/guide/on-demand-renderers) · [check fidelity](https://doc.file-viewer.app/guide/format-fidelity) |
+| Archives whose contents must remain private | ZIP, RAR, 7Z, TAR, ISO and 20+ related formats, with nested file preview | [Archive coverage](https://doc.file-viewer.app/guide/formats) · [offline deployment](https://doc.file-viewer.app/guide/distribution) |
+| Email, support-ticket and knowledge-base attachments | EML, MSG, MBOX, EPUB, Markdown, source code, diff/patch and Git bundle | [Full format matrix](https://doc.file-viewer.app/guide/formats) · [full packages](#quick-start) |
+| Diagrams, design files and structured data | Draw.io, Excalidraw, Mermaid, PlantUML, XMind, PSD, SQLite, Parquet and more | [Full format matrix](https://doc.file-viewer.app/guide/formats) · [`preset-all`](#choose-the-right-package) |
+| Intranet or air-gapped deployment | Self-hosted JavaScript, Worker, WASM, fonts and vendor assets | [Offline guide](https://doc.file-viewer.app/guide/distribution) · [Docker](https://doc.file-viewer.app/guide/docker) |
+
+Looking for one exact suffix? Search the maintained [206-extension format matrix](https://doc.file-viewer.app/guide/formats), which records the renderer, support level and deployment requirements for each pipeline.
 
 ## Why File Viewer
 
