@@ -3,7 +3,12 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
+    ],
     "strict": true,
     "composite": true,
     "declaration": true,
@@ -18,7 +23,16 @@
     "outDir": "dist",
     "noEmitOnError": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist", "node_modules"],
-  "references": [{ "path": "../../renderers/doc" }]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../renderers/doc"
+    }
+  ]
 }

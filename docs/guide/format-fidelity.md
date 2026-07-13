@@ -1,5 +1,9 @@
 # Format Fidelity
 
+> **Maintainer-only commands:** this page contains complete-workspace release or verification examples that are not part of the public checkout. Public contributors should use the commands in `/README.md` or `/docs/guide/development.md`.
+
+<!-- FILE_VIEWER_MAINTAINER_COMMANDS -->
+
 <div class="doc-kicker">Clear Capability Boundaries</div>
 
 <p class="doc-lead">

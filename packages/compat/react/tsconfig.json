@@ -4,7 +4,10 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "lib": ["DOM", "ES2020"],
+    "lib": [
+      "DOM",
+      "ES2020"
+    ],
     "strict": true,
     "composite": true,
     "declaration": true,
@@ -13,13 +16,24 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@file-viewer/react": ["../../components/react/src/index.tsx"],
-      "@file-viewer/web": ["../../components/web/src/index.ts"]
+      "@file-viewer/react": [
+        "../../components/react/src/index.tsx"
+      ],
+      "@file-viewer/web": [
+        "../../components/web/src/index.ts"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
   "references": [
-    { "path": "../../components/web" },
-    { "path": "../../components/react" }
+    {
+      "path": "../../components/web"
+    },
+    {
+      "path": "../../components/react"
+    }
   ]
 }

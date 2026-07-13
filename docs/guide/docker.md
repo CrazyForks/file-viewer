@@ -1,45 +1,22 @@
-# Docker Deployment
+# Docker
 
-<div class="doc-kicker">Self-host The Docs And Demo</div>
-
-The Docker image serves the static demo build through nginx. It includes the main viewer at `/`, the zero-dependency iframe entry at `/iframe.html`, and the comparison demo at `/compare.html`.
-
-## Run From Docker Hub
+The published image is the supported Docker path for public consumers. It serves a prebuilt File Viewer site and does not require a conversion backend.
 
 ```bash
-docker run -d \
-  --name file-viewer \
-  -p 8080:80 \
-  flyfishdev/file-viewer:latest
-```
-
-Open:
-
-- Main viewer: `http://localhost:8080/`
-- iframe embed: `http://localhost:8080/iframe.html?url=/example/word.docx`
-- Comparison demo: `http://localhost:8080/compare.html`
-- Health check: `http://localhost:8080/healthz`
-
-## Build Locally
-
-```bash
-pnpm docker:build
+docker pull flyfishdev/file-viewer:latest
 docker run --rm -p 8080:80 flyfishdev/file-viewer:latest
 ```
 
-## Multi-arch Publish
+Open `http://localhost:8080` and verify that the demo loads. Pin a version tag rather than `latest` for reproducible production deployments.
 
-```bash
-docker login
-DOCKER_IMAGE=flyfishdev/file-viewer pnpm docker:publish
-```
+## Private registries
 
-The Docker flow targets `linux/amd64` and `linux/arm64`.
+You may mirror the published image into an internal registry and deploy it with your normal platform controls. Keep Worker, WASM, vendor and sample assets on the same trusted network as the application.
 
-## Offline Notes
+## Maintainer boundary
 
-The image serves static demo assets from itself, including offline Worker, WASM, vendor, and example files. Keep `/iframe.html`, `/assets/*`, `/vendor/*`, and `/example/*` on the same static origin when putting another reverse proxy in front of the container. For native component integrations, still copy viewer runtime assets into your own product deployment with:
+<!-- FILE_VIEWER_MAINTAINER_COMMANDS -->
 
-```bash
-npx file-viewer-copy-assets ./public/file-viewer
-```
+Building and publishing the official Docker image, producing release archives and running the complete release matrix are maintainer-only operations in the complete private workspace. They are intentionally not exposed as commands in this public checkout.
+
+For a custom source deployment, use the public build commands in [Development](./development.md) and serve the generated demo output with your own static web server.

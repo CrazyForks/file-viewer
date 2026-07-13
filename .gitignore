@@ -1,0 +1,13 @@
+node_modules/
+**/dist/
+**/.vitepress/cache/
+**/.vitepress/dist/
+**/*.tsbuildinfo
+playwright-report/
+test-results/
+artifacts/*.tgz
+artifacts/*.tar.gz
+packages/components/web/viewer/
+packages/compat/web/viewer/
+*.log
+.DS_Store

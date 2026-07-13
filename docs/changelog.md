@@ -1,5 +1,9 @@
 # 更新日志
 
+> **Maintainer-only commands:** this page contains complete-workspace release or verification examples that are not part of the public checkout. Public contributors should use the commands in `/README.md` or `/docs/guide/development.md`.
+
+<!-- FILE_VIEWER_MAINTAINER_COMMANDS -->
+
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
 ## `v2.1.27` 关键 PR 修复与缩略图能力

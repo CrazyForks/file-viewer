@@ -18,10 +18,5 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts"
-  ],
-  "references": [
-    {
-      "path": "../../core"
-    }
   ]
 }

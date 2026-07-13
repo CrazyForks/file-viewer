@@ -1,0 +1,75 @@
+{
+  "name": "@file-viewer/vite-plugin",
+  "version": "2.1.27",
+  "private": false,
+  "type": "module",
+  "description": "Vite plugin for Flyfish File Viewer on-demand renderer assembly, chunk planning, and offline asset deployment.",
+  "keywords": [
+    "file-viewer",
+    "vite-plugin",
+    "renderer-preset",
+    "document-preview",
+    "on-demand-renderer",
+    "document-viewer",
+    "file-preview",
+    "self-hosted"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": {
+    "name": "Wangyu",
+    "email": "wybaby168@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flyfish-dev/file-viewer.git",
+    "directory": "packages/presets/vite-plugin"
+  },
+  "homepage": "https://doc.file-viewer.app/guide/on-demand-renderers",
+  "bugs": {
+    "url": "https://github.com/flyfish-dev/file-viewer/issues"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://dev.flyfish.group/donate?source=npm"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./client": "./client.d.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "client.d.ts",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "type-check": "tsc -b tsconfig.json"
+  },
+  "peerDependencies": {
+    "vite": ">=5 <9"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
+  },
+  "license": "Apache-2.0"
+}

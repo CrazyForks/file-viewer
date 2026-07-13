@@ -2,6 +2,7 @@ packages:
   - packages/core
   - packages/thumbnail
   - packages/renderers/*
+  - packages/presets/*
   - packages/components/*
   - packages/compat/*
   - apps/*
@@ -15,7 +16,9 @@ peerDependencyRules:
 
 allowBuilds:
   '@parcel/watcher': true
+  ant-design-vue: true
   canvas: true
   core-js: true
   es5-ext: true
   esbuild: true
+  fsevents: true

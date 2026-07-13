@@ -1,5 +1,9 @@
 # FAQ
 
+> **Maintainer-only commands:** this page contains complete-workspace release or verification examples that are not part of the public checkout. Public contributors should use the commands in `/README.md` or `/docs/guide/development.md`.
+
+<!-- FILE_VIEWER_MAINTAINER_COMMANDS -->
+
 ## The viewer is blank
 
 Confirm the host container has a stable height and the file has a recognizable extension or explicit `type`.

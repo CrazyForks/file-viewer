@@ -3412,6 +3412,11 @@ function updateSampleMenuGeometry() {
   min-height: 0;
 }
 
+.sample-picker.open {
+  /* The menu must outrank the sticky URL controls and the quick-sample picker. */
+  z-index: 40;
+}
+
 .sample-trigger {
   width: 100%;
   flex-shrink: 0;
@@ -4789,8 +4794,8 @@ function updateSampleMenuGeometry() {
     overflow: hidden;
   }
 
+  .sample-picker-open .panel-sticky-controls,
   .sample-picker-open .scenario-picker,
-  .sample-picker-open .source-command,
   .sample-picker-open .snippet-launch {
     display: none;
   }

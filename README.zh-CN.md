@@ -1,4 +1,9 @@
 <p align="center">
+
+> **公开仓说明：** 本中文长文档保留完整技术背景；其中 release、deploy、sync、完整 verify 等命令仅供完整私有维护者工作区使用。公开 checkout 请以默认英文 README 的七条命令为准。
+
+<!-- FILE_VIEWER_MAINTAINER_COMMANDS -->
+
   <a href="https://file-viewer.app">
     <img src="docs/public/_media/logo.png" width="92" alt="File Viewer logo" />
   </a>
