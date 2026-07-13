@@ -22,9 +22,37 @@ if (!table.rows.every(row => row.cells.filter(cell => !cell.hidden).length === 5
   throw new Error('Expected every GitHub #34 table row to expose five visible cells')
 }
 
+if (!table.rows.every(row => row.cells.every(cell => (
+  cell.meta?.leftBoundary != null
+  && cell.meta?.rightBoundary != null
+  && cell.meta.rightBoundary > cell.meta.leftBoundary
+)))) {
+  throw new Error('Expected every GitHub #34 table cell to retain a positive grid width')
+}
+
 const rendered = renderMsDoc(parsed)
 if (!rendered.html.includes('<table') || !rendered.html.includes('测试组分A')) {
   throw new Error('Rendered GitHub #34 HTML did not include the restored table content')
+}
+
+const count = pattern => rendered.html.match(pattern)?.length || 0
+if (count(/<tr\b/g) !== count(/<\/tr>/g) || count(/<td\b/g) !== count(/<\/td>/g)) {
+  throw new Error('Rendered GitHub #34 table contains unclosed row or cell markup')
+}
+
+if (rendered.html.includes('#666')) {
+  throw new Error('Rendered GitHub #34 table contains a synthetic gray border')
+}
+
+for (const border of [
+  'border-top:1px solid #000000',
+  'border-inline-start:1px solid #000000',
+  'border-inline-end:1px solid #000000',
+  'border-bottom:1px solid #000000'
+]) {
+  if (!rendered.html.includes(border)) {
+    throw new Error(`Rendered GitHub #34 table is missing its ${border} outer edge`)
+  }
 }
 
 console.log('[doc] GitHub #34 WPS table fixture parsed and rendered successfully.')

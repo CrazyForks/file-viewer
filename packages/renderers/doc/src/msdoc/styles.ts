@@ -10,11 +10,32 @@ import type {
   StyleDefinition,
 } from '../types.js';
 
+const REPEATABLE_TABLE_PROPERTIES = new Set([
+  'insertCells',
+  'deleteCells',
+  'columnWidth',
+  'merge',
+  'split',
+  'textFlow',
+  'vertMerge',
+  'vertAlign',
+  'setShading',
+  'defaultShading',
+  'setBorder',
+  'cellPadding',
+  'cellSpacing',
+  'cellWidth',
+  'fitText',
+  'cellNoWrap',
+]);
+
 function mergePropertyArrays(...arrays: Array<DecodedProperty[] | undefined | null>): DecodedProperty[] {
   const map = new Map<string, DecodedProperty>();
+  let sequence = 0;
   for (const array of arrays) {
     for (const prop of array || []) {
-      map.set(`${prop.kind}:${prop.name}`, prop);
+      const repeatable = prop.kind === 'table' && REPEATABLE_TABLE_PROPERTIES.has(prop.name);
+      map.set(repeatable ? `${prop.kind}:${prop.name}:${sequence++}` : `${prop.kind}:${prop.name}`, prop);
     }
   }
   return Array.from(map.values());

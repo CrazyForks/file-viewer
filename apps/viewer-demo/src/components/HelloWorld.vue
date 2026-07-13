@@ -4,6 +4,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Code2,
   Copy,
   FileSearch,
   Link2,
@@ -129,6 +130,10 @@ const viewerSearchOpen = ref(false)
 const viewerSearchQuery = ref('')
 const viewerSearchInputRef = ref<HTMLInputElement | null>(null)
 const snippetCopied = ref(false)
+const snippetDialogOpen = ref(false)
+const snippetLaunchRef = ref<HTMLButtonElement | null>(null)
+const snippetCloseRef = ref<HTMLButtonElement | null>(null)
+const snippetDialogRef = ref<HTMLElement | null>(null)
 const viewerSearchState = ref<FileViewerSearchState>({
   query: '',
   total: 0,
@@ -240,6 +245,10 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     themeToLight: '切换为浅色模式',
     themeToDark: '切换为深色模式',
     integrationSnippet: '接入代码',
+    openIntegrationSnippet: '查看接入代码',
+    integrationSnippetHint: '在浮层中查看并复制示例',
+    integrationSnippetDescription: 'React 完整接入示例',
+    closeIntegrationSnippet: '关闭接入代码',
     copySnippet: '复制代码',
     copiedSnippet: '已复制'
   },
@@ -306,6 +315,10 @@ const demoCopyMap: Record<DemoLocale, Record<string, string>> = {
     themeToLight: 'Switch to light mode',
     themeToDark: 'Switch to dark mode',
     integrationSnippet: 'Integration code',
+    openIntegrationSnippet: 'View integration code',
+    integrationSnippetHint: 'Open and copy a focused example',
+    integrationSnippetDescription: 'Complete React integration example',
+    closeIntegrationSnippet: 'Close integration code',
     copySnippet: 'Copy code',
     copiedSnippet: 'Copied'
   }
@@ -1230,21 +1243,63 @@ const viewerOptions = computed((): FileViewerOptions => {
 })
 
 let copyResetTimer: number | undefined
+const clipboardWriteTimeoutMs = 800
+
+async function openSnippetDialog() {
+  scenarioPickerOpen.value = false
+  samplePickerOpen.value = false
+  mobileActionsOpen.value = false
+  snippetDialogOpen.value = true
+  await nextTick()
+  snippetCloseRef.value?.focus()
+}
+
+function closeSnippetDialog() {
+  if (!snippetDialogOpen.value) {
+    return
+  }
+  snippetDialogOpen.value = false
+  void nextTick(() => snippetLaunchRef.value?.focus())
+}
+
+function copyIntegrationSnippetFallback() {
+  const textarea = document.createElement('textarea')
+  textarea.value = integrationSnippet.value
+  textarea.setAttribute('readonly', 'true')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  const copied = document.execCommand('copy')
+  textarea.remove()
+  if (!copied) {
+    throw new Error('Clipboard copy was rejected')
+  }
+}
+
+async function writeIntegrationSnippetToClipboard() {
+  if (!navigator.clipboard?.writeText) {
+    copyIntegrationSnippetFallback()
+    return
+  }
+  let timeoutId: number | undefined
+  try {
+    await Promise.race([
+      navigator.clipboard.writeText(integrationSnippet.value),
+      new Promise<never>((_, reject) => {
+        timeoutId = window.setTimeout(() => reject(new Error('Clipboard write timed out')), clipboardWriteTimeoutMs)
+      })
+    ])
+  } catch {
+    copyIntegrationSnippetFallback()
+  } finally {
+    if (timeoutId) {
+      window.clearTimeout(timeoutId)
+    }
+  }
+}
 
 async function copyIntegrationSnippet() {
-  try {
-    await navigator.clipboard.writeText(integrationSnippet.value)
-  } catch {
-    const textarea = document.createElement('textarea')
-    textarea.value = integrationSnippet.value
-    textarea.setAttribute('readonly', 'true')
-    textarea.style.position = 'fixed'
-    textarea.style.opacity = '0'
-    document.body.appendChild(textarea)
-    textarea.select()
-    document.execCommand('copy')
-    document.body.removeChild(textarea)
-  }
   snippetCopied.value = true
   if (copyResetTimer) {
     window.clearTimeout(copyResetTimer)
@@ -1253,6 +1308,12 @@ async function copyIntegrationSnippet() {
     snippetCopied.value = false
     copyResetTimer = undefined
   }, 1600)
+
+  try {
+    await writeIntegrationSnippetToClipboard()
+  } catch {
+    snippetCopied.value = false
+  }
 }
 
 function closePrintMenu() {
@@ -1586,6 +1647,26 @@ function handleDocumentPointerDown(event: PointerEvent) {
 
 function handleDocumentKeydown(event: KeyboardEvent) {
   const key = event.key.toLowerCase()
+  if (snippetDialogOpen.value) {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closeSnippetDialog()
+      return
+    }
+    if (event.key === 'Tab') {
+      const focusable = Array.from(snippetDialogRef.value?.querySelectorAll<HTMLButtonElement>('button:not([disabled])') || [])
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first && last) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last && first) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    return
+  }
   if ((event.metaKey || event.ctrlKey) && !event.altKey && key === 'f') {
     event.preventDefault()
     event.stopPropagation()
@@ -1721,23 +1802,44 @@ function updateSampleMenuGeometry() {
           </button>
 
           <div class='panel-body'>
-            <div class='mode-switch'>
-              <button
-                type='button'
-                class='mode-button'
-                :class='{ active: input }'
-                @click='setInputMode(true)'
-              >
-                {{ demoCopy.link }}
-              </button>
-              <button
-                type='button'
-                class='mode-button'
-                :class='{ active: !input }'
-                @click='setInputMode(false)'
-              >
-                {{ demoCopy.upload }}
-              </button>
+            <div class='panel-sticky-controls'>
+              <div class='mode-switch'>
+                <button
+                  type='button'
+                  class='mode-button'
+                  :class='{ active: input }'
+                  @click='setInputMode(true)'
+                >
+                  {{ demoCopy.link }}
+                </button>
+                <button
+                  type='button'
+                  class='mode-button'
+                  :class='{ active: !input }'
+                  @click='setInputMode(false)'
+                >
+                  {{ demoCopy.upload }}
+                </button>
+              </div>
+
+              <section v-if='input' class='source-command'>
+                <label class='field-label' for='preview-url'>{{ demoCopy.address }}</label>
+                <div class='source-command-row'>
+                  <input
+                    id='preview-url'
+                    v-model='url'
+                    class='compact-field'
+                    type='url'
+                    inputmode='url'
+                    autocomplete='url'
+                    :placeholder='demoCopy.addressPlaceholder'
+                    @keyup.enter='openUrlPreview()'
+                  />
+                  <button type='button' class='primary-button' @click='openUrlPreview()'>
+                    {{ demoCopy.preview }}
+                  </button>
+                </div>
+              </section>
             </div>
 
             <template v-if='input'>
@@ -1858,38 +1960,23 @@ function updateSampleMenuGeometry() {
                 </div>
               </div>
 
-              <div class='field-group'>
-                <label class='field-label'>{{ demoCopy.address }}</label>
-                <input
-                  v-model='url'
-                  class='compact-field'
-                  type='text'
-                  :placeholder='demoCopy.addressPlaceholder'
-                  @keyup.enter='openUrlPreview()'
-                />
-              </div>
-
-              <button type='button' class='primary-button' @click='openUrlPreview()'>
-                {{ demoCopy.preview }}
+              <button
+                ref='snippetLaunchRef'
+                type='button'
+                class='snippet-launch'
+                aria-haspopup='dialog'
+                aria-controls='integration-snippet-dialog'
+                @click='openSnippetDialog'
+              >
+                <span class='snippet-launch-icon'>
+                  <Code2 :size='18' :stroke-width='2.3' />
+                </span>
+                <span class='snippet-launch-copy'>
+                  <strong>{{ demoCopy.openIntegrationSnippet }}</strong>
+                  <em>{{ demoCopy.integrationSnippetHint }}</em>
+                </span>
+                <span class='snippet-launch-action'>{{ demoCopy.open }}</span>
               </button>
-
-              <div class='snippet-card'>
-                <div class='snippet-heading'>
-                  <span>{{ demoCopy.integrationSnippet }}</span>
-                  <button
-                    type='button'
-                    class='snippet-copy'
-                    :class='{ copied: snippetCopied }'
-                    :title='snippetCopied ? demoCopy.copiedSnippet : demoCopy.copySnippet'
-                    @click='copyIntegrationSnippet'
-                  >
-                    <Check v-if='snippetCopied' :size='14' :stroke-width='2.5' />
-                    <Copy v-else :size='14' :stroke-width='2.5' />
-                    <strong>{{ snippetCopied ? demoCopy.copiedSnippet : demoCopy.copySnippet }}</strong>
-                  </button>
-                </div>
-                <pre><code>{{ integrationSnippet }}</code></pre>
-              </div>
             </template>
 
             <template v-else>
@@ -2246,6 +2333,63 @@ function updateSampleMenuGeometry() {
         </div>
       </section>
     </main>
+
+    <Teleport to='body'>
+      <Transition name='snippet-dialog'>
+        <div
+          v-if='snippetDialogOpen'
+          class='snippet-dialog-backdrop'
+          :data-demo-theme='resolvedDemoTheme'
+          @click.self='closeSnippetDialog'
+        >
+          <section
+            ref='snippetDialogRef'
+            id='integration-snippet-dialog'
+            class='snippet-dialog-panel'
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='integration-snippet-title'
+            aria-describedby='integration-snippet-description'
+          >
+            <header class='snippet-dialog-header'>
+              <span class='snippet-dialog-icon'>
+                <Code2 :size='21' :stroke-width='2.3' />
+              </span>
+              <span class='snippet-dialog-title'>
+                <strong id='integration-snippet-title'>{{ demoCopy.integrationSnippet }}</strong>
+                <em id='integration-snippet-description'>{{ demoCopy.integrationSnippetDescription }}</em>
+              </span>
+              <button
+                ref='snippetCloseRef'
+                type='button'
+                class='snippet-dialog-close'
+                :aria-label='demoCopy.closeIntegrationSnippet'
+                @click='closeSnippetDialog'
+              >
+                <X :size='18' :stroke-width='2.5' />
+              </button>
+            </header>
+
+            <pre class='snippet-dialog-code'><code>{{ integrationSnippet }}</code></pre>
+
+            <footer class='snippet-dialog-footer'>
+              <span>{{ demoCopy.integrationSnippetHint }}</span>
+              <button
+                type='button'
+                class='snippet-dialog-copy'
+                :class='{ copied: snippetCopied }'
+                :title='snippetCopied ? demoCopy.copiedSnippet : demoCopy.copySnippet'
+                @click='copyIntegrationSnippet'
+              >
+                <Check v-if='snippetCopied' :size='16' :stroke-width='2.5' />
+                <Copy v-else :size='16' :stroke-width='2.5' />
+                <strong>{{ snippetCopied ? demoCopy.copiedSnippet : demoCopy.copySnippet }}</strong>
+              </button>
+            </footer>
+          </section>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -2810,6 +2954,50 @@ function updateSampleMenuGeometry() {
   padding: var(--demo-panel-body-padding);
 }
 
+.panel-sticky-controls {
+  position: sticky;
+  z-index: 12;
+  top: 0;
+  display: grid;
+  gap: var(--demo-panel-body-gap);
+  padding: 0 0 4px;
+  background: linear-gradient(180deg, rgba(247, 250, 248, 0.98) 0%, rgba(247, 250, 248, 0.94) 84%, transparent 100%);
+  backdrop-filter: blur(16px);
+}
+
+.source-command {
+  display: grid;
+  gap: var(--demo-field-gap);
+  padding: 10px;
+  border: 1px solid rgba(33, 163, 102, 0.16);
+  border-radius: 19px;
+  background:
+    linear-gradient(135deg, rgba(33, 163, 102, 0.08), transparent 58%),
+    rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 28px rgba(18, 35, 55, 0.07);
+}
+
+.source-command-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.source-command-row .compact-field {
+  min-width: 0;
+  width: 100%;
+}
+
+.source-command-row .primary-button {
+  min-height: var(--demo-control-height);
+  padding: 0 15px;
+  border-radius: var(--demo-field-radius);
+  white-space: nowrap;
+  box-shadow: 0 12px 24px rgba(33, 163, 102, 0.18);
+}
+
 .sample-picker-open .panel-body {
   overflow: visible;
 }
@@ -2958,80 +3146,239 @@ function updateSampleMenuGeometry() {
   height: 40px;
 }
 
-.snippet-card {
+.snippet-launch {
+  width: 100%;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-  border-radius: 16px;
-  border: 1px solid rgba(20, 35, 53, 0.08);
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.44);
-}
-
-.snippet-heading {
-  display: flex;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
+  padding: 9px 10px;
+  border-radius: 17px;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  background: rgba(255, 255, 255, 0.76);
+  color: #142335;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+  transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.snippet-heading > span {
-  color: #526174;
-  font-size: 12px;
-  font-weight: 900;
+.snippet-launch:hover {
+  transform: translateY(-1px);
+  border-color: rgba(33, 163, 102, 0.24);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 24px rgba(18, 35, 55, 0.08);
 }
 
-.snippet-copy {
-  height: 30px;
-  min-width: 82px;
+.snippet-launch-icon,
+.snippet-dialog-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  border: 0;
-  border-radius: 999px;
   background: rgba(33, 163, 102, 0.12);
   color: #16804f;
-  font: inherit;
+}
+
+.snippet-launch-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.snippet-launch-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.snippet-launch-copy strong {
+  overflow: hidden;
+  color: #142335;
+  font-size: 13px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.snippet-launch-copy em {
+  overflow: hidden;
+  color: #718193;
   font-size: 11px;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.snippet-launch-action {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(33, 163, 102, 0.1);
+  color: #16804f;
+  font-size: 10px;
   font-weight: 900;
+}
+
+.snippet-dialog-backdrop {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 24, 31, 0.52);
+  backdrop-filter: blur(14px);
+}
+
+.snippet-dialog-panel {
+  width: min(680px, calc(100vw - 48px));
+  max-height: min(76vh, 620px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 26px;
+  background: rgba(250, 252, 251, 0.96);
+  color: #142335;
+  box-shadow: 0 34px 90px rgba(7, 20, 28, 0.3);
+}
+
+.snippet-dialog-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(20, 35, 53, 0.08);
+}
+
+.snippet-dialog-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+}
+
+.snippet-dialog-title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.snippet-dialog-title strong {
+  color: #142335;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.snippet-dialog-title em {
+  color: #718193;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.snippet-dialog-close {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(20, 35, 53, 0.08);
+  border-radius: 999px;
+  background: rgba(20, 35, 53, 0.04);
+  color: #526174;
   cursor: pointer;
 }
 
-.snippet-copy.copied {
-  background: rgba(43, 126, 238, 0.12);
-  color: #2668c9;
+.snippet-dialog-close:hover {
+  background: rgba(20, 35, 53, 0.08);
+  color: #142335;
 }
 
-.snippet-copy strong {
+.snippet-dialog-code {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  overflow: auto;
+  padding: 22px 24px;
+  background: #112332;
+  color: #d6f4e5;
+  font-size: 13px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.snippet-dialog-code code {
+  display: block;
+  min-width: max-content;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+.snippet-dialog-footer {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 20px;
+  border-top: 1px solid rgba(20, 35, 53, 0.08);
+}
+
+.snippet-dialog-footer > span {
+  color: #718193;
+  font-size: 12px;
+}
+
+.snippet-dialog-copy {
+  min-width: 128px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #168757 0%, #2bc87e 100%);
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(33, 163, 102, 0.2);
+}
+
+.snippet-dialog-copy.copied {
+  background: linear-gradient(135deg, #2668c9 0%, #4a91ef 100%);
+}
+
+.snippet-dialog-copy strong {
   font: inherit;
   white-space: nowrap;
 }
 
-.snippet-card pre {
-  max-height: 118px;
-  margin: 0;
-  overflow: auto;
-  border-radius: 11px;
-  background: #112332;
-  color: #d6f4e5;
-  font-size: 11px;
-  line-height: 1.48;
+.snippet-dialog-enter-active,
+.snippet-dialog-leave-active {
+  transition: opacity 0.2s ease;
 }
 
-.snippet-card code {
-  display: block;
-  min-width: max-content;
-  padding: 10px;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+.snippet-dialog-enter-active .snippet-dialog-panel,
+.snippet-dialog-leave-active .snippet-dialog-panel {
+  transition: transform 0.22s ease, opacity 0.18s ease;
 }
 
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--demo-field-gap);
+.snippet-dialog-enter-from,
+.snippet-dialog-leave-to {
+  opacity: 0;
+}
+
+.snippet-dialog-enter-from .snippet-dialog-panel,
+.snippet-dialog-leave-to .snippet-dialog-panel {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
 }
 
 .field-label {
@@ -3814,6 +4161,18 @@ function updateSampleMenuGeometry() {
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
 }
 
+.demo-shell[data-demo-theme='dark'] .panel-sticky-controls {
+  background: linear-gradient(180deg, rgba(16, 25, 30, 0.98) 0%, rgba(16, 25, 30, 0.94) 84%, transparent 100%);
+}
+
+.demo-shell[data-demo-theme='dark'] .source-command {
+  border-color: rgba(45, 212, 154, 0.2);
+  background:
+    linear-gradient(135deg, rgba(45, 212, 154, 0.1), transparent 58%),
+    rgba(22, 32, 39, 0.92);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+}
+
 .demo-shell[data-demo-theme='dark'] .brand-card {
   background:
     linear-gradient(135deg, rgba(22, 52, 55, 0.96), rgba(17, 91, 65, 0.9));
@@ -3843,7 +4202,7 @@ function updateSampleMenuGeometry() {
 .demo-shell[data-demo-theme='dark'] .scenario-trigger,
 .demo-shell[data-demo-theme='dark'] .sample-trigger,
 .demo-shell[data-demo-theme='dark'] .upload-card,
-.demo-shell[data-demo-theme='dark'] .snippet-card,
+.demo-shell[data-demo-theme='dark'] .snippet-launch,
 .demo-shell[data-demo-theme='dark'] .scenario-card {
   background: rgba(22, 32, 39, 0.9);
   box-shadow: inset 0 0 0 1px rgba(167, 185, 198, 0.12);
@@ -3857,7 +4216,7 @@ function updateSampleMenuGeometry() {
 
 .demo-shell[data-demo-theme='dark'] .current-copy span,
 .demo-shell[data-demo-theme='dark'] .field-label,
-.demo-shell[data-demo-theme='dark'] .snippet-heading > span,
+.demo-shell[data-demo-theme='dark'] .snippet-launch-copy em,
 .demo-shell[data-demo-theme='dark'] .scenario-trigger-copy em,
 .demo-shell[data-demo-theme='dark'] .scenario-card em,
 .demo-shell[data-demo-theme='dark'] .sample-trigger-copy span,
@@ -3870,6 +4229,7 @@ function updateSampleMenuGeometry() {
 }
 
 .demo-shell[data-demo-theme='dark'] .current-copy strong,
+.demo-shell[data-demo-theme='dark'] .snippet-launch-copy strong,
 .demo-shell[data-demo-theme='dark'] .scenario-trigger-copy strong,
 .demo-shell[data-demo-theme='dark'] .scenario-card strong,
 .demo-shell[data-demo-theme='dark'] .sample-trigger-copy strong,
@@ -3992,17 +4352,60 @@ function updateSampleMenuGeometry() {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
-.demo-shell[data-demo-theme='dark'] .snippet-copy {
+.demo-shell[data-demo-theme='dark'] .snippet-launch-icon,
+.demo-shell[data-demo-theme='dark'] .snippet-launch-action {
   background: rgba(45, 212, 154, 0.14);
   color: #61e5b4;
 }
 
-.demo-shell[data-demo-theme='dark'] .snippet-copy.copied {
-  background: rgba(96, 165, 250, 0.16);
-  color: #9cc7ff;
+.demo-shell[data-demo-theme='dark'] .snippet-launch:hover {
+  border-color: rgba(45, 212, 154, 0.26);
+  background: rgba(22, 32, 39, 0.96);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
 }
 
-.demo-shell[data-demo-theme='dark'] .snippet-card pre {
+.snippet-dialog-backdrop[data-demo-theme='dark'] {
+  background: rgba(3, 10, 14, 0.68);
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-panel {
+  border-color: rgba(177, 202, 195, 0.16);
+  background: rgba(16, 25, 30, 0.98);
+  color: #eff7fb;
+  box-shadow: 0 36px 96px rgba(0, 0, 0, 0.54);
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-header,
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-footer {
+  border-color: rgba(167, 185, 198, 0.12);
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-icon {
+  background: rgba(45, 212, 154, 0.14);
+  color: #61e5b4;
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-title strong {
+  color: #eff7fb;
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-title em,
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-footer > span {
+  color: #9eb0bf;
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-close {
+  border-color: rgba(167, 185, 198, 0.14);
+  background: rgba(239, 247, 251, 0.08);
+  color: #c7d5df;
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-close:hover {
+  background: rgba(239, 247, 251, 0.14);
+  color: #ffffff;
+}
+
+.snippet-dialog-backdrop[data-demo-theme='dark'] .snippet-dialog-code {
   background: #08141d;
   color: #d7f8ea;
 }
@@ -4387,9 +4790,8 @@ function updateSampleMenuGeometry() {
   }
 
   .sample-picker-open .scenario-picker,
-  .sample-picker-open .field-group,
-  .sample-picker-open .primary-button,
-  .sample-picker-open .snippet-card {
+  .sample-picker-open .source-command,
+  .sample-picker-open .snippet-launch {
     display: none;
   }
 
@@ -4466,12 +4868,55 @@ function updateSampleMenuGeometry() {
     border-radius: 13px;
   }
 
-  .snippet-card {
+  .snippet-launch {
+    min-height: 56px;
+    border-radius: 15px;
+  }
+
+  .snippet-dialog-backdrop {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .snippet-dialog-panel {
+    width: 100%;
+    max-height: min(78dvh, 620px);
+    border-radius: 24px;
+  }
+
+  .snippet-dialog-header {
+    grid-template-columns: 40px minmax(0, 1fr) 34px;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .snippet-dialog-icon {
+    width: 40px;
+    height: 40px;
     border-radius: 14px;
   }
 
-  .snippet-card pre {
-    max-height: 104px;
+  .snippet-dialog-close {
+    width: 34px;
+    height: 34px;
+  }
+
+  .snippet-dialog-code {
+    padding: 18px;
+    font-size: 12px;
+  }
+
+  .snippet-dialog-footer {
+    min-height: 66px;
+    padding: 11px 14px;
+  }
+
+  .snippet-dialog-footer > span {
+    display: none;
+  }
+
+  .snippet-dialog-copy {
+    width: 100%;
   }
 
   .upload-card {
