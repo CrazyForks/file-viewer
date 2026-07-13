@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-13T04:36:41.774Z",
+  "generatedAt": "2026-07-13T04:38:21.898Z",
   "version": "2.1.27",
   "sourcePolicy": "private-complete-original-workspace",
   "openSourcePolicy": "public-open-source-main-repository",
@@ -8,31 +8,31 @@
     "repository": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
     "policy": "private-complete-original-workspace",
-    "authoritativeCommit": "",
+    "authoritativeCommit": "fcf46e3339c7cd300b8e807ebde8975dd9d0bc3e",
     "localBranch": "main",
-    "localCommit": "be560a22a3f4513c831068dd1be256d34d9271e4",
-    "inSync": false,
+    "localCommit": "fcf46e3339c7cd300b8e807ebde8975dd9d0bc3e",
+    "inSync": true,
     "note": "Private Gitea main is the complete original aggregate workspace. The local checkout branch is only the execution context and can be transitional during branch cutover."
   },
   "local": {
     "branch": "main",
-    "commit": "be560a22a3f4513c831068dd1be256d34d9271e4",
-    "shortCommit": "be560a22",
+    "commit": "fcf46e3339c7cd300b8e807ebde8975dd9d0bc3e",
+    "shortCommit": "fcf46e33",
     "dirty": false
   },
   "sourceRemote": {
     "url": "https://git.flyfish.dev/flyfish-group/file-viewer.git",
     "branch": "main",
-    "ok": false,
-    "hash": "",
-    "error": "Timed out after 5000ms"
+    "ok": true,
+    "hash": "fcf46e3339c7cd300b8e807ebde8975dd9d0bc3e",
+    "error": ""
   },
   "openSourceMain": {
     "github": {
       "url": "https://github.com/flyfish-dev/file-viewer",
       "branch": "main",
       "ok": true,
-      "hash": "57f0b785a64eced398d091089f7d892db8b90b1f",
+      "hash": "fcdd05635fa83782d4548c02f595f2ce2c3fd582",
       "error": ""
     },
     "gitee": {
@@ -45,7 +45,7 @@
     "inSync": false,
     "syncMode": "stale",
     "treeChecked": true,
-    "referenceTree": "f0037f7d9818dcffdf1b3be8f8f68d468a0ca992",
+    "referenceTree": "b8047a70af8acb66a097b58cb1343d6d6e1cb66b",
     "giteeTree": "365521b3065b1f73d7105c13a5fa0757990b59ef",
     "treeError": "",
     "reportHashNote": "The open-source main repository mirrors the current public source tree and records the private source commit in the public commit body for traceability. The observed remote hash can trail until that mirror commit is pushed. Gitee can intentionally use a shallow snapshot commit; inSync is true when the file tree matches even if commit hashes differ. Use pnpm audit:ecosystem-status for live remote heads."
@@ -741,30 +741,17 @@
       "error": ""
     }
   ],
-  "gaps": [
-    "source remote https://git.flyfish.dev/flyfish-group/file-viewer.git missing main"
-  ],
+  "gaps": [],
   "gapSummary": {
-    "total": 1,
-    "externalBlockers": 1,
+    "total": 0,
+    "externalBlockers": 0,
     "localActionable": 0,
-    "byChannel": {
-      "source-remote": 1
-    },
-    "externalBlockerChannels": [
-      "source-remote"
-    ],
+    "byChannel": {},
+    "externalBlockerChannels": [],
     "localActionableChannels": []
   },
-  "gapDetails": [
-    {
-      "id": "source-remote-source-remote-https-git.flyfish.dev-flyfish-group-file-viewer.git-missing-main",
-      "channel": "source-remote",
-      "scope": "private-gitea",
-      "externalBlocker": true,
-      "message": "source remote https://git.flyfish.dev/flyfish-group/file-viewer.git missing main",
-      "nextAction": "Restore the private Gitea source branch or push the expected release source."
-    }
-  ],
-  "nextActions": []
+  "gapDetails": [],
+  "nextActions": [
+    "Release channels are aligned. Keep this report attached to the GitHub Release for downstream verification."
+  ]
 }

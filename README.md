@@ -23,6 +23,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/flyfish-dev/file-viewer/actions/workflows/public-ci.yml"><img alt="Public CI" src="https://github.com/flyfish-dev/file-viewer/actions/workflows/public-ci.yml/badge.svg?branch=main"></a>
   <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="npm version" src="https://img.shields.io/npm/v/@file-viewer/core?logo=npm&color=cb3837"></a>
   <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="core total downloads" src="https://img.shields.io/npm/dt/@file-viewer/core?logo=npm&label=core%20downloads"></a>
   <a href="https://github.com/flyfish-dev/file-viewer/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/flyfish-dev/file-viewer?logo=github"></a>
