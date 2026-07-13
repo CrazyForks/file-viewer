@@ -817,12 +817,26 @@ export default async function renderPdf(
     }
     canvas.width = Math.max(1, Math.ceil(viewport.width));
     canvas.height = Math.max(1, Math.ceil(viewport.height));
-    await page.render({ canvas, canvasContext, viewport }).promise;
-    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-    canvas.width = 0;
-    canvas.height = 0;
-    page.cleanup?.();
-    return blob;
+    const renderTask = page.render({ canvas, canvasContext, viewport });
+    const cancelRender = () => renderTask.cancel();
+    captureOptions.signal?.addEventListener('abort', cancelRender, { once: true });
+    try {
+      await renderTask.promise;
+      if (captureOptions.signal?.aborted) {
+        throw captureOptions.signal.reason;
+      }
+      return await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+    } catch (error) {
+      if (captureOptions.signal?.aborted) {
+        throw captureOptions.signal.reason;
+      }
+      throw error;
+    } finally {
+      captureOptions.signal?.removeEventListener('abort', cancelRender);
+      canvas.width = 0;
+      canvas.height = 0;
+      page.cleanup?.();
+    }
   };
   context?.registerThumbnailAdapter?.({
     beforeCapture: async ({ signal }) => {

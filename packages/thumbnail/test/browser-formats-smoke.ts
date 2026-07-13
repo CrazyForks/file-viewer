@@ -81,7 +81,7 @@ try {
       filename: 'first-page.typ',
       type: 'typ',
       content: '#set page(width: 160pt, height: 120pt, fill: rgb("f97316"))\n#set text(size: 22pt, fill: white)\n#align(center + horizon)[FIRST PAGE]',
-      expectedStrategy: 'provider-dom',
+      expectedStrategy: 'provider-native',
     },
     {
       filename: 'embedded-presentation.pptx',
@@ -102,6 +102,13 @@ try {
   const generator = createFileViewerThumbnailGenerator({
     concurrency: 2,
     viewerOptions: {
+      pdf: {
+        assetBaseUrl: '/apps/viewer-demo/public/',
+        workerUrl: '/apps/viewer-demo/public/vendor/pdf/pdf.worker.mjs',
+      },
+      docx: {
+        worker: false,
+      },
       presentation: {
         workerUrl: '/packages/renderers/pptx/dist/worker/pptx.worker.js',
         workerType: 'classic',
@@ -109,6 +116,7 @@ try {
       typst: {
         compilerWasmUrl: typstCompilerWasmUrl,
         rendererWasmUrl: typstRendererWasmUrl,
+        fontAssetsUrl: '/apps/viewer-demo/public/wasm/typst/fonts/',
       },
       renderers: [
         pdfRenderer,

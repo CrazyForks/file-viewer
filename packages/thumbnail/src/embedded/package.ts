@@ -1,5 +1,10 @@
 import type { NormalizedFileViewerSource } from '@file-viewer/core';
-import { raceWithAbort, throwIfAborted, toImageBlob } from './shared.js';
+import {
+  MAX_EMBEDDED_THUMBNAIL_BYTES,
+  raceWithAbort,
+  throwIfAborted,
+  toImageBlob,
+} from './shared.js';
 
 const OPEN_XML_EXTENSIONS = new Set([
   'docx', 'docm', 'dotx', 'dotm',
@@ -20,6 +25,7 @@ const OPEN_XML_MAIN_PARTS: Record<string, string> = {
 type ZipEntry = {
   dir: boolean;
   name: string;
+  _data?: { uncompressedSize?: number };
   async(type: 'uint8array'): Promise<Uint8Array>;
 };
 
@@ -57,6 +63,10 @@ const readZipImage = async (zip: ZipPackage, paths: readonly string[], signal?: 
     throwIfAborted(signal);
     const entry = findZipEntry(zip, path);
     if (!entry) {
+      continue;
+    }
+    const declaredSize = Number(entry._data?.uncompressedSize);
+    if (Number.isFinite(declaredSize) && declaredSize > MAX_EMBEDDED_THUMBNAIL_BYTES) {
       continue;
     }
     const blob = toImageBlob(await raceWithAbort(entry.async('uint8array'), signal), entry.name);

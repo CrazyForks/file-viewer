@@ -81,7 +81,9 @@ const withDeadline = async <T>(
     reject(error);
   }), timeoutMs);
   const onAbort = () => finish(() => reject(
-    new FileViewerThumbnailError('aborted', 'Thumbnail generation was aborted.', signal?.reason)
+    signal?.reason instanceof FileViewerThumbnailError
+      ? signal.reason
+      : new FileViewerThumbnailError('aborted', 'Thumbnail generation was aborted.', signal?.reason)
   ));
   signal?.addEventListener('abort', onAbort, { once: true });
   operation.then(
@@ -164,16 +166,22 @@ const materializeThumbnailSource = async (
 const generateInSlot = async (
   slot: ThumbnailPoolSlot,
   source: FileViewerSource,
-  options: ResolvedFileViewerThumbnailOptions
+  options: ResolvedFileViewerThumbnailOptions,
+  generatorSignal: AbortSignal
 ): Promise<FileViewerThumbnailResult> => {
   const startedAt = performance.now();
   const remainingTime = () => Math.max(1, options.timeoutMs - (performance.now() - startedAt));
   const taskController = new AbortController();
-  const onSourceAbort = () => taskController.abort(options.signal?.reason);
-  if (options.signal?.aborted) {
-    taskController.abort(options.signal.reason);
-  } else {
-    options.signal?.addEventListener('abort', onSourceAbort, { once: true });
+  const sourceSignals = [options.signal, generatorSignal].filter((signal): signal is AbortSignal => Boolean(signal));
+  const abortListeners: Array<() => void> = [];
+  for (const signal of sourceSignals) {
+    if (signal.aborted) {
+      taskController.abort(signal.reason);
+      break;
+    }
+    const onAbort = () => taskController.abort(signal.reason);
+    signal.addEventListener('abort', onAbort, { once: true });
+    abortListeners.push(() => signal.removeEventListener('abort', onAbort));
   }
   const taskOptions = { ...options, signal: taskController.signal };
   const runWithDeadline = <T>(operation: Promise<T>) => withDeadline(
@@ -295,7 +303,7 @@ const generateInSlot = async (
   } catch (error) {
     throw toThumbnailError(error);
   } finally {
-    options.signal?.removeEventListener('abort', onSourceAbort);
+    abortListeners.forEach(remove => remove());
     taskController.abort();
     const unloading = slot.viewer.unload?.('replace');
     await unloading?.catch(() => undefined);
@@ -315,6 +323,7 @@ export const createFileViewerThumbnailGenerator = (
   const availableSlots = [...slots];
   const jobs: Array<ThumbnailJob<unknown>> = [];
   const active = new Set<Promise<unknown>>();
+  const destroyController = new AbortController();
   let destroyed = false;
 
   const drain = () => {
@@ -366,7 +375,7 @@ export const createFileViewerThumbnailGenerator = (
     const resolved = resolveFileViewerThumbnailOptions(options, defaultTimeoutMs);
     return enqueue<FileViewerThumbnailResult>({
       signal: resolved.signal,
-      run: slot => generateInSlot(slot, source, resolved),
+      run: slot => generateInSlot(slot, source, resolved, destroyController.signal),
     });
   };
 
@@ -429,9 +438,14 @@ export const createFileViewerThumbnailGenerator = (
         return;
       }
       destroyed = true;
+      const destroyedError = new FileViewerThumbnailError(
+        'destroyed',
+        'The thumbnail generator has been destroyed.'
+      );
+      destroyController.abort(destroyedError);
       jobs.splice(0).forEach(job => {
         job.removeAbort?.();
-        job.reject(new FileViewerThumbnailError('destroyed', 'The thumbnail generator has been destroyed.'));
+        job.reject(destroyedError);
       });
       await Promise.allSettled([...active]);
       await Promise.all(slots.map(slot => slot.viewer.destroy('component-unmount')));

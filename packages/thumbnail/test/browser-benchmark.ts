@@ -3,7 +3,14 @@ import wordRenderer from '../../renderers/word/src/index.js';
 import { createFileViewerThumbnailGenerator } from '../src/index.js';
 
 const output = document.querySelector('[data-testid="result"]') as HTMLElement;
-const viewerOptions = { renderers: [pdfRenderer, wordRenderer] };
+const viewerOptions = {
+  pdf: {
+    assetBaseUrl: '/apps/viewer-demo/public/',
+    workerUrl: '/apps/viewer-demo/public/vendor/pdf/pdf.worker.mjs',
+  },
+  docx: { worker: false },
+  renderers: [pdfRenderer, wordRenderer],
+};
 const activeGenerators: Array<ReturnType<typeof createFileViewerThumbnailGenerator>> = [];
 const memory = async () => {
   const measure = (performance as Performance & {

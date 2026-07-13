@@ -2,12 +2,17 @@
 
 Browser thumbnail generation for Flyfish File Viewer. It reuses `createViewer()`, installed renderers, optional native thumbnail adapters, a bounded viewer pool, ordered batch results, and completion-order streaming.
 
+```bash
+pnpm add @file-viewer/thumbnail @file-viewer/preset-all
+```
+
 ```ts
 import { createFileViewerThumbnailGenerator } from '@file-viewer/thumbnail'
+import allPreset from '@file-viewer/preset-all'
 
 const generator = createFileViewerThumbnailGenerator({
   // Uses the same preset/renderers configuration as createViewer().
-  viewerOptions: { preset: 'all' },
+  viewerOptions: { preset: allPreset },
   concurrency: 2,
 })
 
@@ -23,6 +28,7 @@ Each item can override `width`, `height`, `format: 'webp' | 'jpeg' | 'png'`, `qu
 Failures use `FileViewerThumbnailError` with stable codes: `browser-required`, `unsupported`, `timeout`, `aborted`, `capture-failed`, `capture-unavailable`, `tainted-canvas`, `empty-output`, `destroyed`, and `invalid-options`.
 
 - Requires a real browser. Server applications must invoke it inside Chromium.
+- The string form `preset: 'all'` only works after a Vite plugin or preset side-effect import has registered it. Pass the imported preset object, as above, for bundler-neutral setup.
 - Embedded previews take priority over rendering. EPUB uses its declared cover; OOXML and 3MF use package thumbnail relationships; OpenDocument and XMind use their packaged thumbnails; and Apple Numbers uses its Quick Look thumbnail when present.
 - Missing, corrupt, empty, or undecodable embedded images safely fall back to renderer-native or first-content capture.
 - PDF and images use native capture; Office, OFD, and ebooks expose a first-content target when no embedded preview is available.

@@ -195,4 +195,20 @@ describe('thumbnail generator pool', () => {
     expect(activeLoads).toBe(0);
     await generator.destroy();
   });
+
+  it('aborts active work when the generator is destroyed', async () => {
+    const generator = createFileViewerThumbnailGenerator({ concurrency: 1 });
+    const pending = generator.generate(
+      { filename: 'slow-destroy.pdf', type: 'pdf', buffer: new ArrayBuffer(0) },
+      { timeoutMs: 10_000 }
+    );
+    await vi.waitFor(() => expect(activeLoads).toBe(1));
+    const rejected = expect(pending).rejects.toMatchObject({ code: 'destroyed' });
+
+    await generator.destroy();
+
+    await rejected;
+    expect(activeLoads).toBe(0);
+    expect(document.querySelectorAll('[data-file-viewer-thumbnail-slot]')).toHaveLength(0);
+  });
 });

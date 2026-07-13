@@ -99,6 +99,12 @@ const getImageSize = (image: CanvasImageSource) => {
   };
 };
 
+const closeImageSource = (image: CanvasImageSource) => {
+  if ('close' in image && typeof image.close === 'function') {
+    image.close();
+  }
+};
+
 const assertCanvasNotBlank = (canvas: HTMLCanvasElement, background: string) => {
   const context = canvas.getContext('2d', { willReadFrequently: true });
   if (!context) {
@@ -139,9 +145,7 @@ export const normalizeThumbnailBlob = async (
   const image = await loadBlobImage(documentRef, source);
   const sourceSize = getImageSize(image);
   if (!sourceSize.width || !sourceSize.height) {
-    if ('close' in image && typeof image.close === 'function') {
-      image.close();
-    }
+    closeImageSource(image);
     throw new FileViewerThumbnailError('empty-output', 'The captured image has no dimensions.');
   }
 
@@ -150,18 +154,20 @@ export const normalizeThumbnailBlob = async (
   canvas.height = options.height;
   const context = canvas.getContext('2d');
   if (!context) {
+    closeImageSource(image);
     throw new FileViewerThumbnailError('capture-unavailable', 'A 2D canvas context is required.');
   }
-  context.fillStyle = options.background;
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  const scale = options.fit === 'cover'
-    ? Math.max(options.width / sourceSize.width, options.height / sourceSize.height)
-    : Math.min(options.width / sourceSize.width, options.height / sourceSize.height);
-  const width = sourceSize.width * scale;
-  const height = sourceSize.height * scale;
-  context.drawImage(image, (options.width - width) / 2, (options.height - height) / 2, width, height);
-  if ('close' in image && typeof image.close === 'function') {
-    image.close();
+  try {
+    context.fillStyle = options.background;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    const scale = options.fit === 'cover'
+      ? Math.max(options.width / sourceSize.width, options.height / sourceSize.height)
+      : Math.min(options.width / sourceSize.width, options.height / sourceSize.height);
+    const width = sourceSize.width * scale;
+    const height = sourceSize.height * scale;
+    context.drawImage(image, (options.width - width) / 2, (options.height - height) / 2, width, height);
+  } finally {
+    closeImageSource(image);
   }
   assertCanvasNotBlank(canvas, options.background);
   return canvasToBlob(canvas, options.format, options.quality);

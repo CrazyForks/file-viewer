@@ -2,6 +2,7 @@
 import JSZip from 'jszip';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { extractEmbeddedThumbnail } from './embedded/index.js';
+import { MAX_EMBEDDED_THUMBNAIL_BYTES } from './embedded/shared.js';
 
 const PNG_BYTES = Uint8Array.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
@@ -92,5 +93,17 @@ describe('embedded thumbnail extraction', () => {
     const modelBuffer = await model.generateAsync({ type: 'arraybuffer' });
     await expect(extractEmbeddedThumbnail(source('3mf', modelBuffer), document))
       .resolves.toMatchObject({ type: 'image/png' });
+  });
+
+  it('skips oversized packaged thumbnails before decompression', async () => {
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml', '<Types />');
+    zip.file('word/document.xml', '<document />');
+    const oversized = new Uint8Array(MAX_EMBEDDED_THUMBNAIL_BYTES + 1);
+    oversized.set(PNG_BYTES);
+    zip.file('docProps/thumbnail.png', oversized);
+    const buffer = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' });
+
+    await expect(extractEmbeddedThumbnail(source('docx', buffer), document)).resolves.toBeNull();
   });
 });

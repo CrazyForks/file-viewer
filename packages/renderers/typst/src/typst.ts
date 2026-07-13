@@ -717,6 +717,30 @@ export default async function renderTypst(
         throw new Error(errorMessage || t('typst.error.title'));
       }
     },
+    capture: async ({ width, height, background, signal }) => {
+      const firstPage = pages[0];
+      if (!firstPage) {
+        return null;
+      }
+      const canvasHost = documentRef.createElement('div');
+      const pixelPerPt = Math.max(0.5, Math.min(
+        width / Math.max(firstPage.width, 1),
+        height / Math.max(firstPage.height, 1)
+      ));
+      await $typst.canvas(canvasHost, {
+        mainContent: source,
+        pixelPerPt,
+        backgroundColor: background,
+      });
+      if (signal?.aborted) {
+        throw signal.reason;
+      }
+      const canvas = canvasHost.querySelector('canvas');
+      if (!canvas) {
+        return null;
+      }
+      return new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+    },
     getTarget: () => pageShells.get(1) || body.querySelector('.typst-page-shell') || body,
   });
 
