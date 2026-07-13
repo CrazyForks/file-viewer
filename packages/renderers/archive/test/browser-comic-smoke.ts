@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
-import { createViewer } from '@file-viewer/core';
-import archiveRenderer from '../src/index.js';
+import { createViewer, disposeFileViewerRendered } from '@file-viewer/core';
+import archiveRenderer, { renderFileViewerArchive } from '../src/index.js';
 
 const output = document.querySelector('[data-testid="result"]') as HTMLElement;
 const host = document.querySelector('[data-testid="viewer"]') as HTMLDivElement;
@@ -45,7 +45,7 @@ try {
       renderers: [archiveRenderer],
       archive: {
         cache: false,
-        workerUrl: '/missing-comic-smoke-worker.js',
+        workerUrl: 'data:text/javascript,',
         workerTimeoutMs: 100,
       },
     },
@@ -74,7 +74,46 @@ try {
   await waitFor(() => pageText() === '2 / 2' && activeTitle() === 'page10.png');
 
   const badge = host.querySelector('.archive-head-main > span')?.textContent?.trim();
-  const passed = badge === 'CBZ' && buttonSpaceIgnored &&
+  const raceHost = document.createElement('div');
+  raceHost.style.cssText = 'width:800px;height:600px';
+  document.body.append(raceHost);
+  let nestedCalls = 0;
+  let staleDisposals = 0;
+  let firstRenderStarted = false;
+  const raceRendered = await renderFileViewerArchive(buffer, raceHost, 'cbz', {
+    filename: 'race.cbz',
+    options: {
+      archive: {
+        cache: false,
+        workerUrl: 'data:text/javascript,',
+        workerTimeoutMs: 100,
+      },
+    },
+    renderNestedBuffer: async (_entryBuffer, _type, target) => {
+      const call = ++nestedCalls;
+      if (call === 1) firstRenderStarted = true;
+      await new Promise(resolve => setTimeout(resolve, call === 1 ? 80 : 5));
+      const marker = document.createElement('div');
+      marker.dataset.racePage = String(call);
+      target.replaceChildren(marker);
+      return {
+        unmount() {
+          staleDisposals += 1;
+          target.replaceChildren();
+        },
+      };
+    },
+  });
+  await waitFor(() => firstRenderStarted);
+  raceHost.querySelectorAll<HTMLButtonElement>('.archive-comic-nav')[1]?.click();
+  await waitFor(() => raceHost.querySelector('[data-race-page="2"]') !== null);
+  await new Promise(resolve => setTimeout(resolve, 100));
+  const raceStable = raceHost.querySelector('[data-race-page="2"]') !== null &&
+    raceHost.querySelector('[data-race-page="1"]') === null && staleDisposals === 1;
+  await disposeFileViewerRendered(raceRendered);
+  raceHost.remove();
+
+  const passed = badge === 'CBZ' && buttonSpaceIgnored && raceStable &&
     JSON.stringify(paths) === JSON.stringify(['chapter/page2.png', 'chapter/page10.png']);
   await viewer.destroy();
   const remainingViewers = host.querySelectorAll('.archive-viewer').length;
@@ -84,6 +123,8 @@ try {
     badge,
     paths,
     buttonSpaceIgnored,
+    raceStable,
+    staleDisposals,
     finalPage: '2 / 2',
     remainingViewers,
   }, null, 2);

@@ -981,12 +981,25 @@ export default async function renderArchive(
     }
   };
 
-  const renderEntryBuffer = async (entry: ArchiveEntryView, entryBuffer: ArrayBuffer) => {
+  const renderEntryBuffer = async (
+    entry: ArchiveEntryView,
+    entryBuffer: ArrayBuffer,
+    requestId: number
+  ) => {
     await clearNestedPreview();
+    if (requestId !== previewSequence) {
+      return;
+    }
     const child = createElement(documentRef, 'div', 'archive-nested-content') as HTMLDivElement;
     nestedTarget.append(child);
     const nestedContext = buildArchiveNestedRenderContext(context, entry, archiveOptions);
-    nestedRendered = await renderNestedEntry(entryBuffer, entry.extension, child, nestedContext);
+    const rendered = await renderNestedEntry(entryBuffer, entry.extension, child, nestedContext);
+    if (requestId !== previewSequence) {
+      await disposeFileViewerRendered(rendered);
+      child.remove();
+      return;
+    }
+    nestedRendered = rendered;
   };
 
   const extractEntryBuffer = async (entry: ArchiveEntryView) => {
@@ -1051,10 +1064,10 @@ export default async function renderArchive(
         return;
       }
       setLoading(true, t('archive.loading.rendering', { name: entry.name }));
-      await renderEntryBuffer(entry, entryBuffer);
+      await renderEntryBuffer(entry, entryBuffer, requestId);
     } catch (nextError) {
-      console.error(nextError);
       if (requestId === previewSequence) {
+        console.error(nextError);
         setError(nextError instanceof Error ? nextError.message : String(nextError));
       }
     } finally {
