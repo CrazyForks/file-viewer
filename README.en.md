@@ -15,7 +15,8 @@
   <a href="https://doc.file-viewer.app/"><strong>Documentation</strong></a> ·
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="https://doc.file-viewer.app/guide/formats"><strong>Format Matrix (206 Extensions)</strong></a> ·
-  <a href="https://github.com/flyfish-dev/file-viewer/releases"><strong>GitHub Releases</strong></a>
+  <a href="https://github.com/flyfish-dev/file-viewer/releases"><strong>GitHub Releases</strong></a> ·
+  <a href="https://github.com/sponsors/wybaby168"><strong>GitHub Sponsors</strong></a>
 </p>
 
 <p align="center">
@@ -27,6 +28,7 @@
   <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="npm version" src="https://img.shields.io/npm/v/@file-viewer/core?logo=npm&color=cb3837"></a>
   <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="core total downloads" src="https://img.shields.io/npm/dt/@file-viewer/core?logo=npm&label=core%20downloads"></a>
   <a href="https://github.com/flyfish-dev/file-viewer/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/flyfish-dev/file-viewer?logo=github"></a>
+  <a href="https://github.com/sponsors/wybaby168"><img alt="GitHub Sponsors" src="https://img.shields.io/badge/GitHub-Sponsor-ea4aaa?logo=githubsponsors&logoColor=white"></a>
   <a href="https://github.com/flyfish-dev/file-viewer/releases/latest"><img alt="latest release" src="https://img.shields.io/github/v/release/flyfish-dev/file-viewer?logo=github"></a>
   <a href="LICENSE"><img alt="Apache-2.0 license" src="https://img.shields.io/github/license/flyfish-dev/file-viewer"></a>
 </p>
@@ -211,7 +213,15 @@ pnpm verify:browser-smoke
 - [Ecosystem packages](https://doc.file-viewer.app/guide/ecosystem)
 - [Releases and downloadable archives](https://github.com/flyfish-dev/file-viewer/releases)
 
-For higher-fidelity native document workflows and advanced enterprise requirements, see the [commercial edition](https://file-viewer.app/) or request [priority technical support](https://dev.flyfish.group/shop).
+## Support the Project
+
+File Viewer remains Apache-2.0 open source. Sponsorship helps fund rendering compatibility, documentation, examples, offline assets, and long-term maintenance.
+
+- [GitHub Sponsors](https://github.com/sponsors/wybaby168): one-time or recurring support through the primary maintainer's approved Sponsors profile.
+- [WeChat / Alipay](https://dev.flyfish.group/sponsor?source=github): a convenient one-time option for domestic supporters.
+- [Enterprise support](https://dev.flyfish.group/shop): private deployment, custom compatibility work, or requirements with committed response expectations.
+
+Sponsorship does not change access to open-source features and does not include a service-level agreement unless a published tier explicitly says otherwise. For higher-fidelity native document workflows, see the [commercial edition](https://file-viewer.app/).
 
 ## Contributing
 

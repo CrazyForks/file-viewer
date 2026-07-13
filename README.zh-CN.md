@@ -18,6 +18,7 @@
   <a href="https://demo.file-viewer.app">在线 Demo</a> ·
   <a href="https://doc.file-viewer.app">文档</a> ·
   <a href="https://github.com/flyfish-dev/file-viewer/wiki">GitHub Wiki</a> ·
+  <a href="https://github.com/sponsors/wybaby168">GitHub Sponsors</a> ·
   <a href="#快速开始">快速开始</a> ·
   <a href="#支持格式">支持格式</a>
 </p>
@@ -30,6 +31,7 @@
   <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="npm core" src="https://img.shields.io/npm/v/@file-viewer/core?label=core&color=15966b" /></a>
   <a href="https://www.npmjs.com/package/@file-viewer/vue3"><img alt="npm vue3" src="https://img.shields.io/npm/v/@file-viewer/vue3?label=vue3&color=1d6fd6" /></a>
   <a href="https://github.com/flyfish-dev/file-viewer"><img alt="GitHub stars" src="https://img.shields.io/github/stars/flyfish-dev/file-viewer?style=flat&logo=github&color=111827" /></a>
+  <a href="https://github.com/sponsors/wybaby168"><img alt="GitHub Sponsors" src="https://img.shields.io/badge/GitHub-Sponsor-ea4aaa?logo=githubsponsors&logoColor=white" /></a>
   <a href="https://github.com/flyfish-dev/file-viewer/releases"><img alt="GitHub release" src="https://img.shields.io/github/v/release/flyfish-dev/file-viewer?label=release&color=7c3aed" /></a>
   <a href="https://doc.file-viewer.app"><img alt="Documentation" src="https://img.shields.io/badge/docs-doc.file--viewer.app-1d6fd6" /></a>
   <a href="https://github.com/flyfish-dev/file-viewer/wiki"><img alt="GitHub Wiki" src="https://img.shields.io/badge/wiki-GitHub%20Wiki-111827?logo=github" /></a>
@@ -283,7 +285,9 @@ Vite 项目可额外安装 `@file-viewer/vite-plugin`，自动发现已安装 pr
 | Release 下载 | [github.com/flyfish-dev/file-viewer/releases](https://github.com/flyfish-dev/file-viewer/releases) |
 | Docker 镜像 | `flyfishdev/file-viewer:latest` |
 | Linux Do 友链 | [linux.do](https://linux.do) |
-| 打赏与优先支持 | [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github) |
+| GitHub Sponsors | [github.com/sponsors/wybaby168](https://github.com/sponsors/wybaby168) |
+| 微信 / 支付宝赞赏 | [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github) |
+| 企业技术支持 | [dev.flyfish.group/shop](https://dev.flyfish.group/shop) |
 
 ## 支持格式
 
@@ -659,9 +663,11 @@ const options = {
 
 ## 支持项目与商业版
 
-Flyfish Viewer 会持续保持 Apache-2.0 开源。开源版适合通用 Web 预览、内网部署、业务附件中心和轻量级集成；如果你需要更高还原度、更极致性能、私有化交付、定制适配或优先技术支持，可以通过下面入口请我们喝杯柠檬水，也可以了解商业版原生文档引擎。
+Flyfish Viewer 会持续保持 Apache-2.0 开源。GitHub Sponsors 适合一次性或持续赞助，国内用户也可通过微信或支付宝请我们喝杯柠檬水。赞助用于开源维护，不影响开源功能；私有化交付、定制适配或需要明确响应时间的需求，请使用企业技术支持入口。
 
-- 打赏与优先支持: [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)
+- GitHub Sponsors: [github.com/sponsors/wybaby168](https://github.com/sponsors/wybaby168)
+- 微信 / 支付宝赞赏: [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)
+- 企业技术支持: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 - 商业版介绍: [product.flyfish.group](https://product.flyfish.group/)
 - 商业版 Demo: [office.flyfish.dev](https://office.flyfish.dev/)
 - 飞鱼开源工作室: [flyfish.dev](https://flyfish.dev/)
@@ -811,7 +817,7 @@ npm publish --access public
 
 如果 npm 账号启用了 MFA，请使用交互式终端完成浏览器确认后再等待发布结果。
 
-开源总仓库会提交 core、Demo、标准组件包、兼容包和文档源码；完整 Demo、component demo、文档静态站和样例构建产物改由 GitHub Release 或 Cloudflare Pages 分发，避免普通 clone 被大体积静态产物拖慢。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新源码快照的干净历史。私有 Gitea 仍作为完整聚合仓，保留统一发布脚本、内部集成历史和优先技术支持；需要支持项目或获得优先协助的用户，可以前往 [https://dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)，请我们喝杯柠檬水。
+开源总仓库会提交 core、Demo、标准组件包、兼容包和文档源码；完整 Demo、component demo、文档静态站和样例构建产物改由 GitHub Release 或 Cloudflare Pages 分发，避免普通 clone 被大体积静态产物拖慢。为避免 Gitee 因历史二进制膨胀超过 1GB，同步 Gitee 时会使用最新源码快照的干净历史。私有 Gitea 仍作为完整聚合仓，保留统一发布脚本和内部集成历史。需要支持开源维护的用户可使用 [GitHub Sponsors](https://github.com/sponsors/wybaby168) 或 [微信 / 支付宝](https://dev.flyfish.group/sponsor?source=github)；需要私有化、定制或明确响应时间时，请使用 [企业技术支持](https://dev.flyfish.group/shop)。
 
 ## 文档导航
 

@@ -26,7 +26,9 @@
 - Document comparison demo: [demo.file-viewer.app/compare.html](https://demo.file-viewer.app/compare.html)
 - GitHub repository: [github.com/flyfish-dev/file-viewer](https://github.com/flyfish-dev/file-viewer)
 - npm scope: [`@file-viewer`](https://www.npmjs.com/search?q=%40file-viewer)
-- Sponsorship and priority support: [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)
+- GitHub Sponsors: [github.com/sponsors/wybaby168](https://github.com/sponsors/wybaby168)
+- WeChat / Alipay: [dev.flyfish.group/sponsor?source=github](https://dev.flyfish.group/sponsor?source=github)
+- Enterprise support: [dev.flyfish.group/shop](https://dev.flyfish.group/shop)
 
 ## Positioning
 

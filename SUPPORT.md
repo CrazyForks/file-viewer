@@ -22,3 +22,11 @@ File Viewer 是一个开源项目，适合通过 GitHub issue 讨论公开问题
 ## 样本文件安全
 
 不要上传含有隐私、商业合同、客户资料、身份证件、内部系统截图或其他敏感信息的文件。可以上传脱敏样本，或只描述文件来源、生成工具、结构特征和失败现象。
+
+## 赞助与企业支持
+
+- 支持开源维护: [GitHub Sponsors](https://github.com/sponsors/wybaby168)
+- 国内一次性赞赏: [微信 / 支付宝](https://dev.flyfish.group/sponsor?source=github)
+- 私有化、定制兼容或明确响应时间: [企业技术支持](https://dev.flyfish.group/shop)
+
+赞助不影响开源功能和 issue 的公开处理规则。除非对应赞助档位有明确说明，否则赞助不包含 SLA 或固定响应时间。
