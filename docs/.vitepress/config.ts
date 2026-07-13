@@ -73,7 +73,8 @@ const enNav: NavItem[] = [
       { text: 'npm Svelte', link: 'https://www.npmjs.com/package/@file-viewer/svelte' },
       { text: 'GitHub Repository', link: 'https://github.com/flyfish-dev/file-viewer' },
       { text: 'GitHub Wiki', link: 'https://github.com/flyfish-dev/file-viewer/wiki' },
-      { text: 'Sponsor / Priority Support', link: 'https://dev.flyfish.group/sponsor?source=github' }
+      { text: 'GitHub Sponsors', link: 'https://github.com/sponsors/wybaby168' },
+      { text: 'Enterprise Support', link: 'https://dev.flyfish.group/shop' }
     ]
   }
 ]
@@ -128,7 +129,7 @@ const enSidebar: Sidebar = {
       text: 'More',
       items: [
         { text: 'Changelog', link: '/changelog' },
-        { text: 'Sponsor', link: '/donate' }
+        { text: 'Sponsor', link: '/en/donate' }
       ]
     }
   ]
@@ -153,7 +154,9 @@ const zhNav: NavItem[] = [
       { text: 'GitHub 开源总仓库', link: 'https://github.com/flyfish-dev/file-viewer' },
       { text: 'GitHub Wiki', link: 'https://github.com/flyfish-dev/file-viewer/wiki' },
       { text: 'Gitee 开源总仓库', link: 'https://gitee.com/flyfish-dev/file-viewer' },
-      { text: '打赏与优先支持', link: 'https://dev.flyfish.group/sponsor?source=github' }
+      { text: 'GitHub Sponsors', link: 'https://github.com/sponsors/wybaby168' },
+      { text: '国内赞赏', link: 'https://dev.flyfish.group/sponsor?source=github' },
+      { text: '企业技术支持', link: 'https://dev.flyfish.group/shop' }
     ]
   }
 ]
@@ -209,7 +212,7 @@ const zhSidebar: Sidebar = {
       text: '更多信息',
       items: [
         { text: '更新日志', link: '/changelog' },
-        { text: '捐赠支持', link: '/donate' }
+        { text: '赞助项目', link: '/zh/donate' }
       ]
     }
   ]

@@ -149,7 +149,9 @@ const githubApiUrl = 'https://api.github.com/repos/flyfish-dev/file-viewer'
 const githubStarCountFallback = 739
 const releasesUrl = 'https://github.com/flyfish-dev/file-viewer/releases'
 const dockerDocsUrl = `${docsUrl}guide/docker`
-const sponsorUrl = 'https://dev.flyfish.group/sponsor?source=github'
+const githubSponsorsUrl = 'https://github.com/sponsors/wybaby168'
+const domesticSponsorUrl = 'https://dev.flyfish.group/sponsor?source=github'
+const prioritySupportUrl = 'https://dev.flyfish.group/shop'
 const studioUrl = 'https://flyfish.dev/'
 const commercialUrl = 'https://product.flyfish.group/'
 const commercialDemoUrl = 'https://office.flyfish.dev/'
@@ -293,9 +295,9 @@ const copy = {
     commercialIntro:
       '开源 File Viewer 负责浏览器原生、多格式、可离线部署的通用预览；商业版来自 Flyfish Office 自研原生文档引擎，专注 Word、Excel、PowerPoint 的高还原、大文件性能、授权交付和优先支持。两者不是二选一：商业版可以作为可替换的 Office 能力接入现有 File Viewer 组件，获得 file-viewer-pro 体验。',
     commercialCta: '了解商业授权',
-    supportTitle: '喜欢这个项目，或者需要优先支持？请请我们喝杯柠檬水。',
+    supportTitle: '支持 File Viewer 持续维护，也为企业需求保留清晰入口。',
     supportIntro:
-      '开源版会持续维护；如果你需要更快响应、商业选型建议、私有化落地或定制能力，欢迎打赏后通过客服二维码联系我们。',
+      'GitHub Sponsors 支持一次性或持续赞助，国内用户也可使用微信或支付宝。赞助用于开源维护，不影响开源功能；私有化、定制与明确响应时间请使用企业技术支持入口。',
     releaseTitle: '从 npm 到静态部署，交付方式都准备好了。',
     footer:
       'Apache-2.0 开源。由 Flyfish Dev 持续维护，适合需要可靠浏览器原生文件预览的产品团队。'
@@ -341,9 +343,9 @@ const copy = {
     commercialIntro:
       'The open-source File Viewer focuses on browser-native, multi-format, offline-ready preview. The commercial edition comes from the Flyfish Office product line and focuses on Word, Excel, and PowerPoint fidelity, large-file performance, licensed delivery, and priority support. They are not mutually exclusive: the commercial engine can replace the Office capability inside the same File Viewer integration to deliver a file-viewer-pro experience.',
     commercialCta: 'Commercial Licensing',
-    supportTitle: 'If File Viewer helps, sponsor the project and contact us for priority support.',
+    supportTitle: 'Support sustainable maintenance, with a clear path for enterprise help.',
     supportIntro:
-      'The open-source edition will keep moving. For faster response, commercial evaluation, private deployment, or custom work, sponsor the project and reach us through the support QR code.',
+      'GitHub Sponsors supports one-time and recurring contributions, while WeChat and Alipay remain available for domestic supporters. Sponsorship sustains open-source maintenance and does not include an SLA; use enterprise support for private deployment, custom work, or committed response times.',
     releaseTitle: 'From npm to static deployment, distribution is ready.',
     footer:
       'Apache-2.0 open source. Maintained by Flyfish Dev for product teams that need reliable browser-native file preview.'
@@ -543,7 +545,7 @@ const portalLinks = computed<LinkItem[]>(() =>
         { label: 'npm 生态包', href: 'https://www.npmjs.com/search?q=%40file-viewer', note: 'core、renderer、preset 与标准组件包', icon: PackageCheck },
         { label: 'Docker 部署', href: dockerDocsUrl, note: 'amd64 / arm64 一键部署文档与示例', icon: Cloud },
         { label: '商业版引擎', href: commercialUrl, note: '自研原生 Office 引擎，高还原与极致性能', icon: Gem },
-        { label: '打赏支持', href: sponsorUrl, note: '打赏项目，并获得优先技术支持', icon: HandCoins },
+        { label: 'GitHub Sponsors', href: githubSponsorsUrl, note: '一次性或持续赞助开源维护', icon: HandCoins },
         { label: '飞鱼开源工作室', href: studioUrl, note: '了解 Flyfish Dev 的产品与服务', icon: Building2 }
       ]
     : [
@@ -554,7 +556,7 @@ const portalLinks = computed<LinkItem[]>(() =>
         { label: 'npm packages', href: 'https://www.npmjs.com/search?q=%40file-viewer', note: 'core, renderer, preset, and standard component packages', icon: PackageCheck },
         { label: 'Docker deployment', href: dockerDocsUrl, note: 'amd64 / arm64 deployment for docs and examples', icon: Cloud },
         { label: 'Commercial engine', href: commercialUrl, note: 'Native Office engine for high fidelity and extreme performance', icon: Gem },
-        { label: 'Sponsor', href: sponsorUrl, note: 'Sponsor the project and receive priority technical support', icon: HandCoins },
+        { label: 'GitHub Sponsors', href: githubSponsorsUrl, note: 'One-time or recurring support for open-source maintenance', icon: HandCoins },
         { label: 'Flyfish Dev', href: studioUrl, note: 'Explore Flyfish Dev products and services', icon: Building2 }
       ]
 )
@@ -2455,9 +2457,17 @@ onBeforeUnmount(() => {
         <h2>{{ currentCopy.supportTitle }}</h2>
         <p>{{ currentCopy.supportIntro }}</p>
         <div class="footer-links">
-          <a :href="sponsorUrl" target="_blank" rel="noreferrer">
+          <a :href="githubSponsorsUrl" target="_blank" rel="noreferrer">
             <HandCoins :size="16" />
-            {{ isZh ? '打赏支持' : 'Sponsor' }}
+            GitHub Sponsors
+          </a>
+          <a :href="domesticSponsorUrl" target="_blank" rel="noreferrer">
+            <QrCode :size="16" />
+            {{ isZh ? '微信 / 支付宝' : 'WeChat / Alipay' }}
+          </a>
+          <a :href="prioritySupportUrl" target="_blank" rel="noreferrer">
+            <HeartHandshake :size="16" />
+            {{ isZh ? '企业技术支持' : 'Enterprise Support' }}
           </a>
           <a :href="studioUrl" target="_blank" rel="noreferrer">
             <Rocket :size="16" />
