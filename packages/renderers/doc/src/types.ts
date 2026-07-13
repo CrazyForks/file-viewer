@@ -223,7 +223,32 @@ export interface BorderSpec {
   borderType?: number;
   lineWidth?: number;
   color?: number;
+  colorRef?: number;
+  frame?: boolean;
+  nil?: boolean;
+  shadow?: boolean;
+  space?: number;
   [key: string]: unknown;
+}
+
+export interface TableBorders {
+  top?: BorderSpec;
+  left?: BorderSpec;
+  bottom?: BorderSpec;
+  right?: BorderSpec;
+  horizontalInside?: BorderSpec;
+  verticalInside?: BorderSpec;
+}
+
+export interface ShadingSpec {
+  foregroundColorIndex?: number;
+  backgroundColorIndex?: number;
+  foregroundColorRef?: number;
+  backgroundColorRef?: number;
+  pattern: number;
+  auto?: boolean;
+  nil?: boolean;
+  legacy?: boolean;
 }
 
 export interface HighlightInfo {
@@ -348,6 +373,7 @@ export interface ItcRange {
 export interface RangeWidthOperand {
   cb?: number;
   range: ItcRange;
+  sides?: number;
   width?: number;
   wWidth?: number;
   ftsWidth?: number;
@@ -357,6 +383,7 @@ export interface RangeBorderOperand {
   cb?: number;
   range: ItcRange;
   border: BorderSpec;
+  bordersToApply: number;
   extra?: Uint8Array;
 }
 
@@ -374,13 +401,9 @@ export interface TableWidthOperand {
 }
 
 export interface TInsertOperand {
-  cb?: number;
-  range?: ItcRange;
   itcFirst?: number;
-  dxaCol?: number[] | number;
-  dxaGapHalf?: number;
   ctc?: number;
-  cells?: unknown[];
+  dxaCol?: number;
   [key: string]: unknown;
 }
 
@@ -402,6 +425,7 @@ export interface TableState {
   autoFit?: unknown;
   widthBefore?: unknown;
   widthAfter?: unknown;
+  borders: TableBorders;
   defTable?: TDefTableOperand;
   operations: DecodedProperty[];
   [key: string]: unknown;
@@ -421,7 +445,9 @@ export interface TableCellMeta {
   textFlow?: number;
   rightBoundary?: number;
   leftBoundary?: number;
-  shading?: unknown;
+  shading?: ShadingSpec;
+  paddingTwips?: Partial<Record<'top' | 'left' | 'bottom' | 'right', number>>;
+  spacingTwips?: Partial<Record<'top' | 'left' | 'bottom' | 'right', number>>;
 }
 
 export interface CharSegment {

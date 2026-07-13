@@ -8,8 +8,10 @@ import type {
   RangeBorderOperand,
   RangeValueOperand,
   RangeWidthOperand,
+  ShadingSpec,
   TDefTableOperand,
   TInsertOperand,
+  TableBorders,
   TableWidthOperand,
   Tcgrf,
 } from '../types.js';
@@ -141,6 +143,7 @@ export const SprmCodes = {
   sprmTTableBorders: 0xd613,
   sprmTTableWidth: 0xf614,
   sprmTFAutofit: 0x3615,
+  sprmTDefTableShd2nd: 0xd616,
   sprmTWidthBefore: 0xf617,
   sprmTWidthAfter: 0xf618,
   sprmTSetBrc80: 0xd620,
@@ -156,11 +159,15 @@ export const SprmCodes = {
   sprmTSetShdOdd: 0xd62e,
   sprmTSetBrc: 0xd62f,
   sprmTCellPadding: 0xd632,
-  sprmTCellPaddingDefault: 0xd633,
+  sprmTCellSpacingDefault: 0xd633,
+  sprmTCellPaddingDefault: 0xd634,
   sprmTCellWidth: 0xd635,
   sprmTFitText: 0xf636,
   sprmTFCellNoWrap: 0xd639,
   sprmTIstd: 0x563a,
+  sprmTDefTableShdRaw: 0xd670,
+  sprmTDefTableShdRaw2nd: 0xd671,
+  sprmTDefTableShdRaw3rd: 0xd672,
 } as const;
 
 const VARIABLE_OPERAND_CODES = new Set<number>([
@@ -172,17 +179,20 @@ const VARIABLE_OPERAND_CODES = new Set<number>([
   SprmCodes.sprmTDefTableShd,
   SprmCodes.sprmTDefTableShd80,
   SprmCodes.sprmTDefTableShd3rd,
+  SprmCodes.sprmTDefTableShd2nd,
+  SprmCodes.sprmTDefTableShdRaw,
+  SprmCodes.sprmTDefTableShdRaw2nd,
+  SprmCodes.sprmTDefTableShdRaw3rd,
   SprmCodes.sprmTSetBrc80,
   SprmCodes.sprmTSetBrc,
   SprmCodes.sprmTSetShd,
   SprmCodes.sprmTSetShdOdd,
   SprmCodes.sprmTCellPadding,
+  SprmCodes.sprmTCellSpacingDefault,
   SprmCodes.sprmTCellPaddingDefault,
   SprmCodes.sprmTCellWidth,
   SprmCodes.sprmTVertAlign,
   SprmCodes.sprmTVertMerge,
-  SprmCodes.sprmTTextFlow,
-  SprmCodes.sprmTDxaCol,
 ]);
 
 export function getSprmGroup(sprm: number): number {
@@ -217,10 +227,36 @@ function parseItcFirstLim(bytes: Uint8Array, offset = 0): ItcRange {
 function parseBrc80(bytes: Uint8Array, offset = 0): BorderSpec | null {
   if (offset + 4 > bytes.length) return null;
   const brc = u32(bytes, offset) >>> 0;
+  if (brc === 0xffffffff) return { raw: brc, nil: true };
   const lineWidth = brc & 0xff;
   const borderType = (brc >> 8) & 0xff;
   const color = (brc >> 16) & 0xff;
-  return { raw: brc, lineWidth, borderType, color };
+  const flags = (brc >>> 24) & 0xff;
+  return {
+    raw: brc,
+    lineWidth,
+    borderType,
+    color,
+    space: flags & 0x1f,
+    shadow: Boolean(flags & 0x20),
+    frame: Boolean(flags & 0x40),
+  };
+}
+
+function parseBrc(bytes: Uint8Array, offset = 0): BorderSpec | null {
+  if (offset + 8 > bytes.length) return null;
+  const colorRef = u32(bytes, offset) >>> 0;
+  const packed = u32(bytes, offset + 4) >>> 0;
+  if (packed === 0xffffffff) return { raw: packed, colorRef, nil: true };
+  return {
+    raw: packed,
+    colorRef,
+    lineWidth: packed & 0xff,
+    borderType: (packed >>> 8) & 0xff,
+    space: (packed >>> 16) & 0x1f,
+    shadow: Boolean(packed & (1 << 21)),
+    frame: Boolean(packed & (1 << 22)),
+  };
 }
 
 function parseTcgrf(bytes: Uint8Array, offset = 0): Tcgrf {
@@ -250,6 +286,62 @@ function parseTc80(bytes: Uint8Array, offset = 0): { tcgrf: Tcgrf; wWidth: numbe
       right: parseBrc80(bytes, offset + 16) || {},
     },
   };
+}
+
+function parseShd80(bytes: Uint8Array, offset = 0): ShadingSpec | null {
+  if (offset + 2 > bytes.length) return null;
+  const raw = u16(bytes, offset);
+  const foregroundColorIndex = raw & 0x1f;
+  const backgroundColorIndex = (raw >>> 5) & 0x1f;
+  const pattern = (raw >>> 10) & 0x3f;
+  return {
+    foregroundColorIndex,
+    backgroundColorIndex,
+    pattern,
+    auto: pattern === 0,
+    nil: raw === 0xffff,
+    legacy: true,
+  };
+}
+
+function parseShd(bytes: Uint8Array, offset = 0): ShadingSpec | null {
+  if (offset + 10 > bytes.length) return null;
+  const foregroundColorRef = u32(bytes, offset) >>> 0;
+  const backgroundColorRef = u32(bytes, offset + 4) >>> 0;
+  const pattern = u16(bytes, offset + 8);
+  return {
+    foregroundColorRef,
+    backgroundColorRef,
+    pattern,
+    auto: pattern === 0,
+    nil: pattern === 0xffff,
+  };
+}
+
+function parseTableBorders(bytes: Uint8Array, legacy: boolean): TableBorders | null {
+  const borderSize = legacy ? 4 : 8;
+  if (!bytes.length || bytes.length < 1 + borderSize * 6) return null;
+  const parse = legacy ? parseBrc80 : parseBrc;
+  const names: Array<keyof TableBorders> = [
+    'top', 'left', 'bottom', 'right', 'horizontalInside', 'verticalInside',
+  ];
+  const borders: TableBorders = {};
+  names.forEach((name, index) => {
+    const border = parse(bytes, 1 + index * borderSize);
+    if (border) borders[name] = border;
+  });
+  return borders;
+}
+
+function parseDefaultShading(bytes: Uint8Array, start: number, legacy: boolean) {
+  const size = legacy ? 2 : 10;
+  const count = Math.floor(Math.min(bytes[0] ?? 0, Math.max(0, bytes.length - 1)) / size);
+  const values: ShadingSpec[] = [];
+  for (let index = 0; index < count; index += 1) {
+    const shading = legacy ? parseShd80(bytes, 1 + index * size) : parseShd(bytes, 1 + index * size);
+    if (shading) values.push(shading);
+  }
+  return { start, values };
 }
 
 function parseTDefTableOperand(bytes: Uint8Array): TDefTableOperand | null {
@@ -295,14 +387,65 @@ function parseRangeWidthOperand(bytes: Uint8Array): RangeWidthOperand | null {
   };
 }
 
-function parseRangeBrcOperand(bytes: Uint8Array): RangeBorderOperand | null {
-  if (!bytes.length) return null;
+function parseCssaOperand(bytes: Uint8Array): RangeWidthOperand | null {
+  if (bytes.length < 7) return null;
+  const width = u16(bytes, 5);
   return {
     cb: bytes[0] ?? 0,
     range: parseItcFirstLim(bytes, 1),
-    border: parseBrc80(bytes, 3) || {},
-    extra: bytes.subarray(7),
+    sides: bytes[3] ?? 0,
+    ftsWidth: bytes[4] ?? 0,
+    width,
+    wWidth: width,
+  };
+}
+
+function parseRangeBrcOperand(bytes: Uint8Array): RangeBorderOperand | null {
+  if (bytes.length < 8) return null;
+  return {
+    cb: bytes[0] ?? 0,
+    range: parseItcFirstLim(bytes, 1),
+    bordersToApply: bytes[3] ?? 0,
+    border: parseBrc80(bytes, 4) || { nil: true },
+    extra: bytes.subarray(8),
   } as RangeBorderOperand;
+}
+
+function parseRangeBrcOperand97(bytes: Uint8Array): RangeBorderOperand | null {
+  if (bytes.length < 12) return null;
+  return {
+    cb: bytes[0] ?? 0,
+    range: parseItcFirstLim(bytes, 1),
+    bordersToApply: bytes[3] ?? 0,
+    border: parseBrc(bytes, 4) || { nil: true },
+    extra: bytes.subarray(12),
+  } as RangeBorderOperand;
+}
+
+function parseTableShadeOperand(bytes: Uint8Array, odd = false) {
+  if (bytes.length < 13) return null;
+  return {
+    cb: bytes[0] ?? 0,
+    range: parseItcFirstLim(bytes, 1),
+    shading: parseShd(bytes, 3),
+    odd,
+  };
+}
+
+function parseVertMergeOperand(bytes: Uint8Array) {
+  if (bytes.length < 3) return null;
+  return { cb: bytes[0] ?? 0, index: bytes[1] ?? 0, value: bytes[2] ?? 0 };
+}
+
+function parseFixedRangeValueOperand(bytes: Uint8Array) {
+  if (bytes.length < 3) return null;
+  return { range: parseItcFirstLim(bytes, 0), value: bytes[2] ?? 0 };
+}
+
+function parseFixedRangeWidthOperand(bytes: Uint8Array): RangeWidthOperand | null {
+  if (bytes.length < 4) return null;
+  const width = i16(bytes, 2);
+  return { range: parseItcFirstLim(bytes, 0), width, wWidth: width };
 }
 
 function parseTTableWidth(bytes: Uint8Array): TableWidthOperand | null {
@@ -316,22 +459,12 @@ function parseTTableWidth(bytes: Uint8Array): TableWidthOperand | null {
 }
 
 function parseTInsertOperand(bytes: Uint8Array): TInsertOperand | null {
-  if (!bytes.length) return null;
-  const cb = bytes[0] ?? 0;
-  const itc = parseItcFirstLim(bytes, 1);
-  const ctc = itc.lim - itc.first;
-  let offset = 3;
-  const dxaCol: number[] = [];
-  for (let i = 0; i < ctc && offset + 2 <= bytes.length; i += 1) {
-    dxaCol.push(i16(bytes, offset));
-    offset += 2;
-  }
-  const cells: Array<ReturnType<typeof parseTc80>> = [];
-  for (let i = 0; i < ctc && offset + 20 <= bytes.length; i += 1) {
-    cells.push(parseTc80(bytes, offset));
-    offset += 20;
-  }
-  return { cb, range: itc, itcFirst: itc.first, ctc, dxaCol, cells } as TInsertOperand;
+  if (bytes.length < 4) return null;
+  return {
+    itcFirst: bytes[0] ?? 0,
+    ctc: bytes[1] ?? 0,
+    dxaCol: u16(bytes, 2),
+  };
 }
 
 export function getSprmOperandLength(buffer: Uint8Array, offset: number, sprm: number): number {
@@ -437,18 +570,18 @@ export function decodeSprm(sprm: number, operandBytes: Uint8Array): DecodedPrope
     case SprmCodes.sprmPDxaWidth: return setMeta('para', 'frameWidth', i16(bytes, 0), raw, bytes);
     case SprmCodes.sprmPPc: return setMeta('para', 'framePosition', bytes[0] ?? 0, raw, bytes);
     case SprmCodes.sprmPWr: return setMeta('para', 'frameWrap', bytes[0] ?? 0, raw, bytes);
-    case SprmCodes.sprmPBrcTop80:
-    case SprmCodes.sprmPBrcTop: return setMeta('para', 'borderTop', parseBrc80(bytes, 0), raw, bytes);
-    case SprmCodes.sprmPBrcLeft80:
-    case SprmCodes.sprmPBrcLeft: return setMeta('para', 'borderLeft', parseBrc80(bytes, 0), raw, bytes);
-    case SprmCodes.sprmPBrcBottom80:
-    case SprmCodes.sprmPBrcBottom: return setMeta('para', 'borderBottom', parseBrc80(bytes, 0), raw, bytes);
-    case SprmCodes.sprmPBrcRight80:
-    case SprmCodes.sprmPBrcRight: return setMeta('para', 'borderRight', parseBrc80(bytes, 0), raw, bytes);
-    case SprmCodes.sprmPBrcBetween80:
-    case SprmCodes.sprmPBrcBetween: return setMeta('para', 'borderBetween', parseBrc80(bytes, 0), raw, bytes);
-    case SprmCodes.sprmPBrcBar80:
-    case SprmCodes.sprmPBrcBar: return setMeta('para', 'borderBar', parseBrc80(bytes, 0), raw, bytes);
+    case SprmCodes.sprmPBrcTop80: return setMeta('para', 'borderTop', parseBrc80(bytes, 0), raw, bytes);
+    case SprmCodes.sprmPBrcTop: return setMeta('para', 'borderTop', parseBrc(bytes, 1), raw, bytes);
+    case SprmCodes.sprmPBrcLeft80: return setMeta('para', 'borderLeft', parseBrc80(bytes, 0), raw, bytes);
+    case SprmCodes.sprmPBrcLeft: return setMeta('para', 'borderLeft', parseBrc(bytes, 1), raw, bytes);
+    case SprmCodes.sprmPBrcBottom80: return setMeta('para', 'borderBottom', parseBrc80(bytes, 0), raw, bytes);
+    case SprmCodes.sprmPBrcBottom: return setMeta('para', 'borderBottom', parseBrc(bytes, 1), raw, bytes);
+    case SprmCodes.sprmPBrcRight80: return setMeta('para', 'borderRight', parseBrc80(bytes, 0), raw, bytes);
+    case SprmCodes.sprmPBrcRight: return setMeta('para', 'borderRight', parseBrc(bytes, 1), raw, bytes);
+    case SprmCodes.sprmPBrcBetween80: return setMeta('para', 'borderBetween', parseBrc80(bytes, 0), raw, bytes);
+    case SprmCodes.sprmPBrcBetween: return setMeta('para', 'borderBetween', parseBrc(bytes, 1), raw, bytes);
+    case SprmCodes.sprmPBrcBar80: return setMeta('para', 'borderBar', parseBrc80(bytes, 0), raw, bytes);
+    case SprmCodes.sprmPBrcBar: return setMeta('para', 'borderBar', parseBrc(bytes, 1), raw, bytes);
     case SprmCodes.sprmPWHeightAbs: return setMeta('para', 'frameHeight', i16(bytes, 0), raw, bytes);
     case SprmCodes.sprmPShd80:
     case SprmCodes.sprmPShd: return setMeta('para', 'shading', bytes.slice(), raw, bytes);
@@ -471,6 +604,15 @@ export function decodeSprm(sprm: number, operandBytes: Uint8Array): DecodedPrope
     case SprmCodes.sprmTTableHeader: return setMeta('table', 'header', boolValue(bytes), raw, bytes);
     case SprmCodes.sprmTDyaRowHeight: return setMeta('table', 'rowHeight', i16(bytes, 0), raw, bytes);
     case SprmCodes.sprmTDefTable: return setMeta('table', 'defTable', parseTDefTableOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTTableBorders80: return setMeta('table', 'tableBorders', parseTableBorders(bytes, true), raw, bytes);
+    case SprmCodes.sprmTTableBorders: return setMeta('table', 'tableBorders', parseTableBorders(bytes, false), raw, bytes);
+    case SprmCodes.sprmTDefTableShd80: return setMeta('table', 'defaultShading', parseDefaultShading(bytes, 0, true), raw, bytes);
+    case SprmCodes.sprmTDefTableShd:
+    case SprmCodes.sprmTDefTableShdRaw: return setMeta('table', 'defaultShading', parseDefaultShading(bytes, 0, false), raw, bytes);
+    case SprmCodes.sprmTDefTableShd2nd:
+    case SprmCodes.sprmTDefTableShdRaw2nd: return setMeta('table', 'defaultShading', parseDefaultShading(bytes, 22, false), raw, bytes);
+    case SprmCodes.sprmTDefTableShd3rd:
+    case SprmCodes.sprmTDefTableShdRaw3rd: return setMeta('table', 'defaultShading', parseDefaultShading(bytes, 44, false), raw, bytes);
     case SprmCodes.sprmTFBiDi: return setMeta('table', 'rtl', boolValue(bytes), raw, bytes);
     case SprmCodes.sprmTPc: return setMeta('table', 'positionCode', bytes[0] ?? 0, raw, bytes);
     case SprmCodes.sprmTDxaAbs: return setMeta('table', 'absLeft', i16(bytes, 0), raw, bytes);
@@ -483,20 +625,24 @@ export function decodeSprm(sprm: number, operandBytes: Uint8Array): DecodedPrope
     case SprmCodes.sprmTWidthAfter: return setMeta('table', 'widthAfter', parseTTableWidth(bytes), raw, bytes);
     case SprmCodes.sprmTInsert: return setMeta('table', 'insertCells', parseTInsertOperand(bytes), raw, bytes);
     case SprmCodes.sprmTDelete: return setMeta('table', 'deleteCells', parseItcFirstLim(bytes, 0), raw, bytes);
-    case SprmCodes.sprmTDxaCol: return setMeta('table', 'columnWidth', parseRangeWidthOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTDxaCol: return setMeta('table', 'columnWidth', parseFixedRangeWidthOperand(bytes), raw, bytes);
     case SprmCodes.sprmTMerge: return setMeta('table', 'merge', parseItcFirstLim(bytes, 0), raw, bytes);
     case SprmCodes.sprmTSplit: return setMeta('table', 'split', parseItcFirstLim(bytes, 0), raw, bytes);
-    case SprmCodes.sprmTTextFlow: return setMeta('table', 'textFlow', parseRangeValueOperand(bytes), raw, bytes);
-    case SprmCodes.sprmTVertMerge: return setMeta('table', 'vertMerge', parseRangeValueOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTTextFlow: return setMeta('table', 'textFlow', {
+      range: parseItcFirstLim(bytes, 0),
+      value: u16(bytes, 2),
+    }, raw, bytes);
+    case SprmCodes.sprmTVertMerge: return setMeta('table', 'vertMerge', parseVertMergeOperand(bytes), raw, bytes);
     case SprmCodes.sprmTVertAlign: return setMeta('table', 'vertAlign', parseRangeValueOperand(bytes), raw, bytes);
-    case SprmCodes.sprmTSetShd:
-    case SprmCodes.sprmTSetShdOdd: return setMeta('table', 'setShading', parseRangeValueOperand(bytes), raw, bytes);
-    case SprmCodes.sprmTSetBrc80:
-    case SprmCodes.sprmTSetBrc: return setMeta('table', 'setBorder', parseRangeBrcOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTSetShd: return setMeta('table', 'setShading', parseTableShadeOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTSetShdOdd: return setMeta('table', 'setShading', parseTableShadeOperand(bytes, true), raw, bytes);
+    case SprmCodes.sprmTSetBrc80: return setMeta('table', 'setBorder', parseRangeBrcOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTSetBrc: return setMeta('table', 'setBorder', parseRangeBrcOperand97(bytes), raw, bytes);
     case SprmCodes.sprmTCellPadding:
-    case SprmCodes.sprmTCellPaddingDefault: return setMeta('table', 'cellPadding', parseRangeWidthOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTCellPaddingDefault: return setMeta('table', 'cellPadding', parseCssaOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTCellSpacingDefault: return setMeta('table', 'cellSpacing', parseCssaOperand(bytes), raw, bytes);
     case SprmCodes.sprmTCellWidth: return setMeta('table', 'cellWidth', parseRangeWidthOperand(bytes), raw, bytes);
-    case SprmCodes.sprmTFitText: return setMeta('table', 'fitText', parseRangeValueOperand(bytes), raw, bytes);
+    case SprmCodes.sprmTFitText: return setMeta('table', 'fitText', parseFixedRangeValueOperand(bytes), raw, bytes);
     case SprmCodes.sprmTFCellNoWrap: return setMeta('table', 'cellNoWrap', parseRangeValueOperand(bytes), raw, bytes);
     case SprmCodes.sprmTIstd: return setMeta('table', 'styleId', u16(bytes, 0), raw, bytes);
     default: {

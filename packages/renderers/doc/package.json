@@ -64,6 +64,7 @@
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "type-check": "tsc -b tsconfig.json",
+    "verify:table-spec": "pnpm build && node scripts/verify-table-spec.mjs",
     "verify:github-34": "pnpm build && node scripts/verify-github-34.mjs",
     "verify:github-87": "pnpm build && node scripts/verify-github-87.mjs"
   },
