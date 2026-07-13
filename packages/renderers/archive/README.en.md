@@ -30,6 +30,8 @@ const options = {
 ## Capabilities
 
 - Previews ZIP, TAR, GZIP, RAR, 7z, and common archive directories.
+- `.cbz` and `.cbr` automatically enter comic-reading mode: image-only pages, natural path ordering, automatic cover opening, page controls, keyboard shortcuts, and touch swipes. Pages retain the shared image renderer's fit, zoom, and lightbox behavior.
+- Comic mode fully reuses the existing Worker, RAR4/RAR5 support, ZIP fallback, passwords, lazy extraction, IndexedDB cache, size limits, and asset configuration instead of maintaining a second extraction stack.
 - Decodes legacy ZIP entry names that omit the UTF-8 flag but are actually encoded as GBK/GB18030.
 - Supports encrypted archives: encrypted content is handled through the unified `libarchive.js` path, the built-in dialog asks for a password, and a correct password unlocks directory reading or nested entry previews.
 - Uses `libarchive.js` Worker + WASM first to keep large archive parsing off the main thread.

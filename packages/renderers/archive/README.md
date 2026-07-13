@@ -30,6 +30,8 @@ const options = {
 ## 能力边界
 
 - 支持 ZIP、TAR、GZIP、RAR、7z 等常见压缩包目录预览。
+- `.cbz` / `.cbr` 自动进入漫画阅读模式：只展示图片页，按路径自然排序并自动打开封面，支持翻页按钮、页码、方向键、PageUp/PageDown、Home/End、空格键和触摸滑动。页面继续复用统一图片 renderer 的适屏、缩放和灯箱能力。
+- 漫画模式完全复用现有 Worker、RAR4/RAR5、ZIP fallback、密码、按需解压、IndexedDB 缓存、体积限制和资源配置，不维护第二套解包逻辑。
 - 自动兼容未声明 UTF-8、实际使用 GBK/GB18030 编码的旧 ZIP 中文文件名。
 - 支持加密压缩包：检测到加密内容后使用 `libarchive.js` 统一解密，默认弹框要求用户输入密码，密码正确后继续读取目录或预览内部文件。
 - 优先使用 `libarchive.js` Worker + WASM，避免大压缩包阻塞主线程。

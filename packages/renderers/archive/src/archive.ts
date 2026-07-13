@@ -39,6 +39,10 @@ import {
   isLikelyEncryptedArchive,
   loadArchiveEntriesWithoutWorker,
 } from './archiveFallback.js';
+import {
+  comicBookStyle,
+  createComicBookController,
+} from './comicBook.js';
 
 type WorkerConstructor = new (scriptURL: string | URL, options?: WorkerOptions) => Worker;
 type FileConstructor = new (fileBits: BlobPart[], fileName: string, options?: FilePropertyBag) => File;
@@ -62,6 +66,7 @@ class ArchivePasswordCancelledError extends Error {
 }
 
 const archiveStyle = `
+	${comicBookStyle}
 	.archive-shell,.archive-viewer{position:relative;box-sizing:border-box;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;display:grid;grid-template-columns:minmax(280px,34%) minmax(0,1fr);grid-template-rows:minmax(0,1fr);--archive-sidebar-gap:12px;--archive-sidebar-padding:16px;--archive-head-gap:10px;--archive-title-margin:4px;--archive-title-size:18px;--archive-stats-margin:8px;--archive-toggle-size:34px;--archive-toggle-radius:10px;--archive-notice-padding:10px 12px;--archive-notice-radius:12px;--archive-search-height:42px;--archive-search-padding:0 12px;--archive-search-radius:12px;--archive-list-gap:7px;--archive-list-padding:4px;--archive-entry-min-height:58px;--archive-entry-icon-column:42px;--archive-entry-gap:10px;--archive-entry-padding-y:8px;--archive-entry-padding-x:10px;--archive-entry-depth-step:10px;--archive-entry-radius:12px;--archive-entry-ext-height:34px;--archive-entry-ext-radius:10px;--archive-entry-size-width:74px;--archive-preview-toolbar-min-height:64px;--archive-preview-toolbar-gap:12px;--archive-preview-toolbar-padding:12px 16px;--archive-preview-button-height:34px;--archive-preview-button-padding:0 12px;--archive-preview-button-radius:10px;--archive-empty-padding:28px;--archive-state-gap:14px;--archive-state-padding:18px;--archive-state-radius:16px;background:#edf2f7;color:#172033;font-family:Aptos,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}
 	.archive-shell *,.archive-viewer *{box-sizing:border-box}
 	.archive-shell[data-viewer-density='compact'],.archive-viewer[data-viewer-density='compact'],.file-viewer[data-viewer-density='compact'] .archive-shell,.file-viewer[data-viewer-density='compact'] .archive-viewer,.file-viewer-web-shell[data-viewer-density='compact'] .archive-shell,.file-viewer-web-shell[data-viewer-density='compact'] .archive-viewer{--archive-sidebar-gap:5px;--archive-sidebar-padding:5px;--archive-head-gap:5px;--archive-title-margin:2px;--archive-title-size:16px;--archive-stats-margin:3px;--archive-toggle-size:28px;--archive-toggle-radius:7px;--archive-notice-padding:4px 5px;--archive-notice-radius:7px;--archive-search-height:30px;--archive-search-padding:0 5px;--archive-search-radius:7px;--archive-list-gap:3px;--archive-list-padding:2px;--archive-entry-min-height:42px;--archive-entry-icon-column:30px;--archive-entry-gap:5px;--archive-entry-padding-y:3px;--archive-entry-padding-x:5px;--archive-entry-depth-step:7px;--archive-entry-radius:7px;--archive-entry-ext-height:26px;--archive-entry-ext-radius:6px;--archive-entry-size-width:58px;--archive-preview-toolbar-min-height:38px;--archive-preview-toolbar-gap:5px;--archive-preview-toolbar-padding:4px 5px;--archive-preview-button-height:28px;--archive-preview-button-padding:0 5px;--archive-preview-button-radius:7px;--archive-empty-padding:18px;--archive-state-gap:5px;--archive-state-padding:5px;--archive-state-radius:10px}
@@ -442,6 +447,7 @@ export default async function renderArchive(
   const targetWindow = documentRef.defaultView || null;
   const archiveOptions = context?.options?.archive;
   const filename = context?.filename || 'archive.bin';
+  const sourceExtension = (_type || getArchiveEntryExtension(filename)).toLowerCase();
   const maxArchiveSize = archiveOptions?.maxArchiveSize || DEFAULT_MAX_ARCHIVE_SIZE;
   const maxEntryPreviewSize = archiveOptions?.maxEntryPreviewSize || DEFAULT_MAX_ENTRY_PREVIEW_SIZE;
   const cacheEnabled = archiveOptions?.cache !== false;
@@ -464,6 +470,7 @@ export default async function renderArchive(
   let passwordAttempt = 0;
   let passwordResolver: ((password: string | null) => void) | null = null;
   let sidebarCollapsed = false;
+  let previewSequence = 0;
 
   const style = createStyle(documentRef);
   const root = createElement(documentRef, 'section', 'archive-shell archive-viewer');
@@ -500,8 +507,19 @@ export default async function renderArchive(
   );
   const downloadButton = createElement(documentRef, 'button', 'archive-download-button', t('archive.preview.downloadFile')) as HTMLButtonElement;
   downloadButton.type = 'button';
-  toolbar.append(sidebarShowButton, toolbarTitle, downloadButton);
   const nestedTarget = createElement(documentRef, 'div', 'archive-nested-target') as HTMLDivElement;
+  const comicBook = createComicBookController({
+    document: documentRef,
+    extension: sourceExtension,
+    root,
+    stage: nestedTarget,
+    previousLabel: t('epub.previousPage'),
+    nextLabel: t('epub.nextPage'),
+    getEntries: () => entries,
+    openEntry: entry => void previewEntry(entry),
+  });
+  badge.textContent = comicBook.badge;
+  toolbar.append(sidebarShowButton, toolbarTitle, ...comicBook.toolbarElements, downloadButton);
   preview.append(toolbar, nestedTarget);
   root.append(sidebar, preview);
 
@@ -672,9 +690,10 @@ export default async function renderArchive(
 
   const getFilteredEntries = () => {
     const keyword = filterText.trim().toLowerCase();
+    const visibleEntries = comicBook.getVisibleEntries(entries);
     const source = keyword
-      ? entries.filter(entry => entry.path.toLowerCase().includes(keyword))
-      : entries;
+      ? visibleEntries.filter(entry => entry.path.toLowerCase().includes(keyword))
+      : visibleEntries;
     return source.slice(0, MAX_LISTED_ENTRIES);
   };
 
@@ -731,6 +750,7 @@ export default async function renderArchive(
       activeTitle.textContent = selectedEntry?.name || t('archive.preview.chooseFile');
       activeTitle.setAttribute('title', selectedEntry?.path || selectedEntry?.name || '');
     }
+    comicBook.sync();
     syncSidebarToggleState();
   };
 
@@ -858,11 +878,11 @@ export default async function renderArchive(
       setLoading(true, t('archive.loading.readingDirectory'), t('archive.loading.directoryReadyHint'));
       const fileTree = await readArchiveDirectoryWithPassword(archive, candidate);
 
-      entries = flattenArchiveObject(fileTree)
-        .sort((left, right) => left.path.localeCompare(right.path));
+      entries = comicBook.sortEntries(flattenArchiveObject(fileTree));
       syncState();
       renderEntryList();
       renderEmptyState();
+      comicBook.onEntriesReady();
       return true;
     } catch (reason) {
       if (!archiveReader) {
@@ -893,12 +913,13 @@ export default async function renderArchive(
       return false;
     }
 
-    entries = fallbackEntries.sort((left, right) => left.path.localeCompare(right.path));
+    entries = comicBook.sortEntries(fallbackEntries);
     encrypted = null;
     archiveNotice = showWorkerFallbackNotice ? t('archive.notice.workerFallback') : '';
     syncState();
     renderEntryList();
     renderEmptyState();
+    comicBook.onEntriesReady();
     return true;
   };
 
@@ -960,12 +981,25 @@ export default async function renderArchive(
     }
   };
 
-  const renderEntryBuffer = async (entry: ArchiveEntryView, entryBuffer: ArrayBuffer) => {
+  const renderEntryBuffer = async (
+    entry: ArchiveEntryView,
+    entryBuffer: ArrayBuffer,
+    requestId: number
+  ) => {
     await clearNestedPreview();
+    if (requestId !== previewSequence) {
+      return;
+    }
     const child = createElement(documentRef, 'div', 'archive-nested-content') as HTMLDivElement;
     nestedTarget.append(child);
     const nestedContext = buildArchiveNestedRenderContext(context, entry, archiveOptions);
-    nestedRendered = await renderNestedEntry(entryBuffer, entry.extension, child, nestedContext);
+    const rendered = await renderNestedEntry(entryBuffer, entry.extension, child, nestedContext);
+    if (requestId !== previewSequence) {
+      await disposeFileViewerRendered(rendered);
+      child.remove();
+      return;
+    }
+    nestedRendered = rendered;
   };
 
   const extractEntryBuffer = async (entry: ArchiveEntryView) => {
@@ -1007,7 +1041,9 @@ export default async function renderArchive(
   };
 
   async function previewEntry(entry: ArchiveEntryView) {
+    const requestId = ++previewSequence;
     selectedEntry = entry;
+    comicBook.onEntrySelected(entry);
     renderEntryList();
     syncState();
     if (entry.size > maxEntryPreviewSize) {
@@ -1024,13 +1060,20 @@ export default async function renderArchive(
 
     try {
       const entryBuffer = await extractEntryBuffer(entry);
+      if (requestId !== previewSequence) {
+        return;
+      }
       setLoading(true, t('archive.loading.rendering', { name: entry.name }));
-      await renderEntryBuffer(entry, entryBuffer);
+      await renderEntryBuffer(entry, entryBuffer, requestId);
     } catch (nextError) {
-      console.error(nextError);
-      setError(nextError instanceof Error ? nextError.message : String(nextError));
+      if (requestId === previewSequence) {
+        console.error(nextError);
+        setError(nextError instanceof Error ? nextError.message : String(nextError));
+      }
     } finally {
-      setLoading(false);
+      if (requestId === previewSequence) {
+        setLoading(false);
+      }
     }
   }
 
@@ -1069,6 +1112,7 @@ export default async function renderArchive(
     $el: root,
     async unmount() {
       closePasswordDialog(null);
+      comicBook.dispose();
       cleanups.splice(0).forEach(cleanup => cleanup());
       await clearNestedPreview();
       await closeArchive();
