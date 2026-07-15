@@ -187,7 +187,8 @@ function prepareMsDocCloneForExport(target: HTMLDivElement) {
     node.style.transform = 'none'
   })
 
-  clone.querySelectorAll<HTMLElement>('.msdoc-page').forEach(page => {
+  clone.querySelectorAll<HTMLElement>('.msdoc-page').forEach((page, index) => {
+    page.dataset.viewerPrintPageIndex = String(index)
     applyPrintPageSize(page, MSDOC_PAGE_SIZE, { heightMode: 'min' })
     page.style.position = 'relative'
     page.style.width = formatCssPixels(MSDOC_PAGE_SIZE.width)
@@ -407,6 +408,7 @@ export default async function render(buffer: ArrayBuffer, target: HTMLDivElement
   const disposeResponsive = makeMsDocResponsive(target)
   context?.registerExportAdapter?.({
     includeDocumentStyles: false,
+    getPrintMaskPages: () => Array.from(target.querySelectorAll<HTMLElement>('.msdoc-page')),
     printStyle: buildMsDocPrintStyle,
     toHtml: () => prepareMsDocCloneForExport(target)
   })

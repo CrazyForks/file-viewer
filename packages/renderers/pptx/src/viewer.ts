@@ -71,6 +71,21 @@ const appendHtml = (container: HTMLElement, html: string) => {
   return nodes[0] || null;
 };
 
+const escapeHtml = (value: unknown) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const buildSlideErrorHtml = (slideNumber: number, error: unknown) => {
+  const diagnostic = error && typeof error === 'object'
+    ? error as Partial<PptxDiagnosticError>
+    : null;
+  const message = diagnostic?.message || stringifyErrorDetail(error) || 'This slide could not be rendered.';
+  return `<section class="slide flyfish-pptx-slide-error" data-slide-index="${slideNumber}"><div class="flyfish-pptx-slide-error-card" role="status"><strong>Slide ${slideNumber}</strong><span>${escapeHtml(message)}</span></div></section>`;
+};
+
 const DEFAULT_INITIAL_SLIDES = 3;
 const DEFAULT_BATCH_SIZE = 4;
 const DEFAULT_OVERSCAN_VIEWPORTS = 1.5;
@@ -98,6 +113,7 @@ type WindowedSlideRecord = {
   rendered: boolean;
   notified: boolean;
   postProcessed: boolean;
+  postProcessPromise: Promise<void> | null;
 };
 
 const toPositiveInteger = (
@@ -275,6 +291,22 @@ export class PptxViewer {
         }
         break;
       }
+      case 'slide-error': {
+        const slideNumber = Number(message.slide_num || 0);
+        const error = message.data;
+        const html = buildSlideErrorHtml(slideNumber, error);
+        this.clearThumbnail();
+        if (this.shouldWindowSlides()) {
+          this.appendWindowedSlide(html, slideNumber);
+        } else {
+          const element = appendHtml(this.content, html);
+          this.scheduleResize();
+          this.options.onSlideRendered?.(slideNumber, element);
+        }
+        this.options.onSlideError?.(slideNumber, error);
+        this.options.onWarning?.(error);
+        break;
+      }
       case 'pptx-thumb':
         this.showThumbnail(String(message.data || ''));
         this.options.onThumbnail?.(String(message.data || ''));
@@ -292,7 +324,12 @@ export class PptxViewer {
         break;
       case 'ExecutionTime':
       case 'Done':
-        void this.complete(message.charts);
+        void this.complete(message.charts).catch(error => this.fail(createPptxDiagnosticError(
+          'PPTX_PARSE_FAILED',
+          'post-process',
+          'PPTX 渲染后处理失败。',
+          error
+        )));
         break;
       case 'WARN':
         this.options.onWarning?.(message.data);
@@ -394,7 +431,14 @@ export class PptxViewer {
       rendered: false,
       notified: false,
       postProcessed: false,
+      postProcessPromise: null,
     };
+  }
+
+  private getDesignerCanvases(record: WindowedSlideRecord) {
+    return Array.from(record.slot.children).filter(element => (
+      element.classList.contains('fv-print-mask-canvas')
+    ));
   }
 
   private renderSlideRecord(record: WindowedSlideRecord) {
@@ -402,8 +446,10 @@ export class PptxViewer {
       return;
     }
 
+    const designerCanvases = this.getDesignerCanvases(record);
     record.slot.replaceChildren();
     record.element = appendHtml(record.slot, record.html);
+    record.slot.append(...designerCanvases);
     record.rendered = true;
     record.postProcessed = false;
     this.updateMeasuredSlideHeight(record);
@@ -421,7 +467,7 @@ export class PptxViewer {
   }
 
   private unmountSlideRecord(record: WindowedSlideRecord) {
-    if (!record.rendered) {
+    if (!record.rendered || this.getDesignerCanvases(record).length > 0) {
       return;
     }
 
@@ -430,6 +476,7 @@ export class PptxViewer {
     record.element = null;
     record.rendered = false;
     record.postProcessed = false;
+    record.postProcessPromise = null;
   }
 
   private updateMeasuredSlideHeight(record: WindowedSlideRecord) {
@@ -662,10 +709,43 @@ export class PptxViewer {
     if (!record.rendered || record.postProcessed || this.disposed) {
       return;
     }
+    if (!record.postProcessPromise) {
+      record.postProcessPromise = (async () => {
+        await renderPptxPostProcessing(this.charts, record.slot);
+        if (this.disposed) {
+          return;
+        }
+        record.postProcessed = true;
+        this.updateMeasuredSlideHeight(record);
+      })().finally(() => {
+        record.postProcessPromise = null;
+      });
+    }
+    await record.postProcessPromise;
+  }
 
-    await renderPptxPostProcessing(this.charts, record.slot);
-    record.postProcessed = true;
-    this.updateMeasuredSlideHeight(record);
+  /** Materializes every lazy slide only for the duration of an export snapshot. */
+  async cloneForExport() {
+    if (!this.shouldWindowSlides()) {
+      return this.target.cloneNode(true) as HTMLElement;
+    }
+
+    const previouslyRendered = new Set(
+      this.slideRecords.filter(record => record.rendered)
+    );
+    try {
+      this.slideRecords.forEach(record => this.renderSlideRecord(record));
+      await Promise.all(this.slideRecords.map(record => this.postProcessSlideRecord(record)));
+      return this.target.cloneNode(true) as HTMLElement;
+    } finally {
+      this.slideRecords.forEach(record => {
+        if (!previouslyRendered.has(record)) {
+          this.unmountSlideRecord(record);
+        }
+      });
+      this.scheduleSlideWindowUpdate();
+      this.scheduleResize();
+    }
   }
 
   private async complete(charts: unknown) {
@@ -681,6 +761,9 @@ export class PptxViewer {
     this.scheduleSlideWindowUpdate();
     this.scheduleResize();
     await this.postProcessRenderedContent(charts);
+    if (this.disposed) {
+      return;
+    }
     this.scheduleResize();
     this.options.onRenderComplete?.();
   }

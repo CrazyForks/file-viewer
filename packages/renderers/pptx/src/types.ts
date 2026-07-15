@@ -49,6 +49,7 @@ export type PptxDiagnosticErrorCode =
   | 'PPTX_NO_SLIDES'
   | 'PPTX_MISSING_SLIDE'
   | 'PPTX_SLIDE_RENDER_FAILED'
+  | 'PPTX_NO_RENDERABLE_SLIDES'
   | 'PPTX_WORKER_FAILED'
   | 'PPTX_PARSE_FAILED'
   | (string & {});

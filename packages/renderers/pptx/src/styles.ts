@@ -37,6 +37,9 @@ export const pptxViewerCss = `
 .flyfish-pptx-content{position:absolute;top:0;left:0;box-sizing:border-box;max-width:none;min-width:0;transform-origin:top left;will-change:transform}
 .flyfish-pptx-content[data-render-state="loading"]{opacity:.82}
 .flyfish-pptx-slide-slot{display:flow-root;box-sizing:border-box;width:100%;min-width:0}
+.flyfish-pptx-slide-error{display:flex;align-items:center;justify-content:center;background:#fff7ed!important;color:#9a3412}
+.flyfish-pptx-slide-error-card{display:grid;gap:10px;max-width:70%;padding:24px;border:1px solid #fdba74;border-radius:12px;background:#fff;text-align:center;font:14px/1.5 system-ui,sans-serif}
+.flyfish-pptx-slide-error-card strong{font-size:18px}
 .flyfish-pptx-content .slide{background:#fff;box-shadow:0 18px 36px rgba(18,35,52,.12)}
 .flyfish-pptx-thumbnail{display:block;box-sizing:border-box;width:min(960px,100%);height:auto;margin:0 auto 28px;border-radius:12px;background:#fff;box-shadow:0 18px 36px rgba(18,35,52,.14)}
 ${legacyPptxCss}

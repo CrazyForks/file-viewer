@@ -126,6 +126,50 @@ const appendPages = (
   target.appendChild(fragment);
 };
 
+const replacePages = (
+  documentRef: Document,
+  target: HTMLDivElement,
+  pages: HTMLElement[]
+) => {
+  const existingFrames = Array.from(target.children).filter(
+    (element): element is HTMLElement => (
+      element instanceof (target.ownerDocument.defaultView?.HTMLElement || HTMLElement) &&
+      element.classList.contains('ofd-page-frame')
+    )
+  );
+  const designerActive = existingFrames.some(frame => (
+    frame.querySelector('.fv-print-mask-canvas')
+  ));
+  if (!designerActive) {
+    target.replaceChildren();
+    appendPages(documentRef, target, pages);
+    return true;
+  }
+  if (existingFrames.length !== pages.length) {
+    return false;
+  }
+
+  // The print-mask designer owns canvases attached to these stable frame
+  // nodes. Replace only the rendered OFD page so a resize cannot detach the
+  // active drawing surface or lose its pointer handlers.
+  pages.forEach((page, index) => {
+    const frame = existingFrames[index];
+    const previousPage = Array.from(frame.children).find(child => (
+      child.classList.contains('ofd-page')
+    )) as HTMLElement | undefined;
+    if (!frame || !previousPage) {
+      return;
+    }
+    page.classList.add('ofd-page');
+    page.dataset.viewerThemeBoundary = 'light';
+    page.style.backgroundColor = '#fff';
+    page.style.color = '#111827';
+    page.style.colorScheme = 'only light';
+    previousPage.replaceWith(page);
+  });
+  return true;
+};
+
 export default async function renderOfd(
   buffer: ArrayBuffer,
   target: HTMLDivElement,
@@ -243,9 +287,16 @@ export default async function renderOfd(
     return Promise.resolve(ofd.renderOfd(width, ofdDocument));
   };
 
-  const render = async (options: { force?: boolean; showLoading?: boolean } = {}) => {
+  const render = async (options: {
+    force?: boolean;
+    showLoading?: boolean;
+    rejectOnError?: boolean;
+  } = {}) => {
     if (disposed) {
       return;
+    }
+    if (context?.signal?.aborted) {
+      throw context.signal.reason || new DOMException('OFD rendering aborted.', 'AbortError');
     }
 
     const width = getRenderWidth();
@@ -267,9 +318,13 @@ export default async function renderOfd(
       if (disposed || version !== renderVersion) {
         return;
       }
+      if (context?.signal?.aborted) {
+        throw context.signal.reason || new DOMException('OFD rendering aborted.', 'AbortError');
+      }
 
-      clearStage();
-      appendPages(documentRef, stage, pages);
+      if (!replacePages(documentRef, stage, pages)) {
+        return;
+      }
       lastRenderedWidth = width;
       await waitForPaint(targetWindow);
       syncPageZoom();
@@ -285,6 +340,9 @@ export default async function renderOfd(
       state = 'error';
       errorMessage = normalizeError(reason, t('ofd.error.parseFailed'), context) || t('ofd.error.parseFailed');
       syncState();
+      if (options.rejectOnError) {
+        throw reason;
+      }
     }
   };
 
@@ -302,11 +360,18 @@ export default async function renderOfd(
     resizeObserver.observe(viewer);
   };
 
-  void render({ force: true, showLoading: true }).finally(() => {
+  try {
+    // Do not report the renderer as loaded until page surfaces exist. This
+    // keeps immediate print/mask operations page-aware and propagates initial
+    // parse failures through the normal renderer error lifecycle.
+    await render({ force: true, showLoading: true, rejectOnError: true });
     if (!disposed) {
       startResizeObserver();
     }
-  });
+  } catch (error) {
+    unregisterFileViewerZoomProvider(viewer);
+    throw error;
+  }
   context?.registerThumbnailAdapter?.({
     beforeCapture: async ({ signal }) => {
       while (state === 'loading' && !disposed) {
@@ -323,6 +388,21 @@ export default async function renderOfd(
       }
     },
     getTarget: () => stage.querySelector('.ofd-page-frame, .ofd-page') || stage,
+  });
+  context?.registerExportAdapter?.({
+    print: true,
+    exportHtml: true,
+    includeDocumentStyles: true,
+    getPrintMaskPages: () => Array.from(
+      stage.querySelectorAll<HTMLElement>('.ofd-page-frame')
+    ),
+    toHtml: () => {
+      const clone = stage.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll<HTMLElement>('.ofd-page-frame').forEach((page, index) => {
+        page.dataset.viewerPrintPageIndex = String(index);
+      });
+      return clone.outerHTML;
+    },
   });
 
   return {

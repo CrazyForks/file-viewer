@@ -307,12 +307,31 @@ const formatErrorMessage = (
 
 export const resolvePptxPreviewErrorMessage = formatErrorMessage;
 
-const buildExportAdapter = (targetWindow?: Window | null): FileRenderExportAdapter => ({
+const collectPptxPrintMaskPages = (surface: HTMLElement) => {
+  const slots = Array.from(surface.querySelectorAll<HTMLElement>('.flyfish-pptx-slide-slot'));
+  return slots.length
+    ? slots
+    : Array.from(surface.querySelectorAll<HTMLElement>('[data-slide-index], .slide'));
+};
+
+const buildExportAdapter = (
+  surface: HTMLElement,
+  targetWindow: Window | null | undefined,
+  getViewer: () => PptxViewer | null
+): FileRenderExportAdapter => ({
   print: true,
   exportHtml: true,
   includeDocumentStyles: true,
   beforeSnapshot: () => waitForFileViewerNextPaint(targetWindow || undefined),
+  getPrintMaskPages: () => collectPptxPrintMaskPages(surface),
   printStyle: pptxPrintStyle,
+  toHtml: async () => {
+    const clone = await getViewer()?.cloneForExport() || surface.cloneNode(true) as HTMLElement;
+    collectPptxPrintMaskPages(clone).forEach((page, index) => {
+      page.dataset.viewerPrintPageIndex = String(index);
+    });
+    return clone.outerHTML;
+  },
 });
 
 export default async function renderPptx(
@@ -405,7 +424,7 @@ export default async function renderPptx(
   };
 
   const notifyProgressiveReady = () => {
-    if (progressiveReady) {
+    if (progressiveReady || disposed || context?.signal?.aborted) {
       return;
     }
     progressiveReady = true;
@@ -420,7 +439,7 @@ export default async function renderPptx(
   };
 
   const registerExportAdapter = () => {
-    context?.registerExportAdapter?.(buildExportAdapter(targetWindow));
+    context?.registerExportAdapter?.(buildExportAdapter(surface, targetWindow, () => viewer));
   };
 
   registerFileViewerZoomProvider(shell, {
@@ -438,8 +457,28 @@ export default async function renderPptx(
     progressiveReady = false;
     syncUi();
     const presentationOptions = context?.options?.presentation;
+    let resolveCompletion!: () => void;
+    let rejectCompletion!: (reason: unknown) => void;
+    const completion = new Promise<void>((resolve, reject) => {
+      resolveCompletion = resolve;
+      rejectCompletion = reject;
+    });
+    // Abort/error may arrive while PptxViewer.open() is still resolving. Mark
+    // the completion promise handled immediately, then await the same promise
+    // below so cancellation cannot surface as a transient unhandled rejection.
+    void completion.catch(() => {});
+    const abort = () => {
+      const reason = context?.signal?.reason || new DOMException('PPTX rendering aborted.', 'AbortError');
+      viewer?.destroy();
+      viewer = null;
+      rejectCompletion(reason);
+    };
+    context?.signal?.addEventListener('abort', abort, { once: true });
 
     try {
+      if (context?.signal?.aborted) {
+        throw context.signal.reason || new DOMException('PPTX rendering aborted.', 'AbortError');
+      }
       const nextViewer = await PptxViewer.open(buffer, surface, {
         styleRoot: context?.surface?.shadowRoot,
         fitMode: 'contain',
@@ -457,7 +496,7 @@ export default async function renderPptx(
         },
         onSlideRendered: () => notifyProgressiveReady(),
         onRenderComplete: () => {
-          if (disposed) {
+          if (disposed || context?.signal?.aborted) {
             return;
           }
           state = 'ready';
@@ -465,45 +504,54 @@ export default async function renderPptx(
           zoomPercent = getCurrentZoomPercent();
           syncUi();
           zoomEmitter.emit();
+          resolveCompletion();
         },
         onSlideError: (_index, error) => {
           console.warn('PPTX slide render warning:', error);
         },
         onError: error => {
-          if (disposed) {
+          if (disposed || context?.signal?.aborted) {
             return;
           }
           state = 'error';
           errorMessage = formatErrorMessage(error, t('presentation.error.parseFailed'), context);
           context?.registerExportAdapter?.(null);
           syncUi();
+          rejectCompletion(error);
         },
       });
 
-      if (disposed) {
+      if (disposed || context?.signal?.aborted) {
         nextViewer.destroy();
-        return;
+        throw context?.signal?.reason || new DOMException('PPTX rendering aborted.', 'AbortError');
       }
 
       viewer = nextViewer;
-      state = 'ready';
-      notifyProgressiveReady();
+      await completion;
+      if (disposed || context?.signal?.aborted) {
+        throw context?.signal?.reason || new DOMException('PPTX rendering aborted.', 'AbortError');
+      }
       zoomPercent = getCurrentZoomPercent();
       registerExportAdapter();
       syncUi();
       zoomEmitter.emit();
     } catch (error) {
-      if (disposed) {
-        return;
+      if (disposed || context?.signal?.aborted) {
+        throw error;
       }
+      viewer?.destroy();
+      viewer = null;
       state = 'error';
       errorMessage = formatErrorMessage(error, t('presentation.error.parseFailed'), context);
       context?.registerExportAdapter?.(null);
       syncUi();
+      throw error;
+    } finally {
+      context?.signal?.removeEventListener('abort', abort);
     }
   };
 
-  void openPresentation();
+  await openPresentation();
 
   return {
     $el: shell,

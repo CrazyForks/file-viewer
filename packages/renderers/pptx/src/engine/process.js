@@ -202,6 +202,7 @@ export default function process(setOnMessage, postMessage) {
 
     // 逐个读取slide，并发处理，注意，需要传入顺序，保证幻灯片是正确的顺序插入的
     const numOfSlides = slides.length;
+    let renderedSlideCount = 0;
     for (let i = 0; i < numOfSlides; i++) {
       // 取得名字和下标
       const path = slides[i];
@@ -220,24 +221,31 @@ export default function process(setOnMessage, postMessage) {
       const slideNumber = filename && filename.includes('slide') ? Number(filename.substr(5)) : 1;
       // 最终渲染
       let slideHtml = '';
+      let body;
       try {
         slideHtml = await processSingleSlide(zip, path, i, slideSize);
+        renderedSlideCount += 1;
+        body = {
+          type: 'slide',
+          data: slideHtml,
+          slide_num: slideNumber,
+          file_name: filename
+        };
       } catch (error) {
-        throw createPptxDiagnosticError(
+        body = {
+          type: 'slide-error',
+          data: createPptxDiagnosticError(
           'PPTX_SLIDE_RENDER_FAILED',
           'render-slide',
           `PPTX 第 ${slideNumber || i + 1} 页解析失败。`,
           error,
           `请检查 ${path} 及其关联的图片、主题、布局或图表资源是否完整。`
-        );
+          ),
+          slide_num: slideNumber,
+          file_name: filename
+        };
       }
       // 根据顺序发送，前面的没发送需要先等待，一旦前面发送完毕，后面的会立即触发
-      const body = {
-        type: 'slide',
-        data: slideHtml,
-        slide_num: slideNumber,
-        file_name: filename
-      };
       // 当前顺位，发送，并检测后面排队的，顺便发送了
       if (current === slideNumber) {
         postMessage(body);
@@ -250,6 +258,16 @@ export default function process(setOnMessage, postMessage) {
         slide_num: (numOfSlides + i + 1),
         data: (i + 1) * 100 / numOfSlides
       });
+    }
+
+    if (renderedSlideCount === 0) {
+      throw createPptxDiagnosticError(
+        'PPTX_NO_RENDERABLE_SLIDES',
+        'render-slide',
+        'PPTX 中没有可成功渲染的幻灯片。',
+        `failedSlides=${numOfSlides}`,
+        '请检查幻灯片、布局、主题以及关联资源是否完整。'
+      );
     }
 
     postMessage({

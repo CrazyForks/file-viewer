@@ -790,6 +790,7 @@ export const createViewer = (
     async printWithMask(printOptions: FileViewerPrintOptions = {}) {
       const result = await openFileViewerPrintMaskDesignerAsync({
         root: container,
+        pages: renderSurfaceState.exportAdapter?.getPrintMaskPages?.(),
         i18n: options,
         color: printOptions.mask?.color,
         initialRegions: printOptions.mask?.regions,

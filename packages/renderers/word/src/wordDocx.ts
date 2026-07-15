@@ -36,18 +36,37 @@ const DOCX_ZOOM_STEP = 0.15
 const DOCX_VENDOR_ASSET_VERSION = '0.3.20'
 const ZIP_SIGNATURE_PK = 0x504b
 
+type DocxLibrary = {
+  defaultOptions: Options
+  renderAsync: typeof renderAsync
+}
+
+type DocxLibraryImport = DocxLibrary & {
+  default?: DocxLibrary
+}
+
+// Modern bundlers expose the ESM named exports, while some legacy webpack
+// configurations wrap the CommonJS browser API in `default`.
+const resolveDocxLibrary = (module: DocxLibraryImport): DocxLibrary => {
+  const library = typeof module.renderAsync === 'function' ? module : module.default
+  if (!library || typeof library.renderAsync !== 'function') {
+    throw new TypeError('@file-viewer/docx did not expose a compatible renderAsync function.')
+  }
+  return library
+}
+
 const loadLibrary = (() => {
   const loader = {
-    module: null as null | Promise<{defaultOptions: Options, renderAsync: typeof renderAsync}>,
+    module: null as null | Promise<DocxLibraryImport>,
     async load() {
       if (!this.module) {
-        this.module = import('@file-viewer/docx');
+        this.module = import('@file-viewer/docx') as Promise<DocxLibraryImport>
       }
       return this.module;
     }
   }
   return async () => {
-    return await loader.load();
+    return resolveDocxLibrary(await loader.load())
   }
 })()
 
@@ -577,6 +596,7 @@ function prepareDocxCloneForExport(target: HTMLDivElement) {
     .join('')
 
   clone.querySelectorAll<HTMLElement>('.docx-page-frame, .docx-flow-frame').forEach((frame, index) => {
+    frame.dataset.viewerPrintPageIndex = String(index)
     normalizeDocxPageForPrint(frame, getDocxFramePrintSize(liveFrames[index]))
     printDocument.appendChild(frame.cloneNode(true))
   })
@@ -613,6 +633,9 @@ export default async function(buffer: ArrayBuffer, target: HTMLDivElement, conte
   const disposeResponsive = makeDocxResponsive(target, context)
   context?.registerExportAdapter?.({
     includeDocumentStyles: false,
+    getPrintMaskPages: () => Array.from(
+      target.querySelectorAll<HTMLElement>('.docx-page-frame, .docx-flow-frame')
+    ),
     beforeSnapshot: () => {
       const view = getTargetWindow(target)
       if (view) {

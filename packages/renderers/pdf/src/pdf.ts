@@ -56,6 +56,11 @@ import {
   type PdfTextContent,
   type PdfTextContentPage,
 } from './pdfFontFallback.js';
+import {
+  PDF_FIT_HORIZONTAL_PADDING,
+  PDF_PAGE_BORDER_WIDTH,
+  resolvePdfFitViewportSize,
+} from './pdfFit.js';
 
 export const DEFAULT_FILE_VIEWER_PDF_WORKER_URL =
   DEFAULT_FILE_VIEWER_PDF_WORKER_PATH;
@@ -63,8 +68,6 @@ export const DEFAULT_FILE_VIEWER_PDF_WORKER_URL =
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.1;
-const FIT_HORIZONTAL_PADDING = 28;
-const PAGE_BORDER_WIDTH = 18;
 const PDF_EXPORT_MAX_PAGE_PIXELS = 8_000_000;
 const PDF_WORKER_PROBE_TIMEOUT_MS = 1200;
 const PDF_JS_DESTROY_CONSOLE_SUPPRESSION_MS = 1500;
@@ -484,7 +487,9 @@ export default async function renderPdf(
   let activeViewStateApplyVersion = 0;
   let pendingInitialViewState: FileViewerViewState | null = initialViewState;
   let pendingFitRequest: FileViewerFitRequest | null = null;
+  let activeFitRequest: FileViewerFitRequest | null = null;
   let suppressScrollEventUntil = 0;
+  let userScrollIntentUntil = 0;
   let scrollStateFrame = 0;
   let pdfSearchState = createPdfSearchState();
   let pdfMatchesCount: PdfFindMatchesCount = { current: 0, total: 0 };
@@ -1136,7 +1141,7 @@ export default async function renderPdf(
     label: scaleText(),
     canZoomIn: loadStatus === 'ready' && !!pdfContext.viewer && canZoomIn(),
     canZoomOut: loadStatus === 'ready' && !!pdfContext.viewer && canZoomOut(),
-    canReset: loadStatus === 'ready' && !!pdfContext.viewer && !autoFitWidth,
+    canReset: loadStatus === 'ready' && !!pdfContext.viewer && Math.abs(currentScale - 1) > 0.001,
     minScale: MIN_SCALE,
     maxScale: MAX_SCALE,
   });
@@ -1205,6 +1210,23 @@ export default async function renderPdf(
     suppressScrollEventUntil = Math.max(suppressScrollEventUntil, Date.now() + 180);
   };
 
+  const markFitInteraction = (source: FileViewerViewStateChangeSource) => {
+    if (source !== 'user' && source !== 'api') {
+      return;
+    }
+    if (activeFitRequest?.resize === 'always') {
+      return;
+    }
+    autoFitWidth = false;
+    activeFitRequest = null;
+  };
+
+  const recordUserScrollIntent = () => {
+    userScrollIntentUntil = Date.now() + 750;
+    suppressScrollEventUntil = 0;
+    markFitInteraction('user');
+  };
+
   const restoreScrollState = (
     scroll: FileViewerViewState['scroll'] | undefined,
     notify = true
@@ -1240,6 +1262,7 @@ export default async function renderPdf(
     const source = applyOptions.source || 'api';
     const action = applyOptions.action || 'restore';
     const notify = applyOptions.notify !== false;
+    markFitInteraction(source);
     const applyVersion = ++viewStateApplyVersion;
     activeViewStateApplyVersion = applyVersion;
     suppressProgrammaticScrollEvents();
@@ -1302,7 +1325,11 @@ export default async function renderPdf(
     }
     scrollStateFrame = targetWindow.requestAnimationFrame(() => {
       scrollStateFrame = 0;
-      emitViewStateChange('scroll', 'user');
+      const source: FileViewerViewStateChangeSource = Date.now() <= userScrollIntentUntil
+        ? 'user'
+        : 'viewer';
+      markFitInteraction(source);
+      emitViewStateChange('scroll', source);
     });
   };
 
@@ -1359,7 +1386,10 @@ export default async function renderPdf(
   const getFitWidthScale = (pdfViewer: PDFViewer) => {
     const pageWidth = getPageWidthAtScaleOne(pdfViewer);
     const containerWidth = container.clientWidth || targetWindow.innerWidth;
-    const availableWidth = Math.max(containerWidth - FIT_HORIZONTAL_PADDING - PAGE_BORDER_WIDTH, 96);
+    const availableWidth = Math.max(
+      containerWidth - PDF_FIT_HORIZONTAL_PADDING - PDF_PAGE_BORDER_WIDTH,
+      96
+    );
     return pageWidth ? clampScale(availableWidth / pageWidth) : 1;
   };
 
@@ -1370,6 +1400,8 @@ export default async function renderPdf(
     if (!pdfContext.viewer) {
       return;
     }
+    userScrollIntentUntil = 0;
+    suppressProgrammaticScrollEvents();
     autoFitWidth = true;
     setScale(getFitWidthScale(pdfContext.viewer), 'zoom-reset', source, notifyViewState);
     void waitForPaint(targetWindow).then(() => {
@@ -1378,6 +1410,8 @@ export default async function renderPdf(
   };
 
   const applyPdfFit = async (request: FileViewerFitRequest): Promise<FileViewerFitResult> => {
+    userScrollIntentUntil = 0;
+    activeFitRequest = { ...request };
     if (!pdfContext.viewer || loadStatus !== 'ready') {
       pendingFitRequest = request;
       return {
@@ -1392,19 +1426,20 @@ export default async function renderPdf(
 
     const pageSize = getPageSizeAtScaleOne(pdfContext.viewer);
     const mode = request.mode === 'auto' ? 'width' : request.mode;
+    const fitViewport = resolvePdfFitViewportSize({
+      containerWidth: container.clientWidth,
+      containerHeight: container.clientHeight,
+      fallbackWidth: targetWindow.innerWidth,
+      fallbackHeight: targetWindow.innerHeight,
+      request,
+    });
     const scale = resolveFileViewerFitScale({
       mode,
-      viewportWidth: Math.max(
-        96,
-        (request.viewportWidth || container.clientWidth || targetWindow.innerWidth) -
-          FIT_HORIZONTAL_PADDING -
-          PAGE_BORDER_WIDTH
-      ),
-      viewportHeight: Math.max(
-        96,
-        (container.clientHeight || request.viewportHeight || targetWindow.innerHeight) -
-          PAGE_BORDER_WIDTH
-      ),
+      // The core request measures the whole viewer root. PDF's scroll
+      // container is the actual visible document area after the navigation
+      // pane, so prefer it whenever it has been laid out.
+      viewportWidth: fitViewport.width,
+      viewportHeight: fitViewport.height,
       contentWidth: pageSize.width,
       contentHeight: pageSize.height,
       currentScale,
@@ -1423,9 +1458,16 @@ export default async function renderPdf(
       };
     }
 
+    suppressProgrammaticScrollEvents();
     autoFitWidth = request.mode === 'auto' || request.mode === 'width';
-    setScale(scale, 'fit', request.source);
+    if (Math.abs(scale - currentScale) > 0.001) {
+      setScale(scale, 'fit', request.source);
+    } else {
+      pdfContext.viewer.update();
+      syncUi();
+    }
     await waitForPaint(targetWindow);
+    suppressProgrammaticScrollEvents();
     pdfContext.viewer?.update();
     const state = getPdfViewState();
     return {
@@ -1439,22 +1481,52 @@ export default async function renderPdf(
     };
   };
 
-  const scheduleFitToWidth = () => {
-    if (!autoFitWidth || !pdfContext.viewer) {
+  const scheduleFitAfterResize = () => {
+    if (!pdfContext.viewer) {
+      return;
+    }
+    if (activeFitRequest?.resize === 'initial') {
+      return;
+    }
+    if (!activeFitRequest && !autoFitWidth) {
       return;
     }
     targetWindow.cancelAnimationFrame(fitFrame);
-    fitFrame = targetWindow.requestAnimationFrame(() => fitToWidth('viewer'));
+    fitFrame = targetWindow.requestAnimationFrame(() => {
+      if (activeFitRequest) {
+        void applyPdfFit({ ...activeFitRequest, source: 'viewer' });
+        return;
+      }
+      fitToWidth('viewer');
+    });
   };
 
   const zoomIn = (source: FileViewerViewStateChangeSource = 'user') => {
-    autoFitWidth = false;
+    markFitInteraction(source);
     setScale(currentScale + SCALE_STEP, 'zoom-in', source);
   };
 
   const zoomOut = (source: FileViewerViewStateChangeSource = 'user') => {
-    autoFitWidth = false;
+    markFitInteraction(source);
     setScale(currentScale - SCALE_STEP, 'zoom-out', source);
+  };
+
+  const reapplyFitAfterLayout = (
+    source: FileViewerViewStateChangeSource,
+    notifyViewState = true
+  ) => {
+    if (activeFitRequest) {
+      if (activeFitRequest.resize === 'initial') {
+        return false;
+      }
+      void applyPdfFit({ ...activeFitRequest, source });
+      return true;
+    }
+    if (autoFitWidth) {
+      fitToWidth(source, notifyViewState);
+      return true;
+    }
+    return false;
   };
 
   const applyRotation = (
@@ -1463,6 +1535,7 @@ export default async function renderPdf(
     source: FileViewerViewStateChangeSource = 'viewer',
     notifyViewState = true
   ) => {
+    markFitInteraction(source);
     const normalized = normalizeRotation(rotation);
     currentRotation = normalized;
     pdfThumbnails.clear();
@@ -1473,8 +1546,7 @@ export default async function renderPdf(
     }
     pdfContext.viewer.pagesRotation = normalized;
     void waitForPaint(targetWindow).then(() => {
-      if (autoFitWidth) {
-        fitToWidth(source, notifyViewState);
+      if (reapplyFitAfterLayout(source, notifyViewState)) {
         if (notifyViewState) {
           emitViewStateChange(action, source);
         }
@@ -1507,6 +1579,7 @@ export default async function renderPdf(
     if (!pdfContext.viewer || !pageCount) {
       return;
     }
+    markFitInteraction(source);
     const nextPage = Math.min(pageCount, Math.max(1, pageNumber));
     runWithStableHorizontalScroll(() => {
       pdfContext.viewer!.currentPageNumber = nextPage;
@@ -1525,11 +1598,11 @@ export default async function renderPdf(
     if (!navigationEnabled) {
       return;
     }
+    markFitInteraction(source);
     navVisible = !navVisible;
     syncUi();
     void waitForPaint(targetWindow).then(() => {
-      if (autoFitWidth) {
-        fitToWidth(source, notifyViewState);
+      if (reapplyFitAfterLayout(source, notifyViewState)) {
         return;
       }
       pdfContext.viewer?.update();
@@ -1544,6 +1617,7 @@ export default async function renderPdf(
     source: FileViewerViewStateChangeSource = 'user',
     notifyViewState = true
   ) => {
+    markFitInteraction(source);
     navMode = mode;
     syncUi();
     if (notifyViewState) {
@@ -1683,7 +1757,7 @@ export default async function renderPdf(
         `width:${formatCssPixels(pageWidth)}`,
         `height:${formatCssPixels(pageHeight)}`,
       ].join(';');
-      pagesHtml.push(`<section class="pdf-export-page viewer-print-page" style="${pageStyle}" aria-label="${escapeAttribute(pageTitle)}"><img src="${canvas.toDataURL('image/png')}" alt="${escapeAttribute(pageTitle)}" /></section>`);
+      pagesHtml.push(`<section class="pdf-export-page viewer-print-page" data-viewer-print-page-index="${pageNumber - 1}" style="${pageStyle}" aria-label="${escapeAttribute(pageTitle)}"><img src="${canvas.toDataURL('image/png')}" alt="${escapeAttribute(pageTitle)}" /></section>`);
 
       canvas.width = 0;
       canvas.height = 0;
@@ -1743,7 +1817,6 @@ export default async function renderPdf(
       eventBus.on('pagesinit', () => {
         applyRotation(currentRotation, 'rotation-change', 'viewer', false);
         loadStatus = 'ready';
-        fitToWidth('viewer', false);
         scheduleLegacyPageDimensionPatch();
         syncUi();
         context?.onProgressiveRender?.();
@@ -1760,6 +1833,7 @@ export default async function renderPdf(
           if (fitRequest) {
             void applyPdfFit(fitRequest);
           } else {
+            fitToWidth('viewer', false);
             emitViewStateChange('init', 'viewer');
           }
         }
@@ -1976,6 +2050,9 @@ export default async function renderPdf(
       }
       context?.registerExportAdapter?.({
         includeDocumentStyles: false,
+        getPrintMaskPages: () => Array.from(
+          root.querySelectorAll<HTMLElement>('.pdfViewer .page')
+        ),
         printStyle: buildPdfPrintStyle,
         toHtml: renderPdfPagesForExport,
       });
@@ -2019,11 +2096,12 @@ export default async function renderPdf(
       return getPdfZoomState();
     },
     resetZoom: () => {
-      fitToWidth('api');
+      markFitInteraction('api');
+      setScale(1, 'zoom-reset', 'api');
       return getPdfZoomState();
     },
     setZoom: scale => {
-      autoFitWidth = false;
+      markFitInteraction('api');
       setScale(scale, 'zoom-change', 'api');
       return getPdfZoomState();
     },
@@ -2044,15 +2122,22 @@ export default async function renderPdf(
   nextPageButton.addEventListener('click', () => goToPage(currentPage + 1, 'page-step', 'user'));
   zoomOutButton.addEventListener('click', () => zoomOut('user'));
   zoomInButton.addEventListener('click', () => zoomIn('user'));
-  scaleButton.addEventListener('click', () => fitToWidth('user'));
+  scaleButton.addEventListener('click', () => {
+    activeFitRequest = null;
+    fitToWidth('user');
+  });
   rotateLeftButton.addEventListener('click', () => applyRotation(currentRotation - 90, 'rotate-left', 'user'));
   rotateRightButton.addEventListener('click', () => applyRotation(currentRotation + 90, 'rotate-right', 'user'));
   pagesTab.addEventListener('click', () => setNavMode('pages', 'user'));
   outlineTab.addEventListener('click', () => setNavMode('outline', 'user'));
+  container.addEventListener('wheel', recordUserScrollIntent, { passive: true });
+  container.addEventListener('touchstart', recordUserScrollIntent, { passive: true });
+  container.addEventListener('pointerdown', recordUserScrollIntent, { passive: true });
+  container.addEventListener('keydown', recordUserScrollIntent);
   container.addEventListener('scroll', scheduleScrollViewStateChange, { passive: true });
 
   if (targetWindow.ResizeObserver) {
-    resizeObserver = new targetWindow.ResizeObserver(() => scheduleFitToWidth());
+    resizeObserver = new targetWindow.ResizeObserver(() => scheduleFitAfterResize());
     resizeObserver.observe(container);
   }
 

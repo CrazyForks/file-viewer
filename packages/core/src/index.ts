@@ -810,6 +810,7 @@ export type {
 } from './features/watermark';
 export {
   buildFileViewerPrintMaskOverlayHtml,
+  applyFileViewerPagePrintMasksToHtml,
   normalizeFileViewerPrintMaskOptions,
   normalizeFileViewerPrintMaskRegion,
   FILE_VIEWER_PRINT_MASK_STYLE,

@@ -716,6 +716,8 @@ export interface FileRenderExportAdapter {
   exportHtml?: boolean;
   includeDocumentStyles?: boolean;
   beforeSnapshot?: () => Promise<void> | void;
+  /** Live page surfaces used by the interactive print-mask designer. */
+  getPrintMaskPages?: () => readonly HTMLElement[];
   printStyle?: string | ((options: FileRenderExportOptions) => Promise<string> | string);
   toHtml?: (options: FileRenderExportOptions) => Promise<string> | string;
 }
@@ -1418,6 +1420,8 @@ export interface FileViewerPrintMaskRegion {
   top: number;
   width: number;
   height: number;
+  /** Zero-based rendered page index. Omitted regions retain legacy whole-document coordinates. */
+  pageIndex?: number;
 }
 
 export interface FileViewerPrintMaskOptions {
