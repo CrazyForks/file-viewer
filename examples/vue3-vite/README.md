@@ -17,4 +17,4 @@ pnpm build
 pnpm --dir examples/vue3-vite dev
 ```
 
-The Vite plugin copies the complete local runtime asset set for private and offline deployment. `setDefaultFullAssetBaseUrl('/')` aligns the full package with the plugin's root-relative `vendor/` and `wasm/` output. For a smaller dependency graph, replace the full package with `@file-viewer/vue3` plus `preset-lite`, `preset-office`, or `preset-engineering`.
+The Vite plugin detects the full package and copies the complete local runtime asset set to `/file-viewer/` for private and offline deployment. No preset or per-renderer Worker/WASM URL is required. For a smaller dependency graph, replace the full package with `@file-viewer/vue3` plus `preset-lite`, `preset-office`, or `preset-engineering`.

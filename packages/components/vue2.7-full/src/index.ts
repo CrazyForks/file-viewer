@@ -14,6 +14,7 @@ import {
 export * from '@file-viewer/vue2.7'
 export {
   getDefaultFullAssetBaseUrl,
+  resetDefaultFullAssetBaseUrl,
   setDefaultFullAssetBaseUrl
 } from './fullAssets.js'
 

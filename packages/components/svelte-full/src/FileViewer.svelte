@@ -1,5 +1,16 @@
+<script context="module">
+  export {
+    getDefaultFullAssetBaseUrl,
+    resetDefaultFullAssetBaseUrl,
+    setDefaultFullAssetBaseUrl
+  } from '@file-viewer/preset-all'
+</script>
+
 <script>
-  import allRenderers from '@file-viewer/preset-all'
+  import allRenderers, {
+    getDefaultFullAssetBaseUrl,
+    mergeFullAssetOptions
+  } from '@file-viewer/preset-all'
   import BaseFileViewer from '@file-viewer/svelte'
 
   export let url = undefined
@@ -19,7 +30,7 @@
   function withFullViewerOptions(value = {}) {
     const { preset = allRenderers, rendererMode = 'replace', ...rest } = value
     return {
-      ...rest,
+      ...mergeFullAssetOptions(rest, getDefaultFullAssetBaseUrl()),
       preset,
       rendererMode,
       autoRenderers: rest.autoRenderers ?? true

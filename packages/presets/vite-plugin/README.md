@@ -1,13 +1,13 @@
 # @file-viewer/vite-plugin
 
-Flyfish File Viewer 的 Vite 按需 renderer 自动装配插件。它可以自动发现已安装的 `@file-viewer/preset-*` 包并注入到页面，让 Vue、React、Svelte、jQuery 和 Vanilla JS 组件无需手动传 `renderers` 就获得对应预览能力；也可以根据业务声明的文件格式生成 `virtual:file-viewer-renderers`，只 import 命中的 renderer 包，并提供 chunk 分组和离线 worker/WASM/字体资源复制能力。
+Flyfish File Viewer 的 Vite 按需 renderer 自动装配插件。它可以自动发现已安装的 `@file-viewer/preset-*` 和 `@file-viewer/*-full` 包，让 Vue、React、Svelte、jQuery 和 Vanilla JS 组件无需手动传 `renderers` 就获得对应预览能力；也可以根据业务声明的文件格式生成 `virtual:file-viewer-renderers`，只 import 命中的 renderer 包，并提供 chunk 分组和离线 worker/WASM/字体资源复制能力。
 
 ## 最快开始
 
-最快接入路径是“标准组件包 + 一个 preset + 注册一次 Vite 插件”。插件会自动发现当前项目已安装的 `@file-viewer/preset-*`，无需手写 renderer import，也无需给插件显式写 `preset:'office'`。注意：只安装 npm 包不会让 Vite 自动运行插件，仍需要在 `vite.config.ts` 中注册一次：
+需要完整格式支持时，最快路径是“full 包 + 注册一次 Vite 插件”。full 已内置 `preset-all`，不要再安装 preset；`copyAssets:true` 会在开发和构建时自动匹配 full 包，并把 Worker、WASM、字体和 vendor 文件发布到部署基址下的 `file-viewer/`（根部署即 `/file-viewer/`）：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/preset-office
+pnpm add @file-viewer/vue3-full
 pnpm add -D @file-viewer/vite-plugin
 ```
 
@@ -24,14 +24,16 @@ export default defineConfig({
 })
 ```
 
-组件默认 `autoRenderers:true`，会读取 Vite 插件注入的 preset / renderer registry。常规业务代码只要使用 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 即可获得对应能力。
+只安装 full 包而不启用资源复制，PDF Worker、CAD/Typst/Archive WASM 等格式会缺少运行文件，只能获得部分格式支持。
 
-重度用户需要最快拥有全部预览能力时，直接安装全量 preset，Vite 配置保持不变：
+需要更小体积时，改用“标准组件包 + 一个 preset”，Vite 配置保持不变。插件会自动发现已安装的 preset，无需手写 renderer import，也无需显式写 `preset:'office'`：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/preset-all
+pnpm add @file-viewer/vue3 @file-viewer/preset-office
 pnpm add -D @file-viewer/vite-plugin
 ```
+
+组件默认 `autoRenderers:true`，会读取 Vite 插件注入的 preset / renderer registry。常规业务代码只要使用 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web`、`@file-viewer/svelte`、`@file-viewer/jquery`、`@file-viewer/vue2.7` 或 `@file-viewer/vue2.6` 即可获得对应能力。
 
 可选 preset：
 
@@ -44,7 +46,7 @@ pnpm add -D @file-viewer/vite-plugin
 
 ## vite.config.ts
 
-推荐默认使用 preset 自动装配。无参或只传 `copyAssets:true` 时，插件会自动发现已安装的 `@file-viewer/preset-*`，无需写 `preset:'office'`：
+推荐默认使用 full/preset 自动装配。只传 `copyAssets:true` 时，插件会自动发现已安装的 `@file-viewer/*-full` 或 `@file-viewer/preset-*`，无需写 `preset:'all'`：
 
 ```ts
 fileViewerRenderers({
@@ -83,7 +85,7 @@ const options = {
 
 | 选项 | 说明 |
 | --- | --- |
-| `copyAssets` | `true` 或 `{ publicDir, outDir, mode }`，复制匹配 renderer 的 Worker、WASM、字体和 vendor 资源 |
+| `copyAssets` | `true` 或 `{ publicDir, outDir, mode, baseDir }`；复制匹配的 Worker、WASM、字体和 vendor 资源。检测到 full 时默认发布到 `<部署基址>/file-viewer/`，这是 full 完整格式支持的必需项；标准包/preset 保持原有根目录行为 |
 | `preset` | `'auto' | 'lite' | 'office' | 'engineering' | 'all'`；默认无显式格式时自动发现已安装 preset |
 | `autoPresets` | `true` 或 preset 列表；常用于 `scan:true` 时继续自动激活已安装 preset |
 | `formats` | 文件扩展名或格式 token，例如 `['pdf', 'docx', 'dwg']` |
@@ -95,6 +97,8 @@ const options = {
 | `missingRenderer` | `'error' | 'warn' | 'ignore'`，控制尚未提取的 renderer 映射提示方式 |
 
 如果宿主项目按包名拆分 `node_modules`，`@codemirror/*`、`@lezer/*` 和 Sandpack 之间的循环依赖可能在生产构建中表现为 `codemirror-view.* Cannot access ... before initialization`。插件默认会包裹已有的 `manualChunks` 函数，只稳定这些已知互操作 chunk，保留其它自定义分组；确实需要完全接管时可设置 `stabilizeInteropChunks:false`。
+
+`copyAssets.baseDir` 可以覆盖自动目录：必须是相对路径，不能包含 `..`；传空字符串表示显式复制到根目录。插件会同步 full 包的运行时资源根，无需再手动调用 `setDefaultFullAssetBaseUrl()`；同时自定义 `baseDir` 并设置 `inject:false` 时，才需由业务自行设置。Vite 配置了 `base:'/app/'` 时，full 包开发 URL 为 `/app/file-viewer/...`，构建文件仍位于 `outDir/file-viewer/`。
 
 如果你需要严格控制 registry，可以关闭注入并手动传入：
 
@@ -145,7 +149,7 @@ export const fileViewerFormats = ['pdf', 'docx', 'xlsx']
 
 ## 当前边界
 
-当前插件会为已经拆出的 renderer 包生成导入：Word、Spreadsheet、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw/Mermaid/PlantUML、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown/Patch/Git Bundle、图片、媒体、XMind 和 Geo。可以通过 `formats` 显式声明，也可以通过 `scan: true` 从源码 hint 自动发现；`.zipx`、`.cbz`、`.tiff`、`.mjs`、`.gv`、`.patch`、`.bundle`、`.mermaid`、`.puml`、`.mpeg` 等 core 支持的扩展也会映射到对应 renderer。开启 `copyAssets:true` 时会同时复制 Typst compiler / renderer WASM 与 `wasm/typst/fonts/` 默认字体目录。`preset: 'auto' | 'lite' | 'office' | 'engineering' | 'all'` 会导入对应 `@file-viewer/preset-*` 包；如果同时声明 `formats`，插件会在 preset 之外补充额外 renderer。
+当前插件会为已经拆出的 renderer 包生成导入：Word、Spreadsheet、PDF、OFD、Presentation、CAD、Draw.io/Excalidraw/Mermaid/PlantUML、3D、Data、EDA、Typst、压缩包、邮件、EPUB、代码/Markdown/Patch/Git Bundle、图片、媒体、XMind 和 Geo。可以通过 `formats` 显式声明，也可以通过 `scan: true` 从源码 hint 自动发现；`.zipx`、`.cbz`、`.tiff`、`.mjs`、`.gv`、`.patch`、`.bundle`、`.mermaid`、`.puml`、`.mpeg` 等 core 支持的扩展也会映射到对应 renderer。开启 `copyAssets:true` 时会识别已安装能力；full 包把匹配资源复制到开发 `publicDir/file-viewer/` 与构建 `outDir/file-viewer/`，标准包/preset 维持根目录行为，包括 Typst compiler / renderer WASM 与默认字体目录。`preset: 'auto' | 'lite' | 'office' | 'engineering' | 'all'` 会导入对应 `@file-viewer/preset-*` 包；如果同时声明 `formats`，插件会在 preset 之外补充额外 renderer。
 
 ## 文档
 

@@ -1,4 +1,8 @@
-import allRenderers from '@file-viewer/preset-all'
+import allRenderers, {
+  getDefaultFullAssetBaseUrl,
+  mergeFullAssetOptions,
+  setDefaultFullAssetBaseUrl
+} from '@file-viewer/preset-all'
 import FlyfishFileViewerWeb, {
   createViewerControllerHandle,
   FileViewerElement,
@@ -15,21 +19,13 @@ import type {
 
 export * from '@file-viewer/web'
 export { createViewerControllerHandle, FileViewerElement, FILE_VIEWER_ELEMENT_TAG }
+export {
+  getDefaultFullAssetBaseUrl,
+  resetDefaultFullAssetBaseUrl,
+  setDefaultFullAssetBaseUrl
+} from '@file-viewer/preset-all'
 
 export const fileViewerFullPreset = allRenderers
-
-let defaultFullAssetBaseUrl = detectCurrentScriptBaseUrl()
-
-function normalizeAssetBaseUrl(baseUrl?: string | URL | null) {
-  if (!baseUrl) {
-    return undefined
-  }
-  const value = String(baseUrl).trim()
-  if (!value) {
-    return undefined
-  }
-  return value.endsWith('/') ? value : `${value}/`
-}
 
 function detectCurrentScriptBaseUrl() {
   if (typeof document === 'undefined') {
@@ -52,102 +48,27 @@ function detectCurrentScriptBaseUrl() {
   }
 }
 
-function createFullAssetOptions(assetBaseUrl?: string | URL | null): ViewerOptions {
-  const baseUrl = normalizeAssetBaseUrl(assetBaseUrl)
-  if (!baseUrl) {
-    return {}
-  }
-  return {
-    archive: {
-      workerUrl: `${baseUrl}vendor/libarchive/worker-bundle.js`,
-      wasmUrl: `${baseUrl}vendor/libarchive/libarchive.wasm`
-    },
-    cad: {
-      wasmPath: `${baseUrl}wasm/cad/`,
-      workerUrl: `${baseUrl}wasm/cad/dwg-worker.js`,
-      dwfWasmUrl: `${baseUrl}wasm/cad/dwfv-render.wasm`
-    },
-    data: {
-      sqlWasmUrl: `${baseUrl}wasm/data/sql-wasm.wasm`
-    },
-    docx: {
-      workerUrl: `${baseUrl}vendor/docx/docx.worker.js`,
-      workerJsZipUrl: `${baseUrl}vendor/docx/jszip.min.js`
-    },
-    drawing: {
-      viewerScriptUrl: `${baseUrl}vendor/drawio/viewer-static.min.js`
-    },
-    pdf: {
-      workerUrl: `${baseUrl}vendor/pdf/pdf.worker.mjs`,
-      cMapUrl: `${baseUrl}vendor/pdf/cmaps/`,
-      wasmUrl: `${baseUrl}vendor/pdf/wasm/`,
-      standardFontDataUrl: `${baseUrl}vendor/pdf/standard_fonts/`,
-      cjkFontFallbackPath: `${baseUrl}vendor/pdf/fonts/`
-    },
-    presentation: {
-      workerUrl: `${baseUrl}vendor/pptx/pptx.worker.js`
-    },
-    spreadsheet: {
-      workerUrl: `${baseUrl}vendor/xlsx/sheet.worker.js`
-    },
-    typst: {
-      compilerWasmUrl: `${baseUrl}wasm/typst/typst_ts_web_compiler_bg.wasm`,
-      rendererWasmUrl: `${baseUrl}wasm/typst/typst_ts_renderer_bg.wasm`,
-      fontAssetsUrl: `${baseUrl}wasm/typst/fonts/`
-    }
-  }
-}
-
-function mergeNestedOptions<Options extends object>(
-  defaults: Options | undefined,
-  overrides: Options | undefined
-): Options {
-  if (!defaults) {
-    return overrides as Options
-  }
-  if (!overrides) {
-    return defaults
-  }
-  return {
-    ...defaults,
-    ...overrides
-  } as Options
-}
-
-export function getDefaultFullAssetBaseUrl() {
-  return defaultFullAssetBaseUrl
-}
-
-export function setDefaultFullAssetBaseUrl(assetBaseUrl?: string | URL | null) {
-  defaultFullAssetBaseUrl = normalizeAssetBaseUrl(assetBaseUrl)
+const currentScriptBaseUrl = detectCurrentScriptBaseUrl()
+if (currentScriptBaseUrl) {
+  setDefaultFullAssetBaseUrl(currentScriptBaseUrl)
 }
 
 export function withFullViewerOptions(
   options: ViewerOptions = {},
-  assetBaseUrl: string | URL | null | undefined = defaultFullAssetBaseUrl
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
 ): ViewerOptions {
   const { preset = allRenderers, rendererMode = 'replace', ...rest } = options
-  const assetOptions = createFullAssetOptions(assetBaseUrl)
   return {
-    ...rest,
+    ...mergeFullAssetOptions(rest, assetBaseUrl),
     preset,
     rendererMode,
-    autoRenderers: rest.autoRenderers ?? true,
-    archive: mergeNestedOptions(assetOptions.archive, rest.archive),
-    cad: mergeNestedOptions(assetOptions.cad, rest.cad),
-    data: mergeNestedOptions(assetOptions.data, rest.data),
-    docx: mergeNestedOptions(assetOptions.docx, rest.docx),
-    drawing: mergeNestedOptions(assetOptions.drawing, rest.drawing),
-    pdf: mergeNestedOptions(assetOptions.pdf, rest.pdf),
-    presentation: mergeNestedOptions(assetOptions.presentation, rest.presentation),
-    spreadsheet: mergeNestedOptions(assetOptions.spreadsheet, rest.spreadsheet),
-    typst: mergeNestedOptions(assetOptions.typst, rest.typst)
+    autoRenderers: rest.autoRenderers ?? true
   }
 }
 
 export function withFullMountOptions(
   options: ViewerMountOptions = {},
-  assetBaseUrl: string | URL | null | undefined = defaultFullAssetBaseUrl
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
 ): ViewerMountOptions {
   return {
     ...options,

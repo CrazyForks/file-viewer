@@ -22,6 +22,8 @@ npm install @file-viewer/svelte-full
 
 `@file-viewer/svelte-full` 默认启用 `@file-viewer/preset-all`，组件、action、事件和 controller API 与标准包一致。
 
+包根入口的默认导出固定为 Svelte 组件；action 和底层 controller helper 分别从明确的 `/action`、`/controller` 子路径导入。
+
 ## 组件用法
 
 ```svelte
@@ -77,7 +79,7 @@ full 包写法只替换包名，不需要手动 import preset：
 
 ```svelte
 <script lang="ts">
-  import { fileViewer } from '@file-viewer/svelte'
+  import { fileViewer } from '@file-viewer/svelte/action'
   import officePreset from '@file-viewer/preset-office'
 
   const viewerOptions = {
@@ -91,6 +93,12 @@ full 包写法只替换包名，不需要手动 import preset：
 </script>
 
 <div use:fileViewer={viewerOptions} style="height: 720px"></div>
+```
+
+Full 包的 action 使用对应的明确入口：
+
+```ts
+import { fileViewer } from '@file-viewer/svelte-full/action'
 ```
 
 ## Vite 自动装配

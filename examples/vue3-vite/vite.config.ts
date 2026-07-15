@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [
     vue(),
     fileViewerRenderers({
-      preset: 'all',
       copyAssets: true
     })
   ]

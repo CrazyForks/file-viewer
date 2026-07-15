@@ -1,4 +1,7 @@
-import allRenderers from '@file-viewer/preset-all'
+import allRenderers, {
+  getDefaultFullAssetBaseUrl,
+  mergeFullAssetOptions
+} from '@file-viewer/preset-all'
 import installBaseJQueryFileViewer, {
   mountViewer as mountBaseViewer,
   type JQueryFileViewerMethod,
@@ -8,6 +11,11 @@ import installBaseJQueryFileViewer, {
 } from '@file-viewer/jquery'
 
 export * from '@file-viewer/jquery'
+export {
+  getDefaultFullAssetBaseUrl,
+  resetDefaultFullAssetBaseUrl,
+  setDefaultFullAssetBaseUrl
+} from '@file-viewer/preset-all'
 
 export const fileViewerFullPreset = allRenderers
 
@@ -22,20 +30,26 @@ type FileViewerPlugin = ((
   __flyfishFileViewerFull?: true
 }
 
-export function withFullViewerOptions(options: ViewerOptions = {}): ViewerOptions {
+export function withFullViewerOptions(
+  options: ViewerOptions = {},
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
+): ViewerOptions {
   const { preset = allRenderers, rendererMode = 'replace', ...rest } = options
   return {
-    ...rest,
+    ...mergeFullAssetOptions(rest, assetBaseUrl),
     preset,
     rendererMode,
     autoRenderers: rest.autoRenderers ?? true
   }
 }
 
-export function withFullMountOptions(options: ViewerMountOptions = {}): ViewerMountOptions {
+export function withFullMountOptions(
+  options: ViewerMountOptions = {},
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
+): ViewerMountOptions {
   return {
     ...options,
-    options: withFullViewerOptions(options.options)
+    options: withFullViewerOptions(options.options, assetBaseUrl)
   }
 }
 

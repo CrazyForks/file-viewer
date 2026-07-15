@@ -1,4 +1,7 @@
-import allRenderers from '@file-viewer/preset-all'
+import allRenderers, {
+  getDefaultFullAssetBaseUrl,
+  mergeFullAssetOptions
+} from '@file-viewer/preset-all'
 import {
   FileViewer as BaseFileViewer,
   useFileViewer as useBaseFileViewer,
@@ -11,23 +14,34 @@ import {
 import { createElement, forwardRef, useMemo } from 'react'
 
 export * from '@file-viewer/react'
+export {
+  getDefaultFullAssetBaseUrl,
+  resetDefaultFullAssetBaseUrl,
+  setDefaultFullAssetBaseUrl
+} from '@file-viewer/preset-all'
 
 export const fileViewerFullPreset = allRenderers
 
-export function withFullViewerOptions(options: ViewerOptions = {}): ViewerOptions {
+export function withFullViewerOptions(
+  options: ViewerOptions = {},
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
+): ViewerOptions {
   const { preset = allRenderers, rendererMode = 'replace', ...rest } = options
   return {
-    ...rest,
+    ...mergeFullAssetOptions(rest, assetBaseUrl),
     preset,
     rendererMode,
     autoRenderers: rest.autoRenderers ?? true
   }
 }
 
-export function withFullMountOptions(options: ViewerMountOptions = {}): ViewerMountOptions {
+export function withFullMountOptions(
+  options: ViewerMountOptions = {},
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
+): ViewerMountOptions {
   return {
     ...options,
-    options: withFullViewerOptions(options.options)
+    options: withFullViewerOptions(options.options, assetBaseUrl)
   }
 }
 

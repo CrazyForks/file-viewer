@@ -22,6 +22,8 @@ npm install @file-viewer/svelte-full
 
 `@file-viewer/svelte-full` enables `@file-viewer/preset-all` automatically while keeping the same component, action, event, and controller APIs.
 
+The package-root default export is the Svelte component. Import actions and lower-level controller helpers only from the explicit `/action` and `/controller` subpaths.
+
 ## Component Usage
 
 ```svelte
@@ -77,7 +79,7 @@ For pages that do not want a component instance, mount the action on any existin
 
 ```svelte
 <script lang="ts">
-  import { fileViewer } from '@file-viewer/svelte'
+  import { fileViewer } from '@file-viewer/svelte/action'
   import officePreset from '@file-viewer/preset-office'
 
   const viewerOptions = {
@@ -91,6 +93,12 @@ For pages that do not want a component instance, mount the action on any existin
 </script>
 
 <div use:fileViewer={viewerOptions} style="height: 720px"></div>
+```
+
+The full-package action uses the matching explicit entry:
+
+```ts
+import { fileViewer } from '@file-viewer/svelte-full/action'
 ```
 
 ## Vite Auto Assembly

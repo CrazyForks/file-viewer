@@ -76,7 +76,9 @@ for (const definition of DEFAULT_RENDERER_DEFINITIONS) {
   }
 }
 
-let defaultFullAssetBaseUrl = detectCurrentScriptBaseUrl()
+const DEFAULT_FULL_ASSET_BASE_URL = '/file-viewer/'
+const initialFullAssetBaseUrl = detectCurrentScriptBaseUrl() || DEFAULT_FULL_ASSET_BASE_URL
+let defaultFullAssetBaseUrl: string | undefined = initialFullAssetBaseUrl
 
 function normalizeAssetBaseUrl(baseUrl?: string | URL | null) {
   if (!baseUrl) {
@@ -195,6 +197,10 @@ export function getDefaultFullAssetBaseUrl() {
 
 export function setDefaultFullAssetBaseUrl(assetBaseUrl?: string | URL | null) {
   defaultFullAssetBaseUrl = normalizeAssetBaseUrl(assetBaseUrl)
+}
+
+export function resetDefaultFullAssetBaseUrl() {
+  defaultFullAssetBaseUrl = initialFullAssetBaseUrl
 }
 
 export function getFullRendererScriptUrl(
@@ -318,6 +324,9 @@ export function withFullViewerOptions(
 ): ViewerOptions {
   const { preset = fileViewerFullPreset, rendererMode = 'replace', ...rest } = options
   const assetOptions = createFullAssetOptions(assetBaseUrl)
+  const pdfDefaults = normalizeAssetBaseUrl(rest.pdf?.assetBaseUrl)
+    ? undefined
+    : assetOptions.pdf
   return {
     ...rest,
     preset,
@@ -328,7 +337,7 @@ export function withFullViewerOptions(
     data: mergeNestedOptions(assetOptions.data, rest.data),
     docx: mergeNestedOptions(assetOptions.docx, rest.docx),
     drawing: mergeNestedOptions(assetOptions.drawing, rest.drawing),
-    pdf: mergeNestedOptions(assetOptions.pdf, rest.pdf),
+    pdf: mergeNestedOptions(pdfDefaults, rest.pdf),
     presentation: mergeNestedOptions(assetOptions.presentation, rest.presentation),
     spreadsheet: mergeNestedOptions(assetOptions.spreadsheet, rest.spreadsheet),
     typst: mergeNestedOptions(assetOptions.typst, rest.typst)
@@ -412,6 +421,7 @@ const FlyfishFileViewerWebFull = {
   getDefaultFullAssetBaseUrl,
   getFullRendererScriptUrl,
   preloadFullRenderer,
+  resetDefaultFullAssetBaseUrl,
   setDefaultFullAssetBaseUrl,
   withFullViewerOptions,
   withFullMountOptions,

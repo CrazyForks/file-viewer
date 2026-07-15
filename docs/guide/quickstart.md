@@ -7,14 +7,15 @@
   Pick the native component package first, then add the preset or renderer that matches your file types; after that, tune on-demand assembly, offline assets, and toolbar behavior.
 </p>
 
-## Four-step Integration
+## Five-step Integration
 
 | Step | Decision | Fast answer |
 | --- | --- | --- |
-| 1 | Pick the component package | Use standard packages such as `@file-viewer/web`, `@file-viewer/vue3`, or `@file-viewer/react` for the lightest entry; use full packages such as `@file-viewer/web-full`, `@file-viewer/vue3-full`, or `@file-viewer/react-full` for one-step complete capability. |
+| 1 | Pick the component package | Use standard packages such as `@file-viewer/web`, `@file-viewer/vue3`, or `@file-viewer/react` for the lightest entry; full packages include the complete renderer matrix. |
 | 2 | Pick the capability layer | Standard packages receive `preset-lite`, `preset-office`, `preset-engineering`, or `preset-all` through options; full packages enable the complete matrix by default. |
-| 3 | Pass the source and options | Use `url="/files/demo.pdf"` or a real `File`; standard packages pass a preset through `options`, while full packages can start with theme, toolbar, watermark, and business options only. |
-| 4 | Confirm style isolation | Prefer the Web Component / full default Shadow DOM when host CSS is uncontrolled; framework packages can pass `options.styleIsolation:'shadow'`. |
+| 3 | Publish runtime assets | Full packages use `copyAssets:true` with Vite; other build tools run `npx --no-install file-viewer-copy-assets ./public/file-viewer` so every Worker/WASM format is available. |
+| 4 | Pass the source and options | Use `url="/files/demo.pdf"` or a real `File`; standard packages pass a preset through `options`, while full packages can start with theme, toolbar, watermark, and business options only. |
+| 5 | Confirm style isolation | Prefer the Web Component / full default Shadow DOM when host CSS is uncontrolled; framework packages can pass `options.styleIsolation:'shadow'`. |
 
 This page keeps the shortest runnable paths. See [Component Options](/guide/usage) for the full API, renderer package matrix, toolbar, watermark, print, search, lifecycle, and guard options. See [Style Isolation And Customization](/guide/style-isolation) for Shadow DOM, tokens, and parts. See [Modular Assembly](/guide/on-demand-renderers) for on-demand renderers and the Vite plugin.
 
@@ -26,12 +27,12 @@ This page keeps the shortest runnable paths. See [Component Options](/guide/usag
 
 Installing a standard component package such as `@file-viewer/vue3`, `@file-viewer/react`, or `@file-viewer/web` is the lightest path. It gives you the native framework component, types, controller APIs, and the core foundation; it does not install every heavy PDF, Office, CAD, Typst, archive, or engineering renderer by default.
 
-If you want to validate the complete official demo capability first, use a full package. Full packages import `@file-viewer/preset-all` for you, keep the same component API, and enable the full format matrix by default. For CDN / script-tag pages, prefer `@file-viewer/web-full`: jsDelivr / unpkg distribute the complete IIFE directly from npm, so the host application does not need to carry the full dependency set; the script also resolves bundled workers, WASM files, fonts, and vendor assets relative to its own URL. For intranet, strict-CSP, or fully offline deployments, mirror those assets to your own static domain.
+If you want to validate the complete official demo capability first, use a full package. Full packages already include `@file-viewer/preset-all`; do not install or pass another preset. Complete npm support also includes matching Worker, WASM, font, and vendor assets: Vite publishes them automatically, while other build tools run the same-version CLI included by every full package. For CDN / script-tag pages, prefer `@file-viewer/web-full`: direct jsDelivr/unpkg usage, or an intact mirror of the complete `dist/` directory, resolves every asset relative to the script URL and needs no copy command.
 
 | Mode | Install | Notes |
 | --- | --- | --- |
 | Light standard package | `npm i @file-viewer/vue3 @file-viewer/preset-office` | Pick exactly the preset / renderer your product needs |
-| Complete full package | `npm i @file-viewer/vue3-full` | Enables `preset-all` by default for all-format workbenches |
+| Complete full package | `npm i @file-viewer/vue3-full` | Includes `preset-all`; publish runtime assets under `<deployment-base>/file-viewer/` for complete support |
 | CDN full | `https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js` | No local install, ideal for script-tag validation |
 
 Add a preset or a single renderer package for the file formats your product actually needs:
@@ -100,9 +101,9 @@ export const viewerOptions = {
 
 If a file extension is supported but the required renderer is not assembled, the viewer shows an install-oriented hint instead of a vague unsupported state.
 
-### One-Step Setup: Full Packages
+### Complete Setup: Full Packages
 
-Full packages are for teams that want the complete format experience first and can optimize package size later. They expose the same props, events, controller APIs, and options as standard packages, but `preset-all` is enabled by default:
+Full packages are for teams that want the complete format experience first and can optimize package size later. They expose the same props, events, controller APIs, and options as standard packages, with `preset-all` built in and enabled by default. Do not install another preset:
 
 | Ecosystem | Full package | Standard package |
 | --- | --- | --- |
@@ -119,17 +120,63 @@ Full packages are for teams that want the complete format experience first and c
 npm install @file-viewer/vue3-full
 ```
 
-```ts
-import FileViewer from '@file-viewer/vue3-full'
-```
-
 ```vue
-<file-viewer url="/files/contract.pdf" :options="{ theme: 'light', toolbar: { position: 'bottom-right' } }" />
+<script setup lang="ts">
+import { FileViewer } from '@file-viewer/vue3-full'
+</script>
+
+<template>
+  <FileViewer url="/files/contract.pdf" :options="{ theme: 'light' }" />
+</template>
 ```
 
-React, Vue 2, Svelte, and jQuery keep the same component shape; only the package name changes.
+Each framework keeps its native integration API; do not copy the Vue component syntax across stacks:
 
-The Vue 3 / Vue 2.7 / Vue 2.6 full packages default their runtime asset base to `/file-viewer/` and pre-fill Archive, PDF, DOCX, Excel, PPTX, CAD, Typst, Draw.io, and SQLite asset URLs. After publishing the `vendor/`, `wasm/`, and related directories copied by `file-viewer-copy-assets` under `/file-viewer/`, `@file-viewer/vue3-full`, `@file-viewer/vue2.7-full`, and `@file-viewer/vue2.6-full` do not need hand-written `archive.workerUrl` / `archive.wasmUrl` values.
+```ts
+// Vue 2.7; use @file-viewer/vue2.6-full with Vue 2.6.
+import Vue from 'vue'
+import FileViewerPlugin from '@file-viewer/vue2.7-full'
+Vue.use(FileViewerPlugin)
+```
+
+```tsx
+import FileViewer from '@file-viewer/react-full'
+export const Preview = () => <FileViewer url="/files/contract.pdf" />
+```
+
+```svelte
+<script>
+  import FileViewer from '@file-viewer/svelte-full'
+</script>
+<FileViewer url="/files/contract.pdf" />
+```
+
+```ts
+import $ from 'jquery'
+import installFileViewer from '@file-viewer/jquery-full'
+installFileViewer($)
+$('#viewer').fileViewer({ url: '/files/contract.pdf' })
+```
+
+Every full package defaults its runtime asset base to `file-viewer/` under the deployment base (`/file-viewer/` at the origin root) and pre-fills Archive, PDF, DOCX, Excel, PPTX, CAD, Typst, Draw.io, and SQLite asset URLs. Vite projects register the plugin once to publish complete assets in development and production:
+
+```ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [fileViewerRenderers({ copyAssets: true })]
+}
+```
+
+Webpack, Rspack, Rollup, Vue CLI, Umi, and classic multi-page projects run the same-version CLI included by the full package:
+
+```bash
+npx --no-install file-viewer-copy-assets ./public/file-viewer
+```
+
+The complete `web-full` `dist/` already carries assets and can be deployed without this command; entry-only builds run the included CLI.
+
+Without `file-viewer/` under the deployment base, lightweight formats and a few compatibility paths may still work, but CAD, Typst, RAR/7z/encrypted archives, Draw.io, SQLite, PDF CMaps/fonts, and similar pipelines are not complete.
 
 If your static prefix is different, set the default base once during application startup:
 
@@ -143,7 +190,7 @@ Explicit options such as `options.archive.workerUrl` or `options.pdf.workerUrl` 
 
 ### CDN Full: Complete Script-Tag Trial
 
-No-build pages can load the full CDN bundle directly. It avoids local package installation and is useful for demos, POCs, and classic admin pages:
+No-build pages can load the full CDN bundle directly. Direct jsDelivr/unpkg usage, or an intact deployment of the complete `dist/` directory under one static prefix, needs no asset copy command. Copying only the entry IIFE is not a complete deployment.
 
 ```html
 <div id="viewer" style="height:720px"></div>
@@ -174,7 +221,7 @@ The Custom Element route is available as well:
 
 ### Vite Plugin: Zero-Config Assembly
 
-In Vite projects, install and register the plugin in addition to a preset. Once `fileViewerRenderers({ copyAssets:true })` is in `vite.config.ts`, it auto-discovers installed `@file-viewer/preset-*` packages, injects the renderer virtual module, and copies Worker / WASM / font / vendor assets. Application code no longer needs to import the preset manually:
+In Vite projects, standard component packages install one `@file-viewer/preset-*`; full packages already include `preset-all`. Once `fileViewerRenderers({ copyAssets:true })` is registered, it recognizes the installed full package or preset. Full assets publish under `<deployment-base>/file-viewer/`; standard packages/presets keep their existing root placement. Application code does not import another preset:
 
 ```bash
 pnpm add @file-viewer/vue3 @file-viewer/preset-office
@@ -195,10 +242,10 @@ export default {
 }
 ```
 
-Heavy users can switch to the complete preset while keeping the same Vite config:
+For complete capability, switch to a full package and remove the separate preset:
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/preset-all
+pnpm add @file-viewer/vue3-full
 pnpm add -D @file-viewer/vite-plugin
 ```
 
@@ -206,7 +253,7 @@ Use explicit options only when you need customization:
 
 | Option | Best fit |
 | --- | --- |
-| `copyAssets:true` | Copies Worker, WASM, PDF font, CAD, Typst, Archive, Data, and other offline assets; recommended for production and intranet deployments |
+| `copyAssets:true` | Recognizes full packages / presets; full packages publish under `<deployment-base>/file-viewer/` in dev and production, while standard packages/presets keep root placement; required for full packages |
 | `formats` / `renderers` | Generates exact renderer imports when you do not use a preset, or when a preset needs a few extra formats |
 | `scan:true` | Scans source hints such as `fileViewerFormats`, `data-file-viewer-formats`, and upload `accept` attributes |
 | `preset:'auto'` / `autoPresets:true` | Keeps installed preset auto-discovery active while `scan:true` is enabled |
@@ -374,15 +421,17 @@ const file = new File([blob], 'contract.pdf', { type: blob.type })
 
 Passing a filename with an extension is important because the viewer uses it to pick the renderer.
 
-## Self-host Worker And WASM Assets
+## Full-Package Worker And WASM Assets
 
-Most web apps can install the package and run. For intranet, strict CSP, offline, or custom static-prefix deployments, copy viewer assets into your app:
+The renderer matrix alone is not the complete full-package contract. Non-Vite full packages run their included same-version CLI and serve the output from `file-viewer/` under the deployment base:
 
 ```bash
-npx --yes file-viewer-copy-assets ./public/file-viewer
+npx --no-install file-viewer-copy-assets ./public/file-viewer
 ```
 
-The copy command verifies PDF, archive, DOCX, spreadsheet, Draw.io, CAD, Typst, SQLite, Worker, WASM, and vendor assets. Runtime options let you point each renderer to your own static paths.
+`web-full` may instead deploy its complete `dist/`, which already contains the assets.
+
+The command verifies PDF, archive, DOCX, spreadsheet, Draw.io, CAD, Typst, SQLite, Worker, WASM, font, and vendor assets and writes `flyfish-viewer-assets.json`. Use `setDefaultFullAssetBaseUrl()` only when the public URL differs. Direct CDN `web-full`, or an intact mirror of its complete `dist/`, is the no-copy exception.
 
 ## Zero-Dependency Integration: Official Demo iframe
 

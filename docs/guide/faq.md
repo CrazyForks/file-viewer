@@ -10,25 +10,31 @@ Confirm the host container has a stable height and the file has a recognizable e
 
 ## A worker or WASM file does not load
 
-Run:
+Full packages include `preset-all`, but their Worker, WASM, font, and vendor files still have to be published. Without them, only part of the format matrix can work.
+
+- Vite: enable `fileViewerRenderers({ copyAssets: true })`; dev and build publish matching full-package assets under `<deployment-base>/file-viewer/`.
+- Webpack, Vue CLI, and other tools: run the same-version binary included by the full package:
 
 ```bash
-npx --yes file-viewer-copy-assets ./public/file-viewer
+npx --no-install file-viewer-copy-assets ./public/file-viewer
 ```
 
-Then confirm your server returns the correct MIME type for `.wasm`, `.js`, fonts, and JSON manifests. Strict CSP deployments should serve all viewer assets from the same trusted origin.
+- Custom static prefix: call the full package's `setDefaultFullAssetBaseUrl()` during startup.
+- CDN/IIFE: deploying the complete `@file-viewer/web-full/dist/` directory needs no extra copy. An entry-only build can run the included CLI.
 
-## Why does vue-full still say the libarchive Worker did not load?
+Do not install another `preset-all` or asset copier version beside a full package. Then confirm your server returns the correct MIME type for `.wasm`, `.js`, fonts, and JSON manifests. Strict CSP deployments should serve all viewer assets from the same trusted origin.
 
-Since `2.1.20`, `@file-viewer/vue3-full`, `@file-viewer/vue2.7-full`, and `@file-viewer/vue2.6-full` point Archive, PDF, DOCX, Excel, PPTX, CAD, Typst, Draw.io, SQLite, and related offline assets to `/file-viewer/` by default. In production, confirm these two URLs return the real JavaScript/WASM files instead of a 404 page or an SPA HTML fallback:
+## Why does a full package still say the libarchive Worker did not load?
+
+Every full package points Archive, PDF, DOCX, Excel, PPTX, CAD, Typst, Draw.io, SQLite, and related offline assets to `file-viewer/` under the deployment base by default. For a root deployment, confirm these example URLs return the real JavaScript/WASM files instead of a 404 page or an SPA HTML fallback:
 
 - `/file-viewer/vendor/libarchive/worker-bundle.js`
 - `/file-viewer/vendor/libarchive/libarchive.wasm`
 
-If your static prefix is not `/file-viewer/`, set it once during startup:
+If assets do not live at `file-viewer/` under the deployment base, set their location once during startup:
 
 ```ts
-import { setDefaultFullAssetBaseUrl } from '@file-viewer/vue3-full'
+import { setDefaultFullAssetBaseUrl } from '@file-viewer/react-full'
 
 setDefaultFullAssetBaseUrl('/your-static-prefix/')
 ```
@@ -66,7 +72,7 @@ pnpm verify:npm-install-smoke
 
 ## Can I deploy without public CDNs?
 
-Yes. Runtime assets are designed to be self-hosted. Draw.io, Typst, CAD, Archive, PDF, DOCX, Spreadsheet, SQLite, and other heavy assets can be copied into your own static directory.
+Yes. Runtime assets are designed to be self-hosted. Full packages publish Draw.io, Typst, CAD, Archive, PDF, DOCX, Spreadsheet, SQLite, and other heavy assets through the Vite plugin or their included same-version `file-viewer-copy-assets` binary; `web-full` can instead deploy its complete `dist/`.
 
 ## Why does every format not expose every toolbar action?
 

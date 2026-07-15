@@ -9,6 +9,7 @@ import {
   getFullRendererScriptUrl,
   mountViewer,
   preloadFullRenderer,
+  resetDefaultFullAssetBaseUrl,
   setDefaultFullAssetBaseUrl,
   withFullMountOptions,
   withFullViewerOptions
@@ -25,6 +26,7 @@ const FlyfishFileViewerWebFull = {
   getFullRendererScriptUrl,
   mountViewer,
   preloadFullRenderer,
+  resetDefaultFullAssetBaseUrl,
   setDefaultFullAssetBaseUrl,
   withFullMountOptions,
   withFullViewerOptions
@@ -54,6 +56,7 @@ export {
   getFullRendererScriptUrl,
   mountViewer,
   preloadFullRenderer,
+  resetDefaultFullAssetBaseUrl,
   setDefaultFullAssetBaseUrl,
   withFullMountOptions,
   withFullViewerOptions

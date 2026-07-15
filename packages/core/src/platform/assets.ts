@@ -72,9 +72,14 @@ const resolveFileViewerScriptAssetBaseCandidate = (
     const isSourceModule = /\/(?:src|node_modules|@fs|@id|@vite)(?:\/|$)/i.test(
       scriptUrl.pathname
     );
-    const assetDirectory = scriptUrl.pathname.match(
-      /^(.*\/)(?:assets|static|js)\/.+\.(?:m?js)$/i
-    );
+    // Start at the first emitted asset directory so nested layouts such as
+    // `static/js` and `assets/js/chunks` resolve to the deployment root.
+    // Source trees are excluded above and must never become a public base.
+    const assetDirectory = isSourceModule
+      ? null
+      : scriptUrl.pathname.match(
+          /^(.*?\/)(?:assets|static|js)(?:\/[^/]*)*\/[^/]+\.(?:m?js)$/i
+        );
     const entryScript = isSourceModule
       ? null
       : scriptUrl.pathname.match(

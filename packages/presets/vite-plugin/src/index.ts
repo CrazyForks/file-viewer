@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
-import { copyFile, cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { copyFile, cp, mkdir, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { dirname, extname, isAbsolute, join, resolve, sep } from 'node:path'
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import type { Alias, AliasOptions, Plugin, ResolvedConfig, UserConfig } from 'vite'
 
 export type FileViewerVitePreset = 'all' | 'lite' | 'office' | 'engineering'
@@ -38,6 +38,14 @@ export interface FileViewerCopyAssetsOptions {
    * Directory used after production build. Defaults to build.outDir.
    */
   outDir?: string
+  /**
+   * Directory below publicDir/outDir where assets are published. When omitted,
+   * projects with an installed @file-viewer/*-full package use `file-viewer`;
+   * other projects keep the existing output-root layout. Use an empty string
+   * to explicitly publish at the output root. For full packages, the injected
+   * runtime module keeps the default asset base aligned with this directory.
+   */
+  baseDir?: string
   /**
    * Copy during dev server startup, build closeBundle, or both.
    */
@@ -136,6 +144,7 @@ interface AssetCopyResult {
   id: string
   to: string
   copied: boolean
+  required?: boolean
   reason?: string
   sourcePackage?: string
   sourceVersion?: string
@@ -528,6 +537,17 @@ const presetModules: Record<FileViewerVitePreset, PresetModuleDescriptor> = {
   }
 }
 
+const fileViewerFullPackages = [
+  '@file-viewer/react-full',
+  '@file-viewer/react-legacy-full',
+  '@file-viewer/vue3-full',
+  '@file-viewer/vue2.7-full',
+  '@file-viewer/vue2.6-full',
+  '@file-viewer/web-full',
+  '@file-viewer/jquery-full',
+  '@file-viewer/svelte-full'
+] as const
+
 // Vite dep optimization rewrites import.meta.url into node_modules/.vite/deps
 // and can trigger full-preset dev-server re-optimization reloads. Keep File
 // Viewer packages out of dep optimization while still optimizing their
@@ -537,14 +557,7 @@ const fileViewerOptimizationExcludedPackages = [
   '@file-viewer/pptx',
   ...rendererModules.map((descriptor) => descriptor.packageName),
   ...Object.values(presetModules).map((preset) => preset.packageName),
-  '@file-viewer/react-full',
-  '@file-viewer/react-legacy-full',
-  '@file-viewer/vue3-full',
-  '@file-viewer/vue2.7-full',
-  '@file-viewer/vue2.6-full',
-  '@file-viewer/web-full',
-  '@file-viewer/jquery-full',
-  '@file-viewer/svelte-full'
+  ...fileViewerFullPackages
 ] as const
 
 const cjsInteropPackages = [
@@ -828,10 +841,15 @@ function expandDescriptorRendererIds(ids: readonly string[]) {
   )
 }
 
+type FullAssetRuntimeBase =
+  | { kind: 'literal'; url: string }
+  | { kind: 'deployment'; encodedBaseDir: string }
+
 function renderVirtualModule(
   selection: RendererSelection,
   formats: readonly string[],
-  autoPresetIds: readonly FileViewerVitePreset[] = []
+  autoPresetIds: readonly FileViewerVitePreset[] = [],
+  fullAssetBase: FullAssetRuntimeBase | null = null
 ) {
   const presetModule = selection.preset ? presetModules[selection.preset] : null
   const autoPresetModules = autoPresetIds
@@ -879,15 +897,39 @@ function renderVirtualModule(
         ? autoPresetModules[0].id
         : '@file-viewer/vite-plugin:configured'
 
+  const fullAssetBaseImport = fullAssetBase
+    ? fullAssetBase.kind === 'deployment'
+      ? `import { DEFAULT_FULL_ASSET_BASE_PATH, resolveDefaultFullAssetBaseUrl, setDefaultFullAssetBaseUrl } from '@file-viewer/preset-all';`
+      : `import { setDefaultFullAssetBaseUrl } from '@file-viewer/preset-all';`
+    : null
+  const autoRegistrationImport = rendererNames.length
+    ? `import { registerFileViewerAutoRendererPreset } from '@file-viewer/core';`
+    : null
+  const fullAssetBaseSetup = !fullAssetBase
+    ? []
+    : fullAssetBase.kind === 'literal'
+      ? [`setDefaultFullAssetBaseUrl(${JSON.stringify(fullAssetBase.url)});`, '']
+      : [
+          'const fileViewerDefaultFullAssetBaseUrl = resolveDefaultFullAssetBaseUrl();',
+          'const fileViewerDeploymentBaseUrl = fileViewerDefaultFullAssetBaseUrl.endsWith(DEFAULT_FULL_ASSET_BASE_PATH)',
+          '  ? fileViewerDefaultFullAssetBaseUrl.slice(0, -DEFAULT_FULL_ASSET_BASE_PATH.length)',
+          '  : fileViewerDefaultFullAssetBaseUrl;',
+          `setDefaultFullAssetBaseUrl(fileViewerDeploymentBaseUrl + ${JSON.stringify(fullAssetBase.encodedBaseDir)});`,
+          ''
+        ]
+
   return [
-    `import { registerFileViewerAutoRendererPreset } from '@file-viewer/core';`,
+    ...[autoRegistrationImport, fullAssetBaseImport].filter(Boolean),
     ...[presetImport].filter(Boolean),
     ...autoPresetImports,
     ...rendererImports,
     '',
+    ...fullAssetBaseSetup,
     `export const configuredFileViewerRenderers = [${rendererNames.join(', ')}];`,
     `export const fileViewerRendererPlan = ${JSON.stringify(plan, null, 2)};`,
-    `registerFileViewerAutoRendererPreset(configuredFileViewerRenderers, { id: ${JSON.stringify(autoRegistrationId)} });`,
+    ...(rendererNames.length
+      ? [`registerFileViewerAutoRendererPreset(configuredFileViewerRenderers, { id: ${JSON.stringify(autoRegistrationId)} });`]
+      : []),
     'export default configuredFileViewerRenderers;',
     ''
   ].join('\n')
@@ -1235,7 +1277,10 @@ function assertOwnedPackageVersion(
   const ownerPackageJson = JSON.parse(readFileSync(ownerPackageJsonPath, 'utf8')) as {
     dependencies?: Record<string, string>
   }
-  const expectedVersion = ownerPackageJson.dependencies?.[packageName]
+  const configuredVersion = ownerPackageJson.dependencies?.[packageName]
+  const expectedVersion = configuredVersion?.startsWith('workspace:')
+    ? configuredVersion.slice('workspace:'.length)
+    : configuredVersion
   const actualVersion = readPackageVersion(packageRoot)
   if (
     expectedVersion &&
@@ -1663,9 +1708,247 @@ async function copyKnownRendererAssets(targetRoot: string, rendererIds: readonly
   return results
 }
 
-function resolveTargetDir(value: string | undefined, fallback: string, projectRoot?: string) {
-  const target = value || fallback
-  return isAbsolute(target) ? target : resolve(projectRoot || process.cwd(), target)
+interface BundledFullAssetManifest {
+  schemaVersion: number
+  rendererAssetManifests?: Array<{
+    rendererId: string
+    assets: Array<{
+      id: string
+      rendererId: string
+      kind: string
+      target: string
+      required: boolean
+      defaultPath?: string
+    }>
+  }>
+  [key: string]: unknown
+}
+
+function matchesBundledAssetKind(kind: string, info: { isDirectory(): boolean; isFile(): boolean }) {
+  return kind === 'directory' || kind === 'wasm-directory'
+    ? info.isDirectory()
+    : info.isFile()
+}
+
+interface BundledFullAssetSource {
+  packageName: string
+  packageRoot: string
+  payloadRoot: string
+  sourceVersion: string
+}
+
+function isBundledFullAssetPayload(payloadRoot: string | null) {
+  return Boolean(
+    payloadRoot &&
+    existsSync(payloadRoot) &&
+    statSync(payloadRoot).isDirectory() &&
+    existsSync(join(payloadRoot, 'flyfish-viewer-assets.json'))
+  )
+}
+
+function resolveBundledFullAssetSource(installedFullPackages: readonly string[]) {
+  const copyAssetsPackageRoot = resolvePackageRoot(
+    'file-viewer-copy-assets',
+    installedFullPackages
+  )
+  const copyAssetsPayloadRoot = copyAssetsPackageRoot
+    ? join(copyAssetsPackageRoot, 'viewer')
+    : null
+  if (copyAssetsPackageRoot && copyAssetsPayloadRoot && isBundledFullAssetPayload(copyAssetsPayloadRoot)) {
+    installedFullPackages.forEach((ownerPackageName) => {
+      assertOwnedPackageVersion(
+        'file-viewer-copy-assets',
+        copyAssetsPackageRoot,
+        ownerPackageName
+      )
+    })
+    const sourceVersion = readPackageVersion(copyAssetsPackageRoot)
+    if (sourceVersion) {
+      return {
+        packageName: 'file-viewer-copy-assets',
+        packageRoot: copyAssetsPackageRoot,
+        payloadRoot: copyAssetsPayloadRoot,
+        sourceVersion
+      } satisfies BundledFullAssetSource
+    }
+  }
+
+  if (installedFullPackages.includes('@file-viewer/web-full')) {
+    const webFullPackageRoot = resolvePackageRoot(
+      '@file-viewer/web-full',
+      installedFullPackages
+    )
+    const webFullPayloadRoot = webFullPackageRoot
+      ? join(webFullPackageRoot, 'dist')
+      : null
+    const sourceVersion = readPackageVersion(webFullPackageRoot)
+    if (
+      webFullPackageRoot &&
+      webFullPayloadRoot &&
+      sourceVersion &&
+      isBundledFullAssetPayload(webFullPayloadRoot)
+    ) {
+      return {
+        packageName: '@file-viewer/web-full',
+        packageRoot: webFullPackageRoot,
+        payloadRoot: webFullPayloadRoot,
+        sourceVersion
+      } satisfies BundledFullAssetSource
+    }
+  }
+
+  // Source workspaces may not have staged file-viewer-copy-assets/viewer yet.
+  // @file-viewer/web keeps the same tracked payload for local development.
+  const webPackageRoot = resolvePackageRoot('@file-viewer/web', installedFullPackages)
+  const webPayloadRoot = webPackageRoot ? join(webPackageRoot, 'viewer') : null
+  const sourceVersion = readPackageVersion(webPackageRoot)
+  if (
+    webPackageRoot &&
+    webPayloadRoot &&
+    sourceVersion &&
+    isBundledFullAssetPayload(webPayloadRoot)
+  ) {
+    return {
+      packageName: '@file-viewer/web',
+      packageRoot: webPackageRoot,
+      payloadRoot: webPayloadRoot,
+      sourceVersion
+    } satisfies BundledFullAssetSource
+  }
+  return null
+}
+
+function assertBundledFullAssetSourceVersion(
+  source: BundledFullAssetSource,
+  installedFullPackages: readonly string[]
+) {
+  const payloadManifestPath = join(source.payloadRoot, 'flyfish-viewer-manifest.json')
+  if (!existsSync(payloadManifestPath)) {
+    throw new Error(
+      `[file-viewer:vite-plugin] Missing version manifest in ${source.packageName} payload: ${payloadManifestPath}.`
+    )
+  }
+  const payloadManifest = JSON.parse(readFileSync(payloadManifestPath, 'utf8')) as {
+    version?: string
+  }
+  if (!payloadManifest.version || payloadManifest.version !== source.sourceVersion) {
+    throw new Error(
+      `[file-viewer:vite-plugin] ${source.packageName}@${source.sourceVersion} contains ` +
+      `viewer assets for ${payloadManifest.version || 'an unknown version'}.`
+    )
+  }
+  installedFullPackages.forEach((packageName) => {
+    const packageRoot = resolvePackageRoot(packageName, installedFullPackages)
+    const packageVersion = readPackageVersion(packageRoot)
+    if (packageVersion && packageVersion !== payloadManifest.version) {
+      throw new Error(
+        `[file-viewer:vite-plugin] ${packageName}@${packageVersion} cannot use ` +
+        `${source.packageName} viewer assets at ${payloadManifest.version}.`
+      )
+    }
+  })
+}
+
+async function copyBundledFullRendererAssets(
+  targetRoot: string,
+  rendererIds: readonly string[],
+  installedFullPackages: readonly string[]
+): Promise<AssetCopyResult[] | null> {
+  const source = resolveBundledFullAssetSource(installedFullPackages)
+  if (!source) {
+    return null
+  }
+  assertBundledFullAssetSourceVersion(source, installedFullPackages)
+  const sourceManifestPath = join(source.payloadRoot, 'flyfish-viewer-assets.json')
+  const manifest = JSON.parse(
+    readFileSync(sourceManifestPath, 'utf8')
+  ) as BundledFullAssetManifest
+  if (manifest.schemaVersion !== 1 || !Array.isArray(manifest.rendererAssetManifests)) {
+    throw new Error(
+      `[file-viewer:vite-plugin] Unsupported full asset manifest in ${sourceManifestPath}.`
+    )
+  }
+
+  await mkdir(targetRoot, { recursive: true })
+  await cp(source.payloadRoot, targetRoot, { recursive: true, force: true })
+  const results: AssetCopyResult[] = []
+  for (const asset of manifest.rendererAssetManifests.flatMap(
+    (rendererManifest) => rendererManifest.assets
+  )) {
+    if (asset.target !== 'public' || !asset.defaultPath) {
+      continue
+    }
+    const relativePath = asset.defaultPath.replace(/\\/g, '/').replace(/^\/+/, '')
+    const destination = resolve(targetRoot, ...relativePath.split('/'))
+    let copied = false
+    let reason: string | undefined
+    if (!isPathWithin(targetRoot, destination)) {
+      reason = 'asset manifest path escapes the copy target'
+    } else {
+      try {
+        copied = matchesBundledAssetKind(asset.kind, await stat(destination))
+        if (!copied) {
+          reason = `copied path does not match asset kind ${asset.kind}`
+        }
+      } catch {
+        reason = 'bundled full asset not found after copy'
+      }
+    }
+    results.push({
+      rendererId: asset.rendererId,
+      id: asset.id,
+      to: destination,
+      copied,
+      required: asset.required,
+      reason,
+      sourcePackage: source.packageName,
+      sourceVersion: source.sourceVersion
+    })
+  }
+
+  await writeFile(
+    join(targetRoot, 'flyfish-viewer-assets.json'),
+    `${JSON.stringify(
+      {
+        ...manifest,
+        generatedBy: '@file-viewer/vite-plugin',
+        copiedAt: new Date().toISOString(),
+        rendererIds,
+        assets: results
+      },
+      null,
+      2
+    )}\n`
+  )
+  return results
+}
+
+async function copyRendererAssets(
+  target: FileViewerCopyAssetsTarget,
+  rendererIds: readonly string[]
+) {
+  if (target.installedFullPackages.length) {
+    const bundledResults = await copyBundledFullRendererAssets(
+      target.targetRoot,
+      rendererIds,
+      target.installedFullPackages
+    )
+    if (bundledResults) {
+      return bundledResults
+    }
+  }
+  const results = await copyKnownRendererAssets(target.targetRoot, rendererIds)
+  if (target.installedFullPackages.length) {
+    results.push({
+      rendererId: 'full',
+      id: 'full-asset-payload',
+      to: target.targetRoot,
+      copied: false,
+      required: true,
+      reason: 'no version-matched full viewer payload was found in file-viewer-copy-assets, @file-viewer/web-full, or @file-viewer/web'
+    })
+  }
+  return results
 }
 
 function copyOptions(
@@ -1674,10 +1957,242 @@ function copyOptions(
   return typeof value === 'object' ? value : {}
 }
 
+export interface FileViewerCopyAssetsTargetConfig {
+  /** Vite project root. Defaults to process.cwd(). */
+  projectRoot?: string
+  /** Resolved Vite publicDir. Defaults to `public`. */
+  publicDir?: string
+  /** Resolved Vite build.outDir. Defaults to `dist`. */
+  outDir?: string
+}
+
+export interface FileViewerCopyAssetsTarget {
+  mode: 'dev' | 'build'
+  outputRoot: string
+  targetRoot: string
+  baseDir: string
+  installedFullPackages: string[]
+}
+
+function findNearestProjectPackageJson(projectRoot: string) {
+  let current = resolve(projectRoot)
+  while (true) {
+    const packageJsonPath = join(current, 'package.json')
+    if (existsSync(packageJsonPath) && statSyncSafe(packageJsonPath)?.isFile()) {
+      return packageJsonPath
+    }
+    const parent = dirname(current)
+    if (parent === current) {
+      return null
+    }
+    current = parent
+  }
+}
+
+function resolveInstalledFullPackages(projectRoot: string) {
+  const packageJsonPath = findNearestProjectPackageJson(projectRoot)
+  if (!packageJsonPath) {
+    return []
+  }
+  try {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+      optionalDependencies?: Record<string, string>
+      peerDependencies?: Record<string, string>
+    }
+    const declaredPackages = new Set([
+      ...Object.keys(packageJson.dependencies || {}),
+      ...Object.keys(packageJson.devDependencies || {}),
+      ...Object.keys(packageJson.optionalDependencies || {}),
+      ...Object.keys(packageJson.peerDependencies || {})
+    ])
+    const projectPackageRequire = createRequire(packageJsonPath)
+    return fileViewerFullPackages.filter(
+      (packageName) =>
+        declaredPackages.has(packageName) &&
+        Boolean(tryResolvePackageJson(packageName, projectPackageRequire))
+    )
+  } catch {
+    return []
+  }
+}
+
+function normalizeCopyAssetsBaseDir(value: string) {
+  const normalized = value.trim().replace(/\\/g, '/')
+  if (!normalized) {
+    return ''
+  }
+  if (
+    normalized.startsWith('/') ||
+    isAbsolute(value) ||
+    /^[A-Za-z]:\//.test(normalized) ||
+    normalized.includes('\0')
+  ) {
+    throw new Error(
+      `[file-viewer:vite-plugin] copyAssets.baseDir must be a relative directory, received ${JSON.stringify(value)}.`
+    )
+  }
+  const segments = normalized.split('/').filter(Boolean)
+  const decodedSegments: string[] = []
+  for (const segment of segments) {
+    let decodedSegment = segment
+    try {
+      decodedSegment = decodeURIComponent(segment)
+    } catch {
+      throw new Error(
+        `[file-viewer:vite-plugin] copyAssets.baseDir contains invalid URL encoding: ${JSON.stringify(value)}.`
+      )
+    }
+    if (
+      decodedSegment === '.' ||
+      decodedSegment === '..' ||
+      decodedSegment.includes('/') ||
+      decodedSegment.includes('\\') ||
+      decodedSegment.includes('\0')
+    ) {
+      throw new Error(
+        `[file-viewer:vite-plugin] copyAssets.baseDir cannot escape its output directory: ${JSON.stringify(value)}.`
+      )
+    }
+    decodedSegments.push(decodedSegment)
+  }
+  return decodedSegments.join('/')
+}
+
+function isPathWithin(parent: string, candidate: string) {
+  const relativePath = relative(parent, candidate)
+  return relativePath === '' || (
+    relativePath !== '..' &&
+    !relativePath.startsWith(`..${sep}`) &&
+    !isAbsolute(relativePath)
+  )
+}
+
+function resolveOutputRoot(value: string | undefined, fallback: string, projectRoot: string) {
+  const output = value || fallback
+  return isAbsolute(output) ? resolve(output) : resolve(projectRoot, output)
+}
+
+/**
+ * Resolves the exact directory used by copyAssets without running a Vite build.
+ * This is exported so integrations can validate their deployment contract.
+ */
+export function resolveFileViewerCopyAssetsTarget(
+  mode: 'dev' | 'build',
+  value: true | FileViewerCopyAssetsOptions = true,
+  config: FileViewerCopyAssetsTargetConfig = {}
+): FileViewerCopyAssetsTarget {
+  const projectRoot = resolve(config.projectRoot || process.cwd())
+  const options = copyOptions(value)
+  const installedFullPackages = resolveInstalledFullPackages(projectRoot)
+  const baseDir = normalizeCopyAssetsBaseDir(
+    typeof options.baseDir === 'string'
+      ? options.baseDir
+      : installedFullPackages.length
+        ? 'file-viewer'
+        : ''
+  )
+  const outputRoot = resolveOutputRoot(
+    mode === 'dev' ? options.publicDir : options.outDir,
+    mode === 'dev' ? config.publicDir || 'public' : config.outDir || 'dist',
+    projectRoot
+  )
+  const targetRoot = baseDir
+    ? resolve(outputRoot, ...baseDir.split('/'))
+    : outputRoot
+  if (!isPathWithin(outputRoot, targetRoot)) {
+    throw new Error(
+      `[file-viewer:vite-plugin] Refusing to copy assets outside ${outputRoot}: ${targetRoot}.`
+    )
+  }
+  return {
+    mode,
+    outputRoot,
+    targetRoot,
+    baseDir,
+    installedFullPackages: [...installedFullPackages]
+  }
+}
+
+function normalizeViteDevBasePath(base: string) {
+  let pathname = base
+  if (/^[A-Za-z][A-Za-z\d+.-]*:\/\//.test(base)) {
+    try {
+      pathname = new URL(base).pathname
+    } catch {
+      return '/'
+    }
+  }
+  if (!pathname.startsWith('/')) {
+    return '/'
+  }
+  return pathname.endsWith('/') ? pathname : `${pathname}/`
+}
+
+function resolveViteFullAssetBase(base: string | undefined, baseDir: string): FullAssetRuntimeBase {
+  const encodedBaseDir = baseDir
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+  const encodedBaseDirWithSlash = encodedBaseDir ? `${encodedBaseDir}/` : ''
+  const resolvedBase = base === undefined ? '/' : base.trim()
+  const isAbsoluteBase =
+    resolvedBase.startsWith('/') || /^[A-Za-z][A-Za-z\d+.-]*:\/\//.test(resolvedBase)
+  if (!isAbsoluteBase) {
+    return { kind: 'deployment', encodedBaseDir: encodedBaseDirWithSlash }
+  }
+  const normalizedBase = resolvedBase.endsWith('/') ? resolvedBase : `${resolvedBase}/`
+  return { kind: 'literal', url: `${normalizedBase}${encodedBaseDirWithSlash}` }
+}
+
+function resolveDevAssetRequestPath(
+  targetRoot: string,
+  baseDir: string,
+  requestPathname: string,
+  viteBasePath: string
+) {
+  if (!requestPathname.startsWith(viteBasePath)) {
+    return null
+  }
+  let requestRelativePath: string
+  try {
+    requestRelativePath = decodeURIComponent(requestPathname.slice(viteBasePath.length))
+  } catch {
+    return null
+  }
+  requestRelativePath = requestRelativePath.replace(/\\/g, '/')
+  if (requestRelativePath.includes('\0')) {
+    return null
+  }
+  const basePrefix = baseDir ? `${baseDir}/` : ''
+  if (basePrefix && !requestRelativePath.startsWith(basePrefix)) {
+    return null
+  }
+  const assetRelativePath = requestRelativePath.slice(basePrefix.length)
+  const isViewerManifest =
+    assetRelativePath === 'flyfish-viewer-assets.json' ||
+    assetRelativePath === 'flyfish-viewer-manifest.json'
+  if (
+    !isViewerManifest &&
+    !assetRelativePath.startsWith('vendor/') &&
+    !assetRelativePath.startsWith('wasm/')
+  ) {
+    return null
+  }
+  const assetPath = resolve(targetRoot, ...assetRelativePath.split('/'))
+  return isPathWithin(targetRoot, assetPath) ? assetPath : null
+}
+
 function collectAssetRendererIds(
   selection: RendererSelection,
-  autoPresetIds: readonly FileViewerVitePreset[] = []
+  autoPresetIds: readonly FileViewerVitePreset[] = [],
+  includeFullPreset = false
 ) {
+  if (includeFullPreset) {
+    return expandDescriptorRendererIds(presetModules.all.rendererIds)
+  }
   const presetIds = [
     ...(selection.preset ? expandDescriptorRendererIds(presetModules[selection.preset].rendererIds) : []),
     ...autoPresetIds.flatMap((presetId) =>
@@ -1696,14 +2211,16 @@ function reportAssetCopy(
   mode: FileViewerMissingRendererMode
 ) {
   const failedRequired = results.filter(
-    (result) => !result.copied && [
-      'pdf',
-      'office-word-openxml',
-      'office-presentation',
-      'archive',
-      'cad',
-      'typst'
-    ].includes(result.rendererId)
+    (result) => !result.copied && (
+      result.required ?? [
+        'pdf',
+        'office-word-openxml',
+        'office-presentation',
+        'archive',
+        'cad',
+        'typst'
+      ].includes(result.rendererId)
+    )
   )
   if (!results.length) {
     return
@@ -1739,6 +2256,8 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
   })
   let autoPresetIds = resolveAutoPresetIds(options)
   let resolvedConfig: ResolvedConfig | null = null
+  let installedFullPackages: string[] = []
+  let fullAssetBase: FullAssetRuntimeBase | null = null
   const refreshSelection = (projectRoot?: string) => {
     if (projectRoot) {
       scanFormats = collectFileViewerRendererScanTokens(projectRoot, options.scan)
@@ -1750,6 +2269,20 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     })
     autoPresetIds = resolveAutoPresetIds(options)
   }
+  const refreshFullAssetRuntime = (projectRoot: string, viteBase?: string) => {
+    if (!options.copyAssets) {
+      installedFullPackages = []
+      fullAssetBase = null
+      return
+    }
+    const target = resolveFileViewerCopyAssetsTarget('dev', options.copyAssets, {
+      projectRoot
+    })
+    installedFullPackages = target.installedFullPackages
+    fullAssetBase = installedFullPackages.length
+      ? resolveViteFullAssetBase(viteBase, target.baseDir)
+      : null
+  }
   const hasConfiguredRenderers = () =>
     Boolean(selection.preset || selection.descriptors.length || autoPresetIds.length)
 
@@ -1759,19 +2292,31 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     config(userConfig) {
       const projectRoot = resolve(process.cwd(), userConfig.root || '.')
       refreshSelection(projectRoot)
+      refreshFullAssetRuntime(projectRoot, userConfig.base)
       const selectedPackages = collectSelectedPackages(selection, autoPresetIds)
       const dependencyAnchorPackages = collectDependencyAnchorPackages(selection, autoPresetIds)
+      const resolvedDependencyAnchorPackages = fullAssetBase
+        ? unique([
+            ...dependencyAnchorPackages,
+            ...installedFullPackages,
+            '@file-viewer/preset-all'
+          ])
+        : dependencyAnchorPackages
       const optimizeDepsExclude = createOptimizeDepsExclude(userConfig)
       const manualChunksFunction = getManualChunksFunction(userConfig)
       const nextConfig: UserConfig = {
         optimizeDeps: {
           exclude: optimizeDepsExclude,
-          include: createOptimizeDepsInclude(userConfig, optimizeDepsExclude, dependencyAnchorPackages)
+          include: createOptimizeDepsInclude(
+            userConfig,
+            optimizeDepsExclude,
+            resolvedDependencyAnchorPackages
+          )
         },
         resolve: {
           alias: [
             ...normalizeViteAlias(userConfig.resolve?.alias),
-            ...createFileViewerResolveAliases(dependencyAnchorPackages)
+            ...createFileViewerResolveAliases(resolvedDependencyAnchorPackages)
           ]
         }
       }
@@ -1804,6 +2349,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     configResolved(config) {
       resolvedConfig = config
       refreshSelection(config.root)
+      refreshFullAssetRuntime(config.root, config.base)
     },
     buildStart() {
       assertMissingRendererPolicy(selection, missingMode)
@@ -1822,65 +2368,81 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       if (!options.copyAssets || copyOptions(options.copyAssets).mode === 'build') {
         return
       }
-      const targetRoot = resolveTargetDir(
-        copyOptions(options.copyAssets).publicDir,
-        resolvedConfig?.publicDir || 'public',
-        resolvedConfig?.root
-      )
-      const results = await copyKnownRendererAssets(
-        targetRoot,
-        collectAssetRendererIds(selection, autoPresetIds)
+      const copyTarget = resolveFileViewerCopyAssetsTarget('dev', options.copyAssets, {
+        projectRoot: resolvedConfig?.root,
+        publicDir: resolvedConfig?.publicDir || 'public',
+        outDir: resolvedConfig?.build.outDir || 'dist'
+      })
+      const { targetRoot } = copyTarget
+      const results = await copyRendererAssets(
+        copyTarget,
+        collectAssetRendererIds(
+          selection,
+          autoPresetIds,
+          copyTarget.installedFullPackages.length > 0
+        )
       )
       reportAssetCopy(results, targetRoot, missingMode)
 
-      const base = resolvedConfig?.base || '/'
-      if (base.startsWith('/') && base !== '/') {
-        const normalizedBase = base.endsWith('/') ? base : `${base}/`
+      const viteBasePath = normalizeViteDevBasePath(resolvedConfig?.base || '/')
+      if (server?.middlewares?.use) {
+        const realTargetRoot = await realpath(targetRoot).catch(() => targetRoot)
         server.middlewares.use(async (request, response, next) => {
           const requestUrl = request.url || ''
           const queryIndex = requestUrl.indexOf('?')
           const pathname = queryIndex >= 0 ? requestUrl.slice(0, queryIndex) : requestUrl
-          if (pathname.startsWith(normalizedBase)) {
-            let relativePath = pathname.slice(normalizedBase.length)
+          const assetPath = resolveDevAssetRequestPath(
+            targetRoot,
+            copyTarget.baseDir,
+            pathname,
+            viteBasePath
+          )
+          if (assetPath) {
             try {
-              relativePath = decodeURIComponent(relativePath)
-            } catch {
-              next()
-              return
-            }
-            if (relativePath.startsWith('vendor/') || relativePath.startsWith('wasm/')) {
-              const assetPath = resolve(targetRoot, relativePath)
-              if (assetPath.startsWith(`${targetRoot}${sep}`)) {
-                try {
-                  const info = await stat(assetPath)
-                  if (info.isFile()) {
-                    const contentTypes: Record<string, string> = {
-                      '.bcmap': 'application/octet-stream',
-                      '.css': 'text/css; charset=utf-8',
-                      '.js': 'text/javascript; charset=utf-8',
-                      '.json': 'application/json; charset=utf-8',
-                      '.mjs': 'text/javascript; charset=utf-8',
-                      '.ttf': 'font/ttf',
-                      '.wasm': 'application/wasm',
-                      '.woff': 'font/woff',
-                      '.woff2': 'font/woff2'
-                    }
-                    response.statusCode = 200
-                    response.setHeader(
-                      'Content-Type',
-                      contentTypes[extname(assetPath).toLowerCase()] || 'application/octet-stream'
-                    )
-                    if (request.method === 'HEAD') {
-                      response.end()
-                    } else {
-                      response.end(await readFile(assetPath))
-                    }
-                    return
+              const resolvedAssetPath = await realpath(assetPath)
+              if (isPathWithin(realTargetRoot, resolvedAssetPath)) {
+                const info = await stat(resolvedAssetPath)
+                if (info.isFile()) {
+                  const contentTypes: Record<string, string> = {
+                    '.avif': 'image/avif',
+                    '.bcmap': 'application/octet-stream',
+                    '.css': 'text/css; charset=utf-8',
+                    '.gif': 'image/gif',
+                    '.ico': 'image/x-icon',
+                    '.jpeg': 'image/jpeg',
+                    '.jpg': 'image/jpeg',
+                    '.js': 'text/javascript; charset=utf-8',
+                    '.json': 'application/json; charset=utf-8',
+                    '.map': 'application/json; charset=utf-8',
+                    '.md': 'text/markdown; charset=utf-8',
+                    '.mjs': 'text/javascript; charset=utf-8',
+                    '.otf': 'font/otf',
+                    '.pfb': 'application/x-font-type1',
+                    '.png': 'image/png',
+                    '.svg': 'image/svg+xml',
+                    '.ttf': 'font/ttf',
+                    '.txt': 'text/plain; charset=utf-8',
+                    '.wasm': 'application/wasm',
+                    '.webp': 'image/webp',
+                    '.woff': 'font/woff',
+                    '.woff2': 'font/woff2',
+                    '.xml': 'application/xml; charset=utf-8'
                   }
-                } catch {
-                  // Let Vite return its normal 404/fallback response.
+                  response.statusCode = 200
+                  response.setHeader(
+                    'Content-Type',
+                    contentTypes[extname(resolvedAssetPath).toLowerCase()] || 'application/octet-stream'
+                  )
+                  if (request.method === 'HEAD') {
+                    response.end()
+                  } else {
+                    response.end(await readFile(resolvedAssetPath))
+                  }
+                  return
                 }
               }
+            } catch {
+              // Let Vite return its normal 404/fallback response.
             }
           }
           next()
@@ -1890,7 +2452,7 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     transformIndexHtml: {
       order: 'pre',
       handler() {
-        if (options.inject === false || !hasConfiguredRenderers()) {
+        if (options.inject === false || (!hasConfiguredRenderers() && !fullAssetBase)) {
           return undefined
         }
         return [
@@ -1929,15 +2491,19 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
       if (!options.copyAssets || copyOptions(options.copyAssets).mode === 'dev') {
         return
       }
-      const outDir = resolvedConfig?.build.outDir || 'dist'
-      const targetRoot = resolveTargetDir(
-        copyOptions(options.copyAssets).outDir,
-        outDir,
-        resolvedConfig?.root
-      )
-      const results = await copyKnownRendererAssets(
-        targetRoot,
-        collectAssetRendererIds(selection, autoPresetIds)
+      const copyTarget = resolveFileViewerCopyAssetsTarget('build', options.copyAssets, {
+        projectRoot: resolvedConfig?.root,
+        publicDir: resolvedConfig?.publicDir || 'public',
+        outDir: resolvedConfig?.build.outDir || 'dist'
+      })
+      const { targetRoot } = copyTarget
+      const results = await copyRendererAssets(
+        copyTarget,
+        collectAssetRendererIds(
+          selection,
+          autoPresetIds,
+          copyTarget.installedFullPackages.length > 0
+        )
       )
       reportAssetCopy(results, targetRoot, missingMode)
     },
@@ -1949,7 +2515,12 @@ export function fileViewerRenderers(options: FileViewerRenderersPluginOptions = 
     },
     load(id) {
       if (id === resolvedModuleId || id === resolvedVirtualModuleId) {
-        return renderVirtualModule(selection, requestedFormats, autoPresetIds)
+        return renderVirtualModule(
+          selection,
+          requestedFormats,
+          autoPresetIds,
+          fullAssetBase
+        )
       }
       return undefined
     }

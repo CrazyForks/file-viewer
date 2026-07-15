@@ -1,1 +1,1 @@
-export * from '@file-viewer/svelte'
+export * from '@file-viewer/svelte/controller'

@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/pptx",
-  "version": "2.1.29",
+  "version": "2.1.30",
   "private": false,
   "type": "module",
   "description": "Native PPTX renderer extracted from Flyfish File Viewer",

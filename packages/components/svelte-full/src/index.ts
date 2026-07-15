@@ -1,4 +1,7 @@
-import allRenderers from '@file-viewer/preset-all'
+import allRenderers, {
+  getDefaultFullAssetBaseUrl,
+  mergeFullAssetOptions
+} from '@file-viewer/preset-all'
 import {
   fileViewer as baseFileViewer,
   mountViewer as mountBaseViewer,
@@ -9,29 +12,39 @@ import {
   type ViewerOptions
 } from '@file-viewer/svelte/action'
 
-// Keep both Svelte's component entry types and its action/controller API
-// available from the full package, matching the standard package surface.
-export * from '@file-viewer/svelte'
+// This module is the explicit /action entry. The package root exclusively
+// resolves to FileViewer.svelte so Svelte never mistakes this action for a component.
 export * from '@file-viewer/svelte/action'
+export {
+  getDefaultFullAssetBaseUrl,
+  resetDefaultFullAssetBaseUrl,
+  setDefaultFullAssetBaseUrl
+} from '@file-viewer/preset-all'
 
 export const fileViewerFullPreset = allRenderers
 
 type ViewerCoreOptions = NonNullable<Parameters<typeof mountBaseViewer>[2]>
 
-export function withFullViewerOptions(options: ViewerOptions = {}): ViewerOptions {
+export function withFullViewerOptions(
+  options: ViewerOptions = {},
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
+): ViewerOptions {
   const { preset = allRenderers, rendererMode = 'replace', ...rest } = options
   return {
-    ...rest,
+    ...mergeFullAssetOptions(rest, assetBaseUrl),
     preset,
     rendererMode,
     autoRenderers: rest.autoRenderers ?? true
   }
 }
 
-export function withFullMountOptions(options: ViewerMountOptions = {}): ViewerMountOptions {
+export function withFullMountOptions(
+  options: ViewerMountOptions = {},
+  assetBaseUrl: string | URL | null | undefined = getDefaultFullAssetBaseUrl()
+): ViewerMountOptions {
   return {
     ...options,
-    options: withFullViewerOptions(options.options)
+    options: withFullViewerOptions(options.options, assetBaseUrl)
   }
 }
 

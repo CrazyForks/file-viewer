@@ -27,6 +27,18 @@ import { textRenderer } from '@file-viewer/renderer-text';
 import { typstRenderer } from '@file-viewer/renderer-typst';
 import { wordRenderer } from '@file-viewer/renderer-word';
 
+export {
+  DEFAULT_FULL_ASSET_BASE_PATH,
+  DEFAULT_FULL_ASSET_BASE_URL,
+  createFullAssetOptions,
+  getDefaultFullAssetBaseUrl,
+  mergeFullAssetOptions,
+  normalizeFullAssetBaseUrl,
+  resetDefaultFullAssetBaseUrl,
+  resolveDefaultFullAssetBaseUrl,
+  setDefaultFullAssetBaseUrl,
+} from './fullAssets.js';
+
 type BrowserRendererHandler = FileRenderHandler<FileViewerRenderedInstance, HTMLDivElement>;
 
 const allRendererHandlers = coreBrowserRendererHandlers as readonly {

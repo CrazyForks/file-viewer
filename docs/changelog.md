@@ -6,6 +6,17 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.1.30` Full 包完整资产开箱契约
+
+- 八个 `*-full` 包统一内置 `preset-all` 和同一套运行时资源默认值，PDF、Office、CAD、Typst、Archive、Draw.io、SQLite 等不再因框架不同而使用不同路径。
+- 七个框架 full 包精确依赖同版本 `file-viewer-copy-assets` 并直接提供复制 CLI；`web-full` 的完整 `dist/` 自带全部资源，可原样部署。
+- Vite 插件识别 full 包后会在开发和构建阶段自动发布完整资产到部署基址下的 `file-viewer/`；自定义或空 `copyAssets.baseDir` 会同步运行时 URL，非 full 项目保持旧布局。
+- Vite 开发服务器会在根路径、子路径、自定义或禁用 `publicDir` 时统一提供资产与完整性清单；`options.pdf.assetBaseUrl` 继续作为 PDF 全量资源覆盖，单项 URL 仍可单独覆盖。
+- Svelte 与 Svelte Full 的包根默认导出固定为组件，action/controller 改走明确子路径，避免 Svelte 5 把 action 当组件挂载。
+- 修复 CRA/Webpack 常见 `static/js` 及多级 assets 目录被误判为资源根的问题，子路径部署不再把 Worker/WASM 请求到静态脚本目录内。
+- 批量发布脚本按 54 个 npm 目标的内部依赖稳定拓扑排序，并在依赖环或重复目标时提前失败。
+- 新增八个 full 包资源合约、Vite 子路径与自定义目录、npm/pnpm 冷安装、CLI 完整复制以及真实 PPTX Worker 浏览器回归。
+
 ## `v2.1.29` 集中缺陷修复
 
 - 修复 Vue 2.6 + Vue CLI 3 / webpack 4 示例上传 DOCX 后报 `renderAsync is not a function`（生产压缩后表现为 `u is not a function`）：webpack 4 默认选择 `@file-viewer/docx` 的 UMD `browser` 入口，该入口再次经过 Babel 转译后会丢失 CommonJS 导出。

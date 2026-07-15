@@ -7,14 +7,15 @@
   先选生态组件，再按业务文件类型选择 preset 或 renderer；跑通后再进入按需装配、离线资源和工具栏定制。
 </p>
 
-## 四步接入
+## 五步接入
 
 | 步骤 | 做什么 | 最短答案 |
 | --- | --- | --- |
 | 1 | 选生态组件 | 最轻入口用 `@file-viewer/web` / `@file-viewer/vue3` / `@file-viewer/react` 等标准包；一步到位用 `@file-viewer/web-full` / `@file-viewer/vue3-full` / `@file-viewer/react-full` 等 full 包 |
 | 2 | 选格式能力 | 标准包按需注入 `preset-lite`、`preset-office`、`preset-engineering` 或 `preset-all`；full 包默认已启用完整矩阵 |
-| 3 | 传入文件和 options | `url="/files/demo.pdf"` 或 `file={file}`，标准包把 `preset` 放进 `options`，full 包可直接传主题、工具栏、水印等业务配置 |
-| 4 | 确认样式隔离 | 宿主 CSS 不可控时优先 Web Component / full 默认 Shadow DOM；框架组件可传 `options.styleIsolation:'shadow'` |
+| 3 | 发布运行时资产 | full 包在 Vite 中使用 `copyAssets:true`；其它构建工具运行 `npx --no-install file-viewer-copy-assets ./public/file-viewer`，保证 Worker / WASM 格式完整可用 |
+| 4 | 传入文件和 options | `url="/files/demo.pdf"` 或 `file={file}`，标准包把 `preset` 放进 `options`，full 包可直接传主题、工具栏、水印等业务配置 |
+| 5 | 确认样式隔离 | 宿主 CSS 不可控时优先 Web Component / full 默认 Shadow DOM；框架组件可传 `options.styleIsolation:'shadow'` |
 
 本页只保留最短可运行路径。完整 options、renderer 包清单和工具栏/水印/打印/搜索等参数见 [组件用法](/zh/guide/usage)，样式隔离与主题定制见 [样式隔离与主题定制](/zh/guide/style-isolation)，按需装配和 Vite 插件细节见 [模块化与按需装配](/zh/guide/on-demand-renderers)。
 
@@ -41,12 +42,12 @@
 
 直接安装 `@file-viewer/vue3`、`@file-viewer/react`、`@file-viewer/web` 这类标准组件包是最轻的接入方式，它们只提供当前框架的原生组件、类型、controller 和 core 基础能力，不会默认把 PDF、Office、CAD、Typst、压缩包等重型渲染依赖全部装进业务项目。
 
-如果你的目标是先完整验收所有格式，可以使用 full 包。full 包内部已引入 `@file-viewer/preset-all`，保留同样的组件 API，但默认具备官方 Demo 的完整格式矩阵。CDN / script 标签场景优先使用 `@file-viewer/web-full`，jsDelivr / unpkg 会直接从 npm 分发完整 IIFE，不需要把完整依赖下载到业务仓库；脚本会按自身 URL 自动定位随包分发的 Worker、WASM、字体和 vendor 资源。内网、严格 CSP 或完全离线部署时，再把这些资源同步到自己的静态域。
+如果你的目标是完整验收所有格式，可以使用 full 包。full 包已内置 `@file-viewer/preset-all`，不要重复安装或传入 preset。npm 项目的完整格式支持还包括同版本 Worker、WASM、字体和 vendor 资源：Vite 自动发布，其他构建工具运行每个 full 包自带的同版本复制 CLI。CDN / script 标签场景优先使用 `@file-viewer/web-full`；直接使用 jsDelivr / unpkg，或完整镜像整个 `dist/` 目录时，脚本会按自身 URL 定位所有资源，无需复制。
 
 | 模式 | 安装示例 | 特点 |
 | --- | --- | --- |
 | 最轻标准包 | `npm i @file-viewer/vue3 @file-viewer/preset-office` | 按业务选择 preset / renderer，安装体积最可控 |
-| 完整 full 包 | `npm i @file-viewer/vue3-full` | 默认启用 `preset-all`，适合后台全格式附件中心 |
+| 完整 full 包 | `npm i @file-viewer/vue3-full` | 内置 `preset-all`；再按构建工具把运行时资产发布到 `<部署基址>/file-viewer/` |
 | CDN full | `https://cdn.jsdelivr.net/npm/@file-viewer/web-full@latest/dist/flyfish-file-viewer-web-full.iife.js` | 无需本地安装，适合传统页面快速试跑完整矩阵 |
 
 需要预览具体文件格式时，再选择一个 preset 或单独 renderer:
@@ -117,7 +118,7 @@ export const viewerOptions = {
 
 ### 一步到位：full 包
 
-full 包适合希望先获得完整格式体验、再按业务优化体积的团队。它们与标准包暴露同样的 props、事件、controller 和 options，只是默认已启用完整 preset：
+full 包适合希望先获得完整格式体验、再按业务优化体积的团队。它们与标准包暴露同样的 props、事件、controller 和 options，已内置并默认启用 `preset-all`，不要再安装其它 preset：
 
 | 生态 | full 包 | 标准包 |
 | --- | --- | --- |
@@ -134,17 +135,63 @@ full 包适合希望先获得完整格式体验、再按业务优化体积的团
 npm install @file-viewer/vue3-full
 ```
 
-```ts
-import FileViewer from '@file-viewer/vue3-full'
-```
-
 ```vue
-<file-viewer url="/files/contract.pdf" :options="{ theme: 'light', toolbar: { position: 'bottom-right' } }" />
+<script setup lang="ts">
+import { FileViewer } from '@file-viewer/vue3-full'
+</script>
+
+<template>
+  <FileViewer url="/files/contract.pdf" :options="{ theme: 'light' }" />
+</template>
 ```
 
-React / Vue2 / Svelte / jQuery 只需要把包名替换为对应 full 包，组件写法保持一致。
+各框架继续使用自己的原生接入 API，不能照搬 Vue 组件写法：
 
-Vue 3 / Vue 2.7 / Vue 2.6 full 包会默认把离线资产根设为 `/file-viewer/`，并自动补齐 Archive、PDF、DOCX、Excel、PPTX、CAD、Typst、Draw.io 和 SQLite 等资源 URL。也就是说，把 `file-viewer-copy-assets` 复制出的 `vendor/`、`wasm/` 等目录发布到 `/file-viewer/` 后，`@file-viewer/vue3-full`、`@file-viewer/vue2.7-full` 和 `@file-viewer/vue2.6-full` 不需要再手写 `archive.workerUrl` / `archive.wasmUrl`。
+```ts
+// Vue 2.7；Vue 2.6 改用 @file-viewer/vue2.6-full。
+import Vue from 'vue'
+import FileViewerPlugin from '@file-viewer/vue2.7-full'
+Vue.use(FileViewerPlugin)
+```
+
+```tsx
+import FileViewer from '@file-viewer/react-full'
+export const Preview = () => <FileViewer url="/files/contract.pdf" />
+```
+
+```svelte
+<script>
+  import FileViewer from '@file-viewer/svelte-full'
+</script>
+<FileViewer url="/files/contract.pdf" />
+```
+
+```ts
+import $ from 'jquery'
+import installFileViewer from '@file-viewer/jquery-full'
+installFileViewer($)
+$('#viewer').fileViewer({ url: '/files/contract.pdf' })
+```
+
+所有 full 包默认把运行时资产根设为部署基址下的 `file-viewer/`（根部署即 `/file-viewer/`），并自动补齐 Archive、PDF、DOCX、Excel、PPTX、CAD、Typst、Draw.io 和 SQLite 等资源 URL。Vite 项目注册下面的插件即可在开发与生产构建中自动发布完整资源：
+
+```ts
+import { fileViewerRenderers } from '@file-viewer/vite-plugin'
+
+export default {
+  plugins: [fileViewerRenderers({ copyAssets: true })]
+}
+```
+
+Webpack、Rspack、Rollup、Vue CLI、Umi 和传统多页项目运行 full 包自带的同版本 CLI：
+
+```bash
+npx --no-install file-viewer-copy-assets ./public/file-viewer
+```
+
+`web-full` 的完整 `dist/` 已携带 assets，可直接部署而不运行上述命令；只提取入口模块时运行随包 CLI。
+
+缺少部署基址下的 `file-viewer/` 时，轻量格式和少数兼容路径可能仍能使用，但 CAD、Typst、RAR/7z/加密压缩包、Draw.io、SQLite、PDF CMap/字体等不能保证完整，因此不属于 full 包的完整格式支持。
 
 如果你的静态目录不是 `/file-viewer/`，在应用启动前改一次默认 base 即可：
 
@@ -158,7 +205,7 @@ setDefaultFullAssetBaseUrl('/static/file-viewer/')
 
 ### CDN full：完整能力快速试跑
 
-无构建工具或临时验证页面可以直接使用 CDN full 包。CDN 不占用本地项目安装体积，适合演示、POC 和传统后台页面快速试跑：
+无构建工具或临时验证页面可以直接使用 CDN full 包。直接使用 jsDelivr / unpkg，或把整个 `dist/` 目录原样部署到同一静态前缀时，无需执行资产复制；只复制入口 IIFE 文件不属于完整部署。
 
 ```html
 <div id="viewer" style="height:720px"></div>
@@ -189,7 +236,7 @@ setDefaultFullAssetBaseUrl('/static/file-viewer/')
 
 ### Vite 插件：免配置自动装配
 
-Vite 项目可以在通用方案基础上安装并注册插件。安装 `@file-viewer/vite-plugin` 和任意 `@file-viewer/preset-*` 后，在 `vite.config.ts` 注册 `fileViewerRenderers({ copyAssets:true })`，插件就会自动发现已安装 preset、注入 renderer virtual module，并复制 Worker / WASM / 字体 / vendor 资源。业务代码可以不再手动 import preset：
+Vite 项目可以在通用方案基础上安装并注册插件。标准组件包同时安装一个 `@file-viewer/preset-*`；full 包已内置 `preset-all`，无需再装。注册 `fileViewerRenderers({ copyAssets:true })` 后，插件会识别已安装的 full / preset；full 包资源发布到 `<部署基址>/file-viewer/`，标准包/preset 保持原有根目录行为。业务代码无需再次 import preset：
 
 ```bash
 pnpm add @file-viewer/vue3 @file-viewer/preset-office
@@ -210,10 +257,10 @@ export default {
 }
 ```
 
-重度用户需要最快拥有全部能力时，直接把 preset 换成全量包：
+需要最快拥有全部能力时，也可以直接改用 full 包，不再安装 preset：
 
 ```bash
-pnpm add @file-viewer/vue3 @file-viewer/preset-all
+pnpm add @file-viewer/vue3-full
 pnpm add -D @file-viewer/vite-plugin
 ```
 
@@ -221,7 +268,7 @@ pnpm add -D @file-viewer/vite-plugin
 
 | 选项 | 适合场景 |
 | --- | --- |
-| `copyAssets:true` | 自动复制 Worker、WASM、PDF 字体、CAD、Typst、Archive、Data 等离线资源，推荐生产和内网部署开启 |
+| `copyAssets:true` | 自动识别 full / preset；full 包在开发和生产构建中发布到 `<部署基址>/file-viewer/`，标准包/preset 保持原有根目录行为；full 包必须开启 |
 | `formats` / `renderers` | 不使用 preset、或在 preset 外补充少数格式时，生成精确 renderer import |
 | `scan:true` | 让插件扫描 `fileViewerFormats`、`data-file-viewer-formats`、上传 `accept` 等源码 hint |
 | `preset:'auto'` / `autoPresets:true` | 开启 `scan:true` 时仍保持“根据已安装 preset 自动激活能力” |
