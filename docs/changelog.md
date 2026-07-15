@@ -6,16 +6,9 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
-## `v2.1.28` Office 兼容性与 Vite 8 修复
+## `v2.1.29` 集中缺陷修复
 
-- 修复部分 Word/WPS `.doc` 文件仅在行结束标记携带表格属性时，单元格多段落被拆出表格、合并列宽错乱的问题；真实客户附件与合成表格回归均已验证。
-- DOCX 引擎升级到 `@file-viewer/docx@0.3.20`，底部图表图例按实际文本宽度整体居中，同时保持右侧饼图图例行为不变。
-- 修复 Vite 8 使用 spreadsheet renderer 时 `@xmldom/xmldom` 命名导出未预构建导致的浏览器启动错误，并加入独立 Vite 8 harness 回归。
-- 加固离线资产、包体预算与 npm tarball 校验；全仓版本和 workspace 依赖推进到 `2.1.28`。
-
-## 当前主线兼容性修复
-
-- 修复 Vue 2.6 + Vue CLI 3 / webpack 4 示例上传 DOCX 后报 `renderAsync is not a function`（生产压缩后表现为 `u is not a function`）：webpack 4 默认选择 `@file-viewer/docx` 的 UMD `browser` 入口，该入口再次经过 Babel 转译后会丢失 CommonJS 导出。此兼容修复独立于仍需原始文件和准确 Firefox/Webpack 环境才能确认的 GitHub #116。
+- 修复 Vue 2.6 + Vue CLI 3 / webpack 4 示例上传 DOCX 后报 `renderAsync is not a function`（生产压缩后表现为 `u is not a function`）：webpack 4 默认选择 `@file-viewer/docx` 的 UMD `browser` 入口，该入口再次经过 Babel 转译后会丢失 CommonJS 导出。
 - 旧构建链通过 alias 固定使用 `@file-viewer/docx/dist/docx-preview.mjs`，Word renderer 同时兼容传统 bundler 将 CommonJS API 放在 `default` 的模块形状。
 - `pnpm verify:vue26-cli3-office-demo` 不再只验证内置 PDF；冷安装本地 tarball 后会真实上传 DOCX、等待文档页出现，并确认离线 DOCX Worker 被请求。`build`、`noApiBuild`、`nginx` 三种模式均纳入回归。
 - 修复标准组件启用 `styleIsolation: 'shadow'` 后 Excel 单元格内容空白（GitHub #117）：`e-virt-table` 默认写入 `document.head` 的完整样式无法穿透 ShadowRoot，导致承载单元格文字的 overlayer 失去绝对定位并被画布裁掉。
@@ -29,6 +22,13 @@
 - PDF 初始化和 ResizeObserver 统一重放规范化 fit 请求（GitHub #120/#121），保留 `padding`、`maxScale` 与三种 resize 策略；“1:1”固定回到 100%，居中按导航栏后的实际可视区域计算。
 - CAD 引擎升级到 `@flyfish-dev/cad-viewer@0.6.5`（GitHub #122），修复 DWG 多段线闭合、保存 UCS/PLAN 初始视图及虚线/点线渲染。
 - Web Full、Viewer Demo 和 Component Demo 构建完成后自动净化上游 Chevrotain/Typst 公网默认值；离线扫描只精确豁免 canonical/OG/Twitter 的静态元数据属性，同行运行时 URL 仍会被拦截。
+
+## `v2.1.28` Office 兼容性与 Vite 8 修复
+
+- 修复部分 Word/WPS `.doc` 文件仅在行结束标记携带表格属性时，单元格多段落被拆出表格、合并列宽错乱的问题；真实客户附件与合成表格回归均已验证。
+- DOCX 引擎升级到 `@file-viewer/docx@0.3.20`，底部图表图例按实际文本宽度整体居中，同时保持右侧饼图图例行为不变。
+- 修复 Vite 8 使用 spreadsheet renderer 时 `@xmldom/xmldom` 命名导出未预构建导致的浏览器启动错误，并加入独立 Vite 8 harness 回归。
+- 加固离线资产、包体预算与 npm tarball 校验；全仓版本和 workspace 依赖推进到 `2.1.28`。
 
 ## `v2.1.27` 关键 PR 修复与缩略图能力
 
