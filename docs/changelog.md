@@ -20,7 +20,7 @@
 - Vite 插件复制 PDF.js 资产时优先从 PDF renderer 自己的依赖树解析，并校验 API/Worker 版本和来源（GitHub #118）；消费项目根安装 `pdfjs-dist 6.x` 时不会再覆盖 renderer 固定的 `5.4.624` worker。
 - PPTX renderer 的完成 Promise 现在等待 Worker、整体渲染及异步图表后处理全部结束（GitHub #119）；致命错误只触发错误事件，单页错误继续作为警告，切换文件或取消期间的旧任务无法回写完成状态。
 - PDF 初始化和 ResizeObserver 统一重放规范化 fit 请求（GitHub #120/#121），保留 `padding`、`maxScale` 与三种 resize 策略；“1:1”固定回到 100%，居中按导航栏后的实际可视区域计算。
-- CAD 引擎升级到 `@flyfish-dev/cad-viewer@0.6.5`（GitHub #122），修复 DWG 多段线闭合、保存 UCS/PLAN 初始视图及虚线/点线渲染。
+- CAD 引擎升级到 `@flyfish-dev/cad-viewer@0.6.6`（GitHub #122），修复 DWG 多段线闭合、保存 UCS/PLAN 初始视图及虚线/点线渲染。
 - Web Full、Viewer Demo 和 Component Demo 构建完成后自动净化上游 Chevrotain/Typst 公网默认值；离线扫描只精确豁免 canonical/OG/Twitter 的静态元数据属性，同行运行时 URL 仍会被拦截。
 
 ## `v2.1.28` Office 兼容性与 Vite 8 修复

@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@file-viewer/core": "workspace:2.1.29",
-    "@flyfish-dev/cad-viewer": "^0.6.5"
+    "@flyfish-dev/cad-viewer": "^0.6.6"
   },
   "devDependencies": {
     "typescript": "^6.0.3"
