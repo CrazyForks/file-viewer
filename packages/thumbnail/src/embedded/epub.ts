@@ -24,7 +24,7 @@ export const extractEpubCover = async (source: NormalizedFileViewerSource, signa
     return null;
   }
   throwIfAborted(signal);
-  const ePub = resolveEpubFactory(await import('epubjs'));
+  const ePub = resolveEpubFactory(await import('../vendor/epubjs.js'));
   const book = ePub(source.buffer.slice(0), { openAs: 'binary', replacements: 'blobUrl' });
   let destroyed = false;
   const destroyBook = () => {

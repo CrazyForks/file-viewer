@@ -29,8 +29,9 @@ Failures use `FileViewerThumbnailError` with stable codes: `browser-required`, `
 
 - Requires a real browser. Server applications must invoke it inside Chromium.
 - The string form `preset: 'all'` only works after a Vite plugin or preset side-effect import has registered it. Pass the imported preset object, as above, for bundler-neutral setup.
-- Embedded previews take priority over rendering. EPUB uses its declared cover; OOXML and 3MF use package thumbnail relationships; OpenDocument and XMind use their packaged thumbnails; and Apple Numbers uses its Quick Look thumbnail when present.
+- Embedded previews take priority over rendering. EPUB uses its declared cover through the pinned, lazy-loaded engine shipped with this package; OOXML and 3MF use package thumbnail relationships; OpenDocument and XMind use their packaged thumbnails; and Apple Numbers uses its Quick Look thumbnail when present.
 - Missing, corrupt, empty, or undecodable embedded images safely fall back to renderer-native or first-content capture.
 - PDF and images use native capture; Office, OFD, and ebooks expose a first-content target when no embedded preview is available.
 - Other renderers use a DOM fallback and return `degraded: true`.
 - Source files and generated thumbnails are never persisted by this package.
+- Versions, sources, and license texts for the EPUB engine and its inlined dependencies are recorded in `dist/vendor/epubjs.NOTICE.txt`.

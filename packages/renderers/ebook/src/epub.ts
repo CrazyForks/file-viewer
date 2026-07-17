@@ -1,4 +1,3 @@
-import type { Book, Rendition } from 'epubjs';
 import {
   createFileViewerTranslator,
   type FileRenderContext,
@@ -21,10 +20,45 @@ type TocItem = {
   label: string;
 };
 
+type EpubMetadata = {
+  creator?: unknown;
+  title?: unknown;
+};
+
+type EpubNavigation = {
+  toc?: unknown;
+};
+
+type EpubRendition = {
+  destroy(): void;
+  display(href?: string): Promise<unknown>;
+  next(): Promise<unknown>;
+  off(event: 'relocated', listener: (location: EpubLocation) => void): void;
+  on(event: 'relocated', listener: (location: EpubLocation) => void): void;
+  prev(): Promise<unknown>;
+  themes: {
+    default(theme: Record<string, Record<string, string>>): void;
+  };
+};
+
+type EpubBook = {
+  coverUrl?: () => Promise<string | null>;
+  destroy(): void;
+  loaded: {
+    metadata: Promise<EpubMetadata>;
+    navigation: Promise<EpubNavigation>;
+  };
+  locations: {
+    generate(chars: number): Promise<unknown>;
+  };
+  ready: Promise<unknown>;
+  renderTo(target: HTMLElement, options: Record<string, unknown>): EpubRendition;
+};
+
 type EpubFactory = (buffer: ArrayBuffer, options?: {
   openAs?: string;
   replacements?: string;
-}) => Book;
+}) => EpubBook;
 
 const isEpubFactory = (value: unknown): value is EpubFactory => {
   return typeof value === 'function';
@@ -166,8 +200,8 @@ export default async function renderEpub(
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
   const t = createFileViewerTranslator(context?.options);
-  let book: Book | undefined;
-  let rendition: Rendition | undefined;
+  let book: EpubBook | undefined;
+  let rendition: EpubRendition | undefined;
   let disposed = false;
   let tocOpen = true;
   let status: 'loading' | 'ready' | 'error' = 'loading';
@@ -323,7 +357,7 @@ export default async function renderEpub(
     syncUi();
 
     try {
-      const ePub = resolveEpubJs(await import('epubjs'));
+      const ePub = resolveEpubJs(await import('./vendor/epubjs.js'));
       if (disposed) {
         return;
       }
@@ -416,7 +450,7 @@ export default async function renderEpub(
       }
     },
     capture: async () => {
-      const coverUrl = await (book as (Book & { coverUrl?: () => Promise<string | null> }) | undefined)
+      const coverUrl = await book
         ?.coverUrl?.()
         .catch(() => null);
       if (!coverUrl) {

@@ -11,7 +11,7 @@ const PNG_BYTES = Uint8Array.from([
 
 let epubDestroyed = 0;
 
-vi.mock('epubjs', () => ({
+vi.mock('./vendor/epubjs.js', () => ({
   default: vi.fn(() => ({
     ready: Promise.resolve(),
     coverUrl: async () => 'data:image/png;base64,iVBORw0KGgo=',
