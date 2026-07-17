@@ -154,7 +154,7 @@ const githubUrl = 'https://github.com/flyfish-dev/file-viewer'
 const githubApiUrl = 'https://api.github.com/repos/flyfish-dev/file-viewer'
 const githubStarCountFallback = 739
 const releasesUrl = 'https://github.com/flyfish-dev/file-viewer/releases'
-const currentReleaseVersion = '2.2.1'
+const currentReleaseVersion = '2.2.2'
 const currentReleaseUrl = `${releasesUrl}/tag/v${currentReleaseVersion}`
 const githubSponsorsUrl = 'https://github.com/sponsors/wybaby168'
 const domesticSponsorUrl = 'https://dev.flyfish.group/sponsor?source=github'
@@ -292,7 +292,7 @@ const copy = {
       demo: '在线体验'
     },
     hero: {
-      eyebrow: 'v2.2.1 · 浏览器原生文件预览超级组件',
+      eyebrow: 'v2.2.2 · 浏览器原生文件预览超级组件',
       title: '把复杂文件，变成产品里的即时体验。',
       subtitle:
         '一个组件，把 Office、PDF、OFD、CAD、Typst、XMind、压缩包、邮件、代码、媒体与 3D 等复杂文件直接带进浏览器。Full 包内置 preset-all，并交付配套的 File Viewer 自有离线资产。',
@@ -324,7 +324,7 @@ const copy = {
     supportTitle: '支持 File Viewer 持续维护，也为企业需求保留清晰入口。',
     supportIntro:
       'GitHub Sponsors 支持一次性或持续赞助，国内用户也可使用微信或支付宝。赞助用于开源维护，不影响开源功能；私有化、定制与明确响应时间请使用企业技术支持入口。',
-    releaseTitle: 'v2.2.1 已发布：修复上传 PDF 下载、复杂 DOCX 锚点布局与自托管模块加载。',
+    releaseTitle: 'v2.2.2 已发布：EPUB 引擎安全内置、Docker 安全头完整生效，并延续 PDF 与 DOCX 修复。',
     footer:
       '本仓库源码与软件包采用 Apache-2.0；可选外部依赖保留各自许可。由 Flyfish Dev 持续维护。'
   },
@@ -340,7 +340,7 @@ const copy = {
       demo: 'Live Demo'
     },
     hero: {
-      eyebrow: 'v2.2.1 · Browser-native file preview',
+      eyebrow: 'v2.2.2 · Browser-native file preview',
       title: 'Turn complex files into instant product experiences.',
       subtitle:
         'One component brings Office, PDF, OFD, CAD, Typst, XMind, archives, email, code, media, and 3D assets into the browser. Full packages include preset-all plus their matching File Viewer-owned offline assets.',
@@ -372,7 +372,7 @@ const copy = {
     supportTitle: 'Support sustainable maintenance, with a clear path for enterprise help.',
     supportIntro:
       'Back the open-source work through GitHub Sponsors, buy us a lemonade in the support shop, or explore the commercial edition when Office fidelity, private delivery, and committed support matter.',
-    releaseTitle: 'v2.2.1 is live: uploaded PDF downloads, anchored DOCX layouts, and self-hosted module loading are fixed.',
+    releaseTitle: 'v2.2.2 is live: EPUB is safely bundled, Docker security headers are complete, and the PDF/DOCX fixes remain intact.',
     footer:
       'Repository source and packages use Apache-2.0; optional external dependencies keep their own licenses. Maintained by Flyfish Dev.'
   }
@@ -628,7 +628,7 @@ const quickStartItems = computed<QuickStartItem[]>(() => [
   {
     label: isZh.value ? 'Vanilla JS Full' : 'Vanilla JS Full',
     packageName: '@file-viewer/web-full',
-    install: 'npm install @file-viewer/web-full@2.2.1',
+    install: 'npm install @file-viewer/web-full@2.2.2',
     title: isZh.value ? '完整部署 dist，零 copy 直接预览' : 'Deploy the complete dist with zero copy steps',
     summary: isZh.value
       ? 'web-full 内置 preset-all；完整 dist 已包含 renderer、Worker、WASM、字体和 vendor，保持目录结构部署即可。'

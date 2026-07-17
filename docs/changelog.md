@@ -6,6 +6,13 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.2.2` EPUB 安全依赖与 Docker 响应头补丁 — 2026-07-17
+
+- EPUB renderer 与缩略图包改为按需加载随包交付的本地引擎；构建固定组合 `epubjs@0.3.93` 与 `@xmldom/xmldom@0.9.10`，npm 用户的生产依赖树不再安装旧 XML DOM 包。
+- 每次构建都会生成引擎 SHA-256、版本 manifest 和完整第三方 NOTICE；发布门禁会对两个 tarball 做全新官方 registry 安装与 `npm audit --omit=dev`，并验证不存在裸 `epubjs` import 或外部运行时依赖。
+- Nginx 中带独立 `Cache-Control` 的 location 显式保留 `X-Content-Type-Options: nosniff` 与 `Referrer-Policy`，避免 location 级 `add_header` 关闭 server 级继承；`.mjs` 保持 `application/javascript`。
+- 54 个 npm 目标、208 个扩展名和 25 条预览链路不变；2.2.1 的 PDF 下载、DOCX 锚点和自托管模块修复全部保留。
+
 ## `v2.2.1` 上传下载、DOCX 锚点与自托管运行时补丁 — 2026-07-17
 
 - 修复上传 PDF 完成渲染后下载为 0 字节（GitHub #139）。PDF.js 转移并分离输入 `ArrayBuffer` 后，Core 会使用仍然完整的原始 `File`；流式 URL 和合法空文件保持原有行为。

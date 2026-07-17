@@ -2,6 +2,24 @@
 
 完整对外更新日志见 [docs/changelog.md](docs/changelog.md)。
 
+## File Viewer v2.2.2 — 2026-07-17
+
+这是 2.2.1 的依赖与自托管安全补丁。能力矩阵保持 54 个 npm 目标、208 个扩展名和 25 条预览链路。
+
+### Fixes
+
+- `@file-viewer/renderer-epub` 与 `@file-viewer/thumbnail` 不再向 npm 用户安装 `epubjs → @xmldom/xmldom 0.7.x`。EPUB 引擎改为包内懒加载模块，构建固定使用 `@xmldom/xmldom 0.9.10`，同时生成版本、哈希与完整第三方许可证清单。
+- 新增可重复的 `npm pack → 全新安装 → npm audit` 门禁：发布包必须包含本地 EPUB 模块、manifest 和 NOTICE，生产依赖树不得再出现 `epubjs` 或 `@xmldom/xmldom`。
+- 修复 Nginx 的 `add_header` 继承边界：所有自定义缓存策略的 HTML、`.mjs`、静态资源、样例和 vendor 路由现在都会显式返回 `X-Content-Type-Options: nosniff` 与 `Referrer-Policy`；`.mjs` 继续使用正确的 `application/javascript` MIME。
+- 完整保留 2.2.1 的上传 PDF 下载、复杂 DOCX 锚点布局、OFD 图片定位、PPT/PPTX 与全格式浏览器回归结果。
+
+### Upgrade
+
+```bash
+pnpm add @file-viewer/vue3-full@2.2.2
+pnpm add -D @file-viewer/vite-plugin@2.2.2
+```
+
 ## File Viewer v2.2.1 — 2026-07-17
 
 这是 2.2.0 的发布后补丁，集中修复上传 PDF 的下载数据源、复杂 DOCX 锚定绘图布局和自托管 Docker 运行时。能力矩阵仍为 54 个 npm 目标、208 个扩展名和 25 条预览链路。
