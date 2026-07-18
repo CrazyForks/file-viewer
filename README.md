@@ -175,6 +175,12 @@ The exact implementation and support level varies by format. Use the maintained 
 
 If a documented format fails on a real file, the most useful contribution is a **sanitized sample**, browser/version details and a minimal reproduction.
 
+## OpenAI Build Week 2026
+
+File Viewer started in 2022. The OpenAI Build Week submission covers only the work added from July 13, 2026: the v2.2 workspace, native PPT and STEP/OCCT preview paths, the bundled EPUB engine, and the release checks that keep Worker, WASM, font, and vendor assets working offline. The older core and format pipelines are context, not claimed as hackathon work.
+
+[Read the exact scope, Codex session, public commits, and test evidence](docs/en/guide/openai-build-week-2026.md).
+
 ## Support the Work
 
 I started working on the idea behind File Viewer in 2022 because uploading private files to another service just to preview them felt wrong. The hard part now is not the happy-path demo. It is reproducing broken Office files, CAD edge cases, encrypted archives, Worker paths, WASM assets and old framework builds.
