@@ -283,7 +283,7 @@ const resolveFileCapsuleMergeTarget = () => {
     : bounds.width
   // The navigation stays centered while its first slot grows. Compensating by
   // half the width delta gives the file capsule its exact resting rect before
-  // the fusion transition starts, avoiding a final lateral jump.
+  // the capsule morph starts, avoiding a final lateral jump.
   const left = bounds.left - (width - bounds.width) / 2
   return {
     top: bounds.top,
