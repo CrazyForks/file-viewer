@@ -59,9 +59,9 @@ const nextLocaleLabel = computed(() => isChineseLocale.value ? 'EN' : '中文')
 
 const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
   'zh-CN': {
-    backHome: '返回 Flyfish Viewer 主预览',
-    pageTitle: 'Flyfish Viewer 文档比对',
-    pageDescription: 'Flyfish Viewer 独立文档比对入口，支持左右并排预览、上传、URL 加载、同步滚动、搜索和行级定位。',
+    backHome: '返回 File Viewer 主预览',
+    pageTitle: 'File Viewer 文档比对',
+    pageDescription: 'File Viewer 独立文档比对入口，支持左右并排预览、上传、URL 加载、同步滚动、搜索和行级定位。',
     title: '文档比对',
     subtitle: '左右并排预览，支持示例、URL、本地上传、同步滚动、聚焦搜索和行级定位。',
     leftPanel: '左侧文档',
@@ -95,9 +95,9 @@ const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
     language: '语言'
   },
   'en-US': {
-    backHome: 'Back to Flyfish Viewer demo',
-    pageTitle: 'Flyfish Viewer Document Compare',
-    pageDescription: 'Standalone Flyfish Viewer comparison demo with side-by-side preview, upload, URL loading, synchronized scrolling, search, and line navigation.',
+    backHome: 'Back to File Viewer demo',
+    pageTitle: 'File Viewer Document Compare',
+    pageDescription: 'Standalone File Viewer comparison demo with side-by-side preview, upload, URL loading, synchronized scrolling, search, and line navigation.',
     title: 'Document Compare',
     subtitle: 'Side-by-side preview with samples, URL input, local upload, synchronized scrolling, focused search, and line-level navigation.',
     leftPanel: 'Left document',
@@ -502,7 +502,7 @@ watch(compareLocale, (nextLocale, previousLocale) => {
       <a class="brand" href="/" :aria-label="compareCopy.backHome">
         <img :src="brandLogo" alt="">
         <span>
-          <strong>Flyfish Viewer</strong>
+          <strong>File Viewer</strong>
           <small>Document Compare</small>
         </span>
       </a>

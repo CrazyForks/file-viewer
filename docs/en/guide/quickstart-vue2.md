@@ -28,7 +28,7 @@ const viewerOptions = {
 }
 ```
 
-Use `styleIsolation:'shadow'` when the host page has aggressive global CSS, low-code resets, or micro-frontend style collisions. Vue 2 packages keep historical compatibility by default. See [Style Isolation And Customization](/en/guide/style-isolation) for tokens and `::part()` customization.
+Vue 2 uses Shadow DOM by default so aggressive global CSS, low-code resets, and micro-frontend styles cannot break the viewer. Use `styleIsolation:'none'` only for legacy deep class overrides. See [Style Isolation And Customization](/en/guide/style-isolation) for tokens and `::part()` customization.
 
 Vite projects can add the plugin to avoid manual preset imports. Installing the package alone is not enough because Vite plugins must be registered once; after registration the plugin auto-discovers installed presets:
 
@@ -171,7 +171,7 @@ module.exports = {
 }
 ```
 
-Keep the `@file-viewer/docx` alias: webpack 4 otherwise prefers the UMD `browser` entry, whose CommonJS exports are lost after Babel transpilation and surface as `renderAsync is not a function` when a DOCX is uploaded. The demo also includes two webpack 4 compatibility patches: `build/rename-pdfjs-webpack-require.cjs` renames the bundled PDF.js legacy `.mjs` webpack helper so it does not shadow the host webpack 4 `__webpack_require__`, and `build/babel-transform-import-meta-url.cjs` lets webpack 4 parse the PPTX worker module. Its copy script publishes the complete nine-file `@file-viewer/ppt@0.3.1` runtime under `public/file-viewer/vendor/ppt/` together with the PPTX worker. The `serve` env files set `NODE_ENV=production` to avoid Vue CLI 3.1 injecting its HMR client into this legacy preview path.
+Keep the `@file-viewer/docx` alias: webpack 4 otherwise prefers the UMD `browser` entry, whose CommonJS exports are lost after Babel transpilation and surface as `renderAsync is not a function` when a DOCX is uploaded. The demo also includes two webpack 4 compatibility patches: `build/rename-pdfjs-webpack-require.cjs` renames the bundled PDF.js legacy `.mjs` webpack helper so it does not shadow the host webpack 4 `__webpack_require__`, and `build/babel-transform-import-meta-url.cjs` lets webpack 4 parse the PPTX worker module. Its copy script publishes the complete nine-file `@file-viewer/ppt@0.3.2` runtime under `public/file-viewer/vendor/ppt/` together with the PPTX worker. The `serve` env files set `NODE_ENV=production` to avoid Vue CLI 3.1 injecting its HMR client into this legacy preview path.
 
 Then pass the preset and self-hosted asset URLs explicitly:
 

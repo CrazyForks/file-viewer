@@ -3,7 +3,7 @@
 <div class="doc-kicker">Shadow DOM, Tokens, Parts</div>
 
 <p class="doc-lead">
-  File Viewer uses Shadow DOM by default in Web Component / IIFE / full web entries to isolate the viewer shell and rendered content.
+  File Viewer uses Shadow DOM by default in every standard component to isolate the viewer shell and rendered content.
   Applications customize the viewer through CSS custom properties and Shadow Parts instead of depending on internal classes or global overrides.
 </p>
 
@@ -13,8 +13,8 @@ This model is designed for admin systems, OA portals, low-code platforms, micro-
 
 | Scenario | Recommended path |
 | --- | --- |
-| New projects, classic admin pages, script tags, low-code, micro-frontends | Use `@file-viewer/web`, `@file-viewer/web-full`, or `<flyfish-file-viewer>`. The default `styleIsolation:'auto'` uses Shadow DOM. |
-| Vue / React / Svelte / jQuery projects under aggressive host CSS | Keep the framework package and pass `options.styleIsolation:'shadow'`. |
+| New projects, classic admin pages, script tags, low-code, micro-frontends | Use the component package for your stack. The default `styleIsolation:'auto'` uses Shadow DOM. |
+| Vue / React / Svelte / jQuery projects under aggressive host CSS | No extra option is required; their standard packages use the same Shadow DOM boundary. |
 | Need controlled inheritance from host fonts or theme variables | Use `styleIsolation:'scoped'`. |
 | Legacy projects with deep internal class overrides | Temporarily use `styleIsolation:'none'`, then migrate to tokens and parts. |
 
@@ -36,9 +36,9 @@ const options = {
 
 | Value | Behavior |
 | --- | --- |
-| `auto` | Default. Web Component / Web full / IIFE / custom element entries default to `shadow`; framework components keep compatibility, while renderer content can still be isolated by core. |
+| `auto` | Default. Web Component, IIFE, Vue, React, Svelte, jQuery, and full packages use Shadow DOM. |
 | `shadow` | Creates a ShadowRoot render surface. Styles are injected into the isolated root first, and overlays prefer the same root. |
-| `scoped` | Does not create a ShadowRoot. Uses a stable root selector, `@layer file-viewer`, and local resets to constrain cascade impact. |
+| `scoped` | Does not create a ShadowRoot. Uses a stable root selector and local resets to limit its impact. |
 | `none` | Historical light-DOM behavior for legacy theme CSS or deep overrides. |
 
 The Web Component also supports an attribute:
@@ -124,7 +124,7 @@ Renderer authors and future extensions should keep using stable names such as `s
 
 ## Framework Packages
 
-Vue / React / Svelte / jQuery keep compatibility by default so old local styles and snapshots do not change unexpectedly. Opt into strong isolation through the shared options object:
+Vue / React / Svelte / jQuery use the same Shadow DOM boundary by default. The explicit option below is equivalent to `auto` and can be useful when an application wants to lock the policy:
 
 ```ts
 const viewerOptions = {
@@ -170,10 +170,10 @@ div {
 
 Expected behavior:
 
-- With `styleIsolation:'shadow'`, the Web Component toolbar and content stay usable.
+- With `styleIsolation:'auto'` or `'shadow'`, the standard component toolbar and content stay usable.
 - Theme variables set through `--file-viewer-*` still apply.
 - `flyfish-file-viewer::part(toolbar)` and similar selectors customize only the intended surface.
-- Events remain `bubbles:true` and `composed:true`, so host pages can keep listening for `viewer-event`.
+- Web Component DOM events remain `bubbles:true` and `composed:true`; framework packages continue to forward their native component events across the Shadow boundary.
 
 ## Printing And Export
 
@@ -188,7 +188,7 @@ If you maintain a custom renderer:
 
 ## Migration
 
-1. Keep the default `auto` for new Web / IIFE integrations.
+1. Keep the default `auto` for new integrations across all standard component packages.
 2. If a legacy project depends on deep class overrides, start with `styleIsolation:'none'`.
 3. Move color, font, spacing, and radius overrides to `--file-viewer-*` tokens.
 4. Move structural customization to `::part()`.

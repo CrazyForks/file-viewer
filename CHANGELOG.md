@@ -2,6 +2,26 @@
 
 完整对外更新日志见 [docs/changelog.md](docs/changelog.md)。
 
+## File Viewer v2.2.3 — 2026-07-21
+
+这是组件工具栏隔离与演示文稿运行时兼容补丁。能力矩阵保持 54 个 npm 目标、208 个扩展名和 25 条预览链路。
+
+### Fixes
+
+- 标准 Web、Vue 3、Vue 2.7、Vue 2.6、React、React Legacy、Svelte 与 jQuery 组件统一使用 Core 浏览器控制器；默认 Shadow DOM 会隔离宿主全局样式，显式 `styleIsolation: 'none'` 仍可切换为 Light DOM。
+- 修复同一宿主从 Shadow DOM 重挂为 Light DOM 时内容仍留在 ShadowRoot，以及挂载到业务自有 ShadowRoot 时误清空已有节点的问题；销毁时只移除 File Viewer 自己创建的边界。
+- Vue 3 在真实 ShadowRoot 内注入组件与 renderer 样式；Vue 2.6 补齐 `onEvent`、`onStateChange` 和视图状态 API，工具栏、事件与命令在旧构建链中保持一致。
+- Angular 22 + Vite 优化缓存下的 PPTX Worker 会正确解析 `baseHref` 和 `.angular/cache` 路径，不再请求错误的站点根路径。
+- 二进制 PPT 升级到 `@file-viewer/ppt@0.3.2`。其 Worker 变为自包含模块，普通 Vite 项目无需复制 `vendor/ppt` 也能从 npm ESM 包启动 Worker；Full、copy-assets 与 IIFE 路径继续完整自托管。
+- PDF、Spreadsheet、PPTX、Markdown 和打印蒙版在 Shadow DOM、移动端与统一缩放路径下补齐样式和布局回归。
+
+### Upgrade
+
+```bash
+pnpm add @file-viewer/vue3-full@2.2.3
+pnpm add -D @file-viewer/vite-plugin@2.2.3
+```
+
 ## File Viewer v2.2.2 — 2026-07-17
 
 这是 2.2.1 的依赖与自托管安全补丁。能力矩阵保持 54 个 npm 目标、208 个扩展名和 25 条预览链路。

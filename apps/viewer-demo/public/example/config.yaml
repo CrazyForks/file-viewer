@@ -1,9 +1,9 @@
 viewer:
-  name: Flyfish Viewer
+  name: File Viewer
   mode: component
   packages:
-    vue3: "@file-viewer/vue3@2.2.2"
-    vue2: "@file-viewer/vue2.7@2.2.2"
+    vue3: "@file-viewer/vue3@2.2.3"
+    vue2: "@file-viewer/vue2.7@2.2.3"
   lazy: true
   defaultInput: url
   toolbar:

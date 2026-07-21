@@ -3,8 +3,11 @@ import {
   createFileViewerZoomChangeEmitter as createZoomChangeEmitter,
   readFileViewerText as readText,
   registerFileViewerZoomProvider,
+  resolveFileViewerFitScale,
   unregisterFileViewerZoomProvider,
   type FileRenderContext,
+  type FileViewerFitRequest,
+  type FileViewerFitResult,
   type FileViewerRenderedInstance,
   type FileViewerThemeMode,
   type FileViewerZoomState,
@@ -43,14 +46,47 @@ const createStyle = () => {
   return style;
 };
 
+const MARKDOWN_BASE_MAX_WIDTH = 980;
+const MARKDOWN_BASE_PADDING = 45;
+const MARKDOWN_BASE_FONT_SIZE = 16;
+const MARKDOWN_MIN_SCALE = 0.6;
+const MARKDOWN_MAX_SCALE = 2.4;
+
 const clampZoom = (value: number) => {
-  return Math.min(2.4, Math.max(0.6, Number(value.toFixed(2))));
+  return Math.min(MARKDOWN_MAX_SCALE, Math.max(MARKDOWN_MIN_SCALE, Number(value.toFixed(2))));
 };
 
 const applyMarkdownZoom = (host: HTMLElement, zoom: number) => {
-  host.style.setProperty('--markdown-max-width', `${980 * zoom}px`);
-  host.style.setProperty('--markdown-padding', `${45 * zoom}px`);
-  host.style.setProperty('--markdown-font-size', `${16 * zoom}px`);
+  host.style.setProperty('--markdown-max-width', `${MARKDOWN_BASE_MAX_WIDTH * zoom}px`);
+  host.style.setProperty('--markdown-padding', `${MARKDOWN_BASE_PADDING * zoom}px`);
+  host.style.setProperty('--markdown-font-size', `${MARKDOWN_BASE_FONT_SIZE * zoom}px`);
+};
+
+const readCssPixels = (value: string | undefined) => {
+  const pixels = Number.parseFloat(value || '');
+  return Number.isFinite(pixels) ? pixels : 0;
+};
+
+const readMarkdownViewport = (
+  root: HTMLElement,
+  request: FileViewerFitRequest
+) => {
+  const viewportWidth = Math.max(1, request.viewportWidth || root.clientWidth || 0);
+  const viewportHeight = Math.max(1, request.viewportHeight || root.clientHeight || 0);
+  const view = root.ownerDocument.defaultView;
+  const computed = view?.getComputedStyle?.(root);
+  const mobile = viewportWidth <= 767;
+  const horizontalPadding = computed
+    ? readCssPixels(computed.paddingLeft) + readCssPixels(computed.paddingRight)
+    : mobile ? 20 : 32;
+  const verticalPadding = computed
+    ? readCssPixels(computed.paddingTop) + readCssPixels(computed.paddingBottom)
+    : mobile ? 42 : 76;
+
+  return {
+    width: Math.max(1, viewportWidth - horizontalPadding),
+    height: Math.max(1, viewportHeight - verticalPadding),
+  };
 };
 
 let mermaidRenderSequence = 0;
@@ -188,15 +224,20 @@ export default async function renderMarkdown(
   root.append(article);
   target.replaceChildren(createStyle(), root);
   await renderEmbeddedMermaid(article, context?.options?.theme);
+  const baseContentHeight = Math.max(
+    article.scrollHeight || 0,
+    article.offsetHeight || 0,
+    0
+  );
 
   const getZoomState = (): FileViewerZoomState => ({
     scale: zoom,
     label: `${Math.round(zoom * 100)}%`,
-    canZoomIn: zoom < 2.4,
-    canZoomOut: zoom > 0.6,
+    canZoomIn: zoom < MARKDOWN_MAX_SCALE,
+    canZoomOut: zoom > MARKDOWN_MIN_SCALE,
     canReset: zoom !== 1,
-    minScale: 0.6,
-    maxScale: 2.4,
+    minScale: MARKDOWN_MIN_SCALE,
+    maxScale: MARKDOWN_MAX_SCALE,
   });
 
   const setZoom = (scale: number) => {
@@ -206,11 +247,56 @@ export default async function renderMarkdown(
     return getZoomState();
   };
 
+  const fitMarkdown = (request: FileViewerFitRequest): FileViewerFitResult => {
+    const viewport = readMarkdownViewport(root, request);
+    const minScale = request.minScale ?? MARKDOWN_MIN_SCALE;
+    const requestedMaxScale = request.maxScale ?? MARKDOWN_MAX_SCALE;
+    // A flowing document must not be fitted against its full scroll height.
+    // Auto therefore follows the readable content width. It stays at 1:1 by
+    // default, but an explicit maxScale can opt into the wider DOCX-like fit
+    // requested by the caller.
+    const maxScale = request.mode === 'auto' && request.maxScale == null
+      ? Math.max(minScale, Math.min(1, requestedMaxScale))
+      : requestedMaxScale;
+    const scale = resolveFileViewerFitScale({
+      mode: request.mode === 'auto' ? 'width' : request.mode,
+      viewportWidth: viewport.width,
+      viewportHeight: viewport.height,
+      contentWidth: MARKDOWN_BASE_MAX_WIDTH,
+      contentHeight: baseContentHeight || viewport.height,
+      currentScale: zoom,
+      minScale,
+      maxScale,
+    });
+
+    if (!scale) {
+      return {
+        applied: false,
+        mode: request.mode,
+        resize: request.resize,
+        source: request.source,
+        reason: 'unmeasurable',
+        provider: 'zoom',
+      };
+    }
+
+    const state = setZoom(scale);
+    return {
+      applied: true,
+      mode: request.mode,
+      resize: request.resize,
+      scale: state.scale,
+      source: request.source,
+      provider: 'zoom',
+    };
+  };
+
   registerFileViewerZoomProvider(root, {
     zoomIn: () => setZoom(zoom + 0.1),
     zoomOut: () => setZoom(zoom - 0.1),
     resetZoom: () => setZoom(1),
     setZoom,
+    fit: fitMarkdown,
     getState: getZoomState,
     subscribe: zoomEmitter.subscribe,
   });

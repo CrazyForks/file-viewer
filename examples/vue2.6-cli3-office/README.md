@@ -21,7 +21,7 @@ NODE_OPTIONS=--openssl-legacy-provider npm run build
 - webpack 4 不识别 package `exports` 子路径时，通过 alias 兼容 `@file-viewer/core/assets`、`browser`、`headless`。
 - webpack 4 默认优先读取 `@file-viewer/docx` 的 UMD `browser` 入口；该入口再经过 Babel 转译会丢失 CommonJS 导出，因此示例把包根 alias 到 `dist/docx-preview.mjs`，避免上传 DOCX 时出现 `renderAsync is not a function`。
 - `build/rename-pdfjs-webpack-require.cjs` 处理 PDF.js legacy `.mjs` 自带 webpack 包装代码，避免和宿主 webpack 4 注入的 `__webpack_require__` 同名冲突。
-- 二进制 `.ppt` 使用 `@file-viewer/ppt@0.3.1` Worker/OffscreenCanvas/WASM 引擎；示例会把其 ESM、Worker、帧缓存、WASM、CJK 字体、manifest、package metadata、LICENSE 与 NOTICE 九个文件完整复制到 `public/file-viewer/vendor/ppt/`。`.pptx` 仍使用独立 Worker。PPTX 依赖里的 `import.meta.url` 由示例中的 Babel 小插件兼容 webpack 4。
+- 二进制 `.ppt` 使用 `@file-viewer/ppt@0.3.2` Worker/OffscreenCanvas/WASM 引擎；示例会把其 ESM、Worker、帧缓存、WASM、CJK 字体、manifest、package metadata、LICENSE 与 NOTICE 九个文件完整复制到 `public/file-viewer/vendor/ppt/`。`.pptx` 仍使用独立 Worker。PPTX 依赖里的 `import.meta.url` 由示例中的 Babel 小插件兼容 webpack 4。
 - `scripts/copy-file-viewer-assets.cjs` 把 PDF、DOCX、Excel、PPT 和 PPTX 的 Worker、CMap、WASM、标准字体及 vendor 资源复制到 `public/file-viewer/`，满足离线部署；`src/fileViewerOptions.js` 已配置这套旧构建链需要的本地 PPT/PPTX URL，业务侧无需再拼路径。
 - `.env.normalServe` / `.env.noApiServe` 使用 `NODE_ENV=production` 预览，是为了绕开 Vue CLI 3.1 dev server 对 HMR 客户端的强注入；客户项目如需开发热更新，建议先用这个示例确认构建链，再把兼容配置搬回真实工程。
 

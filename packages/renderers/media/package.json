@@ -1,9 +1,9 @@
 {
   "name": "@file-viewer/renderer-media",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
-  "description": "Standalone audio and video renderer plugin for Flyfish File Viewer with native media playback, HLS fallback, MIDI parsing, and offline-friendly lazy loading.",
+  "description": "Standalone audio and video renderer plugin for File Viewer with native media playback, HLS fallback, MIDI parsing, and offline-friendly lazy loading.",
   "keywords": [
     "file-viewer",
     "renderer",
@@ -21,8 +21,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",
@@ -59,7 +59,7 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:2.2.2",
+    "@file-viewer/core": "workspace:2.2.3",
     "@tonejs/midi": "^2.0.28",
     "hls.js": "^1.6.16"
   },

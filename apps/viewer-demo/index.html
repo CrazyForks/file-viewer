@@ -4,26 +4,26 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#eef5f1">
-    <title>Flyfish File Viewer — Browser-native, offline-first file preview</title>
+    <meta name="theme-color" content="#f6f8f7">
+    <title>File Viewer — Browser-native, offline-first file preview</title>
     <meta name="description" content="Preview PDF, Office, CAD, archives, email, media, diagrams and more in the browser with offline-ready File Viewer components.">
     <link rel="canonical" href="https://demo.file-viewer.app/">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="en_US">
-    <meta property="og:title" content="Flyfish File Viewer — Browser-native file preview">
+    <meta property="og:title" content="File Viewer — Browser-native file preview">
     <meta property="og:description" content="Offline-first, self-hosted file preview components for PDF, Office, CAD, archives and more.">
     <meta property="og:url" content="https://demo.file-viewer.app/">
     <meta property="og:image" content="https://demo.file-viewer.app/social-preview.png">
-    <meta property="og:image:alt" content="Flyfish File Viewer multi-format browser preview demo">
+    <meta property="og:image:alt" content="File Viewer multi-format browser preview demo">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Flyfish File Viewer — Browser-native file preview">
+    <meta name="twitter:title" content="File Viewer — Browser-native file preview">
     <meta name="twitter:description" content="Offline-first, self-hosted file preview components for PDF, Office, CAD, archives and more.">
     <meta name="twitter:image" content="https://demo.file-viewer.app/social-preview.png">
-    <meta name="twitter:image:alt" content="Flyfish File Viewer multi-format browser preview demo">
+    <meta name="twitter:image:alt" content="File Viewer multi-format browser preview demo">
     <style>
       :root {
         color-scheme: light;
-        background: #eef5f1;
+        background: #f6f8f7;
       }
 
       html,
@@ -31,7 +31,7 @@
         margin: 0;
         min-width: 320px;
         min-height: 100%;
-        background: #eef5f1;
+        background: #f6f8f7;
         color: #172033;
         font-family: Aptos, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -53,10 +53,10 @@
         place-items: center;
         padding: 32px;
         background:
-          linear-gradient(90deg, rgba(31, 150, 110, 0.07) 1px, transparent 1px),
-          linear-gradient(180deg, rgba(31, 150, 110, 0.06) 1px, transparent 1px),
-          linear-gradient(135deg, #eef5f1 0%, #f8fbff 52%, #edf7f2 100%);
-        background-size: 28px 28px, 28px 28px, auto;
+          radial-gradient(circle at 17% -4%, rgba(190, 227, 242, 0.58), transparent 33%),
+          radial-gradient(circle at 92% 2%, rgba(200, 238, 213, 0.52), transparent 31%),
+          #f6f8f7;
+        background-size: auto;
         box-sizing: border-box;
       }
 
@@ -93,15 +93,10 @@
       .app-boot-mark {
         width: 48px;
         height: 48px;
-        display: grid;
-        place-items: center;
-        border-radius: 8px;
-        background: #1f966e;
-        color: #ffffff;
-        font-size: 26px;
-        font-weight: 800;
-        line-height: 1;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+        display: block;
+        border-radius: 13px;
+        object-fit: cover;
+        box-shadow: 0 10px 24px rgba(35, 86, 70, 0.13);
       }
 
       .app-boot-name {
@@ -280,13 +275,13 @@
   </head>
   <body>
     <div id="app">
-      <main class="app-boot-screen" role="status" aria-live="polite" aria-label="Loading Flyfish File Viewer">
+      <main class="app-boot-screen" role="status" aria-live="polite" aria-label="Loading File Viewer">
         <div class="app-boot-shell">
           <section class="app-boot-brand">
             <div class="app-boot-title">
-              <div class="app-boot-mark" aria-hidden="true">F</div>
+              <img class="app-boot-mark" src="/logo.png" alt="" />
               <div>
-                <strong class="app-boot-name">Flyfish File Viewer</strong>
+                <strong class="app-boot-name">File Viewer</strong>
                 <span class="app-boot-status">Preparing the file preview environment...</span>
               </div>
             </div>

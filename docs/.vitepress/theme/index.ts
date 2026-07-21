@@ -30,7 +30,7 @@ function enhanceGithubStarLinks(stars = githubStarsFallback) {
   for (const link of links) {
     link.classList.add('docs-github-star-button')
     link.dataset.stars = stars
-    link.setAttribute('aria-label', `Star Flyfish Viewer on GitHub, ${stars} stars`)
+    link.setAttribute('aria-label', `Star File Viewer on GitHub, ${stars} stars`)
   }
 }
 

@@ -12,7 +12,7 @@ print_section() {
   printf '\n== %s ==\n' "$1"
 }
 
-print_section "Flyfish Viewer sample audit"
+print_section "File Viewer sample audit"
 printf 'root: %s\n' "$ROOT_DIR"
 printf 'examples: %s files\n' "$(count_files)"
 

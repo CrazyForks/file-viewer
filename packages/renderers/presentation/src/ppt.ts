@@ -399,7 +399,7 @@ export default async function renderPpt(
       };
     }
     const scale = resolveFileViewerFitScale({
-      mode: request.mode === 'auto' ? 'scale-down' : request.mode,
+      mode: request.mode,
       viewportWidth: Math.max(1, (request.viewportWidth || shell.clientWidth || 0) - request.padding * 2),
       viewportHeight: Math.max(1, (request.viewportHeight || shell.clientHeight || 0) - request.padding * 2),
       contentWidth: pptDocument.width,

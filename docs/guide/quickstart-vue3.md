@@ -98,7 +98,7 @@ const viewerOptions = {
 }
 ```
 
-Use `styleIsolation:'shadow'` when the host page has uncontrolled global CSS, low-code resets, or micro-frontend style collisions. Vue 3 keeps light-DOM compatibility by default. See [Style Isolation And Customization](/guide/style-isolation) for CSS tokens and `::part()` customization.
+Vue 3 uses Shadow DOM by default so uncontrolled global CSS, low-code resets, and micro-frontend styles cannot break the viewer. Use `styleIsolation:'none'` only for legacy deep class overrides. See [Style Isolation And Customization](/guide/style-isolation) for CSS tokens and `::part()` customization.
 
 ## Register Globally
 

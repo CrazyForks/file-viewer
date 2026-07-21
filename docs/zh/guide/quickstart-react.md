@@ -37,7 +37,7 @@ const viewerOptions = {
 }
 ```
 
-宿主 CSS 不可控、低代码平台或微前端混挂时，推荐传 `styleIsolation:'shadow'`。React 包默认保持 light DOM 兼容；完整隔离模式、CSS tokens 和 `::part()` 定制见 [样式隔离与主题定制](/zh/guide/style-isolation)。
+React 默认使用 Shadow DOM，宿主全局 CSS、低代码 reset 和微前端样式不会破坏工具栏或正文。只有依赖深层 class 覆盖的旧项目才使用 `styleIsolation:'none'`；CSS tokens 和 `::part()` 定制见 [样式隔离与主题定制](/zh/guide/style-isolation)。
 
 Vite 项目可以额外加入插件，插件会自动发现已安装的 `@file-viewer/preset-*` 并省去手动 import：
 

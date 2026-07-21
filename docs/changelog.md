@@ -6,6 +6,15 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## `v2.2.3` 工具栏隔离与演示文稿运行时兼容补丁 — 2026-07-21
+
+- Web、Vue 3、Vue 2.7、Vue 2.6、React、React Legacy、Svelte 与 jQuery 共用 Core 浏览器控制器。标准组件默认在 Shadow DOM 中渲染，业务全局 CSS 不再覆盖工具栏；需要参与宿主样式系统时仍可显式设置 `styleIsolation: 'none'`。
+- 修复 Shadow/Light 模式在同一宿主重挂时的边界残留，并保护业务自行创建的 ShadowRoot：File Viewer 只管理自己的挂载节点，销毁不会清空业务内容。
+- Vue 3 的组件样式和 renderer 样式进入真实 ShadowRoot；Vue 2.6 的事件、状态回调、命令与视图状态 API 和现代组件保持一致。
+- PPTX Worker 兼容 Angular 22 application builder 的 `.angular/cache`、Vite 依赖优化和 `baseHref` 路径。
+- 二进制 PPT 升级到 `@file-viewer/ppt@0.3.2`。自包含 Worker 修复普通 Vite 生产构建中的相邻模块 404；强制 Worker 模式已在全新临时应用中渲染 25 页真实 PPT，并确认 Worker、WASM 与字体请求全部返回 200。
+- 54 个 npm 目标、208 个扩展名和 25 条预览链路保持不变；组件浏览器矩阵与主 Demo 的 136 个样例均完成真实渲染回归。
+
 ## `v2.2.2` EPUB 安全依赖与 Docker 响应头补丁 — 2026-07-17
 
 - EPUB renderer 与缩略图包改为按需加载随包交付的本地引擎；构建固定组合 `epubjs@0.3.93` 与 `@xmldom/xmldom@0.9.10`，npm 用户的生产依赖树不再安装旧 XML DOM 包。

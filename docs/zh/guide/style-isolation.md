@@ -3,7 +3,7 @@
 <div class="doc-kicker">Shadow DOM, Tokens, Parts</div>
 
 <p class="doc-lead">
-  File Viewer 在 Web Component / IIFE / full 原生入口中默认使用 Shadow DOM 隔离组件壳和预览内容。
+  File Viewer 的所有标准组件默认使用 Shadow DOM 隔离组件壳和预览内容。
   业务侧通过 CSS Custom Properties 和 Shadow Parts 定制外观，不再依赖内部 class 或全局覆盖。
 </p>
 
@@ -13,8 +13,8 @@
 
 | 场景 | 推荐方案 |
 | --- | --- |
-| 新项目、传统后台、script 标签、低代码、微前端 | 使用 `@file-viewer/web`、`@file-viewer/web-full` 或 `<flyfish-file-viewer>`，默认 `styleIsolation:'auto'` 即会走 Shadow DOM |
-| Vue / React / Svelte / jQuery 项目需要抗宿主全局样式 | 继续使用当前框架组件，并传 `options.styleIsolation:'shadow'` |
+| 新项目、传统后台、script 标签、低代码、微前端 | 使用当前技术栈对应的标准组件，默认 `styleIsolation:'auto'` 即会走 Shadow DOM |
+| Vue / React / Svelte / jQuery 项目需要抗宿主全局样式 | 无需额外配置，标准框架组件使用同一套 Shadow DOM 边界 |
 | 需要继承外层字体、主题变量，但仍希望降低样式污染 | 使用 `styleIsolation:'scoped'` |
 | 旧项目依赖内部 class 深度覆盖 | 暂时使用 `styleIsolation:'none'`，再逐步迁移到 tokens + parts |
 
@@ -36,9 +36,9 @@ const options = {
 
 | 值 | 行为 |
 | --- | --- |
-| `auto` | 默认值。Web Component / Web full / IIFE / custom element 默认 `shadow`；框架组件保持历史兼容，但 renderer 内容可通过 core 隔离 |
+| `auto` | 默认值。Web Component、IIFE、Vue、React、Svelte、jQuery 和 full 包均使用 Shadow DOM |
 | `shadow` | 创建 ShadowRoot 作为渲染面，样式优先注入隔离根，overlay 也优先挂在隔离根内 |
-| `scoped` | 不创建 ShadowRoot，使用稳定根选择器、`@layer file-viewer` 和局部 reset 约束级联 |
+| `scoped` | 不创建 ShadowRoot，使用稳定根选择器和局部 reset 约束影响范围 |
 | `none` | 保持历史 light DOM 行为，适合旧主题或深度 CSS 覆盖迁移期 |
 
 Web Component 也支持 attribute：
@@ -124,7 +124,7 @@ flyfish-file-viewer::part(content) {
 
 ## 框架组件写法
 
-Vue / React / Svelte / jQuery 默认保持兼容，以免旧项目的局部样式和快照测试突然变化。需要强隔离时，在同一份 `options` 中开启：
+Vue / React / Svelte / jQuery 默认使用同一套 Shadow DOM 边界。下面的显式配置与 `auto` 等效，适合希望固定隔离策略的项目：
 
 ```ts
 const viewerOptions = {
@@ -170,10 +170,10 @@ div {
 
 期望结果：
 
-- `styleIsolation:'shadow'` 下 Web Component 工具栏和内容仍保持可用。
+- `styleIsolation:'auto'` 或 `'shadow'` 下，标准组件的工具栏和内容仍保持可用。
 - 业务通过 `--file-viewer-*` 设置的主题变量仍能生效。
 - 业务通过 `flyfish-file-viewer::part(toolbar)` 等选择器能精准定制。
-- 事件仍然 `bubbles:true`、`composed:true`，外层页面可以正常监听 `viewer-event`。
+- Web Component 的 DOM 事件仍然保持 `bubbles:true`、`composed:true`；框架组件继续通过自身事件系统跨越 Shadow 边界转发事件。
 
 ## 打印和导出
 
@@ -188,7 +188,7 @@ Shadow DOM 下打印和 HTML 导出会从当前渲染面收集内容和必要样
 
 ## 迁移建议
 
-1. 新 Web / IIFE 接入保持默认 `auto`，不要主动关闭隔离。
+1. 所有标准组件的新接入都保持默认 `auto`，不要主动关闭隔离。
 2. 旧项目如果依赖深度 class 覆盖，先用 `styleIsolation:'none'` 保持行为。
 3. 把颜色、字体、间距、圆角迁移到 `--file-viewer-*` tokens。
 4. 把少量结构定制迁移到 `::part()`。

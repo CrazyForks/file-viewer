@@ -3,7 +3,7 @@
 #include "main.h"
 
 const char* viewer_name(void) {
-  return "Flyfish Viewer";
+  return "File Viewer";
 }
 
 const char* preview_extension(const char* filename) {

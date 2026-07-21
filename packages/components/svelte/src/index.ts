@@ -11,6 +11,7 @@ import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 export type {
   FileRef,
   ViewerAiOptions,
+  ViewerApplyViewStateOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerController,
@@ -22,16 +23,24 @@ export type {
   ViewerEventType,
   ViewerFetchFile,
   ViewerFetchInput,
+  ViewerFitMode,
+  ViewerFitOptions,
+  ViewerFitResult,
   ViewerMountOptions,
   ViewerOptions,
   ViewerPdfOptions,
+  ViewerPresentationOptions,
   ViewerSpreadsheetOptions,
+  ViewerCoreOptions,
   ViewerSearchOptions,
   ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
+  ViewerUiDensity,
+  ViewerUiOptions,
+  ViewerViewState,
   ViewerWatermarkOptions,
   ViewerLifecycleContext,
   ViewerOperationContext,
@@ -60,6 +69,9 @@ export interface FileViewerSvelteActionReturn {
   zoomIn: ViewerControllerHandle['zoomIn']
   zoomOut: ViewerControllerHandle['zoomOut']
   resetZoom: ViewerControllerHandle['resetZoom']
+  fitToView: ViewerControllerHandle['fitToView']
+  getViewState: ViewerControllerHandle['getViewState']
+  applyViewState: ViewerControllerHandle['applyViewState']
   searchDocument: ViewerControllerHandle['searchDocument']
   clearDocumentSearch: ViewerControllerHandle['clearDocumentSearch']
   nextSearchResult: ViewerControllerHandle['nextSearchResult']
@@ -153,6 +165,9 @@ export const fileViewer = (
     zoomIn: handle.zoomIn,
     zoomOut: handle.zoomOut,
     resetZoom: handle.resetZoom,
+    fitToView: handle.fitToView,
+    getViewState: handle.getViewState,
+    applyViewState: handle.applyViewState,
     searchDocument: handle.searchDocument,
     clearDocumentSearch: handle.clearDocumentSearch,
     nextSearchResult: handle.nextSearchResult,

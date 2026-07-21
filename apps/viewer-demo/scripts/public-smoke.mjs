@@ -14,7 +14,7 @@ if (!existsSync(entryPath)) {
 const html = readFileSync(entryPath, 'utf8')
 for (const expected of [
   '<html lang="en">',
-  '<title>Flyfish File Viewer — Browser-native, offline-first file preview</title>',
+  '<title>File Viewer — Browser-native, offline-first file preview</title>',
   '<link rel="canonical" href="https://demo.file-viewer.app/">',
   '<meta property="og:locale" content="en_US">',
   '<meta name="twitter:card" content="summary_large_image">'

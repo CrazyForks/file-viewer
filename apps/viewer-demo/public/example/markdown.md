@@ -1,4 +1,4 @@
-# Flyfish File Viewer Markdown Demo
+# File Viewer Markdown Demo
 
 This sample is intentionally longer than a placeholder README. It checks whether
 the Markdown renderer keeps a clean reading surface in both light and dark system

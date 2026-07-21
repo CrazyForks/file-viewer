@@ -27,7 +27,7 @@ function selectFile(file: SampleFile) {
 <template>
   <section class="sample">
     <header>
-      <span>Flyfish Viewer</span>
+      <span>File Viewer</span>
       <strong>{{ title }}</strong>
     </header>
 

@@ -6,6 +6,19 @@ import { getDemoSource } from './demoSource'
 import './styles.css'
 
 const demoSource = getDemoSource()
+const viewerOptions = {
+  theme: 'light' as const,
+  toolbar: {
+    position: 'bottom-right' as const,
+    search: false,
+    download: true,
+    print: false,
+    exportHtml: false,
+    theme: true,
+    zoom: true
+  },
+  ui: { density: 'compact' as const }
+}
 
 function WebViewerPanel() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -17,7 +30,8 @@ function WebViewerPanel() {
 
     const controller: ViewerController = mountViewer(containerRef.current, {
       url: demoSource.url,
-      filename: demoSource.filename
+      filename: demoSource.filename,
+      options: viewerOptions
     })
 
     return () => {
@@ -32,9 +46,12 @@ function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
-          <h1>Flyfish Viewer</h1>
-          <p>Full renderer and complete runtime asset smoke test</p>
+        <div className="brand-lockup">
+          <img src="/logo.png" alt="" />
+          <div>
+            <h1>File Viewer</h1>
+            <p>Native component examples with the full offline runtime</p>
+          </div>
         </div>
         <nav className="topbar-actions" aria-label="Demo links">
           <a href="/manual-js.html" target="_blank" rel="noreferrer">
@@ -69,7 +86,12 @@ function App() {
         <article className="viewer-panel">
           <h2>React Full</h2>
           <div className="viewer-frame">
-            <FileViewer url={demoSource.url} filename={demoSource.filename} data-testid="react-viewer" />
+            <FileViewer
+              url={demoSource.url}
+              filename={demoSource.filename}
+              options={viewerOptions}
+              data-testid="react-viewer"
+            />
           </div>
         </article>
       </section>

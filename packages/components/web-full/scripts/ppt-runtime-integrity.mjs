@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
-export const PPT_RUNTIME_VERSION = '0.3.1'
+export const PPT_RUNTIME_VERSION = '0.3.2'
 export const PPT_RUNTIME_RELATIVE_ROOT = 'vendor/ppt'
 export const PPT_RUNTIME_REQUIRED_FILES = Object.freeze([
   'index.mjs',
@@ -44,11 +44,12 @@ export async function verifyPptRuntimeDirectory(runtimeDir, options = {}) {
       await requiredFile(root, filename)
     ]))
   )
-  const [manifest, packageJson, indexSource, workerSource] = await Promise.all([
+  const [manifest, packageJson, indexSource, workerSource, frameCacheSource] = await Promise.all([
     readFile(paths['manifest.json'], 'utf8').then(JSON.parse),
     readFile(paths['package.json'], 'utf8').then(JSON.parse),
     readFile(paths['index.mjs'], 'utf8'),
-    readFile(paths['worker.mjs'], 'utf8')
+    readFile(paths['worker.mjs'], 'utf8'),
+    readFile(paths['frame-cache.mjs'], 'utf8')
   ])
 
   if (manifest.packageName !== '@file-viewer/ppt' || packageJson.name !== '@file-viewer/ppt') {
@@ -91,8 +92,23 @@ export async function verifyPptRuntimeDirectory(runtimeDir, options = {}) {
   ]) {
     if (!indexSource.includes(marker)) fail(`${root}/index.mjs is missing ${marker}`)
   }
-  if (!workerSource.includes("'./frame-cache.mjs'")) {
-    fail(`${root}/worker.mjs does not reference its colocated frame-cache.mjs`)
+  for (const marker of [
+    'export function normalizeFrameCacheLimits(',
+    'export function createFrameCacheKey(',
+    'export function createFrameCache('
+  ]) {
+    if (!frameCacheSource.includes(marker)) {
+      fail(`${root}/frame-cache.mjs is missing ${marker}`)
+    }
+  }
+  const importsColocatedFrameCache = workerSource.includes("from './frame-cache.mjs'")
+  const embedsFrameCache = [
+    'function normalizeFrameCacheLimits(',
+    'function createFrameCacheKey(',
+    'function createFrameCache('
+  ].every(marker => workerSource.includes(marker))
+  if (!importsColocatedFrameCache && !embedsFrameCache) {
+    fail(`${root}/worker.mjs neither imports nor embeds the verified bounded frame cache`)
   }
 
   return {

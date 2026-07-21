@@ -32,6 +32,24 @@ const legacyPptxCss = `
 .slide svg.drawing{position:absolute;overflow:visible}
 `;
 
+const PPTX_CONTENT_STYLE_SCOPE = '.flyfish-pptx-content';
+
+/**
+ * The legacy engine emits class-only selector lists. Prefix each top-level
+ * class rule so light-DOM consumers do not inherit generic `.slide` or
+ * generated `._css_*` rules from a renderer-local style element.
+ */
+export const scopePptxContentStyleText = (cssText: string) => cssText.replace(
+  /(^|})\s*(\.[^{}]+)\{/g,
+  (_match, boundary: string, selectorList: string) => {
+    const scopedSelectors = selectorList
+      .split(',')
+      .map(selector => `${PPTX_CONTENT_STYLE_SCOPE} ${selector.trim()}`)
+      .join(',');
+    return `${boundary}${scopedSelectors}{`;
+  }
+);
+
 export const pptxViewerCss = `
 .flyfish-pptx-scale-box{position:relative;box-sizing:border-box;max-width:100%;margin:0 auto;min-width:0}
 .flyfish-pptx-content{position:absolute;top:0;left:0;box-sizing:border-box;max-width:none;min-width:0;transform-origin:top left;will-change:transform}
@@ -42,7 +60,7 @@ export const pptxViewerCss = `
 .flyfish-pptx-slide-error-card strong{font-size:18px}
 .flyfish-pptx-content .slide{background:#fff;box-shadow:0 18px 36px rgba(18,35,52,.12)}
 .flyfish-pptx-thumbnail{display:block;box-sizing:border-box;width:min(960px,100%);height:auto;margin:0 auto 28px;border-radius:12px;background:#fff;box-shadow:0 18px 36px rgba(18,35,52,.14)}
-${legacyPptxCss}
+${scopePptxContentStyleText(legacyPptxCss)}
 .flyfish-pptx-content > .slide:last-of-type{margin-bottom:0}
 .flyfish-pptx-slide-slot:last-of-type > .slide{margin-bottom:0}
 `;

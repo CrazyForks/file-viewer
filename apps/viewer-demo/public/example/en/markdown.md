@@ -1,4 +1,4 @@
-# Flyfish Viewer Markdown Sample
+# File Viewer Markdown Sample
 
 This Markdown file is designed to exercise the lightweight document renderer with common content used in product documentation.
 
@@ -32,4 +32,3 @@ mountViewer('#viewer', {
 1. Install the component package for your framework.
 2. Add one preset package for the required file range.
 3. Let `@file-viewer/vite-plugin` discover the installed preset and copy assets.
-

@@ -5,7 +5,7 @@
 #include "main.hpp"
 
 std::string viewer_name() {
-  return "Flyfish Viewer";
+  return "File Viewer";
 }
 
 bool PreviewFile::requiresAsyncChunk() const {

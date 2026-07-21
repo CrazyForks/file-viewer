@@ -1,5 +1,5 @@
 @startuml
-title Flyfish File Viewer renderer pipeline
+title File Viewer renderer pipeline
 
 actor User
 participant "Framework Component" as Component

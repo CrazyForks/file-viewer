@@ -1,9 +1,9 @@
 {
   "name": "@flyfish-group/file-viewer-web",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
-  "description": "Private-deploy pure web component for Flyfish Viewer",
+  "description": "Private-deploy pure web component for File Viewer",
   "keywords": [
     "file-viewer",
     "document-preview",
@@ -21,8 +21,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",
@@ -72,7 +72,7 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@file-viewer/web": "workspace:2.2.2"
+    "@file-viewer/web": "workspace:2.2.3"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",

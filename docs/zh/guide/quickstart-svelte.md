@@ -54,7 +54,7 @@ npm install @file-viewer/svelte-full
 </section>
 ```
 
-宿主 CSS 不可控时可传 `styleIsolation:'shadow'`，让 renderer 内容进入隔离渲染根。Svelte 包默认保持兼容；tokens 和 `::part()` 主题定制见 [样式隔离与主题定制](/zh/guide/style-isolation)。
+Svelte 默认使用 Shadow DOM，宿主全局 CSS 不会破坏工具栏或 renderer 内容。只有依赖深层 class 覆盖的旧项目才使用 `styleIsolation:'none'`；tokens 和 `::part()` 主题定制见 [样式隔离与主题定制](/zh/guide/style-isolation)。
 
 full 包写法只替换包名，不需要手动 import preset：
 

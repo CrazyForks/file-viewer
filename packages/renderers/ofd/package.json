@@ -1,9 +1,9 @@
 {
   "name": "@file-viewer/renderer-ofd",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
-  "description": "Standalone OFD renderer plugin for Flyfish File Viewer powered by DLTech21/ofd.js.",
+  "description": "Standalone OFD renderer plugin for File Viewer powered by DLTech21/ofd.js.",
   "keywords": [
     "file-viewer",
     "renderer",
@@ -18,8 +18,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",
@@ -61,7 +61,7 @@
     "verify:render-fidelity": "node scripts/verify-render-fidelity.mjs"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:2.2.2",
+    "@file-viewer/core": "workspace:2.2.3",
     "jszip": "^3.10.1"
   },
   "devDependencies": {

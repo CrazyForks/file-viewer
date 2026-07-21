@@ -1,16 +1,16 @@
 :root {
-  --vp-c-brand-1: #1d6fd6;
-  --vp-c-brand-2: #195cb3;
-  --vp-c-brand-3: #16498f;
-  --vp-c-brand-soft: rgba(29, 111, 214, 0.12);
-  --vp-font-family-base: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
+  --vp-c-brand-1: #31a66f;
+  --vp-c-brand-2: #1c8555;
+  --vp-c-brand-3: #166b45;
+  --vp-c-brand-soft: rgba(49, 166, 111, 0.11);
+  --vp-font-family-base: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
   --vp-font-family-mono: "JetBrains Mono", "SFMono-Regular", monospace;
-  --doc-ink: #172033;
-  --doc-muted: #5e6b7d;
-  --doc-border: rgba(23, 32, 51, 0.12);
+  --doc-ink: #18241f;
+  --doc-muted: #718079;
+  --doc-border: rgba(35, 61, 53, 0.11);
   --doc-surface: rgba(255, 255, 255, 0.94);
-  --doc-soft: #f4f7fb;
-  --doc-accent: #0f8a7a;
+  --doc-soft: #f6f8f7;
+  --doc-accent: #278cff;
   --doc-warm: #b77722;
   --doc-success: #19785c;
   --doc-shadow: 0 20px 54px rgba(23, 32, 51, 0.1);
@@ -44,7 +44,7 @@
 }
 
 body {
-  background: #f4f7fb;
+  background: #f6f8f7;
 }
 
 .dark body {
@@ -53,7 +53,9 @@ body {
 
 .VPApp {
   background:
-    linear-gradient(180deg, rgba(244, 247, 251, 0.98) 0%, rgba(255, 255, 255, 0.98) 44%, #ffffff 100%);
+    radial-gradient(circle at 17% -4%, rgba(190, 227, 242, 0.56), transparent 31%),
+    radial-gradient(circle at 92% 2%, rgba(200, 238, 213, 0.5), transparent 29%),
+    linear-gradient(180deg, rgba(246, 248, 247, 0.98) 0%, rgba(255, 255, 255, 0.98) 52%, #ffffff 100%);
 }
 
 .dark .VPApp {
@@ -1557,5 +1559,399 @@ body {
 
   .doc-home-v2 .doc-final-actions .doc-action {
     width: 100%;
+  }
+}
+
+/* Brand baseline shared with the File Viewer demo workspace. */
+.VPNav {
+  background: rgba(255, 255, 255, 0.84);
+  border-bottom-color: rgba(35, 61, 53, 0.09);
+  box-shadow: 0 14px 42px rgba(38, 68, 59, 0.08);
+  backdrop-filter: blur(24px) saturate(1.18);
+}
+
+.VPNavBar .title {
+  color: #1a2630;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.VPNavBarTitle .logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  box-shadow: 0 10px 24px rgba(35, 86, 70, 0.13);
+}
+
+.VPNavBarMenuLink,
+.VPFlyout .button,
+.DocSearch-Button {
+  color: #53625c;
+  letter-spacing: 0;
+}
+
+.VPNavBarMenuLink:hover,
+.VPFlyout .button:hover {
+  color: #1c8555;
+  background: rgba(49, 166, 111, 0.1);
+}
+
+.VPNavBarSocialLinks .docs-github-star-button {
+  border-color: rgba(35, 61, 53, 0.1);
+  background: rgba(255, 255, 255, 0.76);
+  color: #263831;
+}
+
+.VPNavBarSocialLinks .docs-github-star-button:hover {
+  border-color: rgba(49, 166, 111, 0.3);
+  background: #ffffff;
+  color: #1c8555;
+}
+
+.doc-home-v2 {
+  --doc-v2-ink: #18241f;
+  --doc-v2-muted: #718079;
+  --doc-v2-line: rgba(35, 61, 53, 0.1);
+  --doc-v2-panel: rgba(255, 255, 255, 0.82);
+  --doc-v2-panel-strong: rgba(255, 255, 255, 0.94);
+  --doc-v2-green: #31a66f;
+  --doc-v2-teal: #35c8c0;
+  --doc-v2-blue: #278cff;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(190, 227, 242, 0.42), transparent 28%),
+    radial-gradient(circle at 92% 4%, rgba(200, 238, 213, 0.4), transparent 28%),
+    linear-gradient(180deg, rgba(246, 248, 247, 0.64), rgba(255, 255, 255, 0.96) 34%, #ffffff);
+}
+
+.doc-home-v2 h1,
+.doc-home-v2 h2,
+.doc-home-v2 h3,
+.doc-home-v2 strong,
+.doc-home-v2 a {
+  letter-spacing: 0;
+}
+
+.doc-home-anchor {
+  top: 64px;
+  width: min(1320px, calc(100vw - 48px));
+  gap: 4px;
+  padding: 6px;
+  border-color: rgba(35, 61, 53, 0.09);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 14px 42px rgba(38, 68, 59, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px) saturate(1.16);
+}
+
+.doc-home-anchor a {
+  border-radius: 9px;
+  color: #5f7068;
+}
+
+.doc-home-anchor a:hover {
+  color: #1c8555;
+  background: rgba(49, 166, 111, 0.1);
+}
+
+.doc-start.doc-product-hero {
+  position: relative;
+  display: block;
+  width: min(1320px, calc(100vw - 48px));
+  min-height: 590px;
+  margin-top: 22px;
+  margin-bottom: 66px;
+  padding: 0;
+  overflow: hidden;
+  border-color: rgba(35, 61, 53, 0.1);
+  border-radius: 18px;
+  background: #f6f8f7;
+  box-shadow:
+    0 28px 78px rgba(35, 73, 61, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.doc-start.doc-product-hero::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(246, 248, 247, 0.99) 0%,
+    rgba(246, 248, 247, 0.98) 46%,
+    rgba(246, 248, 247, 0.82) 58%,
+    rgba(246, 248, 247, 0.08) 80%
+  );
+}
+
+.doc-start-copy {
+  position: relative;
+  z-index: 3;
+  width: min(55%, 700px);
+  padding: 48px 0 44px 48px;
+}
+
+.doc-start-copy h1 {
+  max-width: 700px;
+  margin-top: 16px;
+  color: #18241f;
+  font-size: clamp(2.85rem, 4vw, 3.65rem);
+  line-height: 1.06;
+  letter-spacing: 0;
+}
+
+.doc-start-copy p {
+  max-width: 650px;
+  color: #52645c;
+  font-size: 1.04rem;
+  line-height: 1.72;
+}
+
+.doc-home-v2 .doc-eyebrow {
+  color: #1c8555;
+}
+
+.doc-home-actions {
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.doc-action,
+.doc-link-row a {
+  min-height: 44px;
+  border-color: rgba(35, 61, 53, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #263831;
+  box-shadow: 0 10px 24px rgba(35, 73, 61, 0.07);
+}
+
+.doc-action:hover,
+.doc-link-row a:hover,
+.doc-path-card:hover {
+  border-color: rgba(49, 166, 111, 0.3);
+  box-shadow: 0 16px 34px rgba(35, 73, 61, 0.11);
+}
+
+.doc-action-primary {
+  border-color: #31a66f;
+  background: #31a66f;
+  color: #ffffff;
+}
+
+.doc-start-stats {
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.doc-start-stats div {
+  padding: 12px;
+  border-color: rgba(35, 61, 53, 0.09);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 10px 26px rgba(35, 73, 61, 0.06);
+}
+
+.doc-start-stats strong {
+  color: #1c8555;
+}
+
+.doc-product-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #f6f8f7;
+  box-shadow: none;
+}
+
+.doc-product-preview picture,
+.doc-product-preview img {
+  display: block;
+  height: 100%;
+}
+
+.doc-product-preview picture {
+  position: absolute;
+  inset: 0 0 0 34%;
+  width: 66%;
+}
+
+.doc-product-preview img {
+  width: 100%;
+}
+
+.doc-product-preview img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.doc-product-preview figcaption {
+  position: absolute;
+  right: 22px;
+  bottom: 20px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 46%;
+  padding: 11px 14px;
+  border: 1px solid rgba(35, 61, 53, 0.1);
+  border-radius: 10px;
+  color: #5b6b64;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 34px rgba(35, 73, 61, 0.1);
+  backdrop-filter: blur(18px) saturate(1.14);
+  font-size: 0.82rem;
+}
+
+.doc-product-preview figcaption strong {
+  flex: 0 0 auto;
+  color: #1c8555;
+}
+
+.doc-section-muted {
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+  background: rgba(246, 249, 248, 0.68);
+}
+
+.doc-feature-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.doc-feature-grid .doc-card::before,
+.doc-preset-card::before {
+  background: #31a66f;
+}
+
+.dark .doc-start.doc-product-hero {
+  background: #111c18;
+}
+
+.dark .doc-start.doc-product-hero::after {
+  background: linear-gradient(
+    90deg,
+    rgba(17, 28, 24, 0.99) 0%,
+    rgba(17, 28, 24, 0.95) 42%,
+    rgba(17, 28, 24, 0.7) 58%,
+    rgba(17, 28, 24, 0.08) 82%
+  );
+}
+
+.dark .doc-product-preview img {
+  opacity: 0.46;
+}
+
+.dark .doc-start-copy h1 {
+  color: #f4faf7;
+}
+
+.dark .doc-start-copy p {
+  color: #b5c4bd;
+}
+
+@media (max-width: 960px) {
+  .doc-start.doc-product-hero {
+    width: calc(100vw - 32px);
+    min-height: 760px;
+  }
+
+  .doc-start.doc-product-hero::after {
+    background: linear-gradient(
+      180deg,
+      rgba(246, 248, 247, 1) 0%,
+      rgba(246, 248, 247, 0.98) 52%,
+      rgba(246, 248, 247, 0.62) 70%,
+      rgba(246, 248, 247, 0.06) 100%
+    );
+  }
+
+  .doc-start-copy {
+    width: min(100%, 720px);
+    padding: 42px 34px 320px;
+  }
+
+  .doc-product-preview img {
+    object-position: center bottom;
+  }
+
+  .doc-product-preview picture {
+    inset: 42% 0 0;
+    width: 100%;
+    height: 58%;
+  }
+
+  .doc-product-preview figcaption {
+    right: 16px;
+    bottom: 14px;
+    max-width: calc(100% - 32px);
+  }
+}
+
+@media (max-width: 720px) {
+  .doc-home-anchor {
+    width: calc(100vw - 20px);
+    margin-top: 10px;
+  }
+
+  .doc-start.doc-product-hero {
+    width: calc(100vw - 20px);
+    min-height: 0;
+    margin-top: 12px;
+    border-radius: 14px;
+  }
+
+  .doc-start.doc-product-hero::after {
+    display: none;
+  }
+
+  .doc-start-copy {
+    width: 100%;
+    padding: 34px 20px 28px;
+  }
+
+  .doc-product-preview picture {
+    inset: 54% 0 0;
+    height: 46%;
+  }
+
+  .doc-start-copy h1 {
+    font-size: clamp(2.35rem, 10vw, 3rem);
+  }
+
+  .doc-start-stats {
+    display: none;
+  }
+
+  .doc-home-actions .doc-action {
+    width: auto;
+    min-height: 42px;
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+
+  .doc-product-preview figcaption {
+    display: none;
+  }
+
+  .doc-product-preview {
+    position: relative;
+    inset: auto;
+    height: 240px;
+    border-top: 1px solid rgba(35, 61, 53, 0.09);
+  }
+
+  .doc-product-preview picture {
+    position: static;
+    width: 100%;
+    height: 100%;
   }
 }

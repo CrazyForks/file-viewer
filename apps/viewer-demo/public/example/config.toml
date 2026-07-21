@@ -1,5 +1,5 @@
 [viewer]
-name = "Flyfish Viewer"
+name = "File Viewer"
 theme = "light"
 formats = ["toml", "hcl", "proto", "http"]
 

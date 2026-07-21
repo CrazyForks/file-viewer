@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/renderer-presentation",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
   "description": "Standalone PowerPoint renderer for binary PPT and OpenXML PPTX presentation formats.",
@@ -21,8 +21,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",
@@ -59,9 +59,9 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:2.2.2",
-    "@file-viewer/ppt": "0.3.1",
-    "@file-viewer/pptx": "workspace:2.2.2"
+    "@file-viewer/core": "workspace:2.2.3",
+    "@file-viewer/ppt": "0.3.2",
+    "@file-viewer/pptx": "workspace:2.2.3"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

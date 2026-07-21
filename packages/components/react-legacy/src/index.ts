@@ -25,6 +25,7 @@ import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 export type {
   FileRef,
   ViewerAiOptions,
+  ViewerApplyViewStateOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerController,
@@ -36,16 +37,24 @@ export type {
   ViewerEventType,
   ViewerFetchFile,
   ViewerFetchInput,
+  ViewerFitMode,
+  ViewerFitOptions,
+  ViewerFitResult,
   ViewerMountOptions,
   ViewerOptions,
   ViewerPdfOptions,
+  ViewerPresentationOptions,
   ViewerSpreadsheetOptions,
+  ViewerCoreOptions,
   ViewerSearchOptions,
   ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
+  ViewerUiDensity,
+  ViewerUiOptions,
+  ViewerViewState,
   ViewerWatermarkOptions,
   ViewerLifecycleContext,
   ViewerOperationContext,
@@ -78,7 +87,8 @@ const createInitialViewerState = (): ViewerState => ({
   availability: null,
   search: null,
   zoom: null,
-  location: null
+  location: null,
+  viewState: null
 })
 
 const destroyController = (
@@ -110,6 +120,7 @@ export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLeg
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const controllerRef = useRef<ViewerController | null>(null)
+  const appliedViewerOptionsRef = useRef<ViewerMountOptions | null>(null)
 
   const viewerOptions = useMemo<ViewerMountOptions>(() => ({
     url,
@@ -130,11 +141,19 @@ export const FileViewerLegacy = forwardRef<FileViewerLegacyHandle, FileViewerLeg
       return undefined
     }
 
+    appliedViewerOptionsRef.current = viewerOptions
     controllerRef.current = mountViewer(container, viewerOptions, viewerCoreOptions)
-    return () => destroyController(controllerRef, container)
+    return () => {
+      appliedViewerOptionsRef.current = null
+      destroyController(controllerRef, container)
+    }
   }, [])
 
   useEffect(() => {
+    if (appliedViewerOptionsRef.current === viewerOptions) {
+      return
+    }
+    appliedViewerOptionsRef.current = viewerOptions
     void controllerRef.current?.update(viewerOptions)
   }, [viewerOptions])
 

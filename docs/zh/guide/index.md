@@ -68,7 +68,7 @@
   </div>
   <div class="doc-card">
     <h3>确认样式隔离策略</h3>
-    <p>Web Component / IIFE 默认使用 Shadow DOM；框架组件可通过 options.styleIsolation 选择 shadow、scoped 或 none，并用 CSS tokens 与 ::part 定制主题。</p>
+    <p>所有标准组件默认使用 Shadow DOM；主题定制使用 CSS tokens 与 ::part，仅旧版深层覆盖场景使用 options.styleIsolation:'none'。</p>
   </div>
   <div class="doc-card">
     <h3>准备发布分发</h3>

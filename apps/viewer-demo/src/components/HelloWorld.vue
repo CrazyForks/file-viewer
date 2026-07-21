@@ -1092,7 +1092,7 @@ const viewerOptions = computed((): FileViewerOptions => {
     }
   } else {
     options.geo = {
-      basemap: 'openfreemap-liberty',
+      basemap: 'offline',
       ...runtime.geo
     }
     options.drawing = { ...runtime.drawing }
@@ -1113,7 +1113,7 @@ const viewerOptions = computed((): FileViewerOptions => {
     ? false
     : watermarkEnabled.value
     ? {
-        text: settings.watermarkText || 'Flyfish Viewer',
+        text: settings.watermarkText || 'File Viewer',
         opacity: settings.watermarkOpacity,
         rotate: settings.watermarkRotate,
         gapX: settings.watermarkGapX,

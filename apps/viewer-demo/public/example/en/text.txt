@@ -1,4 +1,4 @@
-Flyfish Viewer plain text sample
+File Viewer plain text sample
 
 This file verifies that the text renderer handles prose, line breaks, ASCII tables,
 and search-friendly content without loading a heavy document engine.
@@ -10,4 +10,3 @@ Format matrix:
 - Complete internal workbench: preset-all
 
 The preview should remain fast, selectable, zoomable, and printable.
-

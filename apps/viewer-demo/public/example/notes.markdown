@@ -11,5 +11,5 @@ inline code, and a fenced block.
 - The preview surface does not inherit accidental text colors from the demo app.
 
 ```md
-**Flyfish Viewer** keeps Markdown readable in light and dark themes.
+**File Viewer** keeps Markdown readable in light and dark themes.
 ```

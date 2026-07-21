@@ -8,7 +8,7 @@
 </p>
 
 <div class="doc-shot">
-  <img src="/_media/file-viewer-demo-v2.2.2-samples-zh.webp" alt="Flyfish Viewer v2.2.2 中文格式样例库，展示分组、文件名与格式专属图标" width="1440" height="900" loading="lazy" />
+  <img src="/_media/file-viewer-demo-v2.2.3-samples-zh.webp" alt="Flyfish Viewer v2.2.3 中文格式样例库，展示分组、文件名与格式专属图标" width="1440" height="900" loading="lazy" />
   <p class="doc-caption">Demo 把 25 条预览链路的代表样例按类型分组；当前文件所在分组默认展开，每个条目展示真实文件名、格式标签和主题协调的专属图标。</p>
 </div>
 
@@ -99,7 +99,7 @@
 
 - `ppt` 使用 `@file-viewer/renderer-presentation` 按需加载独立的 `@file-viewer/ppt` 原生 WASM 引擎，按页渲染二进制 PowerPoint 97–2003 文件；它与 PPTX 解析器保持严格路由边界。
 - `pptx` 等 OOXML 演示文稿使用独立的 `@file-viewer/pptx` 原生渲染引擎，各标准组件包共享同一条 renderer 链路，core-only 安装不会拉取任何演示文稿引擎。
-- 二进制 PPT 0.3.1 默认使用 Worker/OffscreenCanvas/WASM 和有界帧缓存；Demo、Vite/full、copy-assets 与 CDN/IIFE 的标准布局会自动发布并解析 `vendor/ppt/`，非标准资源布局才需要通过 `options.presentation.pptModuleUrl` / `pptWorkerUrl` / `pptWasmUrl` / `pptFontUrl` 覆盖。PPTX 继续使用 `workerUrl` / `workerType` 配置另一条 Worker。
+- 二进制 PPT 0.3.2 默认使用 Worker/OffscreenCanvas/WASM 和有界帧缓存；Demo、Vite/full、copy-assets 与 CDN/IIFE 的标准布局会自动发布并解析 `vendor/ppt/`，非标准资源布局才需要通过 `options.presentation.pptModuleUrl` / `pptWorkerUrl` / `pptWasmUrl` / `pptFontUrl` 覆盖。PPTX 继续使用 `workerUrl` / `workerType` 配置另一条 Worker。
 - PPTX 默认通过 renderer 内部的模块 Worker 渐进解析；私有静态资源路径、旧 WebView、严格 CSP 或自托管 CDN 场景可以用 `options.presentation.workerUrl` / `options.presentation.workerType` 固定 Worker 地址和类型，避免运行时从错误路径加载。
 - PPTX 渲染器现在会按 DrawingML 的组合图形坐标系处理 `chOff/chExt`，组合内元素在缩放、旋转、翻转时会更接近 PowerPoint 中的位置关系。
 - 主题背景支持从 `fillStyleLst` / `bgFillStyleLst` 解析纯色、渐变、图片和平铺图案；PPTX 内嵌的 EMF 图片会尽量转换为 SVG 数据图，避免只显示空白占位。
@@ -170,7 +170,7 @@
 
 ### 电子书
 
-- EPUB 链路已拆为 `@file-viewer/renderer-epub` 独立包。v2.2.2 将阅读引擎构建为确定性的包内 vendor 资产，连同依赖许可 NOTICE 一起分发；只有命中 `.epub` 时才加载，不需要公网脚本，也不会把旧版 XML 解析依赖带进业务生产依赖树。
+- EPUB 链路已拆为 `@file-viewer/renderer-epub` 独立包。v2.2.3 将阅读引擎构建为确定性的包内 vendor 资产，连同依赖许可 NOTICE 一起分发；只有命中 `.epub` 时才加载，不需要公网脚本，也不会把旧版 XML 解析依赖带进业务生产依赖树。
 - EPUB 预览提供目录窗格、上一章/下一章式导航和阅读进度。正文区域使用滚动文档模式，避免部分浏览器在超宽分页布局下出现白板。为了安全，阅读器不会允许书内脚本执行。
 - `umd` 是早期移动阅读器常见的电子书封装。当前没有可靠维护的前端 UMD 阅读库，组件按公开文件结构解析文件头、元数据、章节偏移、章节标题和正文数据块，正文 zlib 解压交给 `pako`。
 - UMD 文本正文按 UTF-16LE 解码，保留章节目录和换行；图片/漫画类 UMD 会尽量按图像数据块展示，但复杂混排文件建议用真实样本补充回归。

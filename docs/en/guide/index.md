@@ -38,7 +38,7 @@ The project keeps a pure TypeScript core under `@file-viewer/core`, split render
 
 The 2.1.0 architecture is modular by default: use minimal renderer imports when you need one exact format, or choose `preset-lite`, `preset-office`, `preset-engineering`, or `preset-all` when your product needs a composed capability set. In Vite projects, `@file-viewer/vite-plugin` auto-discovers installed presets and injects the capability layer, so most teams do not hand-write renderer imports.
 
-For pages with uncontrolled global CSS, use the Web Component / IIFE default Shadow DOM isolation or pass `options.styleIsolation:'shadow'` from framework packages. Theme customization should use `--file-viewer-*` tokens and stable `::part()` surfaces.
+Every standard component defaults to Shadow DOM so uncontrolled global CSS cannot break the viewer. Theme customization should use `--file-viewer-*` tokens and stable `::part()` surfaces; use `options.styleIsolation:'none'` only for legacy deep overrides.
 
 For heavy users that need everything immediately, use the native Full package. It already includes `preset-all`; do not install or pass another preset:
 

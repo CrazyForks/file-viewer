@@ -1,9 +1,9 @@
 {
   "name": "@flyfish-group/file-viewer",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
-  "description": "Compatibility alias package for Flyfish File Viewer Vue 2.7",
+  "description": "Compatibility alias package for File Viewer Vue 2.7",
   "keywords": [
     "file-viewer",
     "document-preview",
@@ -20,8 +20,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",
@@ -60,7 +60,7 @@
     "vue": ">=2.7 <3"
   },
   "dependencies": {
-    "@file-viewer/vue2.7": "workspace:2.2.2"
+    "@file-viewer/vue2.7": "workspace:2.2.3"
   },
   "license": "Apache-2.0"
 }

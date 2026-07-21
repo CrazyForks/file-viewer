@@ -12,12 +12,14 @@
   export let size = undefined
   export let options = undefined
   export let onEvent = undefined
+  export let onStateChange = undefined
   export let className = ''
   export let containerStyle = ''
 
   const dispatch = createEventDispatcher()
   let container
   let controller = null
+  let appliedViewerOptions = null
   const viewerCoreOptions = {
     registry: fileViewerCoreRendererRegistry
   }
@@ -31,6 +33,7 @@
     type,
     size,
     options,
+    onStateChange,
     onEvent(event) {
       onEvent?.(event)
       dispatch('viewerEvent', event)
@@ -45,14 +48,16 @@
   const handle = createViewerControllerHandle(() => controller, dispose)
 
   onMount(() => {
+    appliedViewerOptions = viewerOptions
     controller = mountCoreViewer(container, viewerOptions, viewerCoreOptions)
     return dispose
   })
 
   onDestroy(dispose)
 
-  $: if (controller) {
-    controller.update(viewerOptions)
+  $: if (controller && appliedViewerOptions !== viewerOptions) {
+    appliedViewerOptions = viewerOptions
+    void controller.update(viewerOptions)
   }
 
   export function getController() {
@@ -105,6 +110,14 @@
 
   export function fitToView(fit) {
     return handle.fitToView(fit)
+  }
+
+  export function getViewState() {
+    return handle.getViewState()
+  }
+
+  export function applyViewState(state, options) {
+    return handle.applyViewState(state, options)
   }
 
   export function searchDocument(query) {

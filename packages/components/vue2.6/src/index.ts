@@ -8,12 +8,14 @@ import {
   type ViewerEvent,
   type ViewerMountOptions,
   type ViewerCoreOptions,
+  type ViewerState,
 } from './controller.js'
 import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 
 export type {
   FileRef,
   ViewerAiOptions,
+  ViewerApplyViewStateOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerController,
@@ -25,16 +27,24 @@ export type {
   ViewerEventType,
   ViewerFetchFile,
   ViewerFetchInput,
+  ViewerFitMode,
+  ViewerFitOptions,
+  ViewerFitResult,
   ViewerMountOptions,
   ViewerOptions,
   ViewerPdfOptions,
+  ViewerPresentationOptions,
   ViewerSpreadsheetOptions,
+  ViewerCoreOptions,
   ViewerSearchOptions,
   ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
+  ViewerUiDensity,
+  ViewerUiOptions,
+  ViewerViewState,
   ViewerWatermarkOptions,
   ViewerLifecycleContext,
   ViewerOperationContext,
@@ -57,6 +67,7 @@ type FileViewerVue26Vm = Vue & FileViewerVue26Props & {
   controller: ViewerController | null
   getViewerOptions(): ViewerMountOptions
   handleViewerEvent(event: ViewerEvent): void
+  handleViewerStateChange(state: ViewerState, event?: ViewerEvent): void
   mountViewer(): void
   updateViewer(): void
   disposeViewer(): void
@@ -89,6 +100,7 @@ export const FileViewer = Vue.extend({
     size: Number,
     options: Object,
     onEvent: Function,
+    onStateChange: Function,
     containerClass: [String, Array, Object],
     containerStyle: [String, Array, Object]
   } as any,
@@ -128,12 +140,21 @@ export const FileViewer = Vue.extend({
         type: vm.type,
         size: vm.size,
         options: vm.options,
-        onEvent: event => vm.handleViewerEvent(event)
+        onEvent: event => vm.handleViewerEvent(event),
+        onStateChange: (state, event) => vm.handleViewerStateChange(state, event)
       }
     },
     handleViewerEvent(event: ViewerEvent) {
+      const vm = toVm(this)
+      vm.onEvent?.(event)
       this.$emit('viewer-event', event)
       this.$emit('viewerEvent', event)
+    },
+    handleViewerStateChange(state: ViewerState, event?: ViewerEvent) {
+      const vm = toVm(this)
+      vm.onStateChange?.(state, event)
+      this.$emit('viewer-state-change', state, event)
+      this.$emit('viewerStateChange', state, event)
     },
     mountViewer() {
       const vm = toVm(this)
@@ -194,6 +215,15 @@ export const FileViewer = Vue.extend({
     },
     fitToView(fit?: Parameters<ViewerControllerHandle['fitToView']>[0]) {
       return getVmHandle(toVm(this)).fitToView(fit)
+    },
+    getViewState() {
+      return getVmHandle(toVm(this)).getViewState()
+    },
+    applyViewState(
+      state: Parameters<ViewerControllerHandle['applyViewState']>[0],
+      options?: Parameters<ViewerControllerHandle['applyViewState']>[1]
+    ) {
+      return getVmHandle(toVm(this)).applyViewState(state, options)
     },
     searchDocument(query: string) {
       return getVmHandle(toVm(this)).searchDocument(query)

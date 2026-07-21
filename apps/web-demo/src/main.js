@@ -640,8 +640,8 @@ const controller = mountViewer(document.getElementById('viewer'), {
 function updateLabels() {
   document.documentElement.lang = state.locale
   document.title = state.locale === 'en-US'
-    ? 'Flyfish File Viewer Web Demo'
-    : 'Flyfish File Viewer Web 原生 Demo'
+    ? 'File Viewer Web Demo'
+    : 'File Viewer Web 原生 Demo'
   els.subtitle.textContent = text('subtitle')
   els.modeUrl.textContent = text('urlMode')
   els.modeFile.textContent = text('fileMode')

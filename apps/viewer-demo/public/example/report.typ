@@ -3,7 +3,7 @@
 #set heading(numbering: "1.")
 
 #align(center)[
-  #text(size: 22pt, weight: "bold")[Flyfish Viewer Typst Report]
+  #text(size: 22pt, weight: "bold")[File Viewer Typst Report]
   #linebreak()
   #text(fill: rgb("#64748b"))[Native Typst preview rendered in the browser]
 ]
@@ -85,6 +85,6 @@ const options = {
 
 #rect(width: 100%, height: 58pt, fill: rgb("#ecfdf5"), stroke: rgb("#86efac"), radius: 6pt)[
   #align(center + horizon)[#text(weight: "bold", fill: rgb("#166534"))[
-    Flyfish Viewer renders Typst documents without server-side conversion.
+    File Viewer renders Typst documents without server-side conversion.
   ]]
 ]

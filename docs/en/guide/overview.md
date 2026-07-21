@@ -30,7 +30,7 @@ Most products do not need every heavy engine on first load. Install a minimal re
 
 The bundler-neutral path is `options.preset` / `options.renderers`: import the preset or renderer package and pass it to the component. In Vite projects, `@file-viewer/vite-plugin` is an optional assembly layer that removes manual imports after one plugin registration. It auto-discovers installed `@file-viewer/preset-*` packages and injects the matching capability registry, so the default Vite setup is still `fileViewerRenderers({ copyAssets:true })`. Use `@file-viewer/preset-all` for the fastest full-capability start, or explicit `formats`, `renderers`, `scan:true`, and `inject:false` only when a product needs strict bundle control.
 
-For pages with uncontrolled host CSS, the Web Component / IIFE entries use Shadow DOM by default. Framework packages can opt into the same protection with `options.styleIsolation:'shadow'`, while theme customization stays stable through `--file-viewer-*` tokens and `::part()`. See [Style Isolation And Customization](/en/guide/style-isolation).
+Every standard component uses Shadow DOM by default so uncontrolled host CSS cannot break the viewer. Theme customization stays stable through `--file-viewer-*` tokens and `::part()`; use `options.styleIsolation:'none'` only for legacy deep overrides. See [Style Isolation And Customization](/en/guide/style-isolation).
 
 ## Main Entry Points
 

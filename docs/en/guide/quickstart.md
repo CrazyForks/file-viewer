@@ -15,7 +15,7 @@
 | 2 | Pick the capability layer | Standard packages receive `preset-lite`, `preset-office`, `preset-engineering`, or `preset-all` through options; full packages enable the complete matrix by default. |
 | 3 | Publish runtime assets | Full packages use `copyAssets:true` with Vite; other build tools run `npx --no-install file-viewer-copy-assets ./public/file-viewer` so every Worker/WASM format is available. |
 | 4 | Pass the source and options | Use `url="/files/demo.pdf"` or a real `File`; standard packages pass a preset through `options`, while full packages can start with theme, toolbar, watermark, and business options only. |
-| 5 | Confirm style isolation | Prefer the Web Component / full default Shadow DOM when host CSS is uncontrolled; framework packages can pass `options.styleIsolation:'shadow'`. |
+| 5 | Confirm style isolation | Every standard component defaults to Shadow DOM. Customize with tokens / `::part()` and use `options.styleIsolation:'none'` only for legacy deep overrides. |
 
 This page keeps the shortest runnable paths. See [Component Options](/en/guide/usage) for the full API, renderer package matrix, toolbar, watermark, print, search, lifecycle, and guard options. See [Style Isolation And Customization](/en/guide/style-isolation) for Shadow DOM, tokens, and parts. See [Modular Assembly](/en/guide/on-demand-renderers) for on-demand renderers and the Vite plugin.
 

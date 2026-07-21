@@ -1,9 +1,9 @@
 {
   "name": "@file-viewer/eda-layout",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
-  "description": "Pure TypeScript EDA layout inspection engine for Flyfish File Viewer with GDSII quick preview primitives and OASIS upgrade boundaries.",
+  "description": "Pure TypeScript EDA layout inspection engine for File Viewer with GDSII quick preview primitives and OASIS upgrade boundaries.",
   "keywords": [
     "file-viewer",
     "eda",
@@ -21,8 +21,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",

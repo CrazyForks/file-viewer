@@ -1,6 +1,7 @@
 import type { PptxWorkerFactoryOptions } from './types';
 
-const viteOptimizedWorkerPath = '/node_modules/.vite/deps/worker/pptx.worker.js';
+const viteOptimizedWorkerPathPattern = /\/\.?vite\/deps\/worker\/pptx\.worker\.js$/;
+const angularCachePath = '/.angular/cache/';
 const viteOptimizedPptxSourcePattern =
   /\/\/\s+(node_modules\/(?:\.pnpm\/[^\n]+?\/node_modules\/)?@file-viewer\/pptx\/dist\/worker\.js)\b/;
 
@@ -15,7 +16,20 @@ const resolveViteDevPptxWorkerUrl = (baseUrl: URL) => new URL(
     : new URL(typeof location !== 'undefined' ? location.href : 'file:///')
 );
 
-const resolveViteOptimizedPptxWorkerUrl = () => {
+const resolveAngularVitePptxWorkerUrl = (baseUrl: URL, workerPath: string) => {
+  const cacheIndex = baseUrl.pathname.indexOf(angularCachePath);
+  if (cacheIndex < 0) {
+    return null;
+  }
+
+  const workerUrl = new URL(baseUrl.href);
+  workerUrl.pathname = `${workerUrl.pathname.slice(0, cacheIndex)}/${workerPath}`;
+  workerUrl.search = '';
+  workerUrl.hash = '';
+  return workerUrl;
+};
+
+const resolveViteOptimizedPptxWorkerUrl = (defaultPptxWorkerUrl: URL) => {
   if (typeof XMLHttpRequest === 'undefined') {
     return null;
   }
@@ -37,7 +51,13 @@ const resolveViteOptimizedPptxWorkerUrl = () => {
     }
 
     const workerPath = match[1].replace(/dist\/worker\.js$/, 'dist/worker/pptx.worker.js');
-    const defaultPptxWorkerUrl = resolveBundledPptxWorkerUrl();
+    const angularWorkerUrl = resolveAngularVitePptxWorkerUrl(
+      defaultPptxWorkerUrl,
+      workerPath
+    );
+    if (angularWorkerUrl) {
+      return angularWorkerUrl;
+    }
     const origin = typeof location !== 'undefined' && location.origin
       ? location.origin
       : defaultPptxWorkerUrl.origin;
@@ -52,9 +72,12 @@ const resolveDefaultPptxWorkerUrl = () => {
   if (!canResolveAbsolutePathFrom(defaultPptxWorkerUrl)) {
     return defaultPptxWorkerUrl;
   }
-  // Vite dep optimization rewrites import.meta.url into .vite/deps, away from this package's worker file.
-  if (defaultPptxWorkerUrl.pathname.includes(viteOptimizedWorkerPath)) {
-    return resolveViteOptimizedPptxWorkerUrl() || resolveViteDevPptxWorkerUrl(defaultPptxWorkerUrl);
+  // Vite dep optimization rewrites import.meta.url into vite/deps, away from
+  // this package's worker file. Angular's application builder uses the same
+  // optimizer under .angular/cache and prefixes its @fs URL with baseHref.
+  if (viteOptimizedWorkerPathPattern.test(defaultPptxWorkerUrl.pathname)) {
+    return resolveViteOptimizedPptxWorkerUrl(defaultPptxWorkerUrl)
+      || resolveViteDevPptxWorkerUrl(defaultPptxWorkerUrl);
   }
   return defaultPptxWorkerUrl;
 };

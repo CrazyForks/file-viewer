@@ -347,7 +347,7 @@ function stripLegacyEnglishSitemapLinks<T extends { links?: Array<{ url: string 
 
 export default defineConfig({
   lang: 'en-US',
-  title: 'Flyfish Viewer',
+  title: 'File Viewer',
   description: 'Browser-native file preview for internal web apps, covering 208 extensions across 25 preview pipelines without server-side conversion.',
   cleanUrls: true,
   lastUpdated: true,
@@ -367,7 +367,7 @@ export default defineConfig({
       label: '简体中文',
       lang: 'zh-CN',
       link: '/zh/',
-      title: 'Flyfish Viewer',
+      title: 'File Viewer',
       description: '面向企业后台、内网和私有化系统的纯前端文件预览组件，无需服务端转码，覆盖 208 个扩展名和 25 条预览链路。',
       themeConfig: {
         logo: '/_media/logo.png',
@@ -383,7 +383,7 @@ export default defineConfig({
         socialLinks: [githubSocialLink],
         footer: {
           message: 'Released under the Apache-2.0 License.',
-          copyright: 'Copyright © 2026 Flyfish Viewer'
+          copyright: 'Copyright © 2026 File Viewer by Flyfish'
         }
       }
     },
@@ -391,7 +391,7 @@ export default defineConfig({
       label: 'English',
       lang: 'en-US',
       link: '/en/',
-      title: 'Flyfish Viewer',
+      title: 'File Viewer',
       description: 'Browser-native file preview for internal web apps, covering 208 extensions across 25 preview pipelines without server-side conversion.',
       themeConfig: {
         logo: '/_media/logo.png',
@@ -407,15 +407,18 @@ export default defineConfig({
         socialLinks: [githubSocialLink],
         footer: {
           message: 'Released under the Apache-2.0 License.',
-          copyright: 'Copyright © 2026 Flyfish Viewer'
+          copyright: 'Copyright © 2026 File Viewer by Flyfish'
         }
       }
     }
   },
   head: [
-    ['meta', { name: 'theme-color', content: '#1d6fd6' }],
-    ['meta', { property: 'og:title', content: 'Flyfish Viewer' }],
-    ['meta', { property: 'og:description', content: 'Browser-native file preview for internal web apps, covering 208 extensions across 25 preview pipelines without server-side conversion.' }]
+    ['meta', { name: 'theme-color', content: '#31a66f' }],
+    ['meta', { property: 'og:title', content: 'File Viewer' }],
+    ['meta', { property: 'og:description', content: 'Browser-native file preview for internal web apps, covering 208 extensions across 25 preview pipelines without server-side conversion.' }],
+    ['meta', { property: 'og:image', content: 'https://doc.file-viewer.app/_media/social-preview.png' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:image', content: 'https://doc.file-viewer.app/_media/social-preview.png' }]
   ],
   themeConfig: {
     logo: '/_media/logo.png',
@@ -433,7 +436,7 @@ export default defineConfig({
     ],
     footer: {
       message: 'Released under the Apache-2.0 License.',
-      copyright: 'Copyright © 2026 Flyfish Viewer'
+      copyright: 'Copyright © 2026 File Viewer by Flyfish'
     }
   }
 })

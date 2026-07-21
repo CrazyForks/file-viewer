@@ -28,6 +28,7 @@ import {
   Layers3,
   LockKeyhole,
   Mail,
+  Menu,
   MonitorPlay,
   PackageCheck,
   PanelTop,
@@ -42,6 +43,7 @@ import {
   Sparkles,
   Star,
   Wrench,
+  X,
   Zap
 } from '@lucide/vue'
 
@@ -154,7 +156,7 @@ const githubUrl = 'https://github.com/flyfish-dev/file-viewer'
 const githubApiUrl = 'https://api.github.com/repos/flyfish-dev/file-viewer'
 const githubStarCountFallback = 739
 const releasesUrl = 'https://github.com/flyfish-dev/file-viewer/releases'
-const currentReleaseVersion = '2.2.2'
+const currentReleaseVersion = '2.2.3'
 const currentReleaseUrl = `${releasesUrl}/tag/v${currentReleaseVersion}`
 const githubSponsorsUrl = 'https://github.com/sponsors/wybaby168'
 const domesticSponsorUrl = 'https://dev.flyfish.group/sponsor?source=github'
@@ -164,9 +166,18 @@ const commercialUrl = 'https://product.flyfish.group/'
 const commercialDemoUrl = 'https://office.flyfish.dev/'
 const siteRootUrl = 'https://file-viewer.app/'
 const siteEnglishUrl = `${siteRootUrl}en/`
-const demoPreviewDesktopPath = '/file-viewer-demo-v2.2.2-desktop.webp'
-const demoPreviewMobilePath = '/file-viewer-demo-v2.2.2-mobile.webp'
-const sitePreviewImageUrl = `${siteRootUrl}${demoPreviewDesktopPath.slice(1)}`
+const demoPreviewDesktopPaths = {
+  zh: '/file-viewer-demo-v2.2.3-desktop-zh.webp',
+  en: '/file-viewer-demo-v2.2.3-desktop-en.webp'
+} satisfies Record<Locale, string>
+const demoPreviewMobilePaths = {
+  zh: '/file-viewer-demo-v2.2.3-mobile-zh.webp',
+  en: '/file-viewer-demo-v2.2.3-mobile-en.webp'
+} satisfies Record<Locale, string>
+const sitePreviewImageUrls = {
+  zh: `${siteRootUrl}${demoPreviewDesktopPaths.zh.slice(1)}`,
+  en: `${siteRootUrl}${demoPreviewDesktopPaths.en.slice(1)}`
+} satisfies Record<Locale, string>
 const siteLocalePreferenceKey = 'flyfish-site-locale-preference'
 
 type SiteMetadata = {
@@ -183,22 +194,22 @@ const siteMetadata = {
   zh: {
     lang: 'zh-CN',
     canonical: siteRootUrl,
-    title: 'Flyfish File Viewer - 浏览器里的多格式文件预览超级组件',
+    title: 'File Viewer by Flyfish - 浏览器原生多格式文件预览',
     description:
-      'Flyfish File Viewer 是浏览器原生、离线优先的多格式预览组件：208 个扩展名通过 25 条独立预览链路按需加载，54 个 npm 目标覆盖主流前端生态。',
+      'File Viewer by Flyfish 是浏览器原生、离线优先的多格式预览组件：208 个扩展名通过 25 条独立预览链路按需加载，54 个 npm 目标覆盖主流前端生态。',
     ogLocale: 'zh_CN',
     ogLocaleAlternate: 'en_US',
-    imageAlt: 'Flyfish File Viewer v2.2.2 沉浸式 DOCX 预览界面'
+    imageAlt: 'File Viewer v2.2.3 浏览器原生 DOCX 预览工作区'
   },
   en: {
     lang: 'en',
     canonical: siteEnglishUrl,
-    title: 'Flyfish File Viewer - Browser-native multi-format file preview',
+    title: 'File Viewer by Flyfish - Browser-native multi-format file preview',
     description:
-      'Flyfish File Viewer is a browser-native, offline-first preview component. It routes 208 extensions through 25 lazy preview pipelines and ships 54 npm targets for the main frontend stacks.',
+      'File Viewer by Flyfish is a browser-native, offline-first preview component. It routes 208 extensions through 25 lazy preview pipelines and ships 54 npm targets for the main frontend stacks.',
     ogLocale: 'en_US',
     ogLocaleAlternate: 'zh_CN',
-    imageAlt: 'Flyfish File Viewer v2.2.2 immersive DOCX preview UI'
+    imageAlt: 'File Viewer v2.2.3 browser-native DOCX preview workspace'
   }
 } satisfies Record<Locale, SiteMetadata>
 
@@ -217,6 +228,7 @@ const quickStartSection = ref<HTMLElement | null>(null)
 const quickStartTrack = ref<HTMLElement | null>(null)
 const isTopbarPinned = ref(false)
 const activeSectionId = ref<SectionId>('top')
+const mobileNavOpen = ref(false)
 const heroCanvasReady = ref(false)
 const demoRevealActive = ref(false)
 const demoFrameMounted = ref(false)
@@ -233,6 +245,8 @@ const githubStarsAriaLabel = computed(() =>
     ? `GitHub 开源总仓，${githubStarsLabel.value} stars`
     : `GitHub repository, ${githubStarsLabel.value} stars`
 )
+const demoPreviewDesktopPath = computed(() => demoPreviewDesktopPaths[locale.value])
+const demoPreviewMobilePath = computed(() => demoPreviewMobilePaths[locale.value])
 
 function resolveLocalizedDemoUrl(targetUrl: string) {
   const url = new URL(targetUrl)
@@ -295,10 +309,10 @@ const copy = {
       demo: '在线体验'
     },
     hero: {
-      eyebrow: 'v2.2.2 · 浏览器原生文件预览超级组件',
-      title: '把复杂文件，变成产品里的即时体验。',
+      eyebrow: 'v2.2.3 · 208 个扩展名 · 无需转码服务器',
+      title: '文件预览，全部在浏览器完成。',
       subtitle:
-        '一个组件，把 Office、PDF、OFD、CAD、Typst、XMind、压缩包、邮件、代码、媒体与 3D 等复杂文件直接带进浏览器。Full 包内置 preset-all，并交付配套的 File Viewer 自有离线资产。',
+        '为了预览一份内部 DOCX 就把它上传到服务器，糟透了。File Viewer 让 Office、PDF、CAD、压缩包、邮件等文件留在浏览器里，并且可以完整离线部署。',
       primary: '立即体验',
       secondary: '阅读文档',
       commercial: '了解商业版',
@@ -327,7 +341,7 @@ const copy = {
     supportTitle: '支持 File Viewer 持续维护，也为企业需求保留清晰入口。',
     supportIntro:
       'GitHub Sponsors 支持一次性或持续赞助，国内用户也可使用微信或支付宝。赞助用于开源维护，不影响开源功能；私有化、定制与明确响应时间请使用企业技术支持入口。',
-    releaseTitle: 'v2.2.2 已发布：EPUB 引擎安全内置、Docker 安全头完整生效，并延续 PDF 与 DOCX 修复。',
+    releaseTitle: 'v2.2.3 已发布：组件工具栏默认隔离宿主样式，Angular PPTX 与普通 Vite PPT Worker 路径完成修复。',
     footer:
       '本仓库源码与软件包采用 Apache-2.0；可选外部依赖保留各自许可。由 Flyfish Dev 持续维护。'
   },
@@ -343,10 +357,10 @@ const copy = {
       demo: 'Live Demo'
     },
     hero: {
-      eyebrow: 'v2.2.2 · Browser-native file preview',
-      title: 'Turn complex files into instant product experiences.',
+      eyebrow: 'v2.2.3 · 208 extensions · no conversion server',
+      title: 'Preview files entirely in the browser.',
       subtitle:
-        'One component brings Office, PDF, OFD, CAD, Typst, XMind, archives, email, code, media, and 3D assets into the browser. Full packages include preset-all plus their matching File Viewer-owned offline assets.',
+        'Uploading a private DOCX just to preview it is awful. File Viewer keeps Office, PDF, CAD, archives, email, and more in the browser, with every runtime asset ready for self-hosting.',
       primary: 'Try the Demo',
       secondary: 'Read the Docs',
       commercial: 'Commercial Edition',
@@ -375,7 +389,7 @@ const copy = {
     supportTitle: 'Support sustainable maintenance, with a clear path for enterprise help.',
     supportIntro:
       'Back the open-source work through GitHub Sponsors, buy us a lemonade in the support shop, or explore the commercial edition when Office fidelity, private delivery, and committed support matter.',
-    releaseTitle: 'v2.2.2 is live: EPUB is safely bundled, Docker security headers are complete, and the PDF/DOCX fixes remain intact.',
+    releaseTitle: 'v2.2.3 is live: component toolbars are isolated from host CSS, with Angular PPTX and plain-Vite PPT Worker paths fixed.',
     footer:
       'Repository source and packages use Apache-2.0; optional external dependencies keep their own licenses. Maintained by Flyfish Dev.'
   }
@@ -631,7 +645,7 @@ const quickStartItems = computed<QuickStartItem[]>(() => [
   {
     label: isZh.value ? 'Vanilla JS Full' : 'Vanilla JS Full',
     packageName: '@file-viewer/web-full',
-    install: 'npm install @file-viewer/web-full@2.2.2',
+    install: 'npm install @file-viewer/web-full@2.2.3',
     title: isZh.value ? '完整部署 dist，零 copy 直接预览' : 'Deploy the complete dist with zero copy steps',
     summary: isZh.value
       ? 'web-full 内置 preset-all；完整 dist 已包含 renderer、Worker、WASM、字体和 vendor，保持目录结构部署即可。'
@@ -1083,8 +1097,8 @@ const viewerOptions = {
 )
 
 const qrItems: QrItem[] = [
-  { label: '微信打赏', note: '请我们喝杯柠檬水', image: '/donate-wx.jpg' },
-  { label: '支付宝打赏', note: '支持开源持续迭代', image: '/donate-alipay.jpg' },
+  { label: '微信打赏', note: '请我们喝杯柠檬水', image: '/donate-wx.jpg?v=637db1a6' },
+  { label: '支付宝打赏', note: '支持开源持续迭代', image: '/donate-alipay.jpg?v=3b614e81' },
   { label: '客服微信', note: '优先支持与商业沟通', image: '/contact.jpg' },
   { label: '公众号', note: '关注更新与实践文章', image: '/wechat-mp.png' },
   { label: '交流群', note: '加入用户交流群', image: '/invite.webp' }
@@ -1179,6 +1193,7 @@ function setLinkHref(selector: string, href: string) {
 function updateDocumentMetadata(nextLocale: Locale) {
   const metadata = siteMetadata[nextLocale]
   const canonical = resolveCanonicalForCurrentPath()
+  const previewImageUrl = sitePreviewImageUrls[nextLocale]
   document.documentElement.lang = metadata.lang
   document.title = metadata.title
   setLinkHref('link[rel="canonical"]', canonical)
@@ -1186,14 +1201,14 @@ function updateDocumentMetadata(nextLocale: Locale) {
   setMetaContent('meta[property="og:title"]', metadata.title)
   setMetaContent('meta[property="og:description"]', metadata.description)
   setMetaContent('meta[property="og:url"]', canonical)
-  setMetaContent('meta[property="og:image"]', sitePreviewImageUrl)
-  setMetaContent('meta[property="og:image:secure_url"]', sitePreviewImageUrl)
+  setMetaContent('meta[property="og:image"]', previewImageUrl)
+  setMetaContent('meta[property="og:image:secure_url"]', previewImageUrl)
   setMetaContent('meta[property="og:image:alt"]', metadata.imageAlt)
   setMetaContent('meta[property="og:locale"]', metadata.ogLocale)
   setMetaContent('meta[property="og:locale:alternate"]', metadata.ogLocaleAlternate)
   setMetaContent('meta[name="twitter:title"]', metadata.title)
   setMetaContent('meta[name="twitter:description"]', metadata.description)
-  setMetaContent('meta[name="twitter:image"]', sitePreviewImageUrl)
+  setMetaContent('meta[name="twitter:image"]', previewImageUrl)
 }
 
 function readStoredLocalePreference(): Locale | undefined {
@@ -1244,6 +1259,7 @@ function resolveCanonicalForCurrentPath() {
 
 function toggleLocale() {
   const nextLocale = isZh.value ? 'en' : 'zh'
+  mobileNavOpen.value = false
   writeStoredLocalePreference(nextLocale)
   locale.value = nextLocale
   syncBrowserPathForLocale(nextLocale)
@@ -1398,6 +1414,7 @@ function scrollInitialHashIntoView() {
 
 function scrollToSection(event: MouseEvent, id: SectionId) {
   event.preventDefault()
+  mobileNavOpen.value = false
   const target = document.getElementById(id)
   if (!target) return
 
@@ -2019,11 +2036,11 @@ onBeforeUnmount(() => {
       :class="{ 'is-pinned': isTopbarPinned }"
       aria-label="Primary navigation"
     >
-      <a class="brand" href="#top" aria-label="Flyfish File Viewer" @click="scrollToSection($event, 'top')">
+      <a class="brand" href="#top" aria-label="File Viewer" @click="scrollToSection($event, 'top')">
         <img src="/logo.png" alt="" />
         <span>File Viewer</span>
       </a>
-      <div class="topbar-links">
+      <div id="primary-navigation" class="topbar-links" :class="{ 'is-open': mobileNavOpen }">
         <a
           v-for="item in primaryNavItems"
           :key="item.id"
@@ -2036,6 +2053,17 @@ onBeforeUnmount(() => {
         </a>
       </div>
       <div class="topbar-actions">
+        <button
+          class="nav-icon-button mobile-nav-toggle"
+          type="button"
+          :aria-label="isZh ? '打开导航菜单' : 'Open navigation menu'"
+          aria-controls="primary-navigation"
+          :aria-expanded="mobileNavOpen"
+          @click="mobileNavOpen = !mobileNavOpen"
+        >
+          <X v-if="mobileNavOpen" :size="18" />
+          <Menu v-else :size="18" />
+        </button>
         <a
           class="nav-icon-button github-star-button"
           :href="githubUrl"
@@ -2054,7 +2082,8 @@ onBeforeUnmount(() => {
           {{ nextLocaleLabel }}
         </button>
         <a class="topbar-action" :href="localizedDemoUrl" target="_blank" rel="noreferrer">
-          {{ currentCopy.nav.demo }}
+          <span class="topbar-action-label-full">{{ currentCopy.nav.demo }}</span>
+          <span class="topbar-action-label-short">{{ isZh ? '体验' : 'Demo' }}</span>
           <ArrowRight :size="16" />
         </a>
       </div>
@@ -2068,12 +2097,12 @@ onBeforeUnmount(() => {
         </p>
         <h1>
           <template v-if="isZh">
-            <span class="hero-title-line">把复杂文件，</span>
-            <span class="hero-title-line hero-title-accent">变成产品里的即时体验。</span>
+            <span class="hero-title-line">File Viewer。</span>
+            <span class="hero-title-line hero-title-accent">文件预览，全部在浏览器完成。</span>
           </template>
           <template v-else>
-            <span class="hero-title-line">Complex files.</span>
-            <span class="hero-title-line hero-title-accent">Instant experiences.</span>
+            <span class="hero-title-line">File Viewer.</span>
+            <span class="hero-title-line hero-title-accent">Preview files in the browser.</span>
           </template>
         </h1>
         <p class="hero-subtitle">{{ currentCopy.hero.subtitle }}</p>
@@ -2099,7 +2128,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div class="hero-visual" aria-label="Flyfish File Viewer 3D product preview">
+      <div class="hero-visual" aria-label="File Viewer browser-native preview workspace">
         <div ref="heroStage" class="hero-stage" :class="{ 'is-webgl-ready': heroCanvasReady }">
           <div class="hero-static-preview" aria-hidden="true">
             <span class="hero-static-page hero-static-page-one"></span>
@@ -2200,7 +2229,7 @@ onBeforeUnmount(() => {
                 <source media="(max-width: 760px)" :srcset="demoPreviewMobilePath" />
                 <img
                   :src="demoPreviewDesktopPath"
-                  :alt="isZh ? 'File Viewer v2.2.2 沉浸式 DOCX 预览界面' : 'File Viewer v2.2.2 immersive DOCX preview UI'"
+                  :alt="isZh ? 'File Viewer v2.2.3 沉浸式 DOCX 预览界面' : 'File Viewer v2.2.3 immersive DOCX preview UI'"
                   width="1600"
                   height="900"
                   loading="lazy"
@@ -2212,7 +2241,7 @@ onBeforeUnmount(() => {
                 :key="`demo-${locale}`"
                 :class="{ 'is-ready': demoFrameReady }"
                 :src="localizedDemoUrl"
-                :title="isZh ? 'Flyfish File Viewer 在线 Demo' : 'Flyfish File Viewer live demo'"
+                :title="isZh ? 'File Viewer 在线 Demo' : 'File Viewer live demo'"
                 loading="lazy"
                 @load="handleDemoFrameLoad"
               ></iframe>
@@ -2382,7 +2411,7 @@ onBeforeUnmount(() => {
           v-if="docsFrameMounted"
           :key="`docs-${locale}`"
           :src="localizedDocsQuickstartUrl"
-          :title="isZh ? 'Flyfish File Viewer 快速开始文档' : 'Flyfish File Viewer quickstart documentation'"
+          :title="isZh ? 'File Viewer 快速开始文档' : 'File Viewer quickstart documentation'"
           loading="lazy"
         ></iframe>
         <div v-else class="demo-frame-placeholder docs-frame-placeholder">
@@ -2547,7 +2576,7 @@ onBeforeUnmount(() => {
       <div class="support-copy">
         <div class="footer-brand">
           <img src="/logo.png" alt="" />
-          <strong>Flyfish File Viewer</strong>
+          <strong>File Viewer</strong>
         </div>
         <h2>{{ currentCopy.supportTitle }}</h2>
         <p>{{ currentCopy.supportIntro }}</p>

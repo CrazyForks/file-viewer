@@ -22,6 +22,7 @@
   export let size = undefined
   export let options = undefined
   export let onEvent = undefined
+  export let onStateChange = undefined
   export let className = ''
   export let containerStyle = ''
 
@@ -70,8 +71,12 @@
     return viewer?.downloadOriginalFile() ?? Promise.resolve()
   }
 
-  export function printRenderedHtml() {
-    return viewer?.printRenderedHtml() ?? Promise.resolve()
+  export function printRenderedHtml(...args) {
+    return viewer?.printRenderedHtml(...args) ?? Promise.resolve()
+  }
+
+  export function printWithMask(...args) {
+    return viewer?.printWithMask(...args) ?? Promise.resolve()
   }
 
   export function exportRenderedHtml() {
@@ -88,6 +93,18 @@
 
   export function resetZoom() {
     return viewer?.resetZoom() ?? Promise.resolve(null)
+  }
+
+  export function fitToView(fit) {
+    return viewer?.fitToView(fit) ?? Promise.resolve(null)
+  }
+
+  export function getViewState() {
+    return viewer?.getViewState() ?? null
+  }
+
+  export function applyViewState(state, options) {
+    return viewer?.applyViewState(state, options) ?? Promise.resolve(null)
   }
 
   export function searchDocument(query) {
@@ -158,6 +175,7 @@
   {size}
   options={fullOptions}
   {onEvent}
+  {onStateChange}
   {className}
   {containerStyle}
   on:viewerEvent

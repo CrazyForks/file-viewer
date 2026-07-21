@@ -1,9 +1,9 @@
 {
   "name": "@file-viewer/renderer-epub",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
-  "description": "Standalone EPUB and UMD reader renderer plugin for Flyfish File Viewer powered by epubjs and pako.",
+  "description": "Standalone EPUB and UMD reader renderer plugin for File Viewer powered by epubjs and pako.",
   "keywords": [
     "file-viewer",
     "renderer",
@@ -19,8 +19,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",
@@ -57,7 +57,7 @@
     "type-check": "tsc -b tsconfig.json"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:2.2.2",
+    "@file-viewer/core": "workspace:2.2.3",
     "pako": "^2.1.0"
   },
   "devDependencies": {

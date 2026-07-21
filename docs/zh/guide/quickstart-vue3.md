@@ -43,7 +43,7 @@ const options = {
 <file-viewer url="/files/demo.docx" :options="options" />
 ```
 
-`styleIsolation:'shadow'` 适合宿主 CSS 不可控的后台、低代码和微前端页面。Vue3 默认保持历史 light DOM 兼容；样式隔离、CSS tokens 和 `::part()` 定制完整说明见 [样式隔离与主题定制](/zh/guide/style-isolation)。
+Vue3 默认使用 Shadow DOM，宿主全局 CSS、低代码 reset 和微前端样式不会破坏工具栏或正文。只有依赖深层 class 覆盖的旧项目才使用 `styleIsolation:'none'`；CSS tokens 和 `::part()` 定制完整说明见 [样式隔离与主题定制](/zh/guide/style-isolation)。
 
 需要完整 Demo 能力时，把 `@file-viewer/preset-office` 换成 `@file-viewer/preset-all`，并把 `options.preset` 指向全量 preset。
 

@@ -1,9 +1,9 @@
 {
   "name": "@file-viewer/eda-orcad",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "private": false,
   "type": "module",
-  "description": "Pure TypeScript OrCAD and Allegro binary inspection helpers for Flyfish File Viewer with CFB detection and safe string extraction.",
+  "description": "Pure TypeScript OrCAD and Allegro binary inspection helpers for File Viewer with CFB detection and safe string extraction.",
   "keywords": [
     "file-viewer",
     "eda",
@@ -23,8 +23,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": {
-    "name": "Wangyu",
-    "email": "wybaby168@gmail.com"
+    "name": "Yu Wang",
+    "email": "admin@flyfish.dev"
   },
   "repository": {
     "type": "git",

@@ -54,7 +54,7 @@ The package-root default export is the Svelte component. Import actions and lowe
 </section>
 ```
 
-Pass `styleIsolation:'shadow'` when host CSS is uncontrolled and renderer content should use an isolated render root. The Svelte package keeps compatibility by default. See [Style Isolation And Customization](/guide/style-isolation) for tokens and `::part()` customization.
+Svelte uses Shadow DOM by default so uncontrolled host CSS cannot break the toolbar or renderer content. Use `styleIsolation:'none'` only for legacy deep class overrides. See [Style Isolation And Customization](/guide/style-isolation) for tokens and `::part()` customization.
 
 The full package only changes the import:
 

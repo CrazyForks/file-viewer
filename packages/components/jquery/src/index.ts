@@ -9,6 +9,7 @@ import { fileViewerCoreRendererRegistry } from '@file-viewer/core'
 export type {
   FileRef,
   ViewerAiOptions,
+  ViewerApplyViewStateOptions,
   ViewerArchiveOptions,
   ViewerCadOptions,
   ViewerController,
@@ -20,16 +21,24 @@ export type {
   ViewerEventType,
   ViewerFetchFile,
   ViewerFetchInput,
+  ViewerFitMode,
+  ViewerFitOptions,
+  ViewerFitResult,
   ViewerMountOptions,
   ViewerOptions,
   ViewerPdfOptions,
+  ViewerPresentationOptions,
   ViewerSpreadsheetOptions,
+  ViewerCoreOptions,
   ViewerSearchOptions,
   ViewerSourceInput,
   ViewerThemeMode,
   ViewerToolbarOptions,
   ViewerToolbarPosition,
   ViewerTypstOptions,
+  ViewerUiDensity,
+  ViewerUiOptions,
+  ViewerViewState,
   ViewerWatermarkOptions,
   ViewerLifecycleContext,
   ViewerOperationContext,
@@ -49,6 +58,8 @@ export type JQueryFileViewerMethod =
   | 'zoomIn'
   | 'zoomOut'
   | 'resetZoom'
+  | 'fitToView'
+  | 'applyViewState'
   | 'searchDocument'
   | 'clearDocumentSearch'
   | 'nextSearchResult'
@@ -189,6 +200,19 @@ const callControllerMethod = (
 
   if (method === 'resetZoom') {
     controller.resetZoom()
+    return
+  }
+
+  if (method === 'fitToView') {
+    controller.fitToView(args[0] as Parameters<ViewerController['fitToView']>[0])
+    return
+  }
+
+  if (method === 'applyViewState') {
+    controller.applyViewState(
+      args[0] as Parameters<ViewerController['applyViewState']>[0],
+      args[1] as Parameters<ViewerController['applyViewState']>[1]
+    )
     return
   }
 

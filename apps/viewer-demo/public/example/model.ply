@@ -1,6 +1,6 @@
 ply
 format ascii 1.0
-comment Flyfish Viewer demo PLY
+comment File Viewer demo PLY
 element vertex 4
 property float x
 property float y

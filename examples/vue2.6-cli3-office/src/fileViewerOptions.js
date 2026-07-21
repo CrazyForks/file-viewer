@@ -12,9 +12,8 @@ export function createViewerOptions(theme) {
     preset: officePreset,
     rendererMode: 'replace',
     theme,
-    styleIsolation: 'shadow',
     toolbar: {
-      position: 'bottom-right'
+      position: 'auto'
     },
     pdf: {
       workerUrl: `${fileViewerAssetBaseUrl}vendor/pdf/pdf.worker.mjs`,

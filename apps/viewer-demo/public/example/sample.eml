@@ -1,6 +1,6 @@
-From: Flyfish Viewer <viewer@flyfish.dev>
+From: File Viewer <viewer@flyfish.dev>
 To: Demo User <demo@flyfish.dev>
-Subject: Flyfish Viewer EML Sample
+Subject: File Viewer EML Sample
 Date: Tue, 26 May 2026 10:00:00 +0800
 MIME-Version: 1.0
 Message-ID: <sample-eml-20260526@flyfish.dev>
@@ -24,7 +24,7 @@ Content-Transfer-Encoding: 8bit
 <!doctype html>
 <html>
   <body>
-    <h1>Flyfish Viewer EML Sample</h1>
+    <h1>File Viewer EML Sample</h1>
     <p>这是一封用于验证 <strong>EML 在线预览</strong> 的示例邮件。</p>
     <ul>
       <li>HTML 正文安全地渲染在 sandbox iframe 中。</li>

@@ -109,6 +109,8 @@ const E_VIRT_TABLE_STYLE_MARKERS = [
   '.e-virt-table-editor',
   '.e-virt-table-context-menu',
 ] as const;
+const SPREADSHEET_STYLE_SCOPE = '.excel-wrapper[data-file-viewer-spreadsheet-root]';
+const E_VIRT_TABLE_ROTATE_KEYFRAME = 'file-viewer-e-virt-table-rotate';
 
 const spreadsheetStyle = `
 .excel-wrapper{position:relative;width:100%;height:100%;display:flex;flex-direction:column;background:var(--file-viewer-render-surface-background,#fff);color:#172033;font-family:Aptos,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}
@@ -120,7 +122,7 @@ const spreadsheetStyle = `
 .excel-wrapper .table-host .e-virt-table-container{height:100%!important}
 .excel-wrapper .table-host .e-virt-table-stage{overflow:hidden}
 .excel-wrapper .sheet-loading{position:absolute;right:18px;bottom:18px;z-index:20;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:14px;background:rgba(33,163,102,.1);border:1px solid rgba(33,163,102,.2);box-shadow:0 8px 20px rgba(33,163,102,.12);color:#1a7f50;font-size:12px;font-weight:700;pointer-events:none}
-.excel-wrapper .sheet-loading-dot{width:8px;height:8px;flex-shrink:0;border-radius:999px;background:#21a366;box-shadow:0 0 0 6px rgba(33,163,102,.12);animation:sheet-loading-pulse 1.2s ease-in-out infinite}
+.excel-wrapper .sheet-loading-dot{width:8px;height:8px;flex-shrink:0;border-radius:999px;background:#21a366;box-shadow:0 0 0 6px rgba(33,163,102,.12);animation:file-viewer-spreadsheet-loading-pulse 1.2s ease-in-out infinite}
 .excel-wrapper .sheet-loading-summary{color:#5f6368}
 .excel-wrapper .excel-image-viewport{position:absolute;z-index:35;overflow:hidden;pointer-events:none}
 .excel-wrapper .excel-image-layer{position:absolute;inset:0 auto auto 0;width:0;height:0;transform-origin:0 0;will-change:transform}
@@ -134,7 +136,7 @@ const spreadsheetStyle = `
 .excel-wrapper .loading-kicker{display:block;color:#21a366;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .excel-wrapper .loading-copy strong{display:block;margin-top:6px;color:#183828;font-size:20px;line-height:1.3}
 .excel-wrapper .loading-copy p{margin:8px 0 0;color:#64748b;font-size:13px;line-height:1.5}
-.excel-wrapper .loading-spinner{width:28px;height:28px;border-radius:999px;border:3px solid rgba(33,163,102,.16);border-top-color:#21a366;animation:sheet-loading-spin .8s linear infinite}
+.excel-wrapper .loading-spinner{width:28px;height:28px;border-radius:999px;border:3px solid rgba(33,163,102,.16);border-top-color:#21a366;animation:file-viewer-spreadsheet-loading-spin .8s linear infinite}
 .excel-wrapper .error{position:absolute;left:50%;top:50%;z-index:1000;transform:translate(-50%,-50%);max-width:min(520px,calc(100% - 48px));padding:16px 18px;border-radius:16px;background:#fff7ed;color:#9a3412;border:1px solid rgba(234,88,12,.18);box-shadow:0 18px 42px rgba(154,52,18,.12);font-size:14px;line-height:1.6}
 .excel-wrapper .toolbar{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;border-top:1px solid #e5e7eb;background:#f8fafc}
 .excel-wrapper .btn-group{min-width:0;max-width:100%;flex:1 1 auto;display:flex;align-items:center;gap:6px;overflow-x:auto;overflow-y:hidden;scrollbar-gutter:stable;scrollbar-width:thin;overscroll-behavior-x:contain}
@@ -155,10 +157,14 @@ const spreadsheetStyle = `
 .excel-wrapper[data-spreadsheet-theme='dark'] .loading-copy strong{color:#f0fdf4}
 .excel-wrapper[data-spreadsheet-theme='dark'] .loading-copy p{color:#94a3b8}
 .excel-wrapper[data-spreadsheet-theme='dark'] .error{border-color:rgba(251,146,60,.28);background:#2a1710;color:#fdba74;box-shadow:0 20px 48px rgba(0,0,0,.36)}
-@keyframes sheet-loading-spin{to{transform:rotate(360deg)}}
-@keyframes sheet-loading-pulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1)}}
+@keyframes file-viewer-spreadsheet-loading-spin{to{transform:rotate(360deg)}}
+@keyframes file-viewer-spreadsheet-loading-pulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1)}}
 @media (max-width:720px){.excel-wrapper .toolbar{align-items:stretch;flex-direction:column}.excel-wrapper .btn-group{flex:0 0 auto}.excel-wrapper .summary{max-width:none;white-space:normal}.excel-wrapper .sheet-loading{left:12px;right:12px;bottom:58px;justify-content:center}.excel-wrapper .loading-card{margin:18px;flex-direction:column;text-align:center}}
 `;
+const scopedSpreadsheetStyle = spreadsheetStyle.replace(
+  /\.excel-wrapper/g,
+  SPREADSHEET_STYLE_SCOPE
+);
 
 const isEVirtTableConstructor = (value: unknown): value is EVirtTableConstructor => {
   return typeof value === 'function';
@@ -221,10 +227,11 @@ const collectStyleElements = (documents: readonly Document[]) => documents.flatM
 let loadedEVirtTableStyleText = '';
 
 // e-virt-table bundles its complete stylesheet into the ESM entry and injects
-// it into document.head. Head styles do not cross a ShadowRoot boundary, so
-// capture that exact version-matched CSS and install a copy beside the table.
-// Checking independent layout, overlay, editor, and menu selectors avoids
-// mistaking an app's partial compatibility overrides for the vendor sheet.
+// unscoped :root, .dark, and table selectors into document.head. Capture that
+// exact version-matched CSS, remove only the node created by our import, and
+// install a scoped copy beside the renderer for both light and shadow DOM.
+// Independent layout, overlay, editor, and menu markers avoid mistaking an
+// app's partial compatibility overrides for the complete vendor sheet.
 export const resolveEVirtTableStyleText = (documentRef: Document) => {
   const styles = collectStyleElements(collectEVirtTableStyleDocuments(documentRef));
   for (let index = styles.length - 1; index >= 0; index -= 1) {
@@ -251,6 +258,7 @@ const loadEVirtTable = async (documentRef: Document): Promise<{
   if (injectedStyle) {
     loadedEVirtTableStyleText = injectedStyle.textContent || '';
   }
+  injectedStyles.forEach(style => style.remove());
 
   return {
     constructor: resolveEVirtTableConstructor(module),
@@ -262,14 +270,36 @@ const loadEVirtTable = async (documentRef: Document): Promise<{
 };
 
 export const scopeEVirtTableStyleText = (cssText: string, shadow: boolean) => {
-  if (!shadow) {
-    return cssText;
-  }
+  const rootScope = shadow
+    ? `:host,${SPREADSHEET_STYLE_SCOPE}`
+    : SPREADSHEET_STYLE_SCOPE;
+  const darkScope = shadow
+    ? `:host(.dark),${SPREADSHEET_STYLE_SCOPE}[data-spreadsheet-theme='dark']`
+    : `${SPREADSHEET_STYLE_SCOPE}[data-spreadsheet-theme='dark']`;
+  const scopeSelector = (selector: string) => {
+    const normalized = selector.trim();
+    if (normalized === ':root') {
+      return rootScope;
+    }
+    if (normalized === '.dark') {
+      return darkScope;
+    }
+    return `${SPREADSHEET_STYLE_SCOPE} ${normalized}`;
+  };
 
-  // :root inside a shadow stylesheet does not select the document host. Move
-  // the vendor custom properties onto both the ShadowRoot host and renderer
-  // root while keeping the remaining upstream selectors byte-for-byte.
-  return cssText.replace(/:root\s*\{/g, ':host,.excel-wrapper{');
+  return cssText
+    .replace(/@keyframes\s+rotate\b/g, `@keyframes ${E_VIRT_TABLE_ROTATE_KEYFRAME}`)
+    .replace(/animation:\s*rotate\b/g, `animation:${E_VIRT_TABLE_ROTATE_KEYFRAME}`)
+    .replace(
+      /(^|})\s*(:root|\.dark|\.e-virt-table-[^{}]+)\{/g,
+      (_match, boundary: string, selectorList: string) => {
+        const scopedSelectors = selectorList
+          .split(',')
+          .map(scopeSelector)
+          .join(',');
+        return `${boundary}${scopedSelectors}{`;
+      }
+    );
 };
 
 const getTargetWindow = (target: HTMLDivElement) => {
@@ -590,7 +620,7 @@ const createSpreadsheetWorkerFactory = (
   };
 };
 
-const createStyle = (documentRef: Document, cssText = spreadsheetStyle) => {
+const createStyle = (documentRef: Document, cssText = scopedSpreadsheetStyle) => {
   const style = documentRef.createElement('style');
   style.textContent = cssText;
   return style;
@@ -714,6 +744,7 @@ const renderFileViewerSpreadsheet = async (
 
   const root = documentRef.createElement('div');
   root.className = 'excel-wrapper';
+  root.dataset.fileViewerSpreadsheetRoot = 'true';
   root.dataset.spreadsheetTheme = darkMode ? 'dark' : 'light';
   root.dataset.viewerZoomProvider = 'xlsx';
 

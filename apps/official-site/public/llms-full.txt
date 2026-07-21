@@ -1,12 +1,12 @@
-# Flyfish File Viewer
+# File Viewer by Flyfish
 
-Flyfish File Viewer is a browser-native, offline-first, self-hosted multi-format file preview component ecosystem for enterprise web applications, internal tools, knowledge bases, ticketing systems, OA workflows, archives, and engineering collaboration platforms.
+File Viewer is a browser-native, offline-first, self-hosted multi-format file preview component ecosystem for enterprise web applications, internal tools, knowledge bases, ticketing systems, OA workflows, archives, and engineering collaboration platforms.
 
 The project is designed for teams that need users to open business attachments directly inside a product without sending private files to a conversion backend. The shared TypeScript core is framework-neutral. Renderer packages handle concrete domains. Presets assemble product-shaped capability sets. Standard component packages expose native integration surfaces for Vanilla JavaScript, Web Component, Vue 3, Vue 2.7, Vue 2.6, React, React Legacy, Svelte, and jQuery.
 
 ## Product Positioning
 
-- Product name: Flyfish File Viewer
+- Product name: File Viewer
 - Official site: https://file-viewer.app/
 - Documentation: https://doc.file-viewer.app/
 - Live demo: https://demo.file-viewer.app/
@@ -15,7 +15,7 @@ The project is designed for teams that need users to open business attachments d
 - Primary audience: product teams building file preview into enterprise systems and private deployments.
 - Core promise: preview common and complex files in the browser, with modular packages and local Worker/WASM assets.
 - Release scope: 54 File Viewer npm targets, 208 maintained extensions, and 25 preview pipelines; independently versioned renderer dependencies are not counted as File Viewer npm targets.
-- Current release: v2.2.2, https://github.com/flyfish-dev/file-viewer/releases/tag/v2.2.2. It bundles the EPUB engine as a pinned lazy module, removes its vulnerable legacy XML DOM production dependency, and keeps Docker security headers on cache-controlled routes. It also includes the uploaded-PDF download and anchored/grouped DOCX fixes from 2.2.1.
+- Current release: v2.2.3, https://github.com/flyfish-dev/file-viewer/releases/tag/v2.2.3. Standard framework components isolate their toolbars from host CSS by default. Angular 22 PPTX Worker resolution and plain-Vite binary PPT Worker delivery are fixed; prior EPUB, Docker, PDF, and DOCX corrections remain included.
 
 ## Format Coverage
 
@@ -26,9 +26,9 @@ The format matrix covers Office documents, fixed-layout documents, engineering a
 - Archives and communication files: zip, 7z, rar, tar, eml, msg, mbox, epub.
 - Code, data, media, and geo: markdown, JSON, TypeScript, Python, patch/diff, git bundle, SQLite, Parquet, video, audio, GeoJSON, KML.
 
-The light component packages are intentionally small and should not be described as containing every renderer. Broader coverage is enabled through renderer packages or lite/office/engineering/all presets. Every v2.2.2 Full package already includes preset-all and must not be documented as requiring a separate preset install or `options.preset`.
+The light component packages are intentionally small and should not be described as containing every renderer. Broader coverage is enabled through renderer packages or lite/office/engineering/all presets. Every v2.2.3 Full package already includes preset-all and must not be documented as requiring a separate preset install or `options.preset`.
 
-PowerPoint has two strict rendering routes. Binary `.ppt` files use the independently versioned `@file-viewer/ppt@0.3.1` runtime. Demo, Full, copy-assets, and CDN/IIFE distributions include its verified public ESM/Worker/WASM/CJK-font files under `vendor/ppt/`. Open XML `.pptx` files use the separate `@file-viewer/pptx` Worker engine. Documentation and examples should not collapse these into one renderer.
+PowerPoint has two strict rendering routes. Binary `.ppt` files use the independently versioned `@file-viewer/ppt@0.3.2` runtime. Demo, Full, copy-assets, and CDN/IIFE distributions include its verified public ESM/Worker/WASM/CJK-font files under `vendor/ppt/`. Open XML `.pptx` files use the separate `@file-viewer/pptx` Worker engine. Documentation and examples should not collapse these into one renderer.
 
 ## Integration Model
 
@@ -37,7 +37,7 @@ PowerPoint has two strict rendering routes. Binary `.ppt` files use the independ
 3. Vite Full: install the framework Full package plus `@file-viewer/vite-plugin`, then register `fileViewerRenderers({ copyAssets: true })`. Vite dev and build publish the File Viewer-owned asset tree under the deployment base, including root and subpath deployments.
 4. Non-Vite Full: install the framework Full package, then run `npx --no-install file-viewer-copy-assets ./public/file-viewer` once. Every Full package exposes this same-version CLI.
 5. Web Full: deploy `@file-viewer/web-full/dist` intact. Its File Viewer-owned preset-all renderers, Workers, WASM, fonts, vendor files, and integrity manifest need no copy step.
-6. CDN/IIFE: script-tag usage is supported, while heavy renderers and assets stay lazy-loaded. For offline or private hosting, deploy the complete web-full `dist/`; binary PPT 0.3.1 then works from packaged `vendor/ppt/` assets without URL configuration. `presentation.pptModuleUrl`, `pptWorkerUrl`, `pptWasmUrl`, and `pptFontUrl` are advanced overrides for custom routes.
+6. CDN/IIFE: script-tag usage is supported, while heavy renderers and assets stay lazy-loaded. For offline or private hosting, deploy the complete web-full `dist/`; binary PPT 0.3.2 then works from packaged `vendor/ppt/` assets without URL configuration. `presentation.pptModuleUrl`, `pptWorkerUrl`, `pptWasmUrl`, and `pptFontUrl` are advanced overrides for custom routes.
 
 ## Full Package Delivery Contract Since v2.1.30
 

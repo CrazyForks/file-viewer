@@ -1,6 +1,6 @@
 import { renderPptxPostProcessing } from './chart';
 import { resolvePptxEngineOptions, RECOMMENDED_ZIP_LIMITS } from './options';
-import { ensurePptxViewerStyles } from './styles';
+import { ensurePptxViewerStyles, scopePptxContentStyleText } from './styles';
 import type { PptxDiagnosticError, PptxSlideSize, PptxViewerOptions, PptxWorkerMessage } from './types';
 import { createPptxWorker } from './worker';
 
@@ -348,7 +348,7 @@ export class PptxViewer {
     }
 
     const style = this.target.ownerDocument.createElement('style');
-    style.textContent = css;
+    style.textContent = scopePptxContentStyleText(css);
     this.content.append(style);
   }
 

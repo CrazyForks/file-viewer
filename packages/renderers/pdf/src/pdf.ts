@@ -167,6 +167,7 @@ const pdfJsConsoleWarningSuppressions = new WeakMap<ConsoleLike, PdfJsConsoleWar
 const createStyle = (documentRef: Document) => {
   const style = documentRef.createElement('style');
   style.textContent = `${normalizedPdfViewerStyle}
+.pdf-toolbar,.pdf-toolbar-group,.pdf-icon-button,.pdf-scale-button{box-sizing:border-box}
 .pdf-state[hidden],.pdf-nav-pane[hidden]{display:none!important}
 .pdf-page-button--with-thumbnail{grid-template-columns:52px minmax(0,1fr);min-height:74px}
 .pdf-page-thumb--thumbnail{width:46px;height:60px;overflow:hidden;background:#fff}

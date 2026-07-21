@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://file-viewer.app"><img src="docs/public/_media/logo.png" width="112" alt="Flyfish File Viewer logo"></a>
+  <a href="https://file-viewer.app"><img src="docs/public/_media/logo.png" width="92" alt="File Viewer logo"></a>
 </p>
 
-<h1 align="center">Flyfish File Viewer</h1>
+<h1 align="center">File Viewer</h1>
 
 <p align="center"><strong>Uploading a private DOCX or DWG just to preview it is awful.</strong></p>
 
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <strong>v2.2.2 · 208 extensions across 25 preview pipelines · 54 npm targets.</strong> Heavy paths load only when the active format needs them.
+  <strong>v2.2.3 · 208 extensions across 25 preview pipelines · 54 npm targets.</strong> Heavy paths load only when the active format needs them.
 </p>
 
 <p align="center">
@@ -31,12 +31,12 @@
   <a href="https://github.com/flyfish-dev/file-viewer/actions/workflows/public-ci.yml"><img alt="Public CI" src="https://github.com/flyfish-dev/file-viewer/actions/workflows/public-ci.yml/badge.svg?branch=main"></a>
   <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="npm version" src="https://img.shields.io/npm/v/@file-viewer/core?logo=npm&color=cb3837"></a>
   <a href="https://www.npmjs.com/package/@file-viewer/core"><img alt="core total downloads" src="https://img.shields.io/npm/dt/@file-viewer/core?logo=npm&label=downloads"></a>
-  <a href="https://github.com/flyfish-dev/file-viewer"><img alt="GitHub stars" src="https://img.shields.io/github/stars/flyfish-dev/file-viewer?style=flat&logo=github&logoColor=white&label=stars&color=2563eb"></a>
+  <a href="https://github.com/flyfish-dev/file-viewer"><img alt="GitHub stars" src="https://img.shields.io/github/stars/flyfish-dev/file-viewer?style=flat&logo=github&logoColor=white&label=stars&color=31a66f"></a>
   <a href="https://hub.docker.com/r/flyfishdev/file-viewer"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/flyfishdev/file-viewer?logo=docker"></a>
 </p>
 
 <p align="center">
-  <a href="https://demo.file-viewer.app/"><img src="docs/public/_media/file-viewer-demo-v2.2.2-formats-en.gif" width="920" alt="File Viewer v2.2.2 English product demo showing rich DOCX, PPTX, DWG, and interactive 3D STEP previews in the immersive workspace"></a>
+  <a href="https://demo.file-viewer.app/"><img src="docs/public/_media/file-viewer-demo-v2.2.3-formats-en.gif" width="920" alt="File Viewer v2.2.3 English product demo showing rich DOCX, PPTX, DWG, and interactive 3D STEP previews in the immersive workspace"></a>
 </p>
 
 ## Why File Viewer
@@ -161,7 +161,7 @@ See [on-demand renderers and presets](https://doc.file-viewer.app/guide/on-deman
 
 ## Capability at a Glance
 
-The v2.2.2 registry maps **208 file extensions** into **25 rendering pipelines**, distributed through **54 npm targets**. Presentation preview deliberately keeps two engine boundaries: PowerPoint 97–2003 `.ppt` uses the native-WASM `@file-viewer/ppt@0.3.1` engine, while PPTX/OpenXML uses the `@file-viewer/pptx` Worker engine. STEP/STP, IGES/IGS, and BREP use the packaged local OCCT Worker/WASM path instead of a conversion hint. EPUB uses a packaged lazy engine built against the pinned safe XML DOM implementation, so it adds no external runtime or CDN dependency. Other major groups include PDF; Word and spreadsheets; OFD; DWG/DXF/DWF/DWFX; archives; EML/MSG; Markdown and source code; Draw.io, Excalidraw, Mermaid and PlantUML; PSD and images; audio/video; ebooks; mind maps; 3D/geo/data/EDA formats; and Typst.
+The v2.2.3 registry maps **208 file extensions** into **25 rendering pipelines**, distributed through **54 npm targets**. Presentation preview deliberately keeps two engine boundaries: PowerPoint 97–2003 `.ppt` uses the native-WASM `@file-viewer/ppt@0.3.2` engine, while PPTX/OpenXML uses the `@file-viewer/pptx` Worker engine. STEP/STP, IGES/IGS, and BREP use the packaged local OCCT Worker/WASM path instead of a conversion hint. EPUB uses a packaged lazy engine built against the pinned safe XML DOM implementation, so it adds no external runtime or CDN dependency. Other major groups include PDF; Word and spreadsheets; OFD; DWG/DXF/DWF/DWFX; archives; EML/MSG; Markdown and source code; Draw.io, Excalidraw, Mermaid and PlantUML; PSD and images; audio/video; ebooks; mind maps; 3D/geo/data/EDA formats; and Typst.
 
 The exact implementation and support level varies by format. Use the maintained [format matrix](https://doc.file-viewer.app/guide/formats) as the source of truth rather than inferring support from an extension alone.
 
