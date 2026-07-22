@@ -6,6 +6,11 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
+## 主线未发布 — 2026-07-22
+
+- Archive renderer 在压缩包内选中 Shapefile `.shp` 时，会按同目录和同 basename 收集 `.dbf`、`.shx`、`.prj`、`.cpg` sidecar，生成有界的临时 ZIP 后交给既有 Geo renderer；多数据集压缩包不会串用属性或投影文件，普通压缩包预览路径保持不变（GitHub #148/#149）。
+- Word 链路升级到 `@file-viewer/docx@0.3.22`。缺失或部分缺失 `sectPr` / `pgSz` / `pgMar` 的 DOCX 在共享解析层获得 A4 页面和 1 英寸正文边距兜底，主线程与 Worker 行为一致；显式自定义尺寸、横向布局、零边距和附件保持不变（GitHub #150）。
+
 ## `v2.2.3` 工具栏隔离与演示文稿运行时兼容补丁 — 2026-07-21
 
 - Web、Vue 3、Vue 2.7、Vue 2.6、React、React Legacy、Svelte 与 jQuery 共用 Core 浏览器控制器。标准组件默认在 Shadow DOM 中渲染，业务全局 CSS 不再覆盖工具栏；需要参与宿主样式系统时仍可显式设置 `styleIsolation: 'none'`。

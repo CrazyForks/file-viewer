@@ -24,7 +24,7 @@ The v2.2.3 release matrix contains 54 File Viewer npm targets, 208 maintained ex
 - Core value: preview Office, PDF, OFD, Typst, CAD, EDA, archives, email, media, code, 3D, geospatial files, and other business attachments without mandatory server-side conversion.
 - Verified release scope: 54 File Viewer npm targets, 208 maintained extensions, and 25 preview pipelines; independently versioned renderer dependencies are not counted as File Viewer npm targets.
 - Presentation routing: binary `.ppt` uses `@file-viewer/ppt@0.3.2`; Open XML `.pptx` uses the isolated `@file-viewer/pptx` Worker pipeline.
-- Word routing: DOCX uses `@file-viewer/renderer-word` with `@file-viewer/docx@0.3.21`; root and nested anchored shapes, pictures, groups, and mixed page/paragraph anchors include the #133 correction.
+- Word routing: DOCX uses `@file-viewer/renderer-word` with `@file-viewer/docx@0.3.22`; missing or partial page geometry receives the A4 viewer defaults in the shared parser, while explicit custom sizes, landscape orientation, zero margins, anchored drawings, and mixed page/paragraph anchors are preserved.
 - EPUB routing: `@file-viewer/renderer-epub` and `@file-viewer/thumbnail` lazy-load their packaged engine. Consumers do not install `epubjs` or `@xmldom/xmldom` as production dependencies, and no public CDN is involved.
 - Integration paths: Vanilla JS, Web Component, Vue 3, Vue 2.7, Vue 2.6, React, React Legacy, Svelte, jQuery, CDN/IIFE, Vite Plugin, and full packages.
 - Packaging model: light component packages, on-demand renderer packages, and lite/office/engineering/all presets. Every v2.2.3 Full package includes preset-all plus its same-version File Viewer-owned Worker, WASM, font, vendor, and manifest payload.
