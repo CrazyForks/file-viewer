@@ -6,9 +6,16 @@ const resolvePackageFile = (packageName, relativePath) => path.join(resolvePacka
 
 const fileViewerModernDependencyRoots = [
   '@file-viewer',
+  '@flyfish-dev',
+  '@tonejs',
+  'dwf-viewer',
   'pdfjs-dist',
   'e-virt-table',
-  'styled-exceljs'
+  'styled-exceljs',
+  'three',
+  'hls.js',
+  'heic2any',
+  'occt-import-js'
 ].map(packageName => resolveApp(`node_modules/${packageName}`))
 
 module.exports = {
@@ -20,9 +27,16 @@ module.exports = {
   },
   transpileDependencies: [
     /@file-viewer/,
+    /@flyfish-dev/,
+    /@tonejs/,
+    /dwf-viewer/,
     /pdfjs-dist/,
     /e-virt-table/,
-    /styled-exceljs/
+    /styled-exceljs/,
+    /three/,
+    /hls\.js/,
+    /heic2any/,
+    /occt-import-js/
   ],
   configureWebpack: {
     performance: {
@@ -40,6 +54,18 @@ module.exports = {
   },
   chainWebpack(config) {
     config.plugins.delete('hmr')
+
+    config.plugin('replace-three-addons').use(
+      require('webpack/lib/NormalModuleReplacementPlugin'),
+      [/three\/addons\//, resource => {
+        resource.request = resource.request.replace(/three\/addons\//, 'three/examples/jsm/')
+      }]
+    )
+
+    config.plugin('ignore-fs-promises').use(
+      require('webpack/lib/IgnorePlugin'),
+      [/^fs\/promises$/]
+    )
 
     config.module
       .rule('pdfjs-webpack4-require-name')

@@ -1,28 +1,45 @@
-# Vue 2.6 + Vue CLI 3 + preset-office 独立示例
+# Vue 2.6 + Vue CLI 3 + webpack 4 重点格式最小集示例
 
-这个示例用于复现并解决旧 Vue 2.6 项目中导入 `@file-viewer/preset-office` 后构建失败的问题。技术栈按客户提供的 `package.json` 抽取典型组合：`vue@2.6`、`@vue/cli-service@3.1`、webpack 4、Element UI、Ant Design Vue 1.x、`babel-polyfill` 和 Office preset。
+这个示例验证旧版 Vue 2.6 / Vue CLI 3 / webpack 4 项目按需集成 File Viewer。它不使用 `preset-all` 或 `preset-office`，而是只注册 PDF、Word、Excel、PowerPoint、CAD、3D、图片和视频八类渲染器，避免把本项目不需要的格式打进首屏依赖。
 
 ```bash
 cd examples/vue2.6-cli3-office
 npm install
-npm run serve
+npm run build
 ```
 
-Node 17+ 运行 webpack 4 时可能遇到 OpenSSL/MD4 报错，可临时使用：
+Node 17+ 运行 webpack 4 时若出现 OpenSSL/MD4 错误，可使用：
 
 ```bash
 NODE_OPTIONS=--openssl-legacy-provider npm run build
 ```
 
-## 关键点
+## 集成要点
 
-- `options.preset` 显式传入 `officePreset`，轻量 Vue 2.6 组件不会自动包含 PDF/Office renderer。
-- `vue.config.js` 里对 `@file-viewer/*`、`pdfjs-dist`、`e-virt-table`、`styled-exceljs` 做选择性 Babel 转译。
-- webpack 4 不识别 package `exports` 子路径时，通过 alias 兼容 `@file-viewer/core/assets`、`browser`、`headless`。
-- webpack 4 默认优先读取 `@file-viewer/docx` 的 UMD `browser` 入口；该入口再经过 Babel 转译会丢失 CommonJS 导出，因此示例把包根 alias 到 `dist/docx-preview.mjs`，避免上传 DOCX 时出现 `renderAsync is not a function`。
-- `build/rename-pdfjs-webpack-require.cjs` 处理 PDF.js legacy `.mjs` 自带 webpack 包装代码，避免和宿主 webpack 4 注入的 `__webpack_require__` 同名冲突。
-- 二进制 `.ppt` 使用 `@file-viewer/ppt@0.3.2` Worker/OffscreenCanvas/WASM 引擎；示例会把其 ESM、Worker、帧缓存、WASM、CJK 字体、manifest、package metadata、LICENSE 与 NOTICE 九个文件完整复制到 `public/file-viewer/vendor/ppt/`。`.pptx` 仍使用独立 Worker。PPTX 依赖里的 `import.meta.url` 由示例中的 Babel 小插件兼容 webpack 4。
-- `scripts/copy-file-viewer-assets.cjs` 把 PDF、DOCX、Excel、PPT 和 PPTX 的 Worker、CMap、WASM、标准字体及 vendor 资源复制到 `public/file-viewer/`，满足离线部署；`src/fileViewerOptions.js` 已配置这套旧构建链需要的本地 PPT/PPTX URL，业务侧无需再拼路径。
-- `.env.normalServe` / `.env.noApiServe` 使用 `NODE_ENV=production` 预览，是为了绕开 Vue CLI 3.1 dev server 对 HMR 客户端的强注入；客户项目如需开发热更新，建议先用这个示例确认构建链，再把兼容配置搬回真实工程。
+- `src/fileViewerOptions.js` 使用 `rendererMode: 'replace'`、`builtinRenderers: 'none'`、`autoRenderers: false` 和显式 renderer 列表，保证依赖边界可审计。
+- `vue.config.js` 处理 webpack 4 对 package exports、`.mjs`、`import.meta.url`、PDF.js 内部 webpack 包装和 `three/addons/*` 的兼容问题。
+- `scripts/copy-file-viewer-assets.cjs` 将 PDF、DOCX、Excel、PPT/PPTX、CAD 和 OCCT 3D 的 Worker、WASM、字体及许可证复制到 `public/file-viewer/`，可用于内网静态部署。
+- Excel 使用已经打包为单文件的 `dist/worker/sheet.worker.js`；不能直接发布仍含裸模块 import 的内部 `spreadsheet/worker/sheetjs` 源目录。
+- PDF 同步复制 CMap、WASM、标准字体和 Noto Sans SC 中文回退字体。
+- 视频只注册 video handler，不注册音频/MIDI；HLS 在 Safari 优先使用原生能力，其余支持 MSE 的浏览器按需加载 `hls.js`。
 
-如果客户项目仍使用 `node-sass@4`，建议使用 Node 14/16；Node 18+ 安装 `node-sass@4` 经常会在原生编译阶段失败。这个示例没有使用 Sass，因此没有把 `node-sass` 放进依赖。
+## 本示例明确覆盖
+
+- PDF：`pdf`
+- Office：`doc`、`docx`、`docm`、`dot`、`dotx`、`dotm`、`xls`、`xlsx`、`xlsm`、`xlsb`、`xlt`、`xltx`、`xltm`、`csv`、`tsv`、`ppt`、`pptx`、`pptm`、`potx`、`potm`、`ppsx`、`ppsm`
+- CAD：`dwg`、`dxf`、`dwf`、`dwfx`、`xps`
+- 3D：`glb`、`gltf`、`obj`、`stl`、`ply`、`fbx`、`dae`、`3ds`、`3mf`、`amf`、`usd`、`usda`、`usdc`、`usdz`、`kmz`、`pcd`、`wrl`、`vrml`、`xyz`、`vtk`、`vtp`、`step`、`stp`、`iges`、`igs`、`brep`
+- 图片：`png`、`jpg`、`jpeg`、`gif`、`bmp`、`svg`、`webp`、`ico`、`heic`、`heif`；AVIF 取决于浏览器
+- 视频：`mp4`、`webm`、`m3u8`；实际音视频编解码器取决于浏览器，HLS 分片必须满足鉴权和 CORS
+
+当前没有实际解析器的 `ifc`、`3dm`，以及没有跨浏览器解码器的 `tiff/tif`、`jxl`，不列为保证格式。3D 外部纹理/buffer、CAD 外部 SHX、HLS 分片仍须由业务下载接口提供可访问 URL。
+
+## 部署要求
+
+- `.wasm` 返回 `Content-Type: application/wasm`。
+- `.mjs`、Worker JS 返回正确 JavaScript MIME。
+- CSP 至少允许 `worker-src 'self' blob:`；按浏览器要求允许 WebAssembly 执行。
+- `connect-src` 包含文件下载域、静态资源域和 HLS 分片域。
+- 生产环境保持同源下载，或正确配置 CORS、Cookie/Token 与 Range 请求。
+
+若客户项目仍依赖 `node-sass@4`，建议用 Node 14/16 完成旧项目安装；本示例本身不需要 Sass。

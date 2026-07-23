@@ -12,7 +12,8 @@
       <div class="stack-tags">
         <a-tag color="blue">Vue 2.6</a-tag>
         <a-tag color="green">Element UI</a-tag>
-        <a-tag color="orange">preset-office</a-tag>
+        <a-tag color="orange">重点格式最小集</a-tag>
+        <a-tag color="purple">CAD / 3D / 图片 / 视频</a-tag>
       </div>
 
       <el-upload
@@ -21,6 +22,7 @@
         :auto-upload="false"
         :show-file-list="false"
         :on-change="handleFileChange"
+        accept=".pdf,.doc,.docx,.docm,.dot,.dotx,.dotm,.xls,.xlsx,.xlsm,.xlsb,.xlt,.xltx,.xltm,.csv,.tsv,.ppt,.pptx,.pptm,.potx,.potm,.ppsx,.ppsm,.dwg,.dxf,.dwf,.dwfx,.xps,.glb,.gltf,.obj,.stl,.ply,.fbx,.dae,.3ds,.3mf,.amf,.usd,.usda,.usdc,.usdz,.kmz,.pcd,.wrl,.vrml,.xyz,.vtk,.vtp,.step,.stp,.iges,.igs,.brep,.png,.jpg,.jpeg,.gif,.webp,.bmp,.svg,.ico,.avif,.heic,.heif,.mp4,.webm,.m3u8"
       >
         <el-button type="primary" size="small">选择文件</el-button>
       </el-upload>
