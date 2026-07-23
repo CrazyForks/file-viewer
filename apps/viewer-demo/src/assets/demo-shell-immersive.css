@@ -1029,6 +1029,16 @@
 .viewport {
   --file-viewer-content-start-inset:
     calc(var(--demo-file-capsule-collapsed-bottom) + var(--demo-document-start-gap));
+  --file-viewer-scrollbar-width: thin;
+  --file-viewer-scrollbar-colors: var(--demo-scrollbar-thumb) transparent;
+  --file-viewer-scrollbar-size: 8px;
+  --file-viewer-scrollbar-track: transparent;
+  --file-viewer-scrollbar-thumb: var(--demo-scrollbar-thumb);
+  --file-viewer-scrollbar-thumb-hover: var(--demo-scrollbar-thumb-hover);
+  --file-viewer-scrollbar-thumb-min-size: 36px;
+  --file-viewer-scrollbar-thumb-border: 2px solid transparent;
+  --file-viewer-scrollbar-thumb-radius: 999px;
+  --file-viewer-scrollbar-thumb-clip: padding-box;
   position: absolute;
   z-index: 1;
   inset: 0 112px 0;
@@ -1050,38 +1060,6 @@
   box-shadow: none;
   --file-viewer-bg: transparent;
   --file-viewer-content-bg: transparent;
-}
-
-/* The FileViewer content element is the single document scroll root. Keep its
- * native overlay behavior while removing the browser's opaque scrollbar
- * track, which otherwise reads like a second rail beside the document. */
-.viewport :deep([data-viewer-scroll-root='true']) {
-  scrollbar-width: thin;
-  scrollbar-color: var(--demo-scrollbar-thumb) transparent;
-}
-
-.viewport :deep([data-viewer-scroll-root='true'])::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  background: transparent;
-}
-
-.viewport :deep([data-viewer-scroll-root='true'])::-webkit-scrollbar-track,
-.viewport :deep([data-viewer-scroll-root='true'])::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-.viewport :deep([data-viewer-scroll-root='true'])::-webkit-scrollbar-thumb {
-  min-width: 36px;
-  min-height: 36px;
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background-color: var(--demo-scrollbar-thumb);
-  background-clip: padding-box;
-}
-
-.viewport :deep([data-viewer-scroll-root='true'])::-webkit-scrollbar-thumb:hover {
-  background-color: var(--demo-scrollbar-thumb-hover);
 }
 
 .standalone .viewport {

@@ -933,25 +933,67 @@ useViewerPreviewLifecycle({
   overflow: hidden;
 }
 
-/* Custom properties cross the component ShadowRoot, so host shells can
- * reserve overlay space without relying on ineffective deep selectors. */
+/* Custom properties cross the component ShadowRoot, so host shells can tune
+ * the real scroll root without relying on ineffective outer deep selectors. */
+.content,
+.content :deep(.file-render),
+.content :deep(.file-render-host) {
+  scrollbar-width: var(--file-viewer-scrollbar-width);
+  scrollbar-color: var(--file-viewer-scrollbar-colors);
+}
+
 .content {
   box-sizing: border-box;
   display: block;
   width: 100%;
   height: 100%;
   overflow: auto;
-  padding-block-start: var(--file-viewer-content-start-inset, 0px);
   scroll-padding-block-start: var(--file-viewer-content-start-inset, 0px);
   background: var(--file-viewer-render-surface-background, var(--file-viewer-bg, #f2f2f2));
 }
 
+.content::-webkit-scrollbar,
+.content :deep(.file-render)::-webkit-scrollbar,
+.content :deep(.file-render-host)::-webkit-scrollbar {
+  width: var(--file-viewer-scrollbar-size);
+  height: var(--file-viewer-scrollbar-size);
+  background: var(--file-viewer-scrollbar-track);
+}
+
+.content::-webkit-scrollbar-track,
+.content::-webkit-scrollbar-corner,
+.content :deep(.file-render)::-webkit-scrollbar-track,
+.content :deep(.file-render)::-webkit-scrollbar-corner,
+.content :deep(.file-render-host)::-webkit-scrollbar-track,
+.content :deep(.file-render-host)::-webkit-scrollbar-corner {
+  background: var(--file-viewer-scrollbar-track);
+}
+
+.content::-webkit-scrollbar-thumb,
+.content :deep(.file-render)::-webkit-scrollbar-thumb,
+.content :deep(.file-render-host)::-webkit-scrollbar-thumb {
+  min-width: var(--file-viewer-scrollbar-thumb-min-size);
+  min-height: var(--file-viewer-scrollbar-thumb-min-size);
+  border: var(--file-viewer-scrollbar-thumb-border);
+  border-radius: var(--file-viewer-scrollbar-thumb-radius);
+  background-color: var(--file-viewer-scrollbar-thumb);
+  background-clip: var(--file-viewer-scrollbar-thumb-clip);
+}
+
+.content::-webkit-scrollbar-thumb:hover,
+.content :deep(.file-render)::-webkit-scrollbar-thumb:hover,
+.content :deep(.file-render-host)::-webkit-scrollbar-thumb:hover {
+  background-color: var(--file-viewer-scrollbar-thumb-hover);
+}
+
 .content :deep(.file-render),
 .content :deep(.file-render-host) {
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
   min-width: 0;
   min-height: 0;
+  padding-block-start: var(--file-viewer-content-start-inset, 0px);
 }
 
 .content.hidden {
