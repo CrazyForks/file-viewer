@@ -218,7 +218,11 @@ export default function process(setOnMessage, postMessage) {
       const first = path.includes('/') ? path.lastIndexOf('/') + 1 : 0;
       const last = path.includes('.') ? path.lastIndexOf('.') : path.length;
       const filename = path.substring(first, last);
-      const slideNumber = filename && filename.includes('slide') ? Number(filename.substr(5)) : 1;
+      // OOXML part names are identifiers, not presentation positions. PowerPoint
+      // keeps gaps after deleted slides (for example slide1.xml, slide21.xml,
+      // slide22.xml), so the worker queue must use the resolved presentation
+      // order instead of waiting for missing physical part numbers.
+      const slideNumber = i + 1;
       // 最终渲染
       let body;
       try {
