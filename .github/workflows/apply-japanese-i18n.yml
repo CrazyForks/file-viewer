@@ -49,6 +49,10 @@ jobs:
               '<button id="locale-ja">日本語</button>',
               '<button id="locale-ja" type="button">日本語</button>',
           )
+          source = source.replace(
+              "const write = (file, content) => {\n  fs.writeFileSync(path.join(root, file), content)\n  changed.add(file)\n}",
+              "const write = (file, content) => {\n  const target = path.join(root, file)\n  fs.mkdirSync(path.dirname(target), { recursive: true })\n  fs.writeFileSync(target, content)\n  changed.add(file)\n}",
+          )
           script.write_text(source, encoding='utf-8')
           PY
           node --check /tmp/apply-japanese-i18n.mjs
