@@ -1,3 +1,4 @@
+# One-shot Japanese i18n validation after verified payload repair.
 name: Apply Japanese i18n
 
 on:
