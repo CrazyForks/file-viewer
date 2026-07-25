@@ -41,6 +41,14 @@ jobs:
           source = script.read_text(encoding='utf-8')
           for name in ('formatLabel', 'engines', 'targets'):
               source = source.replace('${' + name + '}', r'\${' + name + '}')
+          source = source.replace(
+              '<button id="locale-en">EN</button>',
+              '<button id="locale-en" type="button">EN</button>',
+          )
+          source = source.replace(
+              '<button id="locale-ja">日本語</button>',
+              '<button id="locale-ja" type="button">日本語</button>',
+          )
           script.write_text(source, encoding='utf-8')
           PY
           node --check /tmp/apply-japanese-i18n.mjs
