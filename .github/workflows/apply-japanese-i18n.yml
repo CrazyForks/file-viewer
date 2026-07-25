@@ -35,6 +35,14 @@ jobs:
           cat .github/scripts/apply-japanese-i18n.gz-*.b64 \
             | base64 --decode \
             | gzip --decompress > /tmp/apply-japanese-i18n.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          script = Path('/tmp/apply-japanese-i18n.mjs')
+          source = script.read_text(encoding='utf-8')
+          for name in ('formatLabel', 'engines', 'targets'):
+              source = source.replace('${' + name + '}', r'\${' + name + '}')
+          script.write_text(source, encoding='utf-8')
+          PY
           node --check /tmp/apply-japanese-i18n.mjs
           rm -f \
             .github/i18n-patch-error.log \
