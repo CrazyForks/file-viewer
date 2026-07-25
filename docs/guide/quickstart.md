@@ -483,3 +483,7 @@ pnpm dev
 ```
 
 The main demo opens at the Vite dev server URL. The zero-dependency iframe entry is available at `/iframe.html`, and the comparison demo is available at `/compare.html`.
+
+### 日语语言
+
+使用 `locale: 'ja-JP'` 可固定为日语。默认的 `auto` 模式会按顺序检查完整的 `navigator.languages` 语言偏好列表，并识别 `ja`、`ja-JP` 等日语标签；浏览器语言均不受支持时回退到英文。

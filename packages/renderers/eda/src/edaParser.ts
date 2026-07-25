@@ -18,7 +18,7 @@ const MAX_STREAMS = 200
 const MAX_STREAM_STRINGS = 24
 const MAX_PROPERTIES = 420
 
-export type EdaParserLocale = 'zh-CN' | 'en-US'
+export type EdaParserLocale = 'zh-CN' | 'en-US' | 'ja-JP'
 
 const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
   'zh-CN': {
@@ -49,6 +49,20 @@ const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
     maxStreams: 'Only the first {count} CFB entries are shown. Download the full file and open it in a professional EDA tool for complete inspection.',
     binaryFallback: 'This file is not a standard CFB container, so it falls back to a safe binary string index preview.',
   },
+  'ja-JP': {
+    oasisFixture: 'OASIS テキスト fixture を認識し、ブラウザー内で幾何プレビューと構造索引を解析しました。完全な SEMI バイナリ OASIS は安全な索引と専用カーネルの経路を使用します。',
+    gdsLayout: '標準 GDSII バイナリレイアウトレコードを認識し、ブラウザー内で幾何プレビューと構造索引を解析しました。',
+    cfbContainer: 'Microsoft Compound File / OLE2 コンテナーを認識し、ブラウザー内でディレクトリとストリームを解析しました。',
+    binaryIndex: 'CFB コンテナーとして認識できなかったため、安全なバイナリ文字列索引で可読情報を表示します。',
+    coverage: '{streams} 件の項目、{strings} 件の可読文字列、{entities} 件の EDA 構造候補を索引化しました。',
+    layout: '{layout} を解析しました：構造 {structures} 件、幾何・参照・テキスト要素 {elements} 件。レイアウトプレビューパネルをドラッグして確認できます。',
+    noSymbol: '明確なコンポーネントシンボル候補を検出できませんでした。独自バイナリエンコーディングの可能性があるため、専門ツールから ASCII/XML を書き出して確認してください。',
+    noFootprint: '明確なフットプリント、図形、Padstack 候補を検出できませんでした。独自バイナリデータベース形式の可能性があります。',
+    noGds: '明確な GDSII レイアウト構造候補を検出できませんでした。標準 GDSII バイナリではないか、独自ラッパーを使用している可能性があります。',
+    noOasis: '明確な OASIS レイアウト構造候補を検出できませんでした。完全な OASIS 幾何プレビューには専門ライブラリまたは専用 WASM/TS カーネルが必要です。このフロントエンドパッケージはヘッダー、文字列、プロパティ、バイナリ構造の手掛かりを安全に表示します。',
+    maxStreams: '安全上の理由から、先頭 {count} 件の CFB 項目だけを表示します。完全な確認にはファイルをダウンロードして専門 EDA ツールで開いてください。',
+    binaryFallback: '標準 CFB コンテナーではないため、安全なバイナリ文字列索引プレビューへ切り替えました。',
+  },
 }
 
 const getEdaParserText = (
@@ -56,7 +70,7 @@ const getEdaParserText = (
   key: keyof typeof EDA_PARSER_TEXT['zh-CN'],
   params: Record<string, string | number> = {}
 ) => {
-  const template = EDA_PARSER_TEXT[locale]?.[key] || EDA_PARSER_TEXT['zh-CN'][key] || key
+  const template = EDA_PARSER_TEXT[locale]?.[key] || EDA_PARSER_TEXT['en-US'][key] || key
   return Object.entries(params).reduce(
     (message, [name, value]) => message.replace(new RegExp(`\\{${name}\\}`, 'g'), String(value)),
     template

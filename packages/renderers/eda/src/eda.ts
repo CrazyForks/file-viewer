@@ -23,7 +23,7 @@ interface TreeRow extends EdaTreeNode {
   depth: number;
 }
 
-type EdaUiLocale = 'zh-CN' | 'en-US';
+type EdaUiLocale = 'zh-CN' | 'en-US' | 'ja-JP';
 
 type EdaUiTextKey =
   | 'role.root'
@@ -83,7 +83,12 @@ type EdaUiTextKey =
   | 'meta.renderer'
   | 'meta.library'
   | 'meta.userUnit'
-  | 'meta.dbUnit';
+  | 'meta.dbUnit'
+  | 'layout.summary'
+  | 'layout.webglSummary'
+  | 'layout.aria'
+  | 'header.cfbViewer'
+  | 'header.binaryViewer';
 
 const EDA_UI_TEXT: Record<EdaUiLocale, Record<EdaUiTextKey, string>> = {
   'zh-CN': {
@@ -145,6 +150,11 @@ const EDA_UI_TEXT: Record<EdaUiLocale, Record<EdaUiTextKey, string>> = {
     'meta.library': '库',
     'meta.userUnit': '用户单位',
     'meta.dbUnit': '数据库单位',
+    'layout.summary': '{structures} 个结构 · {elements} 个元素',
+    'layout.webglSummary': 'WebGL · {elements} 个元素',
+    'layout.aria': '{layout} 版图预览',
+    'header.cfbViewer': 'CFB 结构预览器',
+    'header.binaryViewer': '二进制结构预览器',
   },
   'en-US': {
     'role.root': 'Root',
@@ -205,6 +215,76 @@ const EDA_UI_TEXT: Record<EdaUiLocale, Record<EdaUiTextKey, string>> = {
     'meta.library': 'Library',
     'meta.userUnit': 'User unit',
     'meta.dbUnit': 'DB unit',
+    'layout.summary': '{structures} structures · {elements} elements',
+    'layout.webglSummary': 'WebGL · {elements} elements',
+    'layout.aria': '{layout} layout preview',
+    'header.cfbViewer': 'CFB structure viewer',
+    'header.binaryViewer': 'Binary structure viewer',
+  },
+  'ja-JP': {
+    'role.root': 'ルート',
+    'role.library': 'ライブラリ',
+    'role.symbol': 'シンボル',
+    'role.footprint': 'フットプリント',
+    'role.padstack': 'Padstack',
+    'role.drawing': '図面',
+    'role.metadata': 'メタデータ',
+    'role.property': 'プロパティ',
+    'role.geometry': '幾何',
+    'role.net': 'ネット',
+    'role.unknown': '不明',
+    'confidence.high': '高',
+    'confidence.medium': '中',
+    'confidence.low': '低',
+    'kind.storage': 'ディレクトリ',
+    'kind.text': 'テキスト',
+    'kind.binary': 'バイナリ',
+    'panel.layout': 'レイアウトプレビュー',
+    'empty.noGeometry.title': '描画可能な幾何要素がありません',
+    'empty.noGeometry.description': '{layout} のヘッダーと構造情報を読み込みましたが、boundary、path、text、reference 要素は見つかりませんでした。',
+    'stats.textStreams': 'テキストストリーム',
+    'stats.binaryStreams': 'バイナリストリーム',
+    'stats.storageEntries': 'ディレクトリ',
+    'stats.properties': 'プロパティ',
+    'stats.symbols': 'シンボル',
+    'stats.footprints': 'フットプリント',
+    'stats.confidence': '信頼度',
+    'group.symbol': 'コンポーネントシンボル',
+    'group.footprint': 'フットプリント図形',
+    'group.drawing': '図面情報',
+    'state.loading': '{type} を解析しています...',
+    'state.errorTitle': 'EDA プレビューのお知らせ',
+    'header.format': '形式',
+    'header.size': 'サイズ',
+    'header.entries': '項目',
+    'summary.layoutReady': '{layout} は IC レイアウトの工学ファイルです。認識可能な幾何要素をブラウザー内で解析し、小規模図面は SVG、大規模図面は WebGL canvas で表示します。構造、文字列、診断索引も保持します。',
+    'summary.layoutSafe': 'GDSII / OASIS は IC レイアウトの工学ファイルです。構造、プロパティ、可読文字列、バイナリ構造の手掛かりを優先的に索引化し、フロントエンド内で安全にフォールバックします。',
+    'summary.orcadSafe': 'OLB / DRA は OrCAD / Allegro 系の独自設計データです。CFB 構造、オブジェクト候補、プロパティ、可読テキストを優先的に解析し、フロントエンド内で安全にフォールバックします。',
+    'search.placeholder': 'パス、役割、プロパティ、テキストを絞り込み',
+    'selection.title': '現在の項目',
+    'selection.none': '未選択',
+    'selection.storageTitle': 'ディレクトリ項目',
+    'selection.storageDescription': 'このノードは下位ストリームを整理するためのもので、直接表示できるテキストや 16 進断片はありません。',
+    'selection.localStrings': '現在の項目の文字列',
+    'panel.overview': '解析概要',
+    'panel.tree': '構造ツリー',
+    'panel.objects': 'EDA オブジェクト',
+    'panel.strings': '可読文字列',
+    'panel.diagnostics': '診断',
+    'panel.nodeCount': '{count} ノード',
+    'panel.itemCount': '{count} 件',
+    'panel.entryCount': '{count} 項目',
+    'empty.noObjects.title': '明確なオブジェクト候補がありません',
+    'empty.noObjects.description': '構造ツリー、プロパティ、文字列索引から可読内容を確認できます。',
+    'meta.renderer': 'レンダラー',
+    'meta.library': 'ライブラリ',
+    'meta.userUnit': 'ユーザー単位',
+    'meta.dbUnit': 'データベース単位',
+    'layout.summary': '構造 {structures} 件 · 要素 {elements} 件',
+    'layout.webglSummary': 'WebGL · 要素 {elements} 件',
+    'layout.aria': '{layout} レイアウトプレビュー',
+    'header.cfbViewer': 'CFB 構造ビューアー',
+    'header.binaryViewer': 'バイナリ構造ビューアー',
   },
 };
 
@@ -213,7 +293,7 @@ const formatEdaUiText = (
   key: EdaUiTextKey,
   params: Record<string, string | number> = {}
 ) => {
-  const template = EDA_UI_TEXT[locale][key] || EDA_UI_TEXT['zh-CN'][key] || key;
+  const template = EDA_UI_TEXT[locale]?.[key] || EDA_UI_TEXT['en-US'][key] || key;
   return Object.entries(params).reduce(
     (message, [name, value]) => message.replace(new RegExp(`\\{${name}\\}`, 'g'), String(value)),
     template
@@ -594,7 +674,7 @@ const createWebglLayoutPreview = (
 const createLayoutPreview = (layout: EdaLayoutPreview, locale: EdaUiLocale) => {
   const panel = createElement('section', 'eda-panel eda-layout-panel');
   const layoutLabel = layout.format === 'oasis' ? 'OASIS' : 'GDSII';
-  appendPanelHead(panel, formatEdaUiText(locale, 'panel.layout'), `${layoutLabel} · ${layout.structureCount || layout.structures.length} structures · ${layout.elements.length} elements`);
+  appendPanelHead(panel, formatEdaUiText(locale, 'panel.layout'), `${layoutLabel} · ${formatEdaUiText(locale, 'layout.summary', { structures: layout.structureCount || layout.structures.length, elements: layout.elements.length })}`);
 
   const meta = createElement('div', 'eda-layout-meta');
   [
@@ -640,7 +720,7 @@ const createLayoutPreview = (layout: EdaLayoutPreview, locale: EdaUiLocale) => {
     ? createWebglLayoutPreview(layout, svgWidth, svgHeight)
     : null;
   if (webglPreview) {
-    meta.append(createElement('span', undefined, `${formatEdaUiText(locale, 'meta.renderer')}: WebGL · ${webglPreview.batch.elementCount} elements`));
+    meta.append(createElement('span', undefined, `${formatEdaUiText(locale, 'meta.renderer')}: ${formatEdaUiText(locale, 'layout.webglSummary', { elements: webglPreview.batch.elementCount })}`));
     webglPreview.batch.warnings.forEach(item => {
       const warning = createElement('div', 'eda-warning');
       warning.append(createElement('p', undefined, item));
@@ -658,7 +738,7 @@ const createLayoutPreview = (layout: EdaLayoutPreview, locale: EdaUiLocale) => {
     height: svgHeight,
     viewBox: `0 0 ${svgWidth} ${svgHeight}`,
     role: 'img',
-    'aria-label': `${layoutLabel} layout preview`,
+    'aria-label': formatEdaUiText(locale, 'layout.aria', { layout: layoutLabel }),
   });
   svg.append(createSvgElement('rect', {
     x: 0,
@@ -768,7 +848,7 @@ export default async function renderEda(
   context?: FileRenderContext
 ): Promise<FileViewerRenderedInstance> {
   const normalizedType = ['dra', 'gds', 'oas', 'oasis'].includes(type) ? type : 'olb';
-  const locale = resolveFileViewerLocale(context?.options) === 'en-US' ? 'en-US' : 'zh-CN';
+  const locale: EdaUiLocale = resolveFileViewerLocale(context?.options);
   const filename = context?.filename || `preview.${normalizedType}`;
   const root = createElement('section', 'eda-viewer');
   const style = createStyle();
@@ -817,7 +897,7 @@ export default async function renderEda(
     const header = createElement('header', 'eda-header');
     const headerTitle = document.createElement('div');
     headerTitle.append(
-      createElement('span', undefined, parsed.parser === 'cfb' ? 'CFB STRUCTURE VIEWER' : 'BINARY STRUCTURE VIEWER'),
+      createElement('span', undefined, parsed.parser === 'cfb' ? formatEdaUiText(locale, 'header.cfbViewer') : formatEdaUiText(locale, 'header.binaryViewer')),
       createElement('h2', undefined, filename)
     );
     const headerStats = document.createElement('dl');

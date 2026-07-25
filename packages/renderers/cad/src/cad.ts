@@ -819,7 +819,7 @@ export default async function renderCad(
       const layerVisible = layer.isVisible !== false && !layer.isFrozen;
       button.classList.toggle('muted', !layerVisible);
       button.title = layer.duplicateCount > 1
-        ? `${layer.name} (${layer.duplicateCount} merged)`
+        ? t('cad.layers.merged', { name: layer.name, count: layer.duplicateCount })
         : layer.name;
       button.setAttribute('aria-pressed', String(layerVisible));
       const color = createElement('span', 'cad-layer-color');

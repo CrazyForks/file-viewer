@@ -329,11 +329,11 @@ const demoThemeButtonTitle = computed(() => {
     ? demoCopy.value.themeToLight
     : demoCopy.value.themeToDark
 })
-const githubRepositoryAriaLabel = computed(() =>
-  demoLocale.value === 'zh-CN'
-    ? 'GitHub 开源总仓库'
-    : 'GitHub repository'
-)
+const githubRepositoryAriaLabel = computed(() => {
+  if (demoLocale.value === 'zh-CN') return '在新标签页打开 File Viewer GitHub 开源仓库'
+  if (demoLocale.value === 'ja-JP') return 'File Viewer の GitHub リポジトリを新しいタブで開く'
+  return 'Open the File Viewer GitHub repository in a new tab'
+})
 
 // Sample catalog data and URL identity rules are independent of panel layout.
 const {
@@ -1521,6 +1521,13 @@ function handleWindowResize() {
                 >
                   EN
                 </button>
+              <button
+                type='button'
+                :class='{ active: demoLocale === "ja-JP" }'
+                @click='setDemoLocale("ja-JP")'
+              >
+                日
+              </button>
               </div>
           </div>
 
