@@ -35,10 +35,28 @@ jobs:
             | gzip --decompress > /tmp/apply-japanese-i18n.mjs
           node --check /tmp/apply-japanese-i18n.mjs
           rm -f \
+            .github/i18n-patch-error.log \
             .github/scripts/apply-japanese-i18n.part-*.b64 \
             .github/scripts/apply-japanese-i18n.gz-*.b64 \
             .github/workflows/apply-japanese-i18n.yml
-          node /tmp/apply-japanese-i18n.mjs
+
+          set +e
+          node /tmp/apply-japanese-i18n.mjs > /tmp/apply-japanese-i18n.log 2>&1
+          patch_status=$?
+          set -e
+          cat /tmp/apply-japanese-i18n.log
+
+          if [ "$patch_status" -ne 0 ]; then
+            git reset --hard HEAD
+            git clean -fd
+            cp /tmp/apply-japanese-i18n.log .github/i18n-patch-error.log
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/i18n-patch-error.log
+            git commit -m "chore(i18n): capture patch failure [skip ci]"
+            git push origin HEAD:feature/japanese-i18n
+            exit "$patch_status"
+          fi
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
