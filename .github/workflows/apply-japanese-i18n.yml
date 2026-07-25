@@ -53,6 +53,10 @@ jobs:
               "const write = (file, content) => {\n  fs.writeFileSync(path.join(root, file), content)\n  changed.add(file)\n}",
               "const write = (file, content) => {\n  const target = path.join(root, file)\n  fs.mkdirSync(path.dirname(target), { recursive: true })\n  fs.writeFileSync(target, content)\n  changed.add(file)\n}",
           )
+          source = source.replace(
+              "const zhDemo = extractCatalog(demo, \"'zh-CN': {\", \"'en-US': {\")",
+              "const zhDemo = extractCatalog(demo, \"'zh-CN': {\", \"'en-US': {\").replace(\"'zh-CN': {\", '')",
+          )
           script.write_text(source, encoding='utf-8')
           PY
           node --check /tmp/apply-japanese-i18n.mjs
@@ -93,9 +97,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type-check
-        run: pnpm type-check
-
       - name: Run tests
         id: tests
         continue-on-error: true
@@ -117,6 +118,9 @@ jobs:
         run: |
           cat /tmp/japanese-i18n-test.log || true
           exit 1
+
+      - name: Type-check
+        run: pnpm type-check
 
       - name: Build packages and applications
         run: pnpm build
