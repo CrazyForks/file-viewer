@@ -97,7 +97,26 @@ jobs:
         run: pnpm type-check
 
       - name: Run tests
-        run: pnpm test
+        id: tests
+        continue-on-error: true
+        shell: bash
+        run: pnpm test > /tmp/japanese-i18n-test.log 2>&1
+
+      - name: Upload test diagnostics
+        if: steps.tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: japanese-i18n-test-error
+          path: /tmp/japanese-i18n-test.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Report test failure
+        if: steps.tests.outcome == 'failure'
+        shell: bash
+        run: |
+          cat /tmp/japanese-i18n-test.log || true
+          exit 1
 
       - name: Build packages and applications
         run: pnpm build
