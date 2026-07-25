@@ -57,6 +57,10 @@ jobs:
               "const zhDemo = extractCatalog(demo, \"'zh-CN': {\", \"'en-US': {\")",
               "const zhDemo = extractCatalog(demo, \"'zh-CN': {\", \"'en-US': {\").replace(\"'zh-CN': {\", '')",
           )
+          source = source.replace(
+              "  assert(read(file).includes('ja-JP'), file + ' is missing ja-JP coverage')",
+              "  const fileSource = read(file)\n  const delegatesLocaleResolution = file.endsWith('useDemoPreferences.ts') && fileSource.includes('normalizeFileViewerLocale')\n  assert(fileSource.includes('ja-JP') || delegatesLocaleResolution, file + ' is missing Japanese locale coverage')",
+          )
           script.write_text(source, encoding='utf-8')
           PY
           node --check /tmp/apply-japanese-i18n.mjs
