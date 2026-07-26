@@ -142,6 +142,22 @@ try {
   })
   await page.waitForSelector('.file-viewer .content:not(.hidden)', { timeout })
   await page.waitForSelector('.markdown-body', { timeout })
+  const nativeSearchInput = page.locator('.viewer-search-input').first()
+  await nativeSearchInput.waitFor({ state: 'visible', timeout })
+  await nativeSearchInput.fill('Markdown')
+  await nativeSearchInput.press('Enter')
+  await page.locator('.flyfish-search-match--active').first().waitFor({ state: 'visible', timeout })
+  const searchCounter = (await page.locator('.viewer-search-count').first().textContent())?.trim() || ''
+  if (!/^[1-9]\d*\/\d+$/.test(searchCounter)) {
+    throw new Error(`Native toolbar search did not report matches: ${searchCounter}`)
+  }
+  await page.locator('[part~="search-next-button"]').first().click()
+  await page.locator('[part~="search-previous-button"]').first().click()
+  await page.locator('[part~="search-clear-button"]').first().click()
+  await page.waitForTimeout(100)
+  if (await page.locator('.flyfish-search-match').count()) {
+    throw new Error('Native toolbar search did not clear document highlights.')
+  }
 
   await page.goto(`${baseUrl}/?lang=ja&smoke=public-ci-japanese`, {
     waitUntil: 'domcontentloaded',
@@ -180,7 +196,7 @@ try {
     throw new Error(`Browser console errors:\n${actionableErrors.join('\n')}`)
   }
 
-  console.log('[public-browser-smoke] English Markdown, Japanese UI, metadata, desktop picker and 390px mobile picker verified.')
+  console.log('[public-browser-smoke] English Markdown, native toolbar search, Japanese UI, metadata, desktop picker and 390px mobile picker verified.')
 } finally {
   await browser?.close()
   await new Promise(resolveClose => server.close(resolveClose))

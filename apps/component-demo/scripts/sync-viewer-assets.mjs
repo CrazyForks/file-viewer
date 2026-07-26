@@ -5,7 +5,11 @@ import { fileURLToPath } from 'node:url'
 
 const demoDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const repoDir = resolve(demoDir, '../..')
-const sourceDir = resolve(repoDir, 'packages/components/web/viewer')
+const legacySourceDir = resolve(repoDir, 'packages/components/web/viewer')
+const stagedSourceDir = resolve(repoDir, 'packages/tools/copy-assets/viewer')
+const sourceDir = existsSync(resolve(legacySourceDir, 'flyfish-viewer-assets.json'))
+  ? legacySourceDir
+  : stagedSourceDir
 const targetDir = resolve(demoDir, 'public/file-viewer')
 const helperSourceDir = resolve(repoDir, 'packages/components/web/dist')
 const helperTargetDir = targetDir
@@ -22,7 +26,7 @@ const exampleSourceDir = resolve(repoDir, 'apps/viewer-demo/public/example')
 const exampleTargetDir = resolve(demoDir, 'public/example')
 
 if (!existsSync(resolve(sourceDir, 'flyfish-viewer-assets.json'))) {
-  throw new Error('缺少 packages/components/web/viewer/flyfish-viewer-assets.json，请先运行 pnpm build:viewer-assets')
+  throw new Error('缺少已 stage 的 flyfish-viewer-assets.json，请先运行 pnpm build:tools')
 }
 
 const removeMacMetadata = async dir => {
@@ -95,4 +99,6 @@ await mkdir(exampleTargetDir, { recursive: true })
 await cp(resolve(exampleSourceDir, 'word.docx'), resolve(exampleTargetDir, 'word.docx'))
 await cp(resolve(exampleSourceDir, 'excel.xlsx'), resolve(exampleTargetDir, 'excel.xlsx'))
 await cp(resolve(exampleSourceDir, 'office-demo.ppt'), resolve(exampleTargetDir, 'office-demo.ppt'))
-console.log(`[file-viewer-demo] docx/xlsx/ppt examples copied to ${exampleTargetDir}`)
+await cp(resolve(exampleSourceDir, 'pic.png'), resolve(exampleTargetDir, 'pic.png'))
+await cp(resolve(exampleSourceDir, 'en/markdown.md'), resolve(exampleTargetDir, 'markdown.md'))
+console.log(`[file-viewer-demo] docx/xlsx/ppt/png/markdown examples copied to ${exampleTargetDir}`)

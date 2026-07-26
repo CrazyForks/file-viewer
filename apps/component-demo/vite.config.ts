@@ -2,10 +2,10 @@ import { defineConfig } from 'vite'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createOfflineAssetSanitizerPlugin } from '../../packages/components/web-full/scripts/offline-asset-sanitize.mjs'
-import { verifyPptRuntimeDistributionRoot } from '../../scripts/lib/ppt-runtime-integrity.mjs'
+import { verifyPptRuntimeDistributionRoot } from '../../packages/components/web-full/scripts/ppt-runtime-integrity.mjs'
 
 const demoRoot = fileURLToPath(new URL('.', import.meta.url))
-const excalidrawStub = resolve(demoRoot, '../../scripts/excalidraw-iife-stub.ts')
+const excalidrawStub = resolve(demoRoot, '../../packages/components/web/scripts/excalidraw-iife-stub.ts')
 const pptPackagedRuntimeFallback = resolve(
   demoRoot,
   '../../packages/components/web-full/scripts/ppt-packaged-runtime-fallback.ts'
