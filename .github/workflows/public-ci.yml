@@ -50,11 +50,17 @@ jobs:
       - name: Build documentation
         run: pnpm docs:build
 
+      - name: Build Vue 3 toolbar browser fixture
+        run: pnpm build:component-demo
+
       - name: Verify Vue 3 toolbar contracts
         run: node scripts/verify-vue3-toolbar.mjs
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Verify Vue 3 toolbar in Chromium
+        run: pnpm verify:vue3-toolbar-browser
 
       - name: Browser smoke
         run: pnpm verify:browser-smoke

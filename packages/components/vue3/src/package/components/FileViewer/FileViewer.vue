@@ -282,6 +282,7 @@ const {
 
 const {
   activeExportAdapter,
+  rendererSearchAvailable,
   renderedReady,
   progressiveReady,
   clearRenderedContent,
@@ -329,6 +330,7 @@ const {
   getZoomState,
   loading,
   normalizedToolbar,
+  rendererSearchAvailable,
   renderedReady,
   zoomState,
   emitOperationAvailabilityChange: availability => emit('operation-availability-change', availability),

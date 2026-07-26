@@ -7,12 +7,15 @@ import { pathToFileURL } from 'node:url'
 const coreEntry = resolve('packages/core/dist/index.js')
 const coreMessagesEntry = resolve('packages/core/dist/i18n/messages.js')
 const vueEntry = resolve('packages/components/vue3/dist/index.mjs')
+const vueFullTypesEntry = resolve('packages/components/vue3-full/dist/index.d.ts')
 
 assert.ok(existsSync(coreEntry), `Missing built core entry: ${coreEntry}`)
 assert.ok(existsSync(coreMessagesEntry), `Missing built core messages entry: ${coreMessagesEntry}`)
 assert.ok(existsSync(vueEntry), `Missing built Vue 3 entry: ${vueEntry}`)
+assert.ok(existsSync(vueFullTypesEntry), `Missing built Vue 3 full types: ${vueFullTypesEntry}`)
 
 const builtMessages = readFileSync(coreMessagesEntry, 'utf8')
+const vueFullTypes = readFileSync(vueFullTypesEntry, 'utf8')
 assert.match(
   builtMessages,
   /from\s+['"]\.\/messages\.ja\.js['"]/,
@@ -22,6 +25,21 @@ assert.doesNotMatch(
   builtMessages,
   /from\s+['"]\.\/messages\.ja['"]/,
   'The Core ESM build must not retain an unresolved ./messages.ja import.'
+)
+assert.match(
+  vueFullTypes,
+  /FileViewerToolbarSlotProps/,
+  'The Vue 3 full component declarations must preserve typed toolbar slot props.'
+)
+assert.match(
+  vueFullTypes,
+  /['"]toolbar-start['"]/,
+  'The Vue 3 full component declarations must expose toolbar-start.'
+)
+assert.match(
+  vueFullTypes,
+  /['"]toolbar-end['"]/,
+  'The Vue 3 full component declarations must expose toolbar-end.'
 )
 
 const core = await import(pathToFileURL(coreEntry).href)
@@ -56,6 +74,38 @@ assert.equal(
   'Top-level search: false must hide the native search control.'
 )
 
+const toolbarStateInput = {
+  extension: 'png',
+  renderedReady: true,
+  zoomState: core.createFileViewerZoomState(),
+  toolbar: searchOnlyToolbar,
+  options: { search: true }
+}
+assert.equal(
+  core.resolveFileViewerToolbarState({ ...toolbarStateInput, searchAvailable: false }).showToolbar,
+  false,
+  'A search-only toolbar must stay hidden when the active renderer cannot search.'
+)
+assert.equal(
+  core.resolveFileViewerToolbarState({ ...toolbarStateInput, extension: 'md', searchAvailable: true })
+    .visibleToolbar.search,
+  true,
+  'A search-capable renderer must keep the native search control visible.'
+)
+
+const toolbarActions = core.createFileViewerToolbarControllerActionHandlers({
+  getExtension: () => 'png',
+  getSearchAvailable: () => false,
+  getToolbar: () => searchOnlyToolbar,
+  getRenderedReady: () => true,
+  getZoomState: () => core.createFileViewerZoomState()
+})
+assert.equal(
+  toolbarActions.resolveToolbarState().showToolbar,
+  false,
+  'Toolbar controllers must forward active renderer search availability.'
+)
+
 const packageRequire = createRequire(resolve('packages/components/vue3/package.json'))
 const vuePackageJson = packageRequire.resolve('vue/package.json')
 const vueRequire = createRequire(vuePackageJson)
@@ -79,8 +129,11 @@ const searchHtml = await renderViewer({
   search: true,
   toolbar: searchOnlyToolbar
 })
-assert.match(searchHtml, /viewer-search-input/, 'The search-only toolbar must render its input.')
-assert.match(searchHtml, /search-submit-button/, 'The search-only toolbar must render its submit action.')
+assert.doesNotMatch(
+  searchHtml,
+  /viewer-search-input/,
+  'The native search input must wait until a search-capable renderer is resolved.'
+)
 
 let startProps
 let endProps
@@ -111,4 +164,4 @@ for (const [name, props] of [['toolbar-start', startProps], ['toolbar-end', endP
   assert.equal(typeof props.searchState.total, 'number', `${name} searchState is incomplete.`)
 }
 
-console.log('[verify-vue3-toolbar] Core ESM imports, search visibility/rendering and start/end slot contracts verified.')
+console.log('[verify-vue3-toolbar] Core ESM imports, renderer-bounded search visibility/rendering and start/end slot contracts verified.')
