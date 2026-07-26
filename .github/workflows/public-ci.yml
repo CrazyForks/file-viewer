@@ -50,6 +50,9 @@ jobs:
       - name: Build documentation
         run: pnpm docs:build
 
+      - name: Verify Vue 3 toolbar contracts
+        run: node scripts/verify-vue3-toolbar.mjs
+
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
