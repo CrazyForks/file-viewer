@@ -1,14 +1,28 @@
 import assert from 'node:assert/strict'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const coreEntry = resolve('packages/core/dist/index.js')
+const coreMessagesEntry = resolve('packages/core/dist/i18n/messages.js')
 const vueEntry = resolve('packages/components/vue3/dist/index.mjs')
 
 assert.ok(existsSync(coreEntry), `Missing built core entry: ${coreEntry}`)
+assert.ok(existsSync(coreMessagesEntry), `Missing built core messages entry: ${coreMessagesEntry}`)
 assert.ok(existsSync(vueEntry), `Missing built Vue 3 entry: ${vueEntry}`)
+
+const builtMessages = readFileSync(coreMessagesEntry, 'utf8')
+assert.match(
+  builtMessages,
+  /from\s+['"]\.\/messages\.ja\.js['"]/,
+  'The Core ESM build must resolve the dotted messages.ja source basename to messages.ja.js.'
+)
+assert.doesNotMatch(
+  builtMessages,
+  /from\s+['"]\.\/messages\.ja['"]/,
+  'The Core ESM build must not retain an unresolved ./messages.ja import.'
+)
 
 const core = await import(pathToFileURL(coreEntry).href)
 const unavailable = {
@@ -97,4 +111,4 @@ for (const [name, props] of [['toolbar-start', startProps], ['toolbar-end', endP
   assert.equal(typeof props.searchState.total, 'number', `${name} searchState is incomplete.`)
 }
 
-console.log('[verify-vue3-toolbar] core visibility, search rendering and start/end slot contracts verified.')
+console.log('[verify-vue3-toolbar] Core ESM imports, search visibility/rendering and start/end slot contracts verified.')
