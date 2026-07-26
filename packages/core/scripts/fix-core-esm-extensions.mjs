@@ -8,11 +8,15 @@ const packageRoot = resolve(scriptDir, '..')
 const coreDistDir = join(packageRoot, 'dist')
 
 const relativeSpecifierPattern = /(\bfrom\s*['"]|\bimport\s*\(\s*['"])(\.{1,2}\/[^'"]+)(['"])/g
+const runtimeExtensions = new Set(['.js', '.mjs', '.cjs', '.json', '.node'])
 
-const hasKnownExtension = specifier => extname(specifier) !== ''
+// A dotted source basename such as `messages.ja` is not a JavaScript runtime
+// extension. TypeScript emits it as `messages.ja.js`, so only extensions that
+// Node ESM can load directly should prevent the `.js` resolution probe.
+const hasRuntimeExtension = specifier => runtimeExtensions.has(extname(specifier).toLowerCase())
 
 const resolveJsSpecifier = (fileDir, specifier) => {
-  if (hasKnownExtension(specifier)) {
+  if (hasRuntimeExtension(specifier)) {
     return specifier
   }
 
