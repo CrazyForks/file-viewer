@@ -252,6 +252,7 @@ export {
   FILE_VIEWER_BUILTIN_MESSAGES,
   FILE_VIEWER_DEFAULT_LOCALE,
   FILE_VIEWER_FALLBACK_LOCALE,
+  FILE_VIEWER_SUPPORTED_LOCALES,
   createFileViewerTranslator,
   formatFileViewerMessage,
   normalizeFileViewerLocale,

@@ -329,11 +329,11 @@ const demoThemeButtonTitle = computed(() => {
     ? demoCopy.value.themeToLight
     : demoCopy.value.themeToDark
 })
-const githubRepositoryAriaLabel = computed(() =>
-  demoLocale.value === 'zh-CN'
-    ? 'GitHub 开源总仓库'
-    : 'GitHub repository'
-)
+const githubRepositoryAriaLabel = computed(() => {
+  if (demoLocale.value === 'zh-CN') return '在新标签页打开 File Viewer GitHub 开源仓库'
+  if (demoLocale.value === 'ja-JP') return 'File Viewer の GitHub リポジトリを新しいタブで開く'
+  return 'Open the File Viewer GitHub repository in a new tab'
+})
 
 // Sample catalog data and URL identity rules are independent of panel layout.
 const {
@@ -351,14 +351,14 @@ const integrationSnippet = computed(() => {
     return `import FileViewer from '@file-viewer/react-full'
 
 export function Preview({ file }: { file: File }) {
-  return <FileViewer file={file} style={{ height: 720 }} />
+  return <FileViewer file={file} locale="${demoLocale.value}" style={{ height: 720 }} />
 }`
   }
   const sampleUrl = preview.value || url.value || DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value]
   return `import FileViewer from '@file-viewer/react-full'
 
 export function Preview() {
-  return <FileViewer url="${sampleUrl}" style={{ height: 720 }} />
+  return <FileViewer url="${sampleUrl}" locale="${demoLocale.value}" style={{ height: 720 }} />
 }`
 })
 
@@ -1507,21 +1507,28 @@ function handleWindowResize() {
               <img :src='githubMark' alt='' />
             </a>
             <div class='locale-switch viewer-locale-switch' :aria-label='demoCopy.language'>
-                <button
-                  type='button'
-                  :class='{ active: demoLocale === "zh-CN" }'
-                  @click='setDemoLocale("zh-CN")'
-                >
-                  中
-                </button>
-                <button
-                  type='button'
-                  :class='{ active: demoLocale === "en-US" }'
-                  @click='setDemoLocale("en-US")'
-                >
-                  EN
-                </button>
-              </div>
+              <button
+                type='button'
+                :class='{ active: demoLocale === "zh-CN" }'
+                @click='setDemoLocale("zh-CN")'
+              >
+                中
+              </button>
+              <button
+                type='button'
+                :class='{ active: demoLocale === "en-US" }'
+                @click='setDemoLocale("en-US")'
+              >
+                EN
+              </button>
+              <button
+                type='button'
+                :class='{ active: demoLocale === "ja-JP" }'
+                @click='setDemoLocale("ja-JP")'
+              >
+                日
+              </button>
+            </div>
           </div>
 
           <!-- Each action reflects public API availability from the active renderer. -->

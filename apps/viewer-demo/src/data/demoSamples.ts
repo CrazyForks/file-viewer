@@ -349,6 +349,89 @@ export const sampleGroupsEn: DemoSampleGroup[] = sampleGroupsZh.map((group, inde
   })
 }))
 
+
+const japaneseGroupCopy: Array<Pick<DemoSampleGroup, 'title' | 'description'>> = [
+  { title: '文書', description: 'Word、PDF、OFD、Typst' },
+  { title: 'スプレッドシート', description: 'Excel、CSV、ODS' },
+  { title: 'プレゼンテーションと CAD', description: 'PowerPoint と工学図面' },
+  { title: 'マインドマップと図表', description: 'XMind、Mermaid、PlantUML、draw.io' },
+  { title: '3D モデルと地理空間データ', description: 'メッシュ、CAD カーネル、GeoJSON' },
+  { title: '電子書籍', description: 'EPUB と UMD' },
+  { title: '圧縮ファイル', description: 'ZIP、TAR.GZ、暗号化ファイル' },
+  { title: 'メールと EDA', description: 'メール、OrCAD、IC レイアウト' },
+  { title: 'テキスト', description: 'Markdown、テキスト、ログ' },
+  { title: 'フロントエンドとデータ', description: 'Web ソース、設定、Notebook' },
+  { title: 'バックエンドとシステム', description: 'Shell、SQL、コンパイル言語' },
+  { title: 'アセットとデータ', description: 'データベース、WASM、デザインアセット' },
+  { title: 'メディア', description: '画像、音声、動画' }
+]
+
+const japaneseSampleNameMap: Record<string, string> = {
+  '/example/test.doc': 'DOC 旧形式文書',
+  '/example/en/calibre-demo.docx': 'DOCX リッチ文書',
+  '/example/template.dot': 'DOT テンプレート',
+  '/example/sample.rtf': 'RTF 文書',
+  '/example/document.odt': 'ODT 文書',
+  '/example/en/prince-sample.pdf': 'PDF 技術サンプル',
+  '/example/ofd.ofd': 'OFD レイアウト文書',
+  '/example/report.typ': 'Typst レポート',
+  '/example/en/financial-sample.xlsx': 'XLSX 財務ワークブック',
+  '/example/excel.xlsm': 'XLSM マクロワークブック',
+  '/example/excel.xlsb': 'XLSB バイナリワークブック',
+  '/example/excel.xls': 'XLS 旧形式ワークブック',
+  '/example/table.csv': 'CSV テーブル',
+  '/example/excel.ods': 'ODS スプレッドシート',
+  '/example/en/sample-presentation.pptx': 'NASA 月面戦略 PPTX',
+  '/example/office-demo.ppt': 'PowerPoint 97–2003 サンプル',
+  '/example/drawing.dxf': 'DXF 図面',
+  '/example/sample.dwg': 'DWG Autodesk サンプル',
+  '/example/mindmap.xmind': 'XMind マインドマップ',
+  '/example/architecture.mermaid': 'Mermaid アーキテクチャ図',
+  '/example/sequence.plantuml': 'PlantUML シーケンス図',
+  '/example/process.drawio': 'draw.io プロセス図',
+  '/example/book.epub': 'EPUB 電子書籍',
+  '/example/book.umd': 'UMD 電子書籍',
+  '/example/en/archive.zip': '日本語 UI 用 ZIP サンプル',
+  '/example/en/archive.tar.gz': 'TAR.GZ サンプル',
+  '/example/encrypted.zip': '暗号化 ZIP（パスワード：flyfish）',
+  '/example/sample.eml': 'EML メッセージ',
+  '/example/sample.msg': 'MSG Outlook メッセージ',
+  '/example/sample.mbox': 'MBOX メールボックス',
+  '/example/markdown.md': 'Markdown 文書',
+  '/example/en/markdown.md': 'Markdown 製品ガイド',
+  '/example/en/notes.markdown': 'Markdown サポートノート',
+  '/example/en/text.txt': 'プレーンテキスト概要',
+  '/example/en/app.log': 'アプリケーションログ',
+  '/example/en/table.csv': 'CSV 売上テーブル',
+  '/example/en/data.json': 'JSON 機能データ',
+  '/example/en/data.jsonc': 'JSONC 設定サンプル',
+  '/example/en/data.json5': 'JSON5 設定サンプル',
+  '/example/en/code.ts': 'TypeScript 組み込みサンプル',
+  '/example/en/code.js': 'JavaScript 組み込みサンプル',
+  '/example/en/model.gltf': 'glTF 埋め込みモデル',
+  '/example/model.step': 'STEP 工学モデル',
+  '/example/en/map.geojson': 'GeoJSON 湾岸ルート',
+  '/example/change.patch': 'Patch 左右比較',
+  '/example/repository.bundle': 'Git bundle 履歴',
+  '/example/sample.sqlite': 'SQLite データベース',
+  '/example/module.wasm': 'WASM モジュール',
+  '/example/design.psd': 'PSD レイヤー',
+  '/example/icon.ico': 'ICO 画像'
+}
+
+export const sampleGroupsJa: DemoSampleGroup[] = sampleGroupsZh.map((group, index) => ({
+  ...group,
+  ...(japaneseGroupCopy[index] || {}),
+  items: group.items.map(item => {
+    const nextUrl = englishSampleUrlMap[item.url] || item.url
+    return {
+      url: nextUrl,
+      name: japaneseSampleNameMap[nextUrl] || japaneseSampleNameMap[item.url] ||
+        englishSampleNameMap[nextUrl] || englishSampleNameMap[item.url] || item.name
+    }
+  })
+}))
+
 // This union serves URL matching and upload-extension coverage across locales.
-export const allDemoPresetFiles = [...sampleGroupsZh, ...sampleGroupsEn]
+export const allDemoPresetFiles = [...sampleGroupsZh, ...sampleGroupsEn, ...sampleGroupsJa]
   .flatMap(group => group.items)

@@ -3,9 +3,11 @@ import { safeDecodeURIComponent } from '@/composables/useDemoFileTypes'
 import {
   allDemoPresetFiles,
   sampleGroupsEn,
+  sampleGroupsJa,
   sampleGroupsZh
 } from '@/data/demoSamples'
 import type { DemoLocale } from '@/composables/useDemoCopy'
+import type { DemoSampleGroup } from '@/data/demoSamples'
 
 /**
  * Default documents are localized because the first render is part of the
@@ -13,7 +15,8 @@ import type { DemoLocale } from '@/composables/useDemoCopy'
  */
 export const DEFAULT_DEMO_URL_BY_LOCALE: Record<DemoLocale, string> = {
   'zh-CN': '/example/word.docx',
-  'en-US': '/example/en/calibre-demo.docx'
+  'en-US': '/example/en/calibre-demo.docx',
+  'ja-JP': '/example/en/calibre-demo.docx'
 }
 
 const extraUploadExtensions = [
@@ -113,9 +116,12 @@ export type UseDemoSamplesOptions = {
 export function useDemoSamples(options: UseDemoSamplesOptions) {
   // Both locale catalogs share structure and URLs where possible, so switching
   // language does not reset the selected group or active format.
-  const sampleGroups = computed(() => (
-    options.locale.value === 'zh-CN' ? sampleGroupsZh : sampleGroupsEn
-  ))
+  const sampleGroupsByLocale = {
+    'zh-CN': sampleGroupsZh,
+    'en-US': sampleGroupsEn,
+    'ja-JP': sampleGroupsJa
+  } satisfies Record<DemoLocale, DemoSampleGroup[]>
+  const sampleGroups = computed(() => sampleGroupsByLocale[options.locale.value])
   const presetFiles = computed(() => sampleGroups.value.flatMap(group => group.items))
   const activePreset = computed(() => (
     presetFiles.value.find(item => isSameSampleUrl(item.url, options.url.value))
