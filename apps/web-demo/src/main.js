@@ -305,6 +305,75 @@ const sampleGroups = [
   }
 ]
 
+const japaneseSampleNames = {
+  '/example/test.doc': 'DOC 旧形式文書',
+  '/example/en/calibre-demo.docx': 'DOCX リッチ文書',
+  '/example/template.dot': 'DOT テンプレート',
+  '/example/sample.rtf': 'RTF 文書',
+  '/example/document.odt': 'ODT 文書',
+  '/example/en/prince-sample.pdf': 'PDF 技術サンプル',
+  '/example/ofd.ofd': 'OFD レイアウト文書',
+  '/example/report.typ': 'Typst レポート',
+  '/example/en/financial-sample.xlsx': 'XLSX 財務ワークブック',
+  '/example/excel.xlsm': 'XLSM マクロワークブック',
+  '/example/excel.xlsb': 'XLSB バイナリワークブック',
+  '/example/excel.xls': 'XLS 旧形式ワークブック',
+  '/example/en/table.csv': 'CSV 売上テーブル',
+  '/example/excel.ods': 'ODS スプレッドシート',
+  '/example/excel.fods': 'FODS スプレッドシート',
+  '/example/excel.numbers': 'Numbers スプレッドシート',
+  '/example/en/sample-presentation.pptx': 'NASA 月面戦略 PPTX',
+  '/example/slides.odp': 'ODP プレゼンテーション',
+  '/example/drawing.dxf': 'DXF 図面',
+  '/example/sample.dwg': 'DWG 図面',
+  '/example/samples/apache/blocks_and_tables.dwf': 'DWF ブロック / テーブル',
+  '/example/samples/autodesk/house.dwfx': 'DWFx 住宅モデル',
+  '/example/samples/autodesk/robot-arm.dwfx': 'DWFx ロボットアーム',
+  '/example/mindmap.xmind': 'XMind マインドマップ',
+  '/example/architecture.mermaid': 'Mermaid アーキテクチャ図',
+  '/example/sequence.plantuml': 'PlantUML シーケンス図',
+  '/example/flow.excalidraw': 'Excalidraw フロー図',
+  '/example/process.drawio': 'draw.io プロセス図',
+  '/example/en/model.gltf': 'glTF 埋め込みモデル',
+  '/example/model.obj': 'OBJ 3D モデル',
+  '/example/model.stl': 'STL 3D モデル',
+  '/example/model.ply': 'PLY 3D モデル',
+  '/example/model.step': 'STEP 工学モデル',
+  '/example/en/map.geojson': 'GeoJSON 湾岸ルート',
+  '/example/route.kml': 'KML ルート',
+  '/example/track.gpx': 'GPX トラック',
+  '/example/book.epub': 'EPUB 電子書籍',
+  '/example/book.umd': 'UMD 電子書籍',
+  '/example/en/archive.zip': 'ZIP 圧縮ファイル',
+  '/example/en/archive.tar.gz': 'TAR.GZ 圧縮ファイル',
+  '/example/encrypted.zip': '暗号化 ZIP（パスワード：flyfish）',
+  '/example/sample.eml': 'EML メッセージ',
+  '/example/sample.msg': 'MSG Outlook メッセージ',
+  '/example/sample.mbox': 'MBOX メールボックス',
+  '/example/sample.olb': 'OLB シンボルライブラリ',
+  '/example/sample.dra': 'DRA 図面',
+  '/example/layout.gds': 'GDSII レイアウト',
+  '/example/layout.oas': 'OAS レイアウト',
+  '/example/layout.oasis': 'OASIS レイアウト',
+  '/example/en/markdown.md': 'Markdown 製品ガイド',
+  '/example/en/notes.markdown': 'Markdown サポートノート',
+  '/example/en/text.txt': 'プレーンテキスト概要',
+  '/example/en/app.log': 'アプリケーションログ',
+  '/example/en/data.json': 'JSON 機能データ',
+  '/example/en/data.jsonc': 'JSONC 設定サンプル',
+  '/example/en/data.json5': 'JSON5 設定サンプル',
+  '/example/notebook.ipynb': 'Jupyter Notebook',
+  '/example/en/code.js': 'JavaScript 組み込みサンプル',
+  '/example/en/code.ts': 'TypeScript 組み込みサンプル',
+  '/example/change.diff': 'Diff 差分',
+  '/example/change.patch': 'Patch 左右比較',
+  '/example/repository.bundle': 'Git bundle 履歴',
+  '/example/sample.sqlite': 'SQLite データベース',
+  '/example/module.wasm': 'WASM モジュール',
+  '/example/design.psd': 'PSD レイヤー',
+  '/example/icon.ico': 'ICO 画像'
+}
+
 const scenarios = {
   'zh-CN': [
     ['试试 Word 合同', 'DOCX 长文档', '/example/word.docx', 'word'],
@@ -526,7 +595,8 @@ function fileNameOf(target) {
 function itemForLocale(item) {
   const [zhName, zhUrl, enName, enUrl, jaName, jaUrl] = item
   if (state.locale === 'ja-JP') {
-    return { name: jaName || enName || zhName, url: jaUrl || enUrl || zhUrl }
+    const url = jaUrl || enUrl || zhUrl
+    return { name: jaName || japaneseSampleNames[url] || enName || zhName, url }
   }
   if (state.locale === 'en-US') {
     return { name: enName || zhName, url: enUrl || zhUrl }
@@ -677,6 +747,7 @@ const controller = mountViewer(document.getElementById('viewer'), {
     preset: allRenderers,
     toolbar: false,
     theme: 'light',
+    locale: '${state.locale}',
     watermark: {
       text: '${state.locale === 'zh-CN' ? '内部资料' : state.locale === 'ja-JP' ? '社内資料' : 'Internal'}',
       opacity: 0.16,

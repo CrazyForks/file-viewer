@@ -143,12 +143,44 @@ try {
   await page.waitForSelector('.file-viewer .content:not(.hidden)', { timeout })
   await page.waitForSelector('.markdown-body', { timeout })
 
+  await page.goto(`${baseUrl}/?lang=ja&smoke=public-ci-japanese`, {
+    waitUntil: 'domcontentloaded',
+    timeout
+  })
+  await page.waitForSelector('.file-viewer .content:not(.hidden)', { timeout })
+  await page.locator('.rail-nav-button--samples').click()
+  await page.waitForSelector('.sample-picker.open .sample-menu', { timeout })
+
+  const japaneseUi = await page.evaluate(() => {
+    const localeGroup = document.querySelector('.viewer-locale-switch')
+    const japaneseButton = Array.from(localeGroup?.querySelectorAll('button') || [])
+      .find(button => button.textContent?.trim() === '日')
+    const sampleNames = Array.from(document.querySelectorAll('.sample-menu .sample-card strong'))
+      .map(element => element.textContent?.trim())
+    return {
+      documentLocale: document.documentElement.lang,
+      pageTitle: document.title,
+      languageLabel: localeGroup?.getAttribute('aria-label'),
+      japaneseActive: japaneseButton?.classList.contains('active'),
+      localizedSample: sampleNames.includes('DOCX リッチ文書')
+    }
+  })
+  if (
+    japaneseUi.documentLocale !== 'ja-JP' ||
+    !japaneseUi.pageTitle.includes('オンラインプレビュー') ||
+    japaneseUi.languageLabel !== '言語' ||
+    !japaneseUi.japaneseActive ||
+    !japaneseUi.localizedSample
+  ) {
+    throw new Error(`Japanese demo UI failed: ${JSON.stringify(japaneseUi)}`)
+  }
+
   const actionableErrors = errors.filter(message => !/favicon|ResizeObserver loop/i.test(message))
   if (actionableErrors.length) {
     throw new Error(`Browser console errors:\n${actionableErrors.join('\n')}`)
   }
 
-  console.log('[public-browser-smoke] English Markdown, metadata, desktop picker and 390px mobile picker verified.')
+  console.log('[public-browser-smoke] English Markdown, Japanese UI, metadata, desktop picker and 390px mobile picker verified.')
 } finally {
   await browser?.close()
   await new Promise(resolveClose => server.close(resolveClose))

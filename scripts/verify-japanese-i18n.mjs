@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 
 const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8')
-const extractKeys = source => [...source.matchAll(/^\s*['"]([^'"]+)['"]\s*:/gm)].map(match => match[1])
+const extractKeys = source => [...source.matchAll(/^\s*(?:['"]([^'"]+)['"]|([A-Za-z_$][\w$]*))\s*:/gm)]
+  .map(match => match[1] || match[2])
 const placeholders = value => [...value.matchAll(/\{([a-zA-Z0-9_.-]+)\}/g)].map(match => match[1]).sort()
 const extractCatalog = (source, start, end) => {
   const startIndex = source.indexOf(start)
@@ -17,7 +18,9 @@ const assertSameKeys = (baseName, base, name, candidate) => {
   const extra = right.filter(key => !left.includes(key))
   assert(!missing.length && !extra.length, name + ' key mismatch vs ' + baseName + '\nmissing: ' + missing.join(', ') + '\nextra: ' + extra.join(', '))
 }
-const extractValues = source => new Map([...source.matchAll(/^\s*['"]([^'"]+)['"]\s*:\s*(['"])(.*?)\2,?$/gm)].map(match => [match[1], match[3]]))
+const extractValues = source => new Map([
+  ...source.matchAll(/^\s*(?:['"]([^'"]+)['"]|([A-Za-z_$][\w$]*))\s*:\s*(['"])(.*?)\3,?$/gm)
+].map(match => [match[1] || match[2], match[4]]))
 const assertPlaceholders = (base, candidate, label) => {
   const baseValues = extractValues(base)
   const candidateValues = extractValues(candidate)
@@ -37,6 +40,12 @@ assertPlaceholders(zhCore, jaCore, 'ja-JP core')
 assert(core.includes("'ja-JP': JA_JP_MESSAGES"), 'Japanese core catalog is not registered')
 assert(core.includes('browserNavigator.languages'), 'automatic locale detection must scan navigator.languages')
 assert(core.includes("normalized.startsWith('ja-')"), 'Japanese language tags are not normalized')
+for (const entrypoint of [
+  'packages/core/src/index.ts',
+  'packages/core/src/headless.ts'
+]) {
+  assert(read(entrypoint).includes('FILE_VIEWER_SUPPORTED_LOCALES'), entrypoint + ' does not export the supported locale list')
+}
 
 const demo = read('apps/viewer-demo/src/composables/useDemoCopy.ts')
 const demoJa = read('apps/viewer-demo/src/composables/useDemoCopy.ja.ts')
@@ -58,17 +67,26 @@ for (const file of [
   const delegatesLocaleResolution = file.endsWith('useDemoPreferences.ts') && fileSource.includes('normalizeFileViewerLocale')
   assert(fileSource.includes('ja-JP') || delegatesLocaleResolution, file + ' is missing Japanese locale coverage')
 }
+const edaParser = read('packages/renderers/eda/src/edaParser.ts')
+assert(edaParser.includes('titleOrcadSymbolLibrary'), 'EDA parser titles are not localized')
 
 const webDemo = read('apps/web-demo/src/main.js')
 assert(webDemo.includes('resolveAutomaticLocale'), 'Web demo does not auto-detect language priority')
 assert(webDemo.includes("localeJa.addEventListener"), 'Web demo Japanese selector is not wired')
+assert(webDemo.includes('japaneseSampleNames[url]'), 'Web demo Japanese sample names are not wired')
+assert(webDemo.includes("locale: '${state.locale}'"), 'Web demo integration snippet does not preserve the selected locale')
 const hello = read('apps/viewer-demo/src/components/HelloWorld.vue')
 assert(hello.includes('setDemoLocale("ja-JP")'), 'Main demo Japanese selector is missing')
+assert(hello.includes('locale="${demoLocale.value}"'), 'Main demo integration snippet does not preserve the selected locale')
+const publicTypeScriptExample = read('apps/viewer-demo/public/example/en/code.ts')
+assert(publicTypeScriptExample.includes("'ja-JP'"), 'Public TypeScript example locale type is missing Japanese')
 const sampleData = read('apps/viewer-demo/src/data/demoSamples.ts')
 assert(sampleData.includes('sampleGroupsJa'), 'Main demo Japanese sample catalog is missing')
 const compare = read('apps/viewer-demo/src/compare/CompareApp.vue')
 assert(compare.includes("setCompareLocale('ja-JP')"), 'Compare demo Japanese selector is missing')
 const cad = read('packages/renderers/cad/src/cad.ts')
 assert(cad.includes("t('cad.layers.merged'"), 'CAD duplicate-layer title is not localized')
+const defaultQuickstart = read('docs/guide/quickstart.md')
+assert(defaultQuickstart.includes('### Japanese locale'), 'Default English quickstart is missing the Japanese locale section')
 
 console.log('Japanese i18n verification passed')

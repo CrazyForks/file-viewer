@@ -551,7 +551,7 @@ watch(compareLocale, (nextLocale, previousLocale) => {
         <p>{{ compareCopy.subtitle }}</p>
       </div>
       <div class="header-actions">
-        <div class="locale-toggle-group" :aria-label="compareCopy.language">
+        <div class="locale-toggle-group" role="group" :aria-label="compareCopy.language">
           <button class="locale-toggle" :class="{ active: compareLocale === 'zh-CN' }" type="button" @click="setCompareLocale('zh-CN')">中</button>
           <button class="locale-toggle" :class="{ active: compareLocale === 'en-US' }" type="button" @click="setCompareLocale('en-US')">EN</button>
           <button class="locale-toggle" :class="{ active: compareLocale === 'ja-JP' }" type="button" @click="setCompareLocale('ja-JP')">日</button>
@@ -806,6 +806,12 @@ watch(compareLocale, (nextLocale, previousLocale) => {
   gap: 10px;
 }
 
+.locale-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .header-actions button,
 .sync-toggle,
 .line-locator {
@@ -860,6 +866,11 @@ watch(compareLocale, (nextLocale, previousLocale) => {
 .header-actions button:hover {
   border-color: rgba(31, 152, 99, 0.28);
   color: #14794e;
+}
+
+.locale-toggle.active {
+  background: #0b7480;
+  color: #fff;
 }
 
 .sync-toggle input {
@@ -1261,9 +1272,4 @@ watch(compareLocale, (nextLocale, previousLocale) => {
     color: #72e7b7;
   }
 }
-</style>
-
-<style scoped>
-.locale-toggle-group{display:inline-flex;align-items:center;gap:4px}
-.locale-toggle.active{background:#0b7480;color:#fff}
 </style>

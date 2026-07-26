@@ -3,7 +3,7 @@ type ViewerPreset = 'lite' | 'office' | 'engineering' | 'all'
 interface ViewerBootstrapOptions {
   container: HTMLElement
   src: string
-  locale?: 'auto' | 'zh-CN' | 'en-US'
+  locale?: 'auto' | 'zh-CN' | 'en-US' | 'ja-JP'
   preset?: ViewerPreset
 }
 
@@ -26,4 +26,3 @@ export async function bootstrapViewer(options: ViewerBootstrapOptions) {
     }
   })
 }
-

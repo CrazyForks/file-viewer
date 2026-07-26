@@ -20,7 +20,28 @@ const MAX_PROPERTIES = 420
 
 export type EdaParserLocale = 'zh-CN' | 'en-US' | 'ja-JP'
 
-const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
+type EdaParserTextKey =
+  | 'oasisFixture'
+  | 'gdsLayout'
+  | 'cfbContainer'
+  | 'binaryIndex'
+  | 'coverage'
+  | 'layout'
+  | 'layoutOasisName'
+  | 'layoutGdsName'
+  | 'titleOrcadSymbolLibrary'
+  | 'titleOlbBinaryLibrary'
+  | 'titleOrcadDrawingLibrary'
+  | 'titleDraBinaryDrawing'
+  | 'titleLayoutStructure'
+  | 'noSymbol'
+  | 'noFootprint'
+  | 'noGds'
+  | 'noOasis'
+  | 'maxStreams'
+  | 'binaryFallback'
+
+const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<EdaParserTextKey, string>> = {
   'zh-CN': {
     oasisFixture: '已识别为 OASIS 文本结构夹具，并在浏览器端解析几何预览和结构索引；真实 SEMI 二进制 OASIS 仍走安全索引与后续独立内核路线。',
     gdsLayout: '已识别为标准 GDSII 二进制版图记录，并在浏览器端解析几何预览和结构索引。',
@@ -28,6 +49,13 @@ const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
     binaryIndex: '未识别为 CFB 容器，已使用二进制字符串索引模式展示可读信息。',
     coverage: '已索引 {streams} 个条目、{strings} 个可读字符串、{entities} 个 EDA 结构候选。',
     layout: '已解析 {layout}: {structures} 个 structure、{elements} 个几何/引用/文本元素，可在版图预览面板中拖动查看。',
+    layoutOasisName: 'OASIS 文本结构',
+    layoutGdsName: 'GDSII 版图',
+    titleOrcadSymbolLibrary: 'OrCAD Capture 元件符号库',
+    titleOlbBinaryLibrary: 'OLB 二进制库',
+    titleOrcadDrawingLibrary: 'OrCAD / Allegro 图纸库',
+    titleDraBinaryDrawing: 'DRA 二进制图纸',
+    titleLayoutStructure: '{type} 版图结构',
     noSymbol: '未发现明确的元件符号候选，文件可能使用了私有二进制编码或需要专业工具导出 ASCII/XML 后再检查。',
     noFootprint: '未发现明确的封装、图形或 padstack 候选，文件可能使用了私有二进制数据库编码。',
     noGds: '未发现明确的 GDSII 版图结构候选。文件可能不是标准 GDSII 二进制或使用了专有封装。',
@@ -42,6 +70,13 @@ const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
     binaryIndex: 'This file is not recognized as a CFB container, so readable information is shown through a safe binary string index.',
     coverage: 'Indexed {streams} entries, {strings} readable strings, and {entities} EDA structure candidates.',
     layout: 'Parsed {layout}: {structures} structures and {elements} geometry/reference/text elements. Drag the layout preview panel to inspect it.',
+    layoutOasisName: 'OASIS text fixture',
+    layoutGdsName: 'GDSII layout',
+    titleOrcadSymbolLibrary: 'OrCAD Capture Symbol Library',
+    titleOlbBinaryLibrary: 'OLB Binary Library',
+    titleOrcadDrawingLibrary: 'OrCAD / Allegro Drawing Library',
+    titleDraBinaryDrawing: 'DRA Binary Drawing',
+    titleLayoutStructure: '{type} Layout Structure',
     noSymbol: 'No clear component-symbol candidates were found. The file may use private binary encoding or need ASCII/XML export from a professional tool.',
     noFootprint: 'No clear footprint, drawing, or padstack candidates were found. The file may use private binary database encoding.',
     noGds: 'No clear GDSII layout structure candidates were found. The file may not be standard GDSII binary or may use a proprietary wrapper.',
@@ -56,6 +91,13 @@ const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
     binaryIndex: 'CFB コンテナーとして認識できなかったため、安全なバイナリ文字列索引で可読情報を表示します。',
     coverage: '{streams} 件の項目、{strings} 件の可読文字列、{entities} 件の EDA 構造候補を索引化しました。',
     layout: '{layout} を解析しました：構造 {structures} 件、幾何・参照・テキスト要素 {elements} 件。レイアウトプレビューパネルをドラッグして確認できます。',
+    layoutOasisName: 'OASIS テキスト構造',
+    layoutGdsName: 'GDSII レイアウト',
+    titleOrcadSymbolLibrary: 'OrCAD Capture シンボルライブラリ',
+    titleOlbBinaryLibrary: 'OLB バイナリライブラリ',
+    titleOrcadDrawingLibrary: 'OrCAD / Allegro 図面ライブラリ',
+    titleDraBinaryDrawing: 'DRA バイナリ図面',
+    titleLayoutStructure: '{type} レイアウト構造',
     noSymbol: '明確なコンポーネントシンボル候補を検出できませんでした。独自バイナリエンコーディングの可能性があるため、専門ツールから ASCII/XML を書き出して確認してください。',
     noFootprint: '明確なフットプリント、図形、Padstack 候補を検出できませんでした。独自バイナリデータベース形式の可能性があります。',
     noGds: '明確な GDSII レイアウト構造候補を検出できませんでした。標準 GDSII バイナリではないか、独自ラッパーを使用している可能性があります。',
@@ -67,7 +109,7 @@ const EDA_PARSER_TEXT: Record<EdaParserLocale, Record<string, string>> = {
 
 const getEdaParserText = (
   locale: EdaParserLocale,
-  key: keyof typeof EDA_PARSER_TEXT['zh-CN'],
+  key: EdaParserTextKey,
   params: Record<string, string | number> = {}
 ) => {
   const template = EDA_PARSER_TEXT[locale]?.[key] || EDA_PARSER_TEXT['en-US'][key] || key
@@ -617,7 +659,10 @@ const buildDiagnostics = (
       level: 'info',
       code: `${layout.format}-layout`,
       message: getEdaParserText(locale, 'layout', {
-        layout: layout.format === 'oasis' ? 'OASIS fixture' : 'GDSII layout',
+        layout: getEdaParserText(
+          locale,
+          layout.format === 'oasis' ? 'layoutOasisName' : 'layoutGdsName'
+        ),
         structures: layout.structureCount,
         elements: layout.elements.length,
       })
@@ -663,10 +708,16 @@ const assembleResult = (
     type,
     parser,
     title: type === 'olb'
-      ? (parser === 'cfb' ? 'OrCAD Capture Symbol Library' : 'OLB Binary Library')
+      ? getEdaParserText(
+          locale,
+          parser === 'cfb' ? 'titleOrcadSymbolLibrary' : 'titleOlbBinaryLibrary'
+        )
       : type === 'dra'
-        ? (parser === 'cfb' ? 'OrCAD / Allegro Drawing Library' : 'DRA Binary Drawing')
-        : `${type.toUpperCase()} Layout Structure`,
+        ? getEdaParserText(
+            locale,
+            parser === 'cfb' ? 'titleOrcadDrawingLibrary' : 'titleDraBinaryDrawing'
+          )
+        : getEdaParserText(locale, 'titleLayoutStructure', { type: type.toUpperCase() }),
     byteLength: buffer.byteLength,
     streamCount,
     totalStreamBytes,

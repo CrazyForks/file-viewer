@@ -351,14 +351,14 @@ const integrationSnippet = computed(() => {
     return `import FileViewer from '@file-viewer/react-full'
 
 export function Preview({ file }: { file: File }) {
-  return <FileViewer file={file} style={{ height: 720 }} />
+  return <FileViewer file={file} locale="${demoLocale.value}" style={{ height: 720 }} />
 }`
   }
   const sampleUrl = preview.value || url.value || DEFAULT_DEMO_URL_BY_LOCALE[demoLocale.value]
   return `import FileViewer from '@file-viewer/react-full'
 
 export function Preview() {
-  return <FileViewer url="${sampleUrl}" style={{ height: 720 }} />
+  return <FileViewer url="${sampleUrl}" locale="${demoLocale.value}" style={{ height: 720 }} />
 }`
 })
 
@@ -1507,20 +1507,20 @@ function handleWindowResize() {
               <img :src='githubMark' alt='' />
             </a>
             <div class='locale-switch viewer-locale-switch' :aria-label='demoCopy.language'>
-                <button
-                  type='button'
-                  :class='{ active: demoLocale === "zh-CN" }'
-                  @click='setDemoLocale("zh-CN")'
-                >
-                  中
-                </button>
-                <button
-                  type='button'
-                  :class='{ active: demoLocale === "en-US" }'
-                  @click='setDemoLocale("en-US")'
-                >
-                  EN
-                </button>
+              <button
+                type='button'
+                :class='{ active: demoLocale === "zh-CN" }'
+                @click='setDemoLocale("zh-CN")'
+              >
+                中
+              </button>
+              <button
+                type='button'
+                :class='{ active: demoLocale === "en-US" }'
+                @click='setDemoLocale("en-US")'
+              >
+                EN
+              </button>
               <button
                 type='button'
                 :class='{ active: demoLocale === "ja-JP" }'
@@ -1528,7 +1528,7 @@ function handleWindowResize() {
               >
                 日
               </button>
-              </div>
+            </div>
           </div>
 
           <!-- Each action reflects public API availability from the active renderer. -->
