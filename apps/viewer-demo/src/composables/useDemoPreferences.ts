@@ -1,5 +1,6 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
+  normalizeFileViewerLocale,
   resolveFileViewerColorScheme,
   toggleFileViewerColorScheme
 } from '@file-viewer/core'
@@ -32,7 +33,7 @@ const writeStorage = (key: string, value: string) => {
 }
 
 export const normalizeDemoLocale = (value?: string | null): DemoLocale => (
-  String(value || '').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US'
+  normalizeFileViewerLocale(value || 'auto')
 )
 
 export const normalizeDemoDensity = (value?: string | null): FileViewerUiDensity => (
@@ -60,7 +61,7 @@ const resolveInitialLocale = () => {
   if (explicitLocale) return normalizeDemoLocale(explicitLocale)
   const storedLocale = readStorage(LOCALE_STORAGE_KEY)
   if (storedLocale) return normalizeDemoLocale(storedLocale)
-  return normalizeDemoLocale(navigator.languages?.[0] || navigator.language)
+  return normalizeDemoLocale('auto')
 }
 
 const resolveInitialDensity = () => (

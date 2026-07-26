@@ -1,4 +1,5 @@
 import { computed, type Ref } from 'vue'
+import { demoCopyJa } from './useDemoCopy.ja'
 
 /**
  * Localized product-demo copy.
@@ -7,7 +8,7 @@ import { computed, type Ref } from 'vue'
  * accessibility names change language together. Renderer translations remain
  * in core and are not duplicated here.
  */
-export type DemoLocale = 'zh-CN' | 'en-US'
+export type DemoLocale = 'zh-CN' | 'en-US' | 'ja-JP'
 export type DemoCopy = Record<string, string>
 
 const demoCopyMap: Record<DemoLocale, DemoCopy> = {
@@ -438,7 +439,8 @@ const demoCopyMap: Record<DemoLocale, DemoCopy> = {
     closeIntegrationSnippet: 'Close integration code',
     copySnippet: 'Copy code',
     copiedSnippet: 'Copied'
-  }
+  },
+  'ja-JP': demoCopyJa
 }
 
 export function useDemoCopy(locale: Readonly<Ref<DemoLocale>>) {

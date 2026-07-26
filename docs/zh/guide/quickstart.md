@@ -497,3 +497,7 @@ export function Preview() {
 - 想明确 `file`、`url`、水印、工具栏、压缩包缓存和导出的参数行为: 看 [组件用法](/zh/guide/usage)
 - 准备做本地验证和打包: 看 [本地开发与打包](/zh/guide/development)
 - 想下载公开源码、成品或了解优先支持: 看 [发布与开源分发](/zh/guide/distribution)
+
+### 日语语言
+
+使用 `locale: 'ja-JP'` 可固定为日语。默认的 `auto` 模式会按顺序检查完整的 `navigator.languages` 语言偏好列表，并识别 `ja`、`ja-JP` 等日语标签；浏览器语言均不受支持时回退到英文。

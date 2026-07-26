@@ -4,6 +4,7 @@ import type { ComponentPublicInstance } from 'vue'
 import { ChevronDown, ChevronUp, Search, X } from '@lucide/vue'
 import { FileViewer } from '@file-viewer/vue3'
 import { allRenderers } from '@file-viewer/preset-all'
+import { normalizeFileViewerLocale } from '@file-viewer/core'
 import type {
   FileViewerFileRef as FileRef,
   FileViewerLifecycleContext,
@@ -15,7 +16,7 @@ import brandLogo from '@/assets/logo.png'
 import { useSynchronizedScroll } from './useSynchronizedScroll'
 
 type CompareSide = 'left' | 'right'
-type DemoLocale = 'zh-CN' | 'en-US'
+type DemoLocale = 'zh-CN' | 'en-US' | 'ja-JP'
 
 interface CompareSample {
   label: string;
@@ -38,7 +39,7 @@ const params = new URLSearchParams(window.location.search)
 const DEMO_LOCALE_STORAGE_KEY = 'file-viewer-demo-locale'
 
 const normalizeDemoLocale = (value?: string | null): DemoLocale => {
-  return String(value || '').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US'
+  return normalizeFileViewerLocale(value || 'auto')
 }
 
 const resolveInitialDemoLocale = (): DemoLocale => {
@@ -50,12 +51,10 @@ const resolveInitialDemoLocale = (): DemoLocale => {
   if (storedLocale) {
     return normalizeDemoLocale(storedLocale)
   }
-  return normalizeDemoLocale(navigator.languages?.[0] || navigator.language)
+  return normalizeDemoLocale('auto')
 }
 
 const compareLocale = ref<DemoLocale>(resolveInitialDemoLocale())
-const isChineseLocale = computed(() => compareLocale.value === 'zh-CN')
-const nextLocaleLabel = computed(() => isChineseLocale.value ? 'EN' : '中文')
 
 const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
   'zh-CN': {
@@ -129,6 +128,42 @@ const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
     statusUnloaded: 'Unloaded',
     aiChunks: '{count} chunks',
     language: 'Language'
+  },
+  'ja-JP': {
+    backHome: 'File Viewer メインプレビューへ戻る',
+    pageTitle: 'File Viewer 文書比較',
+    pageDescription: '左右表示、アップロード、URL 読み込み、同期スクロール、検索、行移動に対応した独立した文書比較 Demo。',
+    title: '文書比較',
+    subtitle: 'サンプル、URL、ローカルアップロード、同期スクロール、検索、行単位の移動に対応した左右比較。',
+    leftPanel: '左の文書',
+    rightPanel: '右の文書',
+    lineLocator: '行へ移動',
+    linePlaceholder: '行番号',
+    locate: '移動',
+    syncScroll: 'スクロールを同期',
+    hidePdfToolbar: 'PDF ツールバーを隠す',
+    swap: '入れ替え',
+    reset: 'リセット',
+    compareSearch: '文書比較検索',
+    searchCurrent: '現在の文書を検索',
+    previousSearchResult: '前の検索結果',
+    nextSearchResult: '次の検索結果',
+    closeSearch: '検索を閉じる',
+    boardLabel: '左右文書比較',
+    sample: 'サンプル',
+    uploadFile: 'ファイルをアップロード',
+    localFile: 'ローカルファイル',
+    localUpload: 'ローカルアップロード',
+    urlFile: 'URL ファイル',
+    unselected: '未選択',
+    statusReady: '準備完了',
+    statusWaiting: '読み込み待ち',
+    statusNoFile: 'ファイルが選択されていません',
+    statusLoading: '読み込み中',
+    statusComplete: '完了',
+    statusUnloaded: 'アンロード済み',
+    aiChunks: '{count} チャンク',
+    language: '言語'
   }
 }
 
@@ -159,6 +194,15 @@ const samplesByLocale: Record<DemoLocale, CompareSample[]> = {
     { label: 'NASA lunar strategy PPTX', description: 'Professional public NASA deck', url: '/example/en/sample-presentation.pptx' },
     { label: 'Typst source', description: 'Local Typst rendering sample', url: '/example/report.typ' },
     { label: 'Markdown document', description: 'Lightweight rich text layout', url: '/example/en/markdown.md' }
+  ],
+  'ja-JP': [
+    { label: 'DOCX リッチ文書', description: '英語 DOCX サンプルを日本語 UI で表示', url: '/example/en/calibre-demo.docx' },
+    { label: 'PDF 出版物', description: '図版を含む実際の PDF ページ', url: '/example/en/prince-sample.pdf' },
+    { label: 'Excel ワークブック', description: 'Microsoft 財務ワークブック', url: '/example/en/financial-sample.xlsx' },
+    { label: 'PowerPoint 97–2003', description: '25 スライドのバイナリプレゼンテーション', url: '/example/office-demo.ppt' },
+    { label: 'NASA 月面戦略 PPTX', description: '公開されている専門的な NASA スライド', url: '/example/en/sample-presentation.pptx' },
+    { label: 'Typst ソース', description: 'ローカル Typst レンダリングサンプル', url: '/example/report.typ' },
+    { label: 'Markdown 文書', description: '軽量リッチテキストレイアウト', url: '/example/en/markdown.md' }
   ]
 }
 
@@ -439,10 +483,6 @@ const setCompareLocale = (nextLocale: DemoLocale) => {
   window.localStorage.setItem(DEMO_LOCALE_STORAGE_KEY, nextLocale)
 }
 
-const toggleCompareLocale = () => {
-  setCompareLocale(isChineseLocale.value ? 'en-US' : 'zh-CN')
-}
-
 const syncDocumentLocaleMeta = () => {
   document.documentElement.lang = compareLocale.value
   document.title = compareCopy.value.pageTitle
@@ -511,14 +551,11 @@ watch(compareLocale, (nextLocale, previousLocale) => {
         <p>{{ compareCopy.subtitle }}</p>
       </div>
       <div class="header-actions">
-        <button
-          class="locale-toggle"
-          type="button"
-          :aria-label="compareCopy.language"
-          @click="toggleCompareLocale"
-        >
-          {{ nextLocaleLabel }}
-        </button>
+        <div class="locale-toggle-group" role="group" :aria-label="compareCopy.language">
+          <button class="locale-toggle" :class="{ active: compareLocale === 'zh-CN' }" type="button" @click="setCompareLocale('zh-CN')">中</button>
+          <button class="locale-toggle" :class="{ active: compareLocale === 'en-US' }" type="button" @click="setCompareLocale('en-US')">EN</button>
+          <button class="locale-toggle" :class="{ active: compareLocale === 'ja-JP' }" type="button" @click="setCompareLocale('ja-JP')">日</button>
+        </div>
         <div class="line-locator" :aria-label="compareCopy.lineLocator">
           <input
             v-model.trim="compareLineTarget"
@@ -769,6 +806,12 @@ watch(compareLocale, (nextLocale, previousLocale) => {
   gap: 10px;
 }
 
+.locale-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .header-actions button,
 .sync-toggle,
 .line-locator {
@@ -823,6 +866,11 @@ watch(compareLocale, (nextLocale, previousLocale) => {
 .header-actions button:hover {
   border-color: rgba(31, 152, 99, 0.28);
   color: #14794e;
+}
+
+.locale-toggle.active {
+  background: #0b7480;
+  color: #fff;
 }
 
 .sync-toggle input {
