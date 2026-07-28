@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import {
   Charts,
+  MediaFiles,
   genGlobalCSS,
   getContentTypes,
   getSlideSizeAndSetDefaultTextStyle,
@@ -132,6 +133,7 @@ export default function process(setOnMessage, postMessage) {
    * @param data 二进制数据
    */
   async function processPPTX(data) {
+    MediaFiles.MsgQueue.length = 0;
     const zip = await readZip(data)
     const dateBefore = new Date();
 
@@ -225,8 +227,11 @@ export default function process(setOnMessage, postMessage) {
       const slideNumber = i + 1;
       // 最终渲染
       let body;
+      let slideMedia = [];
       try {
+        MediaFiles.MsgQueue.length = 0;
         const slideHtml = await processSingleSlide(zip, path, i, slideSize);
+        slideMedia = MediaFiles.MsgQueue.splice(0);
         renderedSlideCount += 1;
         body = {
           type: 'slide',
@@ -235,6 +240,7 @@ export default function process(setOnMessage, postMessage) {
           file_name: filename
         };
       } catch (error) {
+        MediaFiles.MsgQueue.length = 0;
         body = {
           type: 'slide-error',
           data: createPptxDiagnosticError(
@@ -247,6 +253,13 @@ export default function process(setOnMessage, postMessage) {
           slide_num: slideNumber,
           file_name: filename
         };
+      }
+      for (const media of slideMedia) {
+        const transfer = media.buffer instanceof ArrayBuffer ? [media.buffer] : [];
+        postMessage({
+          type: 'media',
+          data: media
+        }, transfer);
       }
       // 根据顺序发送，前面的没发送需要先等待，一旦前面发送完毕，后面的会立即触发
       // 当前顺位，发送，并检测后面排队的，顺便发送了
@@ -283,6 +296,7 @@ export default function process(setOnMessage, postMessage) {
       data: new Date() - dateBefore,
       charts: Charts,
     });
+    MediaFiles.MsgQueue.length = 0;
     return finished;
   }
 }

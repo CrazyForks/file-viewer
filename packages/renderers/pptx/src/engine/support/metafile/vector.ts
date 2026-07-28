@@ -700,7 +700,9 @@ function addText(ctx: ParseContext, point: Point, text: string): void {
   const decorations = [ctx.state.font.underline ? 'underline' : '', ctx.state.font.strike ? 'line-through' : ''].filter(Boolean);
   if (decorations.length) attrs.push(`text-decoration="${decorations.join(' ')}"`);
   if (ctx.state.font.escapement) {
-    attrs.push(`transform="rotate(${numberCss(ctx.state.font.escapement / 10)}, ${numberCss(mapped.x)}, ${numberCss(mapped.y)})"`);
+    // GDI angles are counter-clockwise, while SVG positive rotation follows
+    // the screen coordinate system and therefore turns clockwise.
+    attrs.push(`transform="rotate(${numberCss(-ctx.state.font.escapement / 10)}, ${numberCss(mapped.x)}, ${numberCss(mapped.y)})"`);
   }
   addNode(ctx, `<text ${attrs.join(' ')}>${escapeHtml(text)}</text>`, [mapped]);
 }
@@ -716,7 +718,9 @@ function finalizeSvg(ctx: ParseContext, sourceMime: VectorSourceMime): Converted
   });
   const width = Math.max(1, Math.round(rectWidth(viewBox)));
   const height = Math.max(1, Math.round(rectHeight(viewBox)));
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${numberCss(viewBox.left)} ${numberCss(viewBox.top)} ${numberCss(rectWidth(viewBox))} ${numberCss(rectHeight(viewBox))}" preserveAspectRatio="xMinYMin meet">\n<rect x="${numberCss(viewBox.left)}" y="${numberCss(viewBox.top)}" width="${numberCss(rectWidth(viewBox))}" height="${numberCss(rectHeight(viewBox))}" fill="#ffffff"/>\n${ctx.nodes.join('\n')}\n</svg>`;
+  // Metafiles are transparent unless their records explicitly paint a
+  // background. An unconditional white canvas hides overlapping slide content.
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${numberCss(viewBox.left)} ${numberCss(viewBox.top)} ${numberCss(rectWidth(viewBox))} ${numberCss(rectHeight(viewBox))}" preserveAspectRatio="xMinYMin meet">\n${ctx.nodes.join('\n')}\n</svg>`;
   const encoded = new TextEncoder().encode(svg);
   return {
     mime: 'image/svg+xml',

@@ -5,5 +5,11 @@ processPptx(
     self.onmessage = event => messageHandler(event.data);
     self.onerror = event => errorHandler(event);
   },
-  (message: unknown) => self.postMessage(message)
+  (message: unknown, transfer?: Transferable[]) => {
+    if (transfer?.length) {
+      self.postMessage(message, transfer);
+      return;
+    }
+    self.postMessage(message);
+  }
 );

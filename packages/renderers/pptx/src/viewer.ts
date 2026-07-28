@@ -116,6 +116,13 @@ type WindowedSlideRecord = {
   postProcessPromise: Promise<void> | null;
 };
 
+type PptxMediaRecord = {
+  buffer: ArrayBuffer;
+  mimeType: string;
+  objectUrl: string | null;
+  revokeObjectUrl: (() => void) | null;
+};
+
 const toPositiveInteger = (
   value: number | undefined,
   fallback: number,
@@ -168,6 +175,7 @@ export class PptxViewer {
   private slideWindowListeners: Array<{ target: EventTarget; type: string; listener: EventListener }> = [];
   private slideWindowFrame = 0;
   private charts: unknown = null;
+  private readonly mediaRecords = new Map<string, PptxMediaRecord>();
   private disposed = false;
   private completed = false;
   private readonly handleSlideWindowChange = () => this.scheduleSlideWindowUpdate();
@@ -214,6 +222,7 @@ export class PptxViewer {
   destroy() {
     this.disposed = true;
     this.previewThumbnailDataUrl = null;
+    this.releaseMedia();
     this.worker?.terminate();
     this.worker = null;
     this.resizeObserver?.disconnect();
@@ -230,6 +239,7 @@ export class PptxViewer {
 
   private startWorker() {
     this.worker?.terminate();
+    this.releaseMedia();
     this.completed = false;
     this.charts = null;
     this.previewThumbnailDataUrl = null;
@@ -286,11 +296,15 @@ export class PptxViewer {
           this.appendWindowedSlide(String(message.data || ''), Number(message.slide_num || 0));
         } else {
           const element = appendHtml(this.content, String(message.data || ''));
+          this.hydrateMedia(element);
           this.scheduleResize();
           this.options.onSlideRendered?.(Number(message.slide_num || 0), element);
         }
         break;
       }
+      case 'media':
+        this.storeMedia(message.data);
+        break;
       case 'slide-error': {
         const slideNumber = Number(message.slide_num || 0);
         const error = message.data;
@@ -449,6 +463,7 @@ export class PptxViewer {
     const designerCanvases = this.getDesignerCanvases(record);
     record.slot.replaceChildren();
     record.element = appendHtml(record.slot, record.html);
+    this.hydrateMedia(record.element);
     record.slot.append(...designerCanvases);
     record.rendered = true;
     record.postProcessed = false;
@@ -776,8 +791,96 @@ export class PptxViewer {
     this.completed = true;
     this.worker?.terminate();
     this.worker = null;
+    this.releaseMedia();
     this.content.dataset.renderState = 'error';
     this.options.onError?.(error);
+  }
+
+  private storeMedia(data: unknown) {
+    if (!data || typeof data !== 'object') {
+      return;
+    }
+
+    const media = data as {
+      id?: unknown;
+      mimeType?: unknown;
+      buffer?: unknown;
+    };
+    if (
+      typeof media.id !== 'string' ||
+      !media.id ||
+      typeof media.mimeType !== 'string' ||
+      !(media.buffer instanceof ArrayBuffer)
+    ) {
+      return;
+    }
+
+    this.releaseMedia(media.id);
+    this.mediaRecords.set(media.id, {
+      buffer: media.buffer,
+      mimeType: media.mimeType,
+      objectUrl: null,
+      revokeObjectUrl: null,
+    });
+    this.hydrateMedia(this.content);
+  }
+
+  private hydrateMedia(root: Element | null) {
+    if (!root) {
+      return;
+    }
+
+    const elements = Array.from(
+      root.querySelectorAll<HTMLMediaElement>('[data-pptx-media-id]')
+    );
+    if (root.matches('[data-pptx-media-id]')) {
+      elements.unshift(root as HTMLMediaElement);
+    }
+
+    for (const element of elements) {
+      const mediaId = element.dataset.pptxMediaId;
+      const record = mediaId ? this.mediaRecords.get(mediaId) : undefined;
+      if (!record) {
+        continue;
+      }
+
+      if (!record.objectUrl) {
+        const view = this.target.ownerDocument.defaultView;
+        const BlobCtor = view?.Blob || globalThis.Blob;
+        const UrlApi = view?.URL || globalThis.URL;
+        if (
+          typeof BlobCtor !== 'function' ||
+          typeof UrlApi?.createObjectURL !== 'function'
+        ) {
+          continue;
+        }
+        const objectUrl = UrlApi.createObjectURL(new BlobCtor(
+          [record.buffer],
+          { type: record.mimeType }
+        ));
+        record.objectUrl = objectUrl;
+        record.revokeObjectUrl = () => UrlApi.revokeObjectURL(objectUrl);
+      }
+
+      if (element.src !== record.objectUrl) {
+        element.src = record.objectUrl;
+        element.load?.();
+      }
+    }
+  }
+
+  private releaseMedia(mediaId?: string) {
+    if (mediaId) {
+      const record = this.mediaRecords.get(mediaId);
+      record?.revokeObjectUrl?.();
+      this.mediaRecords.delete(mediaId);
+      return;
+    }
+
+    for (const record of this.mediaRecords.values()) {
+      record.revokeObjectUrl?.();
+    }
+    this.mediaRecords.clear();
   }
 
   private attachResizeObserver() {

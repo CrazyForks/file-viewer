@@ -2,6 +2,7 @@ import tinycolor from 'tinycolor2'
 import { parse } from './txml'
 import * as dingbatToUnicode from "dingbat-to-unicode";
 import UTIFModule from 'utif';
+import { normalizeJpegExifOrientation } from './image.js';
 import { convertMetafileToSvg } from './metafile/vector.js';
 
 const UTIF = UTIFModule.default || UTIFModule;
@@ -10,6 +11,10 @@ const UTIF = UTIFModule.default || UTIFModule;
 export const Charts = {
   MsgQueue: [],
   isDone: false
+}
+
+export const MediaFiles = {
+  MsgQueue: []
 }
 
 //var worker;
@@ -30,7 +35,6 @@ const CSS_PX_PER_INCH = 96;
 const EMU_PER_INCH = 914400;
 const POINTS_PER_INCH = 72;
 const slideFactor = CSS_PX_PER_INCH / EMU_PER_INCH;
-const computedFactor = (value, fallback = 150) => value >= 9525 ? (value * slideFactor) : fallback;
 const fontSizeFactor = CSS_PX_PER_INCH / POINTS_PER_INCH;
 const asArray = value => value === undefined || value === null ? [] : (Array.isArray(value) ? value : [value]);
 const toFiniteNumber = (value, fallback = 0) => {
@@ -528,7 +532,7 @@ function mapGroupSizeToPx(value, axis, groupContext) {
     return NaN;
   }
   if (groupContext === undefined) {
-    return computedFactor(parsed);
+    return emuToPx(parsed);
   }
   var scale = axis === "y" ? groupContext.scaleY : groupContext.scaleX;
   return parsed * scale;
@@ -707,6 +711,10 @@ async function getImageDataUrl(imgFileExt, imgArrayBuffer) {
       imgArrayBuffer,
       normalizedExt == "wmf" ? "image/wmf" : "image/emf"
     );
+  }
+
+  if (normalizedExt == "jpg" || normalizedExt == "jpeg") {
+    imgArrayBuffer = normalizeJpegExifOrientation(imgArrayBuffer).bytes;
   }
 
   var mimeType = getMimeType(normalizedExt);
@@ -978,9 +986,14 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
     //console.log("genShape: fillColor: ", fillColor)
     var grndFillFlg = false;
     var imgFillFlg = false;
-    var clrFillType = getFillType(getTextByPathList(node, [ "p:spPr" ]));
+    var ownFillType = getFillType(getTextByPathList(node, [ "p:spPr" ]));
+    var clrFillType = ownFillType;
+    var groupBlipFillNode;
     if (clrFillType == "GROUP_FILL") {
       clrFillType = getFillType(getTextByPathList(pNode, [ "p:grpSpPr" ]));
+      if (clrFillType == "PIC_FILL") {
+        groupBlipFillNode = getTextByPathList(pNode, [ "p:grpSpPr", "a:blipFill" ]);
+      }
     }
     // if (clrFillType == "") {
     //     var clrFillType = getFillType(getTextByPathList(node, ["p:style","a:fillRef"]));
@@ -998,7 +1011,23 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
 
     } else if (clrFillType == "PIC_FILL") {
       imgFillFlg = true;
-      var svgBgImg = await getSvgImagePattern(node, fillColor, shpId, warpObj);
+      var blipFillNode = groupBlipFillNode ||
+        getTextByPathList(node, [ "p:spPr", "a:blipFill" ]);
+      var sharedFillContext = ownFillType == "GROUP_FILL" && groupContext !== undefined
+        ? {
+          x: x,
+          y: y,
+          width: groupContext.width,
+          height: groupContext.height
+        }
+        : undefined;
+      var svgBgImg = await getSvgImagePattern(
+        blipFillNode,
+        fillColor,
+        shpId,
+        warpObj,
+        sharedFillContext
+      );
       //fill="url(#imgPtrn)"
       //console.log(svgBgImg)
       result += svgBgImg;
@@ -8552,7 +8581,9 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
   }
   //video
   var vdoNode = getTextByPathList(node, ["p:nvPicPr", "p:nvPr", "a:videoFile"]);
-  var vdoRid, vdoFile, vdoFileExt, vdoMimeType, uInt8Array, blob, vdoBlob, mediaSupportFlag = false, isVdeoLink = false;
+  var mediaShapeId = getTextByPathList(node, ["p:nvPicPr", "p:cNvPr", "attrs", "id"]) || order || "0";
+  var mediaIdPrefix = "pptx-media-" + ((warpObj && warpObj.slideNumber) || "0") + "-" + mediaShapeId;
+  var vdoRid, vdoFile, vdoFileExt, vdoMimeType, uInt8Array, vdoMediaId, mediaSupportFlag = false, isVdeoLink = false;
   var mediaProcess = settings.mediaProcess;
   if (vdoNode !== undefined & mediaProcess) {
     vdoRid = vdoNode["attrs"]["r:link"];
@@ -8569,10 +8600,13 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
       if (vdoFileExt == "mp4" || vdoFileExt == "webm" || vdoFileExt == "ogg") {
         uInt8Array = await zip.file(vdoFile).async('arraybuffer');
         vdoMimeType = getMimeType(vdoFileExt);
-        blob = new Blob([uInt8Array], {
-          type: vdoMimeType
+        vdoMediaId = mediaIdPrefix + "-video";
+        MediaFiles.MsgQueue.push({
+          id: vdoMediaId,
+          kind: "video",
+          mimeType: vdoMimeType,
+          buffer: uInt8Array
         });
-        vdoBlob = URL.createObjectURL(blob);
         mediaSupportFlag = true;
         mediaPicFlag = true;
       }
@@ -8580,7 +8614,7 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
   }
   //Audio
   var audioNode = getTextByPathList(node, ["p:nvPicPr", "p:nvPr", "a:audioFile"]);
-  var audioRid, audioFile, audioFileExt, audioMimeType, uInt8ArrayAudio, blobAudio, audioBlob;
+  var audioRid, audioFile, audioFileExt, audioMimeType, uInt8ArrayAudio, audioMediaId;
   var audioPlayerFlag = false;
   var audioObjc;
   if (audioNode !== undefined & mediaProcess) {
@@ -8589,8 +8623,14 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
     audioFileExt = extractFileExtension(audioFile).toLowerCase();
     if (audioFileExt == "mp3" || audioFileExt == "wav" || audioFileExt == "ogg") {
       uInt8ArrayAudio = await zip.file(audioFile).async('arraybuffer');
-      blobAudio = new Blob([uInt8ArrayAudio]);
-      audioBlob = URL.createObjectURL(blobAudio);
+      audioMimeType = audioFileExt == "ogg" ? "audio/ogg" : getMimeType(audioFileExt);
+      audioMediaId = mediaIdPrefix + "-audio";
+      MediaFiles.MsgQueue.push({
+        id: audioMediaId,
+        kind: "audio",
+        mimeType: audioMimeType,
+        buffer: uInt8ArrayAudio
+      });
       var cx = parseInt(xfrmNode["a:ext"]["attrs"]["cx"]) * 20;
       var cy = xfrmNode["a:ext"]["attrs"]["cy"];
       var x = parseInt(xfrmNode["a:off"]["attrs"]["x"]) / 2.5;
@@ -8668,12 +8708,14 @@ async function processPicNode(node, warpObj, source, sType, groupContext) {
     }
   } else if ((vdoNode !== undefined || audioNode !== undefined) && mediaProcess && mediaSupportFlag) {
     if (vdoNode !== undefined && !isVdeoLink) {
-      rtrnData += "<video  src='" + vdoBlob + "' controls style='width: 100%; height: 100%'>Your browser does not support the video tag.</video>";
+      rtrnData += "<video data-pptx-media-id='" + vdoMediaId + "' controls preload='metadata'" +
+        (imageDataUrl ? " poster='" + imageDataUrl + "'" : "") +
+        " style='width: 100%; height: 100%'>Your browser does not support the video tag.</video>";
     } else if (vdoNode !== undefined && isVdeoLink) {
       rtrnData += "<iframe   src='" + vdoFile + "' controls style='width: 100%; height: 100%'></iframe >";
     }
     if (audioNode !== undefined) {
-      rtrnData += '<audio id="audio_player" controls ><source src="' + audioBlob + '"></audio>';
+      rtrnData += '<audio data-pptx-media-id="' + audioMediaId + '" controls preload="metadata"></audio>';
       //'<button onclick="audio_player.play()">Play</button>'+
       //'<button onclick="audio_player.pause()">Pause</button>';
     }
@@ -11546,12 +11588,13 @@ function getFontSize(node, textBodyNode, pFontStyle, lvl, type, warpObj) {
       if (type == "title" || type == "subTitle" || type == "ctrTitle") {
         sz = getTextByPathList(warpObj["slideMasterTextStyles"], ["p:titleStyle", lvlpPr, "a:defRPr", "attrs", "sz"]);
         kern = getTextByPathList(warpObj["slideMasterTextStyles"], ["p:titleStyle", lvlpPr, "a:defRPr", "attrs", "kern"]);
-      } else if (type == "body" || type == "obj" || type == "dt" || type == "sldNum" || type === "textBox") {
+      } else if (type == "body" || type == "obj" || type == "dt" || type == "sldNum") {
         sz = getTextByPathList(warpObj["slideMasterTextStyles"], ["p:bodyStyle", lvlpPr, "a:defRPr", "attrs", "sz"]);
         kern = getTextByPathList(warpObj["slideMasterTextStyles"], ["p:bodyStyle", lvlpPr, "a:defRPr", "attrs", "kern"]);
       }
-      else if (type == "shape") {
-        //textBox and shape text does not indent
+      else if (type == "shape" || type === "textBox") {
+        // Freeform shapes and text boxes inherit otherStyle, not body
+        // placeholder typography.
         sz = getTextByPathList(warpObj["slideMasterTextStyles"], ["p:otherStyle", lvlpPr, "a:defRPr", "attrs", "sz"]);
         kern = getTextByPathList(warpObj["slideMasterTextStyles"], ["p:otherStyle", lvlpPr, "a:defRPr", "attrs", "kern"]);
         isKerning = false;
@@ -11580,10 +11623,10 @@ function getFontSize(node, textBodyNode, pFontStyle, lvl, type, warpObj) {
 
   var baseline = getTextByPathList(node, ["a:rPr", "attrs", "baseline"]);
   if (baseline !== undefined && !isNaN(fontSize)) {
-    var baselineVl = parseInt(baseline) / 100000;
-    //fontSize -= 10;
-    // fontSize = fontSize * baselineVl;
-    fontSize -= baselineVl;
+    // PowerPoint renders superscript/subscript runs at two thirds of the
+    // inherited size. Treating baseline as a point delta leaves those runs
+    // almost full-size and can push following text onto a new line.
+    fontSize *= 2 / 3;
   }
 
   if (!isNaN(fontSize)){
@@ -12606,6 +12649,20 @@ async function getShapeFill(node, pNode, isSvgMode, warpObj, source) {
   } else if (fillType == "PIC_FILL") {
     shpFill = node["p:spPr"]["a:blipFill"];
     fillColor = await getPicFill(source, shpFill, warpObj);
+  } else if (fillType == "GROUP_FILL") {
+    // grpFill inherits the group's actual paint before the child shape's
+    // theme fillRef. Resolving the style first replaces picture fills with a
+    // fallback theme color and leaves grouped photo masks blank.
+    var grpShpFill = getTextByPathList(pNode, [ "p:grpSpPr" ]);
+    if (grpShpFill !== undefined) {
+      return await getShapeFill(
+        { "p:spPr": grpShpFill },
+        node,
+        isSvgMode,
+        warpObj,
+        source
+      );
+    }
   }
   //console.log("getShapeFill ShapeFill: ", node, ", isSvgMode; ", isSvgMode, ", fillType: ", fillType, ", fillColor: ", fillColor, ", source: ", source)
 
@@ -14155,17 +14212,16 @@ function SVGangle(deg, svgHeight, svgWidth) {
     y2 = Math.round(ty1 / h * 100 * 100) / 100;
   return [x1, y1, x2, y2];
 }
-async function getSvgImagePattern(node, fill, shpId, warpObj) {
+async function getSvgImagePattern(blipFillNode, fill, shpId, warpObj, sharedFillContext) {
   const [ width, height ] = await getBase64ImageDimensions(fill);
-  //console.log("getSvgImagePattern node:", node);
-  var blipFillNode = node["p:spPr"]["a:blipFill"];
+  blipFillNode = blipFillNode || {};
   var tileNode = getTextByPathList(blipFillNode, ["a:tile", "attrs"])
   if (tileNode !== undefined && tileNode["sx"] !== undefined) {
     var sx = (parseInt(tileNode["sx"]) / 100000) * width;
     var sy = (parseInt(tileNode["sy"]) / 100000) * height;
   }
 
-  const blipNode = node['p:spPr']['a:blipFill']['a:blip'];
+  const blipNode = blipFillNode["a:blip"] || {};
   var tialphaModFixNode = getTextByPathList(blipNode, ["a:alphaModFix", "attrs"])
   var imgOpacity = "";
   if (tialphaModFixNode !== undefined && tialphaModFixNode["amt"] !== undefined && tialphaModFixNode["amt"] != "") {
@@ -14173,7 +14229,17 @@ async function getSvgImagePattern(node, fill, shpId, warpObj) {
     var opacity = amt;
     imgOpacity = "opacity='" + opacity + "'";
   }
-  if (sx !== undefined && sx != 0) {
+  if (sharedFillContext !== undefined) {
+    var sharedWidth = Math.max(1, sharedFillContext.width);
+    var sharedHeight = Math.max(1, sharedFillContext.height);
+    var crop = getBlipCropStyles(blipFillNode).svg;
+    var sharedImageX = -sharedFillContext.x + sharedWidth * crop.x / 100;
+    var sharedImageY = -sharedFillContext.y + sharedHeight * crop.y / 100;
+    var sharedImageWidth = sharedWidth * crop.width / 100;
+    var sharedImageHeight = sharedHeight * crop.height / 100;
+    var ptrn = '<pattern id="imgPtrn_' + shpId + '" x="0" y="0" width="' +
+      sharedWidth + '" height="' + sharedHeight + '" patternUnits="userSpaceOnUse">';
+  } else if (sx !== undefined && sx != 0) {
     var ptrn = '<pattern id="imgPtrn_' + shpId + '" x="0" y="0"  width="' + sx + '" height="' + sy + '" patternUnits="userSpaceOnUse">';
   } else {
     var ptrn = '<pattern id="imgPtrn_' + shpId + '"  patternContentUnits="objectBoundingBox"  width="1" height="1">';
@@ -14224,7 +14290,12 @@ async function getSvgImagePattern(node, fill, shpId, warpObj) {
   }
 
   fill = escapeHtml(fill);
-  if (sx !== undefined && sx != 0) {
+  if (sharedFillContext !== undefined) {
+    ptrn += '<image xlink:href="' + fill + '" x="' + sharedImageX + '" y="' +
+      sharedImageY + '" width="' + sharedImageWidth + '" height="' +
+      sharedImageHeight + '" preserveAspectRatio="none" ' + imgOpacity + ' ' +
+      filterUrl + '></image>';
+  } else if (sx !== undefined && sx != 0) {
     ptrn += '<image  xlink:href="' + fill + '" x="0" y="0" width="' + sx + '" height="' + sy + '" ' + imgOpacity + ' ' + filterUrl + '></image>';
   } else {
     ptrn += '<image  xlink:href="' + fill + '" preserveAspectRatio="none" width="1" height="1" ' + imgOpacity + ' ' + filterUrl + '></image>';
