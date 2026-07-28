@@ -463,7 +463,6 @@ const {
   viewerSearchInputRef,
   viewerSearchState,
   viewerAvailability,
-  viewerZoomState,
   viewerActionDisabled,
   viewerZoomDisplayLabel,
   viewerZoomResetLabel,

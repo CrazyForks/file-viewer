@@ -1,11 +1,44 @@
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { extname, join, normalize, resolve } from 'node:path'
-import { chromium } from 'playwright'
+import { createRequire } from 'node:module'
+import { delimiter, extname, join, normalize, resolve, sep } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const distDir = resolve(process.env.FILE_VIEWER_PUBLIC_SMOKE_DIST || 'apps/viewer-demo/dist')
 const timeout = Number(process.env.FILE_VIEWER_PUBLIC_SMOKE_TIMEOUT || 45_000)
 const entryPath = join(distDir, 'index.html')
+const require = createRequire(import.meta.url)
+
+const importPlaywright = async () => {
+  try {
+    return await import('playwright')
+  } catch (originalError) {
+    const candidatePaths = process.env.PATH
+      ?.split(delimiter)
+      .filter(pathEntry => pathEntry.endsWith(`${sep}node_modules${sep}.bin`))
+      .map(binDir => resolve(binDir, '..'))
+      .filter(pathEntry => existsSync(pathEntry)) || []
+
+    for (const candidatePath of candidatePaths) {
+      try {
+        const playwrightEntry = require.resolve('playwright', { paths: [candidatePath] })
+        return await import(pathToFileURL(playwrightEntry).href)
+      } catch {
+        // Keep probing package roots injected by npm exec / npx.
+      }
+    }
+
+    throw new Error(
+      `Missing playwright module. ${
+        originalError instanceof Error ? originalError.message : String(originalError)
+      }`,
+      { cause: originalError }
+    )
+  }
+}
+
+const playwrightModule = await importPlaywright()
+const { chromium } = playwrightModule.chromium ? playwrightModule : playwrightModule.default
 
 if (!existsSync(entryPath)) {
   throw new Error(`Built demo is missing: ${entryPath}. Run pnpm build first.`)
