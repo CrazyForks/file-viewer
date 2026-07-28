@@ -1,12 +1,46 @@
 import assert from 'node:assert/strict'
 import { createReadStream, existsSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { extname, join, normalize, resolve } from 'node:path'
-import { chromium } from 'playwright'
+import { createRequire } from 'node:module'
+import { delimiter, extname, join, normalize, resolve, sep } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
+// The verifier runs from the repository root in local and public CI.
 const distDir = resolve('apps/component-demo/dist')
 const entryPath = join(distDir, 'vue3.html')
 const timeout = Number(process.env.FILE_VIEWER_VUE3_TOOLBAR_TIMEOUT || 45_000)
+const require = createRequire(import.meta.url)
+
+const importPlaywright = async () => {
+  try {
+    return await import('playwright')
+  } catch (originalError) {
+    const candidatePaths = process.env.PATH
+      ?.split(delimiter)
+      .filter(pathEntry => pathEntry.endsWith(`${sep}node_modules${sep}.bin`))
+      .map(binDir => resolve(binDir, '..'))
+      .filter(pathEntry => existsSync(pathEntry)) || []
+
+    for (const candidatePath of candidatePaths) {
+      try {
+        const playwrightEntry = require.resolve('playwright', { paths: [candidatePath] })
+        return await import(pathToFileURL(playwrightEntry).href)
+      } catch {
+        // Keep probing package roots injected by npm exec / npx.
+      }
+    }
+
+    throw new Error(
+      `Missing playwright module. Run this verifier through pnpm verify:vue3-toolbar-browser. ${
+        originalError instanceof Error ? originalError.message : String(originalError)
+      }`,
+      { cause: originalError }
+    )
+  }
+}
+
+const playwrightModule = await importPlaywright()
+const { chromium } = playwrightModule.chromium ? playwrightModule : playwrightModule.default
 
 if (!existsSync(entryPath)) {
   throw new Error(`Built Vue 3 component demo is missing: ${entryPath}. Run pnpm build:component-demo first.`)

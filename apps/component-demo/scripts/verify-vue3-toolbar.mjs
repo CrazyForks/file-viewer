@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+// All paths intentionally resolve from the repository root.
 const coreEntry = resolve('packages/core/dist/index.js')
 const coreMessagesEntry = resolve('packages/core/dist/i18n/messages.js')
 const vueEntry = resolve('packages/components/vue3/dist/index.mjs')

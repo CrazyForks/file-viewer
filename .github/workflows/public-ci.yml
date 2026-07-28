@@ -54,7 +54,7 @@ jobs:
         run: pnpm build:component-demo
 
       - name: Verify Vue 3 toolbar contracts
-        run: node scripts/verify-vue3-toolbar.mjs
+        run: node apps/component-demo/scripts/verify-vue3-toolbar.mjs
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium

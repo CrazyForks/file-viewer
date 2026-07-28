@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 
-const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8')
+const repositoryRoot = new URL('../../../', import.meta.url)
+const read = file => fs.readFileSync(new URL(file, repositoryRoot), 'utf8')
 const extractKeys = source => [...source.matchAll(/^\s*(?:['"]([^'"]+)['"]|([A-Za-z_$][\w$]*))\s*:/gm)]
   .map(match => match[1] || match[2])
 const placeholders = value => [...value.matchAll(/\{([a-zA-Z0-9_.-]+)\}/g)].map(match => match[1]).sort()
