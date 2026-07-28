@@ -9,12 +9,13 @@ artifacts/*.tgz
 artifacts/*.tar.gz
 packages/components/web/viewer/
 packages/compat/web/viewer/
-examples/*/public/flyfish-viewer-assets.json
-examples/*/public/vendor/
-examples/*/public/wasm/
 apps/component-demo/public/file-viewer/
 apps/component-demo/public/example/markdown.md
 apps/component-demo/public/example/pic.png
+apps/viewer-demo/public/vendor/drawio/math4/es5/output/
+examples/*/public/flyfish-viewer-assets.json
+examples/*/public/vendor/
+examples/*/public/wasm/
 /软件著作权申请资料/
 *.log
 .DS_Store
