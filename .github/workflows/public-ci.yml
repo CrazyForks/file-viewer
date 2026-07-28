@@ -38,14 +38,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build source, components and demo
+        run: pnpm build
+
       - name: Type-check
         run: pnpm type-check
 
       - name: Test thumbnail package
         run: pnpm test
-
-      - name: Build source, components and demo
-        run: pnpm build
 
       - name: Build documentation
         run: pnpm docs:build
