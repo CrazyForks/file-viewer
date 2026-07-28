@@ -42,6 +42,7 @@ import { useViewerToolbar } from './hooks/useViewerToolbar'
 import { useViewerViewState } from './hooks/useViewerViewState'
 import { useViewerWatermark } from './hooks/useViewerWatermark'
 import { useViewerZoom } from './hooks/useViewerZoom'
+import { resolveViewerReadinessPresentation } from './hooks/viewerReadinessPresentation'
 import type { FileViewerToolbarSlotProps } from '../../common/type'
 
 const props = defineProps<FileViewerProps>()
@@ -343,6 +344,12 @@ const hasToolbarSlots = computed(() => {
 const showToolbar = computed(() => showBuiltInToolbar.value || hasToolbarSlots.value)
 const toolbarSearchQuery = ref('')
 const searchToolbarDisabled = computed(() => toolbarDisabled.value || !renderedReady.value)
+const readinessPresentation = computed(() => resolveViewerReadinessPresentation({
+  loading: loading.value,
+  progressiveReady: progressiveReady.value,
+  renderedReady: renderedReady.value,
+  hasError: Boolean(error.value)
+}))
 
 watch(() => searchState.query, query => {
   if (toolbarSearchQuery.value !== query) {
@@ -823,10 +830,10 @@ useViewerPreviewLifecycle({
         </div>
       </div>
       <div class='viewer-content-shell' part='content-shell'>
-        <div ref='output' class='content' part='content' data-viewer-scroll-root='true' :class='{ hidden: (loading && !progressiveReady) || !!error }' />
+        <div ref='output' class='content' part='content' data-viewer-scroll-root='true' :class='{ hidden: readinessPresentation.contentHidden }' />
         <div v-if='watermarkStyle' class='viewer-watermark' part='watermark' :style='watermarkStyle' />
 
-        <div v-if='loading && !progressiveReady' class='state-panel loading-panel' part='state-panel loading-state'>
+        <div v-if='readinessPresentation.loadingStateVisible' class='state-panel loading-panel' part='state-panel loading-state'>
           <div class='loading-card' part='state-card'>
             <div class='loading-icon'>{{ loadingTheme.badge }}</div>
             <div class='loading-copy'>

@@ -37,6 +37,12 @@
 
 不要单独安装另一个版本的 `preset-all` 或复制工具，否则容易出现 API、Worker 和 WASM 版本不一致。
 
+## 如何确认 DOCX 0.3.26 修复已经生效
+
+当前 Word renderer 的主线程和离线 Worker 均使用 `@file-viewer/docx@0.3.26`。该版本修复了日文文字与 VML 文本框重叠（#155）、Apache POI `w:hMerge` 表格合并异常（#160），以及多分节文档中浮动图形和正文流错位（#161）。
+
+升级后需要重新发布同版本 viewer assets，并在浏览器网络面板确认 `vendor/docx/docx.worker.js?v=0.3.26`（可能位于自定义 `file-viewer/` 基址下）真实返回 JavaScript。不要混用旧版本 Worker；如果仍看到旧布局，请清理 CDN 或 Service Worker 缓存后重新加载文档。
+
 ## npm 11 安装时报 `Cannot read properties of null (reading 'matches')`
 
 这通常不是 `@file-viewer/*` 包版本不匹配。我们已经用 npm 11.17.0 在干净临时目录验证过 registry 安装和本地 tgz 依赖闭包安装，`@file-viewer/vue3 + @file-viewer/preset-office` 均可正常安装和导入。
@@ -201,7 +207,7 @@ Typst 本地 WASM 或默认字体目录不可用、浏览器端编译超时时�
 
 ## EPUB、UMD 和音频是怎么预览的
 
-`.epub` 由 `@file-viewer/renderer-epub` 独立承接。v2.2.3 的阅读引擎是包内固化、按需加载并附带 NOTICE 的本地 vendor 资产，不会从公网加载，也不会把旧版 XML 解析依赖带进业务生产依赖树。阅读区默认使用滚动文档模式，兼容性比超宽分页布局更稳，避免部分浏览器出现正文白板。当前不内置 Kindle 专有格式或 DRM 电子书解析，建议在业务侧转换为 EPUB / PDF。
+`.epub` 由 `@file-viewer/renderer-epub` 独立承接。v2.2.4 的阅读引擎是包内固化、按需加载并附带 NOTICE 的本地 vendor 资产，不会从公网加载，也不会把旧版 XML 解析依赖带进业务生产依赖树。阅读区默认使用滚动文档模式，兼容性比超宽分页布局更稳，避免部分浏览器出现正文白板。当前不内置 Kindle 专有格式或 DRM 电子书解析，建议在业务侧转换为 EPUB / PDF。
 
 `.umd` 走独立 UMD 电子书解析器。前端生态里没有可靠维护的 UMD 阅读整库，所以组件按文件结构解析元数据、章节偏移、章节标题和 zlib 正文段，并用 `pako` 解压正文后按 UTF-16LE 展示。
 

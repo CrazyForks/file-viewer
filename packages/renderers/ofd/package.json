@@ -1,6 +1,6 @@
 {
   "name": "@file-viewer/renderer-ofd",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "private": false,
   "type": "module",
   "description": "Standalone OFD renderer plugin for File Viewer powered by DLTech21/ofd.js.",
@@ -61,7 +61,7 @@
     "verify:render-fidelity": "node scripts/verify-render-fidelity.mjs"
   },
   "dependencies": {
-    "@file-viewer/core": "workspace:2.2.3",
+    "@file-viewer/core": "workspace:2.2.4",
     "jszip": "^3.10.1"
   },
   "devDependencies": {

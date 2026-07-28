@@ -2283,6 +2283,10 @@ code.hljs {
 
 .footer-bottom {
   grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
   padding-top: 24px;
   border-top: 1px solid var(--line);
   color: #607086;
@@ -2291,6 +2295,17 @@ code.hljs {
 .footer-bottom p {
   margin: 0;
   line-height: 1.6;
+}
+
+.kittylaunch-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.kittylaunch-badge img {
+  display: block;
+  width: min(280px, 100%);
+  height: auto;
 }
 
 @keyframes rise-in {
@@ -2370,6 +2385,11 @@ code.hljs {
   .release-strip,
   .support-footer {
     grid-template-columns: 1fr;
+  }
+
+  .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .hero-section {

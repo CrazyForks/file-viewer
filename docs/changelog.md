@@ -6,13 +6,17 @@
 
 这份日志记录的是当前仓库主线中，对外最值得说明的能力演进。
 
-## 主线未发布 — 2026-07-28
+## `v2.2.4` DOCX/CAD 运行时与沉浸式预览稳定性补丁 — 2026-07-28
 
 - Word 链路升级到 `@file-viewer/docx@0.3.26`。日文模板的东亚字体回退、行高和 VML 文本框不再导致字符重叠（GitHub #155）；Apache POI 输出的兼容 OOXML `w:hMerge restart/continue` 会规范化为真实列跨度，异常孤立 continuation 仍保持可读（GitHub #160）；多分节中文简历中的浮动形状、定位尺寸和页内内容流恢复原有关系，目录不再被挤压错位（GitHub #161）。主线程与离线 Worker 使用同一版本，并用 `0.3.26` 资源查询参数避免旧 Worker 缓存残留。
 - CAD 链路使用 npm `latest` 的 `@flyfish-dev/cad-viewer@0.8.0`。底层引擎新增 BOM 提取与表格安全的 CSV/JSON 导出接口，收紧 DWG/DXF 元数据边界，并把 LibreDWG WASM 升级到 0.7.9；复杂线型 STYLE 引用为空时，合法图纸不再因解析异常而无法加载。
 - Word 链路升级到 `@file-viewer/docx@0.3.23`。东亚语言和主题字体按文档语言脚本解析并保留可靠的系统字体回退，悬挂制表位、目录缩进和 HTML 样式属性的渲染更接近 Word；Worker 与主线程继续使用同一解析行为。
 - Archive renderer 在压缩包内选中 Shapefile `.shp` 时，会按同目录和同 basename 收集 `.dbf`、`.shx`、`.prj`、`.cpg` sidecar，生成有界的临时 ZIP 后交给既有 Geo renderer；多数据集压缩包不会串用属性或投影文件，普通压缩包预览路径保持不变（GitHub #148/#149）。
 - Word 链路升级到 `@file-viewer/docx@0.3.22`。缺失或部分缺失 `sectPr` / `pgSz` / `pgMar` 的 DOCX 在共享解析层获得 A4 页面和 1 英寸正文边距兜底，主线程与 Worker 行为一致；显式自定义尺寸、横向布局、零边距和附件保持不变（GitHub #150）。
+- OFD 渐进渲染进入最终 ready 状态时不再重新隐藏已经可见的内容，消除大文件预览的二次闪烁；89 页样例会记录可见性 mutation 并确认不存在 ready 后回退（GitHub #163）。
+- STEP/STP 重复预览时，Three.js Canvas backing buffer 会按当前 CSS 尺寸与设备像素比持续校正；即使外部流程把 backing buffer 降到 1×，下一渲染帧也会恢复清晰分辨率（GitHub #164）。
+- Demo 首屏只按收起后的文件胶囊预留文档起始位置；开始滚动后文档可以自然进入胶囊后方，继续保持全视口沉浸滚动和透明滚动条。
+- 日语界面完成核心消息、工具栏和样例入口覆盖；54 个 npm 目标、208 个扩展名和 25 条预览链路保持不变。
 
 ## `v2.2.3` 工具栏隔离与演示文稿运行时兼容补丁 — 2026-07-21
 

@@ -2,12 +2,26 @@
 
 完整对外更新日志见 [docs/changelog.md](docs/changelog.md)。
 
-## 主线未发布 — 2026-07-28
+## File Viewer v2.2.4 — 2026-07-28
+
+这是 DOCX/CAD 运行时升级和沉浸式预览稳定性补丁。能力矩阵保持 54 个 npm 目标、208 个扩展名和 25 条预览链路。
 
 ### Fixes
 
 - `@file-viewer/docx` 升级至 `0.3.26`：修复日文模板的东亚字体回退、行高和 VML 文本框重叠（#155），兼容 Apache POI 输出的 `w:hMerge` 横向合并单元格（#160），并修复多分节中文简历的浮动形状、定位尺寸与页内内容流错位（#161）。
 - 主线程和离线 DOCX Worker 使用同一版本，并同步更新 Full 包资源查询参数，避免浏览器继续命中旧 Worker 缓存。
+- `@flyfish-dev/cad-viewer` 升级至 `0.8.0`，补齐 BOM 与表格安全的 CSV/JSON 导出，复杂线型 STYLE 引用为空时不再中断合法 DWG/DXF。
+- 修复 OFD 渐进渲染切换到最终 ready 状态时内容被再次隐藏造成的二次闪烁（#163）。
+- 修复重复打开 STEP 后 Canvas backing buffer 偶发退回 CSS 1× 分辨率的问题；渲染循环会按当前设备像素比持续校正（#164）。
+- Demo 首屏按收起后的文件胶囊预留文档起始位置，滚动后文档仍可进入胶囊后方，保持全屏沉浸滚动与透明滚动条。
+- 日语界面、Archive 内 Shapefile sidecar 组合预览以及对应构建、浏览器回归一并进入本次发布。
+
+### Upgrade
+
+```bash
+pnpm add @file-viewer/vue3-full@2.2.4
+pnpm add -D @file-viewer/vite-plugin@2.2.4
+```
 
 ## File Viewer v2.2.3 — 2026-07-21
 

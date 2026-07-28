@@ -31,6 +31,7 @@ import {
   type GeometryOcctImportParams,
 } from '@file-viewer/geometry-engine';
 import { buildOcctThreeObject } from './occtModel.js';
+import { syncModelViewport } from './modelViewport.js';
 
 type ModelStatus = 'loading' | 'ready' | 'error';
 
@@ -473,12 +474,13 @@ export default async function renderModel(
       return;
     }
 
-    const rect = canvas.getBoundingClientRect();
-    const width = Math.max(1, Math.floor(rect.width));
-    const height = Math.max(1, Math.floor(rect.height));
-    renderer.setSize(width, height, false);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
+    syncModelViewport({
+      renderer,
+      camera,
+      stage,
+      canvas,
+      devicePixelRatio: target.ownerDocument.defaultView?.devicePixelRatio || 1,
+    });
   };
 
   const findThemeHost = () => {
@@ -576,7 +578,6 @@ export default async function renderModel(
         canvas,
         powerPreference: 'high-performance',
       });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
     }
 
@@ -1073,6 +1074,11 @@ export default async function renderModel(
       return;
     }
 
+    // A framework transition or a repeated File assignment can reset canvas
+    // attributes without changing its CSS box. ResizeObserver will not see
+    // that backing-buffer downgrade, so validate the cheap size contract on
+    // each frame and resize only when the values diverge.
+    resize();
     timer.update(timestamp);
     const delta = timer.getDelta();
     controls.autoRotate = autoRotate;
@@ -1181,7 +1187,7 @@ export default async function renderModel(
       subscribe: viewStateEmitter.subscribe,
     });
     resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(canvas);
+    resizeObserver.observe(stage);
     timer.connect(target.ownerDocument);
     renderFrame();
     await loadModel();

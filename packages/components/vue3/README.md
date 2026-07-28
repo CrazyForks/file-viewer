@@ -374,7 +374,6 @@ const options = {
 在线 Demo: https://demo.file-viewer.app/ 。File Viewer 自身源码与本仓生成的组件包使用 Apache-2.0；发行物若包含 `@file-viewer/ppt` 运行时，该运行时保留其独立 LICENSE 与 NOTICE，不被 Apache-2.0 重新许可。二开或商用请保留 Flyfish Viewer 来源说明；如果修复了通用兼容问题，也欢迎贡献回对应组件仓库。
 <!-- FILE_VIEWER_GENERATED:END -->
 
-
 ## 扩展原生工具栏
 
 Vue 3 组件提供 `toolbar-start` 与 `toolbar-end` 插槽。它们保留内置搜索、缩放、下载、打印和主题能力，同时允许业务侧加入返回、文件信息、全屏、审核等操作。插槽属性会随预览状态响应式更新：
