@@ -141,12 +141,13 @@ On Node 17+, webpack 4 may need:
 NODE_OPTIONS=--openssl-legacy-provider npm run build
 ```
 
-Prefer copying the demo `vue.config.js` first, then trim it after the customer build is stable. The required ideas are: transpile selected modern dependencies, alias the core subpath entries for webpack 4, and copy worker/WASM/font assets into `public/file-viewer/`.
+Prefer copying the demo `vue.config.js` first, then trim it after the customer build is stable. The PDF.js pre-loader is required, not an optional optimization.
 
 ```js
 // vue.config.js
 const path = require('path')
 
+const resolveApp = value => path.resolve(__dirname, value)
 const resolvePackageRoot = packageName => path.dirname(require.resolve(`${packageName}/package.json`))
 const resolvePackageFile = (packageName, relativePath) => path.join(resolvePackageRoot(packageName), relativePath)
 
@@ -167,11 +168,41 @@ module.exports = {
       },
       extensions: ['.mjs', '.js', '.vue', '.json']
     }
+  },
+  chainWebpack(config) {
+    config.module
+      .rule('pdfjs-webpack4-runtime-isolation')
+      .test(/pdfjs-dist[\\/]legacy[\\/](build[\\/]pdf|web[\\/]pdf_viewer)\.mjs$/)
+      .enforce('pre')
+      .use('isolate-pdfjs-webpack-runtime')
+      .loader(resolveApp('build/rename-pdfjs-webpack-require.cjs'))
   }
 }
 ```
 
-Keep the `@file-viewer/docx` alias: webpack 4 otherwise prefers the UMD `browser` entry, whose CommonJS exports are lost after Babel transpilation and surface as `renderAsync is not a function` when a DOCX is uploaded. The demo also includes two webpack 4 compatibility patches: `build/rename-pdfjs-webpack-require.cjs` renames the bundled PDF.js legacy `.mjs` webpack helper so it does not shadow the host webpack 4 `__webpack_require__`, and `build/babel-transform-import-meta-url.cjs` lets webpack 4 parse the PPTX worker module. Its copy script publishes the complete nine-file `@file-viewer/ppt@0.3.2` runtime under `public/file-viewer/vendor/ppt/` together with the PPTX worker. The `serve` env files set `NODE_ENV=production` to avoid Vue CLI 3.1 injecting its HMR client into this legacy preview path.
+Use this complete implementation for `build/rename-pdfjs-webpack-require.cjs`:
+
+```js
+module.exports = function isolatePdfjsWebpackRuntime(source) {
+  const normalizedPath = this.resourcePath.replace(/\\/g, '/')
+  const shouldPatch =
+    /\/pdfjs-dist\/legacy\/build\/pdf\.mjs$/.test(normalizedPath) ||
+    /\/pdfjs-dist\/legacy\/web\/pdf_viewer\.mjs$/.test(normalizedPath)
+
+  if (!shouldPatch) {
+    return source
+  }
+
+  return source.replace(
+    /\b__webpack_(modules|module_cache|exports|require)__\b/g,
+    (_match, name) => `__pdfjs_webpack_${name}__`
+  )
+}
+```
+
+Renaming only `__webpack_require__` is not enough. PDF.js also declares `__webpack_exports__`, which is hoisted into webpack 4's outer module and shadows the host export object. The first PDF load commonly fails with `Cannot convert undefined or null to object`; selecting the file again then fails while reading `createFileViewerTranslator` from `undefined`. The loader above isolates all four runtime bindings: `modules`, `module_cache`, `exports`, and `require`.
+
+Keep the `@file-viewer/docx` alias too: webpack 4 otherwise prefers the UMD `browser` entry, whose CommonJS exports are lost after Babel transpilation and surface as `@file-viewer/docx did not expose a compatible renderAsync function` when a DOCX is uploaded. The other patch, `build/babel-transform-import-meta-url.cjs`, lets webpack 4 parse the PPTX worker module. The copy script publishes the complete nine-file `@file-viewer/ppt@0.3.2` runtime under `public/file-viewer/vendor/ppt/` together with the PPTX worker. The `serve` env files set `NODE_ENV=production` to avoid Vue CLI 3.1 injecting its HMR client into this legacy preview path.
 
 Then pass the preset and self-hosted asset URLs explicitly:
 
@@ -205,6 +236,20 @@ export const viewerOptions = {
   spreadsheet: {
     workerUrl: `${assetBaseUrl}vendor/xlsx/sheet.worker.js`
   }
+}
+```
+
+`preset-office` covers PDF, Word, spreadsheets, presentations, OFD, and OpenDocument. It intentionally does not include images or media. Add those renderers explicitly when the application also previews `.jpg` or `.mp4`, or combine the office and lite presets:
+
+```js
+import officePreset from '@file-viewer/preset-office'
+import { imageRenderer } from '@file-viewer/renderer-image'
+import { mediaRenderer } from '@file-viewer/renderer-media'
+
+export const viewerOptions = {
+  preset: officePreset,
+  renderers: [imageRenderer, mediaRenderer],
+  rendererMode: 'replace'
 }
 ```
 

@@ -101,7 +101,7 @@ Node 17+ 跑 webpack 4 时，如果遇到 OpenSSL/MD4 报错，可以临时加�
 NODE_OPTIONS=--openssl-legacy-provider npm run build
 ```
 
-客户项目里优先整份参考示例的 `vue.config.js`，至少需要搬这几类配置：
+客户项目里优先整份参考示例的 `vue.config.js`，至少需要搬这几类配置。PDF.js 的 pre-loader 不是可省略项：
 
 ```js
 // vue.config.js
@@ -128,11 +128,41 @@ module.exports = {
       },
       extensions: ['.mjs', '.js', '.vue', '.json']
     }
+  },
+  chainWebpack(config) {
+    config.module
+      .rule('pdfjs-webpack4-runtime-isolation')
+      .test(/pdfjs-dist[\\/]legacy[\\/](build[\\/]pdf|web[\\/]pdf_viewer)\.mjs$/)
+      .enforce('pre')
+      .use('isolate-pdfjs-webpack-runtime')
+      .loader(resolveApp('build/rename-pdfjs-webpack-require.cjs'))
   }
 }
 ```
 
-`@file-viewer/docx` 的 alias 必须保留：webpack 4 默认优先选择 UMD `browser` 入口，该文件经过 Babel 转译后会丢失 CommonJS 导出，上传 DOCX 时表现为 `renderAsync is not a function`。示例还包含两个 webpack 4 兼容补丁：`build/rename-pdfjs-webpack-require.cjs` 会处理 PDF.js legacy `.mjs` 自带 webpack 包装代码，避免和宿主 webpack 4 注入的 `__webpack_require__` 同名冲突；`build/babel-transform-import-meta-url.cjs` 负责让 webpack 4 解析 PPTX worker 模块。`scripts/copy-file-viewer-assets.cjs` 会把 PDF/DOCX/PPTX/Excel 资产和 `@file-viewer/ppt@0.3.2` 的 ESM、Worker、帧缓存、WASM、CJK 字体、manifest、package metadata、LICENSE、NOTICE 九个文件复制到 `public/file-viewer/`。
+`build/rename-pdfjs-webpack-require.cjs` 必须使用完整 runtime 隔离实现：
+
+```js
+module.exports = function isolatePdfjsWebpackRuntime(source) {
+  const normalizedPath = this.resourcePath.replace(/\\/g, '/')
+  const shouldPatch =
+    /\/pdfjs-dist\/legacy\/build\/pdf\.mjs$/.test(normalizedPath) ||
+    /\/pdfjs-dist\/legacy\/web\/pdf_viewer\.mjs$/.test(normalizedPath)
+
+  if (!shouldPatch) {
+    return source
+  }
+
+  return source.replace(
+    /\b__webpack_(modules|module_cache|exports|require)__\b/g,
+    (_match, name) => `__pdfjs_webpack_${name}__`
+  )
+}
+```
+
+只替换 `__webpack_require__` 不够。PDF.js 内部的 `__webpack_exports__` 会在 webpack 4 外层模块中被提升并遮蔽宿主导出：首次打开 PDF 常表现为 `Cannot convert undefined or null to object`，再次选择同一文件则会进一步表现为从 `undefined` 读取 `createFileViewerTranslator`。上面的 loader 同时隔离 `modules`、`module_cache`、`exports`、`require` 四个标识。
+
+`@file-viewer/docx` 的 alias 也必须保留：webpack 4 默认优先选择 UMD `browser` 入口，该文件经过 Babel 转译后会丢失 CommonJS 导出，上传 DOCX 时表现为 `@file-viewer/docx did not expose a compatible renderAsync function`。另一个补丁 `build/babel-transform-import-meta-url.cjs` 负责让 webpack 4 解析 PPTX worker 模块。`scripts/copy-file-viewer-assets.cjs` 会把 PDF/DOCX/PPTX/Excel 资产和 `@file-viewer/ppt@0.3.2` 的 ESM、Worker、帧缓存、WASM、CJK 字体、manifest、package metadata、LICENSE、NOTICE 九个文件复制到 `public/file-viewer/`。
 
 `npm run serve` 对应的 `.env.normalServe` 使用 `NODE_ENV=production`，是为了避开 Vue CLI 3.1 dev server 对 HMR 客户端的强注入；真实项目可以先用这个模式确认 `preset-office` 构建链可用，再决定是否保留热更新。
 
@@ -168,6 +198,20 @@ export const viewerOptions = {
   spreadsheet: {
     workerUrl: `${assetBaseUrl}vendor/xlsx/sheet.worker.js`
   }
+}
+```
+
+`preset-office` 只负责 PDF、Word、Excel、PowerPoint、OFD 和 OpenDocument，不包含图片或音视频。业务还需要 `.jpg` / `.mp4` 时，应像仓库 Vue 2.6 示例一样显式补充 renderer，或改用 `preset: [officePreset, litePreset]`：
+
+```js
+import officePreset from '@file-viewer/preset-office'
+import { imageRenderer } from '@file-viewer/renderer-image'
+import { mediaRenderer } from '@file-viewer/renderer-media'
+
+export const viewerOptions = {
+  preset: officePreset,
+  renderers: [imageRenderer, mediaRenderer],
+  rendererMode: 'replace'
 }
 ```
 
@@ -231,16 +275,22 @@ export default {
   <div style="height: 100vh">
     <input type="file" @change="onChange" />
     <div style="height: calc(100vh - 40px)">
-      <file-viewer :file="file" />
+      <file-viewer :file="file" :options="options" />
     </div>
   </div>
 </template>
 
 <script>
+import officePreset from '@file-viewer/preset-office'
+
 export default {
   data() {
     return {
-      file: undefined
+      file: undefined,
+      options: {
+        preset: officePreset,
+        rendererMode: 'replace'
+      }
     }
   },
   methods: {
@@ -249,6 +299,8 @@ export default {
       if (value) {
         this.file = value
       }
+      // 允许用户连续选择同一个本地文件。
+      event.target.value = ''
     }
   }
 }

@@ -7,7 +7,7 @@ These projects are intentionally small, self-contained starting points built aga
 | [`vanilla-vite`](./vanilla-vite)             | Framework-free apps and Web Components           | `@file-viewer/web` + `preset-lite`                    |
 | [`react-vite`](./react-vite)                 | React 18/19 applications                         | `@file-viewer/react` + `preset-office`                |
 | [`vue3-vite`](./vue3-vite)                   | Vue 3 applications that want the complete matrix | `@file-viewer/vue3-full` + all 208 extension mappings |
-| [`vue2.6-cli3-office`](./vue2.6-cli3-office) | Legacy Vue 2.6 / Vue CLI 3 / webpack 4 systems   | Compatibility-focused Office preset setup             |
+| [`vue2.6-cli3-office`](./vue2.6-cli3-office) | Legacy Vue 2.6 / Vue CLI 3 / webpack 4 systems   | Office preset + explicit image/video/CAD/3D renderers |
 
 ## Run from the source workspace
 

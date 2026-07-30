@@ -2,10 +2,7 @@ import { modelRenderer } from '@file-viewer/renderer-3d'
 import { cadRenderer } from '@file-viewer/renderer-cad'
 import { imageRenderer } from '@file-viewer/renderer-image'
 import { renderFileViewerVideo } from '@file-viewer/renderer-media'
-import { pdfRenderer } from '@file-viewer/renderer-pdf'
-import { presentationRenderer } from '@file-viewer/renderer-presentation'
-import { spreadsheetRenderer } from '@file-viewer/renderer-spreadsheet'
-import { wordRenderer } from '@file-viewer/renderer-word'
+import officePreset from '@file-viewer/preset-office'
 import { DEFAULT_RENDERER_DEFINITIONS } from '@file-viewer/core'
 
 const normalizeBaseUrl = value => {
@@ -31,11 +28,7 @@ const videoOnlyRenderer = {
   }]
 }
 
-const requiredRenderers = [
-  pdfRenderer,
-  wordRenderer,
-  spreadsheetRenderer,
-  presentationRenderer,
+const supplementalRenderers = [
   cadRenderer,
   modelRenderer,
   imageRenderer,
@@ -44,10 +37,11 @@ const requiredRenderers = [
 
 export function createViewerOptions(theme) {
   return {
+    preset: officePreset,
     rendererMode: 'replace',
     builtinRenderers: 'none',
     autoRenderers: false,
-    renderers: requiredRenderers,
+    renderers: supplementalRenderers,
     theme,
     toolbar: {
       position: 'auto'
