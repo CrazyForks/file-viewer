@@ -1,4 +1,5 @@
 import { renderPptxPostProcessing } from './chart';
+import type { PptxPostProcessingHandle } from './chart';
 import { resolvePptxEngineOptions, RECOMMENDED_ZIP_LIMITS } from './options';
 import { ensurePptxViewerStyles, scopePptxContentStyleText } from './styles';
 import type { PptxDiagnosticError, PptxSlideSize, PptxViewerOptions, PptxWorkerMessage } from './types';
@@ -114,6 +115,8 @@ type WindowedSlideRecord = {
   notified: boolean;
   postProcessed: boolean;
   postProcessPromise: Promise<void> | null;
+  postProcessVersion: number;
+  chartHandle: PptxPostProcessingHandle | null;
 };
 
 type PptxMediaRecord = {
@@ -175,6 +178,7 @@ export class PptxViewer {
   private slideWindowListeners: Array<{ target: EventTarget; type: string; listener: EventListener }> = [];
   private slideWindowFrame = 0;
   private charts: unknown = null;
+  private readonly chartHandles = new Set<PptxPostProcessingHandle>();
   private readonly mediaRecords = new Map<string, PptxMediaRecord>();
   private disposed = false;
   private completed = false;
@@ -222,6 +226,7 @@ export class PptxViewer {
   destroy() {
     this.disposed = true;
     this.previewThumbnailDataUrl = null;
+    this.releaseCharts();
     this.releaseMedia();
     this.worker?.terminate();
     this.worker = null;
@@ -239,6 +244,7 @@ export class PptxViewer {
 
   private startWorker() {
     this.worker?.terminate();
+    this.releaseCharts();
     this.releaseMedia();
     this.completed = false;
     this.charts = null;
@@ -446,6 +452,8 @@ export class PptxViewer {
       notified: false,
       postProcessed: false,
       postProcessPromise: null,
+      postProcessVersion: 0,
+      chartHandle: null,
     };
   }
 
@@ -467,6 +475,7 @@ export class PptxViewer {
     record.slot.append(...designerCanvases);
     record.rendered = true;
     record.postProcessed = false;
+    record.postProcessVersion += 1;
     this.updateMeasuredSlideHeight(record);
 
     if (!record.notified) {
@@ -487,6 +496,9 @@ export class PptxViewer {
     }
 
     this.updateMeasuredSlideHeight(record);
+    this.releaseChartHandle(record.chartHandle);
+    record.chartHandle = null;
+    record.postProcessVersion += 1;
     record.slot.replaceChildren();
     record.element = null;
     record.rendered = false;
@@ -709,7 +721,8 @@ export class PptxViewer {
 
   private async postProcessRenderedContent(charts: unknown) {
     if (!this.shouldWindowSlides()) {
-      await renderPptxPostProcessing(charts, this.content);
+      const handle = await renderPptxPostProcessing(charts, this.content);
+      this.trackChartHandle(handle);
       return;
     }
 
@@ -725,16 +738,24 @@ export class PptxViewer {
       return;
     }
     if (!record.postProcessPromise) {
-      record.postProcessPromise = (async () => {
-        await renderPptxPostProcessing(this.charts, record.slot);
-        if (this.disposed) {
+      const version = record.postProcessVersion;
+      const postProcessPromise = (async () => {
+        const handle = await renderPptxPostProcessing(this.charts, record.slot);
+        if (this.disposed || !record.rendered || record.postProcessVersion !== version) {
+          handle?.destroy();
           return;
         }
+        this.releaseChartHandle(record.chartHandle);
+        record.chartHandle = handle;
+        this.trackChartHandle(handle);
         record.postProcessed = true;
         this.updateMeasuredSlideHeight(record);
       })().finally(() => {
-        record.postProcessPromise = null;
+        if (record.postProcessPromise === postProcessPromise) {
+          record.postProcessPromise = null;
+        }
       });
+      record.postProcessPromise = postProcessPromise;
     }
     await record.postProcessPromise;
   }
@@ -791,9 +812,39 @@ export class PptxViewer {
     this.completed = true;
     this.worker?.terminate();
     this.worker = null;
+    this.releaseCharts();
     this.releaseMedia();
     this.content.dataset.renderState = 'error';
     this.options.onError?.(error);
+  }
+
+  private trackChartHandle(handle: PptxPostProcessingHandle | null | undefined) {
+    if (!handle) {
+      return;
+    }
+    if (this.disposed) {
+      handle.destroy();
+      return;
+    }
+    this.chartHandles.add(handle);
+  }
+
+  private releaseChartHandle(handle: PptxPostProcessingHandle | null | undefined) {
+    if (!handle) {
+      return;
+    }
+    this.chartHandles.delete(handle);
+    handle.destroy();
+  }
+
+  private releaseCharts() {
+    for (const handle of this.chartHandles) {
+      handle.destroy();
+    }
+    this.chartHandles.clear();
+    for (const record of this.slideRecords) {
+      record.chartHandle = null;
+    }
   }
 
   private storeMedia(data: unknown) {

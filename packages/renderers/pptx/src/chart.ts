@@ -7,8 +7,26 @@ type ChartMessage = {
   };
 };
 
+type BillboardChart = {
+  destroy?: () => void;
+};
+
+export type PptxPostProcessingHandle = {
+  destroy: () => void;
+};
+
 const asChartQueue = (charts: any): ChartMessage[] => {
   return Array.isArray(charts?.MsgQueue) ? charts.MsgQueue : [];
+};
+
+export const findPptxChartTarget = (root: ParentNode, chartID: string) => {
+  const rootElement = root as ParentNode & { id?: string };
+  if (rootElement.id === chartID) {
+    return rootElement as unknown as HTMLElement;
+  }
+
+  return Array.from(root.querySelectorAll<HTMLElement>('[id]'))
+    .find(element => element.id === chartID) || null;
 };
 
 const getNumericBulletText = (type: string, index: number) => {
@@ -201,9 +219,14 @@ const fitOverflowingTextBlocks = (root: ParentNode) => {
     .forEach(fitOverflowingTextBlock);
 };
 
-const renderChart = async (message: ChartMessage) => {
+const renderChart = async (message: ChartMessage, root: ParentNode) => {
   const payload = message.data;
   if (!payload?.chartID || !payload.chartType || !payload.chartData) {
+    return;
+  }
+
+  const chartTarget = findPptxChartTarget(root, payload.chartID);
+  if (!chartTarget) {
     return;
   }
 
@@ -212,7 +235,9 @@ const renderChart = async (message: ChartMessage) => {
   const bb = billboard.default || billboard;
   const { area, bar, line, pie, scatter } = billboard;
   const chart: Record<string, any> = {
-    bindto: `#${payload.chartID}`,
+    // A selector makes Billboard query the main document. That misses chart
+    // placeholders inside the viewer Shadow DOM and makes it fall back to body.
+    bindto: chartTarget,
   };
   const chartData = payload.chartData;
   const axis = {
@@ -306,22 +331,50 @@ const renderChart = async (message: ChartMessage) => {
   }
 
   if (chart.data) {
-    bb.generate(chart);
+    return bb.generate(chart) as BillboardChart;
   }
 };
 
-export const renderPptxPostProcessing = async (charts: unknown, root: ParentNode) => {
+export const renderPptxPostProcessing = async (
+  charts: unknown,
+  root: ParentNode,
+): Promise<PptxPostProcessingHandle> => {
   restoreNumericBullets(root);
   fitOverflowingTextBlocks(root);
 
   const queue = asChartQueue(charts);
-  if (!queue.length) {
-    return;
+  const chartInstances: BillboardChart[] = [];
+
+  if (queue.length) {
+    const results = await Promise.allSettled(
+      queue.map(message => renderChart(message, root)),
+    );
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        if (result.value) {
+          chartInstances.push(result.value);
+        }
+      } else {
+        console.warn('PPTX chart rendering skipped:', result.reason);
+      }
+    }
   }
 
-  try {
-    await Promise.all(queue.map(renderChart));
-  } catch (error) {
-    console.warn('PPTX chart rendering skipped:', error);
-  }
+  let destroyed = false;
+  return {
+    destroy() {
+      if (destroyed) {
+        return;
+      }
+      destroyed = true;
+      for (const chart of chartInstances) {
+        try {
+          chart.destroy?.();
+        } catch {
+          // The DOM may already be detached during framework unmount.
+        }
+      }
+      chartInstances.length = 0;
+    },
+  };
 };
