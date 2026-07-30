@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@file-viewer/core": "2.2.4",
+    "@file-viewer/preset-office": "2.2.4",
     "@file-viewer/renderer-3d": "2.2.4",
     "@file-viewer/renderer-cad": "2.2.4",
     "@file-viewer/renderer-image": "2.2.4",

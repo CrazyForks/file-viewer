@@ -8,6 +8,7 @@
 
 ## `v2.2.4` DOCX/CAD 运行时与沉浸式预览稳定性补丁 — 2026-07-28
 
+- Vue 2.6 + Vue CLI 3 / webpack 4 客户样例改为真实 `preset-office` 加图片、视频、CAD、3D 的显式补充装配；PDF.js legacy 模块会整体隔离内部 `modules`、`module_cache`、`exports`、`require` 四个 webpack runtime 标识，避免首次 PDF 初始化污染宿主导出、重选文件后从 `undefined` 读取 `createFileViewerTranslator`。DOCX ESM alias、同一本地 PDF 连续选择、图片和视频真实浏览器回归同步固化。
 - Word 链路升级到 `@file-viewer/docx@0.3.26`。日文模板的东亚字体回退、行高和 VML 文本框不再导致字符重叠（GitHub #155）；Apache POI 输出的兼容 OOXML `w:hMerge restart/continue` 会规范化为真实列跨度，异常孤立 continuation 仍保持可读（GitHub #160）；多分节中文简历中的浮动形状、定位尺寸和页内内容流恢复原有关系，目录不再被挤压错位（GitHub #161）。主线程与离线 Worker 使用同一版本，并用 `0.3.26` 资源查询参数避免旧 Worker 缓存残留。
 - CAD 链路使用 npm `latest` 的 `@flyfish-dev/cad-viewer@0.8.0`。底层引擎新增 BOM 提取与表格安全的 CSV/JSON 导出接口，收紧 DWG/DXF 元数据边界，并把 LibreDWG WASM 升级到 0.7.9；复杂线型 STYLE 引用为空时，合法图纸不再因解析异常而无法加载。
 - Word 链路升级到 `@file-viewer/docx@0.3.23`。东亚语言和主题字体按文档语言脚本解析并保留可靠的系统字体回退，悬挂制表位、目录缩进和 HTML 样式属性的渲染更接近 Word；Worker 与主线程继续使用同一解析行为。

@@ -68,10 +68,10 @@ module.exports = {
     )
 
     config.module
-      .rule('pdfjs-webpack4-require-name')
+      .rule('pdfjs-webpack4-runtime-isolation')
       .test(/pdfjs-dist[\\/]legacy[\\/](build[\\/]pdf|web[\\/]pdf_viewer)\.mjs$/)
       .enforce('pre')
-      .use('rename-pdfjs-webpack-require')
+      .use('isolate-pdfjs-webpack-runtime')
       .loader(resolveApp('build/rename-pdfjs-webpack-require.cjs'))
 
     config.module

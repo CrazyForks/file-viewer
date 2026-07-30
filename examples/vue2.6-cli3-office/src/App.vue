@@ -42,9 +42,11 @@
 
       <dl class="meta">
         <dt>当前文件</dt>
-        <dd>{{ currentName }}</dd>
+        <dd data-testid="current-file">{{ currentName }}</dd>
         <dt>事件</dt>
-        <dd>{{ lastEvent }}</dd>
+        <dd data-testid="viewer-event">{{ lastEvent }}</dd>
+        <dt>成功加载</dt>
+        <dd data-testid="load-count">{{ loadCount }}</dd>
       </dl>
     </aside>
 
@@ -75,7 +77,8 @@ export default {
       buffer: null,
       filename: '',
       type: '',
-      lastEvent: 'ready'
+      lastEvent: 'ready',
+      loadCount: 0
     }
   },
   computed: {
@@ -113,6 +116,9 @@ export default {
     },
     handleViewerEvent(event) {
       this.lastEvent = event && event.type ? event.type : 'event'
+      if (event && event.type === 'load-complete') {
+        this.loadCount += 1
+      }
       if (event && event.type === 'error') {
         console.error(event)
       }
