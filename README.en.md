@@ -165,6 +165,10 @@ The v2.2.4 registry maps **208 file extensions** into **25 rendering pipelines**
 
 The exact implementation and support level varies by format. Use the maintained [format matrix](https://doc.file-viewer.app/guide/formats) as the source of truth rather than inferring support from an extension alone.
 
+## Document Text Comparison
+
+The standalone [comparison demo](https://demo.file-viewer.app/compare.html) keeps two live previews side by side and can turn their extracted text into a real jsdiff view. It aligns lines, marks exact character additions and removals, counts each change type, and lets you jump between changes. DOCX and text files are the stable path today. PDF support is staged: reading order follows the PDF text layer, scans still need OCR, and incomplete multi-page extraction stops with a clear message instead of presenting a partial result.
+
 ## Honest Boundaries
 
 - File Viewer is a **read-only preview toolkit**, not an Office or CAD editor.
