@@ -4,6 +4,11 @@ import * as dingbatToUnicode from "dingbat-to-unicode";
 import UTIFModule from 'utif';
 import { normalizeJpegExifOrientation } from './image.js';
 import { convertMetafileToSvg } from './metafile/vector.js';
+import {
+  formatSvgPoints,
+  getInverseCenteredShapeTransform,
+  getTrapezoidPoints
+} from './geometry.js';
 
 const UTIF = UTIFModule.default || UTIFModule;
 
@@ -1018,7 +1023,14 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
           x: x,
           y: y,
           width: groupContext.width,
-          height: groupContext.height
+          height: groupContext.height,
+          shapeTransform: {
+            width: w,
+            height: h,
+            rotation: rotate || 0,
+            flipH: isFlipH,
+            flipV: isFlipV
+          }
         }
         : undefined;
       var svgBgImg = await getSvgImagePattern(
@@ -2031,26 +2043,21 @@ async function genShape(node, pNode, slideLayoutSpNode, slideMasterSpNode, id, n
         }
         break;
       case "trapezoid":
+        var trapezoidAdjustmentFormula = getTextByPathList(node, [ "p:spPr", "a:prstGeom", "a:avLst", "a:gd", "attrs", "fmla" ]);
+        var trapezoidAdjustment = 25000;
+        if (trapezoidAdjustmentFormula !== undefined) {
+          trapezoidAdjustment = toFiniteNumber(String(trapezoidAdjustmentFormula).replace(/^val\s+/, ""), 25000);
+        }
+        var trapezoidPoints = formatSvgPoints(getTrapezoidPoints(w, h, trapezoidAdjustment));
+        result += " <polygon points='" + trapezoidPoints + "' fill='" + (!imgFillFlg ? (grndFillFlg ? "url(#linGrd_" + shpId + ")" : fillColor) : "url(#imgPtrn_" + shpId + ")") +
+          "' stroke='" + border.color + "' stroke-width='" + border.width + "' stroke-dasharray='" + border.strokeDasharray + "' />";
+        break;
       case "flowChartManualOperation":
+        result += " <polygon points='0 0," + w + " 0," + (w * 4 / 5) + " " + h + "," + (w / 5) + " " + h + "' fill='" + (!imgFillFlg ? (grndFillFlg ? "url(#linGrd_" + shpId + ")" : fillColor) : "url(#imgPtrn_" + shpId + ")") +
+          "' stroke='" + border.color + "' stroke-width='" + border.width + "' stroke-dasharray='" + border.strokeDasharray + "' />";
+        break;
       case "flowChartManualInput":
-        var shapAdjst = getTextByPathList(node, [ "p:spPr", "a:prstGeom", "a:avLst", "a:gd", "attrs", "fmla" ]);
-        var adjst_val = 0.2;
-        var max_adj_const = 0.7407;
-        if (shapAdjst !== undefined) {
-          var adjst = parseInt(shapAdjst.substr(4)) * slideFactor;
-          adjst_val = (adjst * 0.5) / max_adj_const;
-          // console.log("w: "+w+"\nh: "+h+"\nshapAdjst: "+shapAdjst+"\nadjst_val: "+adjst_val);
-        }
-        var cnstVal = 0;
-        var tranglRott = "";
-        if (shapType == "flowChartManualOperation") {
-          tranglRott = "transform='rotate(180 " + w / 2 + "," + h / 2 + ")'";
-        }
-        if (shapType == "flowChartManualInput") {
-          adjst_val = 0;
-          cnstVal = h / 5;
-        }
-        result += " <polygon " + tranglRott + " points='" + (w * adjst_val) + " " + cnstVal + ",0 " + h + "," + w + " " + h + "," + (1 - adjst_val) * w + " 0' fill='" + (!imgFillFlg ? (grndFillFlg ? "url(#linGrd_" + shpId + ")" : fillColor) : "url(#imgPtrn_" + shpId + ")") +
+        result += " <polygon points='0 " + (h / 5) + "," + w + " 0," + w + " " + h + ",0 " + h + "' fill='" + (!imgFillFlg ? (grndFillFlg ? "url(#linGrd_" + shpId + ")" : fillColor) : "url(#imgPtrn_" + shpId + ")") +
           "' stroke='" + border.color + "' stroke-width='" + border.width + "' stroke-dasharray='" + border.strokeDasharray + "' />";
         break;
       case "parallelogram":
@@ -14237,8 +14244,17 @@ async function getSvgImagePattern(blipFillNode, fill, shpId, warpObj, sharedFill
     var sharedImageY = -sharedFillContext.y + sharedHeight * crop.y / 100;
     var sharedImageWidth = sharedWidth * crop.width / 100;
     var sharedImageHeight = sharedHeight * crop.height / 100;
+    var sharedImageTransform = getInverseCenteredShapeTransform(sharedFillContext.shapeTransform || {});
+    var sharedPatternWidth = Math.max(
+      sharedWidth,
+      toFiniteNumber(sharedFillContext.shapeTransform && sharedFillContext.shapeTransform.width, 0)
+    );
+    var sharedPatternHeight = Math.max(
+      sharedHeight,
+      toFiniteNumber(sharedFillContext.shapeTransform && sharedFillContext.shapeTransform.height, 0)
+    );
     var ptrn = '<pattern id="imgPtrn_' + shpId + '" x="0" y="0" width="' +
-      sharedWidth + '" height="' + sharedHeight + '" patternUnits="userSpaceOnUse">';
+      sharedPatternWidth + '" height="' + sharedPatternHeight + '" patternUnits="userSpaceOnUse">';
   } else if (sx !== undefined && sx != 0) {
     var ptrn = '<pattern id="imgPtrn_' + shpId + '" x="0" y="0"  width="' + sx + '" height="' + sy + '" patternUnits="userSpaceOnUse">';
   } else {
@@ -14293,7 +14309,8 @@ async function getSvgImagePattern(blipFillNode, fill, shpId, warpObj, sharedFill
   if (sharedFillContext !== undefined) {
     ptrn += '<image xlink:href="' + fill + '" x="' + sharedImageX + '" y="' +
       sharedImageY + '" width="' + sharedImageWidth + '" height="' +
-      sharedImageHeight + '" preserveAspectRatio="none" ' + imgOpacity + ' ' +
+      sharedImageHeight + '" preserveAspectRatio="none"' +
+      (sharedImageTransform ? ' transform="' + sharedImageTransform + '"' : '') + ' ' + imgOpacity + ' ' +
       filterUrl + '></image>';
   } else if (sx !== undefined && sx != 0) {
     ptrn += '<image  xlink:href="' + fill + '" x="0" y="0" width="' + sx + '" height="' + sy + '" ' + imgOpacity + ' ' + filterUrl + '></image>';
