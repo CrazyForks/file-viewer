@@ -14,6 +14,11 @@ import type {
 } from '@file-viewer/core'
 import brandLogo from '@/assets/logo.png'
 import { useSynchronizedScroll } from './useSynchronizedScroll'
+import {
+  buildDocumentTextDiff,
+  extractComparableDocumentText,
+  type TextDiffResult,
+} from './textDiff'
 
 type CompareSide = 'left' | 'right'
 type DemoLocale = 'zh-CN' | 'en-US' | 'ja-JP'
@@ -60,9 +65,9 @@ const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
   'zh-CN': {
     backHome: '返回 File Viewer 主预览',
     pageTitle: 'File Viewer 文档比对',
-    pageDescription: 'File Viewer 独立文档比对入口，支持左右并排预览、上传、URL 加载、同步滚动、搜索和行级定位。',
+    pageDescription: 'File Viewer 独立文档比对入口，支持 DOCX 等文档文本提取、逐行对齐和字符级差异视图。',
     title: '文档比对',
-    subtitle: '左右并排预览，支持示例、URL、本地上传、同步滚动、聚焦搜索和行级定位。',
+    subtitle: '左右并排预览，并可提取文档文字生成逐行对齐、字符级标记的真实差异视图。',
     leftPanel: '左侧文档',
     rightPanel: '右侧文档',
     lineLocator: '行级定位',
@@ -91,14 +96,34 @@ const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
     statusComplete: '已完成',
     statusUnloaded: '已卸载',
     aiChunks: '{count} 个切片',
-    language: '语言'
+    language: '语言',
+    textDiff: '文字对比',
+    closeTextDiff: '返回并排预览',
+    textDiffTitle: '文字差异视图',
+    textDiffDescription: '使用 jsdiff 对文档提取文字逐行对齐，并在修改行内标出具体字符。',
+    textDiffRefresh: '重新对比',
+    textDiffRunning: '正在提取并比较两侧文档文字…',
+    textDiffNoText: '至少一侧没有可提取文字。请等待文档加载完成；扫描 PDF 需要先做 OCR。',
+    textDiffPdfPartial: 'PDF 文本层尚未覆盖全部页面，已停止对比以避免展示不完整结果。完整 PDF 提取会在后续阶段继续实现。',
+    textDiffTooLarge: '文档文字超出交互对比上限，请缩小文档范围后重试。',
+    textDiffFailed: '文字对比失败，请检查两侧文档是否已完整加载。',
+    textDiffPdfNotice: 'PDF 文字对比仍为实验能力：结果取决于 PDF 文本层顺序，扫描 PDF 暂不包含 OCR。',
+    diffAdded: '新增',
+    diffRemoved: '删除',
+    diffChanged: '修改',
+    diffUnchanged: '未变化',
+    previousChange: '上一处差异',
+    nextChange: '下一处差异',
+    noDifferences: '两侧提取文字完全一致。',
+    showOnlyChanges: '只看差异',
+    diffEngine: 'jsdiff 字符级算法'
   },
   'en-US': {
     backHome: 'Back to File Viewer demo',
     pageTitle: 'File Viewer Document Compare',
-    pageDescription: 'Standalone File Viewer comparison demo with side-by-side preview, upload, URL loading, synchronized scrolling, search, and line navigation.',
+    pageDescription: 'Standalone File Viewer document comparison with extracted text, aligned lines, and character-level changes.',
     title: 'Document Compare',
-    subtitle: 'Side-by-side preview with samples, URL input, local upload, synchronized scrolling, focused search, and line-level navigation.',
+    subtitle: 'Preview files side by side, then extract their text into an aligned character-level diff.',
     leftPanel: 'Left document',
     rightPanel: 'Right document',
     lineLocator: 'Line locator',
@@ -127,14 +152,34 @@ const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
     statusComplete: 'Completed',
     statusUnloaded: 'Unloaded',
     aiChunks: '{count} chunks',
-    language: 'Language'
+    language: 'Language',
+    textDiff: 'Text diff',
+    closeTextDiff: 'Back to previews',
+    textDiffTitle: 'Text difference view',
+    textDiffDescription: 'jsdiff aligns extracted document text by line and marks exact characters inside changed lines.',
+    textDiffRefresh: 'Compare again',
+    textDiffRunning: 'Extracting and comparing both documents…',
+    textDiffNoText: 'At least one side has no extractable text. Wait for loading to finish; scanned PDFs need OCR first.',
+    textDiffPdfPartial: 'The PDF text layer does not cover every page, so comparison stopped instead of showing a partial result. Full-PDF extraction is the next stage.',
+    textDiffTooLarge: 'The extracted text exceeds the interactive comparison limit. Compare a smaller document range.',
+    textDiffFailed: 'Text comparison failed. Check that both documents finished loading.',
+    textDiffPdfNotice: 'PDF text comparison is experimental: order follows the PDF text layer, and scanned PDFs do not run OCR yet.',
+    diffAdded: 'Added',
+    diffRemoved: 'Removed',
+    diffChanged: 'Changed',
+    diffUnchanged: 'Unchanged',
+    previousChange: 'Previous change',
+    nextChange: 'Next change',
+    noDifferences: 'The extracted text is identical.',
+    showOnlyChanges: 'Changes only',
+    diffEngine: 'jsdiff character algorithm'
   },
   'ja-JP': {
     backHome: 'File Viewer メインプレビューへ戻る',
     pageTitle: 'File Viewer 文書比較',
-    pageDescription: '左右表示、アップロード、URL 読み込み、同期スクロール、検索、行移動に対応した独立した文書比較 Demo。',
+    pageDescription: '抽出テキストの行揃えと文字単位の差分表示に対応した File Viewer 文書比較 Demo。',
     title: '文書比較',
-    subtitle: 'サンプル、URL、ローカルアップロード、同期スクロール、検索、行単位の移動に対応した左右比較。',
+    subtitle: '左右でプレビューし、抽出した文書テキストを行揃えして文字単位で比較します。',
     leftPanel: '左の文書',
     rightPanel: '右の文書',
     lineLocator: '行へ移動',
@@ -163,7 +208,27 @@ const compareCopyMap: Record<DemoLocale, Record<string, string>> = {
     statusComplete: '完了',
     statusUnloaded: 'アンロード済み',
     aiChunks: '{count} チャンク',
-    language: '言語'
+    language: '言語',
+    textDiff: 'テキスト差分',
+    closeTextDiff: '左右プレビューへ戻る',
+    textDiffTitle: 'テキスト差分ビュー',
+    textDiffDescription: 'jsdiff で抽出テキストを行ごとに揃え、変更行の文字差分を表示します。',
+    textDiffRefresh: '再比較',
+    textDiffRunning: '両方の文書からテキストを抽出して比較しています…',
+    textDiffNoText: '少なくとも片方に抽出可能なテキストがありません。読み込み完了を待ってください。スキャン PDF には OCR が必要です。',
+    textDiffPdfPartial: 'PDF テキストレイヤーが全ページをカバーしていないため、不完全な結果を表示せず比較を停止しました。PDF 全体抽出は次の段階です。',
+    textDiffTooLarge: '抽出テキストが対話型比較の上限を超えています。範囲を小さくしてください。',
+    textDiffFailed: 'テキスト比較に失敗しました。両方の文書が読み込み済みか確認してください。',
+    textDiffPdfNotice: 'PDF テキスト比較は実験的です。順序は PDF テキストレイヤーに依存し、スキャン PDF の OCR はまだ実行しません。',
+    diffAdded: '追加',
+    diffRemoved: '削除',
+    diffChanged: '変更',
+    diffUnchanged: '変更なし',
+    previousChange: '前の差分',
+    nextChange: '次の差分',
+    noDifferences: '抽出テキストは同一です。',
+    showOnlyChanges: '差分のみ',
+    diffEngine: 'jsdiff 文字単位アルゴリズム'
   }
 }
 
@@ -229,6 +294,15 @@ const compareLineTarget = ref('')
 const activeCompareSide = ref<CompareSide>('left')
 const leftViewerRef = ref<FileViewerPublicApi | null>(null)
 const rightViewerRef = ref<FileViewerPublicApi | null>(null)
+const panelLoaded = reactive<Record<CompareSide, boolean>>({ left: false, right: false })
+const textDiffOpen = ref(false)
+const textDiffStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
+const textDiffMessage = ref('')
+const textDiffResult = ref<TextDiffResult | null>(null)
+const textDiffOnlyChanges = ref(false)
+const activeTextDiffChange = ref(-1)
+const textDiffBodyRef = ref<HTMLElement | null>(null)
+let textDiffRunId = 0
 
 const createEmptySearchState = (): FileViewerSearchState => ({
   query: '',
@@ -292,6 +366,26 @@ const getPanelDescription = (panel: ComparePanelState) => {
   }
   return sampleByUrl.value.get(panel.url)?.description || compareCopy.value.urlFile
 }
+
+const isPdfPanel = (panel: ComparePanelState) => {
+  const value = panel.filename || panel.url
+  return /\.pdf(?:$|[?#])/i.test(value || '')
+}
+
+const textDiffContainsPdf = computed(() => isPdfPanel(leftPanel) || isPdfPanel(rightPanel))
+const visibleTextDiffRows = computed(() => {
+  const rows = textDiffResult.value?.rows || []
+  return textDiffOnlyChanges.value ? rows.filter(row => row.kind !== 'equal') : rows
+})
+const textDiffChangeRows = computed(() => (
+  (textDiffResult.value?.rows || []).filter(row => row.kind !== 'equal')
+))
+const textDiffChangePosition = computed(() => {
+  const total = textDiffChangeRows.value.length
+  return total && activeTextDiffChange.value >= 0
+    ? `${activeTextDiffChange.value + 1}/${total}`
+    : `0/${total}`
+})
 
 const selectSample = (panel: ComparePanelState, url: string) => {
   panel.url = url
@@ -460,11 +554,132 @@ const getAiChunkCount = (side: CompareSide) => {
   return viewer?.getDocumentTextChunks?.().length || 0
 }
 
+const isLocalPlainTextPanel = (panel: ComparePanelState) => (
+  !!panel.file && /\.(?:txt|md|markdown|csv|tsv|json|jsonl|xml|html?|css|less|scss|sass|ya?ml|ini|log|sql|[cm]?[jt]sx?|vue|svelte|py|java|kt|rs|go|php|rb|swift)$/i.test(panel.filename)
+)
+
+const getPanelComparableText = async (
+  panel: ComparePanelState,
+  viewer: FileViewerPublicApi | null
+) => {
+  if (isLocalPlainTextPanel(panel) && panel.file instanceof Blob) {
+    return panel.file.text()
+  }
+  const chunks = viewer?.getDocumentTextChunks?.() || []
+  if (isPdfPanel(panel)) {
+    const pageCount = viewer?.getViewState?.()?.pageCount || 0
+    const extractedPageCount = new Set(
+      chunks.map(chunk => chunk.anchor.page).filter(page => typeof page === 'number')
+    ).size
+    if (pageCount > 0 && extractedPageCount > 0 && extractedPageCount < pageCount) {
+      throw new Error('compare-pdf-partial')
+    }
+  }
+  return extractComparableDocumentText(chunks)
+}
+
+const scrollToTextDiffChange = async (direction: 1 | -1) => {
+  const rows = textDiffChangeRows.value
+  if (!rows.length) {
+    activeTextDiffChange.value = -1
+    return
+  }
+  activeTextDiffChange.value = (
+    activeTextDiffChange.value + direction + rows.length
+  ) % rows.length
+  if (textDiffOnlyChanges.value) {
+    await nextTick()
+  }
+  textDiffBodyRef.value
+    ?.querySelector<HTMLElement>(`[data-text-diff-row="${rows[activeTextDiffChange.value].id}"]`)
+    ?.scrollIntoView({ block: 'center' })
+}
+
+const runDocumentTextDiff = async () => {
+  const runId = ++textDiffRunId
+  textDiffStatus.value = 'loading'
+  textDiffMessage.value = compareCopy.value.textDiffRunning
+  textDiffResult.value = null
+  activeTextDiffChange.value = -1
+  await nextTick()
+  await new Promise<void>(resolve => window.requestAnimationFrame(() => resolve()))
+  if (runId !== textDiffRunId) {
+    return
+  }
+  try {
+    const [leftText, rightText] = await Promise.all([
+      getPanelComparableText(leftPanel, leftViewerRef.value),
+      getPanelComparableText(rightPanel, rightViewerRef.value),
+    ])
+    if (runId !== textDiffRunId) {
+      return
+    }
+    if (!leftText.trim() || !rightText.trim()) {
+      textDiffStatus.value = 'error'
+      textDiffMessage.value = compareCopy.value.textDiffNoText
+      return
+    }
+    const result = buildDocumentTextDiff(leftText, rightText)
+    if (runId !== textDiffRunId) {
+      return
+    }
+    textDiffResult.value = result
+    textDiffStatus.value = 'ready'
+    textDiffMessage.value = ''
+    activeTextDiffChange.value = textDiffChangeRows.value.length ? 0 : -1
+    await nextTick()
+    if (activeTextDiffChange.value >= 0) {
+      textDiffBodyRef.value
+        ?.querySelector<HTMLElement>(`[data-text-diff-row="${textDiffChangeRows.value[0].id}"]`)
+        ?.scrollIntoView({ block: 'center' })
+    }
+  } catch (error) {
+    if (runId !== textDiffRunId) {
+      return
+    }
+    textDiffStatus.value = 'error'
+    textDiffMessage.value = error instanceof RangeError
+      ? compareCopy.value.textDiffTooLarge
+      : error instanceof Error && error.message === 'compare-pdf-partial'
+        ? compareCopy.value.textDiffPdfPartial
+        : compareCopy.value.textDiffFailed
+  }
+}
+
+const toggleTextDiff = async () => {
+  if (textDiffOpen.value) {
+    textDiffOpen.value = false
+    textDiffRunId += 1
+    return
+  }
+  textDiffStatus.value = 'loading'
+  textDiffMessage.value = compareCopy.value.textDiffRunning
+  await Promise.all([
+    leftViewerRef.value?.collectDocumentAnchors?.(),
+    rightViewerRef.value?.collectDocumentAnchors?.(),
+  ])
+  textDiffOpen.value = true
+  await runDocumentTextDiff()
+}
+
+const queueTextDiffRefresh = () => {
+  if (!textDiffOpen.value || !panelLoaded.left || !panelLoaded.right) {
+    return
+  }
+  window.setTimeout(() => void runDocumentTextDiff(), 0)
+}
+
 const handleLoadStart = (panel: ComparePanelState) => {
+  panelLoaded[panel.side] = false
   panel.status = compareCopy.value.statusLoading
+  if (textDiffOpen.value) {
+    textDiffStatus.value = 'loading'
+    textDiffMessage.value = compareCopy.value.textDiffRunning
+  }
 }
 
 const handleLoadComplete = (panel: ComparePanelState, context: FileViewerLifecycleContext) => {
+  panelLoaded[panel.side] = true
   const chunkCount = getAiChunkCount(panel.side)
   const aiSuffix = chunkCount ? ` · ${formatCompareCopy('aiChunks', { count: chunkCount })}` : ''
   panel.status = `${context.duration ? `${compareCopy.value.statusComplete} ${context.duration}ms` : compareCopy.value.statusComplete}${aiSuffix}`
@@ -472,9 +687,11 @@ const handleLoadComplete = (panel: ComparePanelState, context: FileViewerLifecyc
   if (compareSearchQuery.value.trim()) {
     void runCompareSearch()
   }
+  queueTextDiffRefresh()
 }
 
 const handleUnload = (panel: ComparePanelState) => {
+  panelLoaded[panel.side] = false
   panel.status = compareCopy.value.statusUnloaded
 }
 
@@ -574,6 +791,12 @@ watch(compareLocale, (nextLocale, previousLocale) => {
           <input v-model="comparePdfToolbarHidden" type="checkbox">
           <span>{{ compareCopy.hidePdfToolbar }}</span>
         </label>
+        <button
+          type="button"
+          data-open-text-diff
+          :class="{ active: textDiffOpen }"
+          @click="toggleTextDiff"
+        >{{ textDiffOpen ? compareCopy.closeTextDiff : compareCopy.textDiff }}</button>
         <button type="button" @click="swapPanels">{{ compareCopy.swap }}</button>
         <button type="button" @click="resetSamples">{{ compareCopy.reset }}</button>
       </div>
@@ -618,7 +841,93 @@ watch(compareLocale, (nextLocale, previousLocale) => {
       </button>
     </div>
 
-    <section class="compare-board" :aria-label="compareCopy.boardLabel">
+    <section
+      v-if="textDiffOpen"
+      class="text-diff-panel"
+      data-text-diff-view
+      :aria-label="compareCopy.textDiffTitle"
+    >
+      <header class="text-diff-header">
+        <div>
+          <span class="text-diff-kicker">{{ compareCopy.diffEngine }}</span>
+          <h2>{{ compareCopy.textDiffTitle }}</h2>
+          <p>{{ compareCopy.textDiffDescription }}</p>
+          <p v-if="textDiffContainsPdf" class="text-diff-pdf-notice">{{ compareCopy.textDiffPdfNotice }}</p>
+        </div>
+        <div class="text-diff-actions">
+          <label class="sync-toggle">
+            <input v-model="textDiffOnlyChanges" type="checkbox">
+            <span>{{ compareCopy.showOnlyChanges }}</span>
+          </label>
+          <button
+            type="button"
+            :disabled="!textDiffChangeRows.length"
+            :title="compareCopy.previousChange"
+            :aria-label="compareCopy.previousChange"
+            @click="scrollToTextDiffChange(-1)"
+          >
+            <ChevronUp aria-hidden="true" />
+          </button>
+          <span class="text-diff-position">{{ textDiffChangePosition }}</span>
+          <button
+            type="button"
+            :disabled="!textDiffChangeRows.length"
+            :title="compareCopy.nextChange"
+            :aria-label="compareCopy.nextChange"
+            @click="scrollToTextDiffChange(1)"
+          >
+            <ChevronDown aria-hidden="true" />
+          </button>
+          <button type="button" data-refresh-text-diff @click="runDocumentTextDiff">{{ compareCopy.textDiffRefresh }}</button>
+        </div>
+      </header>
+
+      <div
+        v-if="textDiffStatus !== 'ready'"
+        class="text-diff-state"
+        :class="{ error: textDiffStatus === 'error' }"
+        data-text-diff-status
+      >{{ textDiffMessage || compareCopy.textDiffRunning }}</div>
+
+      <template v-else-if="textDiffResult">
+        <div class="text-diff-summary" data-text-diff-summary>
+          <span class="added"><strong>{{ textDiffResult.summary.added }}</strong>{{ compareCopy.diffAdded }}</span>
+          <span class="removed"><strong>{{ textDiffResult.summary.removed }}</strong>{{ compareCopy.diffRemoved }}</span>
+          <span class="changed"><strong>{{ textDiffResult.summary.changed }}</strong>{{ compareCopy.diffChanged }}</span>
+          <span><strong>{{ textDiffResult.summary.unchanged }}</strong>{{ compareCopy.diffUnchanged }}</span>
+        </div>
+        <div class="text-diff-column-heads" aria-hidden="true">
+          <span>{{ getPanelSourceLabel(leftPanel) }}</span>
+          <span>{{ getPanelSourceLabel(rightPanel) }}</span>
+        </div>
+        <div ref="textDiffBodyRef" class="text-diff-body">
+          <div
+            v-for="row in visibleTextDiffRows"
+            :key="row.id"
+            class="text-diff-row"
+            :class="`is-${row.kind}`"
+            :data-text-diff-row="row.id"
+            :data-text-diff-kind="row.kind"
+          >
+            <span class="text-diff-line-number">{{ row.leftLine ?? '' }}</span>
+            <code class="text-diff-code text-diff-code--left"><span
+              v-for="(segment, index) in row.left"
+              :key="`${row.id}-left-${index}`"
+              :class="`diff-segment--${segment.kind}`"
+            >{{ segment.value || ' ' }}</span></code>
+            <span class="text-diff-line-number">{{ row.rightLine ?? '' }}</span>
+            <code class="text-diff-code text-diff-code--right"><span
+              v-for="(segment, index) in row.right"
+              :key="`${row.id}-right-${index}`"
+              :class="`diff-segment--${segment.kind}`"
+            >{{ segment.value || ' ' }}</span></code>
+          </div>
+          <div v-if="!textDiffChangeRows.length" class="text-diff-identical">{{ compareCopy.noDifferences }}</div>
+        </div>
+      </template>
+    </section>
+
+    <section v-show="!textDiffOpen" class="compare-board" :aria-label="compareCopy.boardLabel">
       <article
         v-for="panel in [leftPanel, rightPanel]"
         :key="panel.side"
@@ -868,6 +1177,12 @@ watch(compareLocale, (nextLocale, previousLocale) => {
   color: #14794e;
 }
 
+.header-actions button.active {
+  border-color: #0b7480;
+  background: #0b7480;
+  color: #fff;
+}
+
 .locale-toggle.active {
   background: #0b7480;
   color: #fff;
@@ -968,6 +1283,229 @@ watch(compareLocale, (nextLocale, previousLocale) => {
 .compare-search-popover button:hover {
   background: rgba(33, 163, 102, 0.1);
   color: #16804f;
+}
+
+.text-diff-panel {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  margin: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(24, 45, 62, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 52px rgba(16, 35, 50, 0.11);
+}
+
+.text-diff-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(24, 45, 62, 0.08);
+}
+
+.text-diff-header h2 {
+  margin: 4px 0 0;
+  font-size: 20px;
+}
+
+.text-diff-header p {
+  margin: 6px 0 0;
+  color: #667d90;
+  font-size: 13px;
+}
+
+.text-diff-kicker {
+  color: #0b7480;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.text-diff-pdf-notice {
+  color: #9a6400 !important;
+}
+
+.text-diff-actions {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.text-diff-actions button,
+.text-diff-actions .sync-toggle {
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid rgba(24, 45, 62, 0.1);
+  border-radius: 9px;
+  background: #fff;
+  color: #294259;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.text-diff-actions button {
+  cursor: pointer;
+}
+
+.text-diff-actions button:disabled {
+  cursor: default;
+  opacity: .42;
+}
+
+.text-diff-actions svg {
+  width: 16px;
+  height: 16px;
+}
+
+.text-diff-position {
+  min-width: 48px;
+  color: #667d90;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.text-diff-state {
+  grid-row: 2 / -1;
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+  padding: 32px;
+  color: #61778a;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.text-diff-state.error {
+  color: #a33b33;
+}
+
+.text-diff-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(24, 45, 62, 0.08);
+  background: #f8faf9;
+}
+
+.text-diff-summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef2f5;
+  color: #5c7183;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.text-diff-summary strong {
+  font-size: 13px;
+}
+
+.text-diff-summary .added { background: #e4f6ea; color: #167044; }
+.text-diff-summary .removed { background: #fde8e7; color: #a33b33; }
+.text-diff-summary .changed { background: #fff2cf; color: #8a5a00; }
+
+.text-diff-column-heads {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-bottom: 1px solid rgba(24, 45, 62, 0.1);
+  background: #f3f7f5;
+}
+
+.text-diff-column-heads span {
+  min-width: 0;
+  padding: 9px 52px;
+  overflow: hidden;
+  color: #3d566a;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-diff-column-heads span + span {
+  border-left: 1px solid rgba(24, 45, 62, 0.1);
+}
+
+.text-diff-body {
+  min-height: 0;
+  overflow: auto;
+  background: #fff;
+  scrollbar-color: rgba(72, 96, 115, .35) transparent;
+}
+
+.text-diff-row {
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px minmax(0, 1fr);
+  border-bottom: 1px solid rgba(24, 45, 62, 0.055);
+}
+
+.text-diff-row.is-changed { background: rgba(255, 244, 210, .38); }
+.text-diff-row.is-removed { background: rgba(253, 232, 231, .38); }
+.text-diff-row.is-added { background: rgba(228, 246, 234, .38); }
+
+.text-diff-line-number {
+  padding: 7px 8px;
+  border-right: 1px solid rgba(24, 45, 62, 0.07);
+  color: #91a0ad;
+  background: rgba(245, 248, 247, .76);
+  font: 11px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-align: right;
+  user-select: none;
+}
+
+.text-diff-code {
+  min-width: 0;
+  display: block;
+  padding: 7px 10px;
+  overflow-wrap: anywhere;
+  color: #243749;
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, 'PingFang SC', monospace;
+  white-space: pre-wrap;
+}
+
+.text-diff-code--left {
+  border-right: 1px solid rgba(24, 45, 62, 0.1);
+}
+
+.diff-segment--removed {
+  border-radius: 3px;
+  background: #f6b8b5;
+  color: #7e2520;
+  text-decoration: line-through;
+}
+
+.diff-segment--added {
+  border-radius: 3px;
+  background: #aee4bf;
+  color: #0c5932;
+}
+
+.text-diff-identical {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  color: #5f7688;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .compare-board {
@@ -1184,6 +1722,20 @@ watch(compareLocale, (nextLocale, previousLocale) => {
     grid-template-columns: 1fr;
     overflow: visible;
   }
+
+  .text-diff-panel {
+    flex: none;
+    min-height: 760px;
+  }
+
+  .text-diff-header {
+    flex-direction: column;
+  }
+
+  .text-diff-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1199,7 +1751,8 @@ watch(compareLocale, (nextLocale, previousLocale) => {
   }
 
   .compare-header,
-  .compare-panel {
+  .compare-panel,
+  .text-diff-panel {
     border-color: rgba(149, 174, 190, 0.14);
     background: rgba(18, 28, 36, 0.9);
   }
@@ -1222,6 +1775,8 @@ watch(compareLocale, (nextLocale, previousLocale) => {
   .header-actions button,
   .sync-toggle,
   .line-locator,
+  .text-diff-actions button,
+  .text-diff-actions .sync-toggle,
   .tool-grid select,
   .tool-grid input[type='text'] {
     border-color: rgba(149, 174, 190, 0.14);
@@ -1270,6 +1825,34 @@ watch(compareLocale, (nextLocale, previousLocale) => {
     border-color: rgba(47, 214, 151, 0.2);
     background: rgba(47, 214, 151, 0.12);
     color: #72e7b7;
+  }
+
+  .text-diff-header,
+  .text-diff-summary,
+  .text-diff-column-heads,
+  .text-diff-row {
+    border-color: rgba(149, 174, 190, 0.12);
+  }
+
+  .text-diff-header p,
+  .text-diff-position {
+    color: #9fb0bd;
+  }
+
+  .text-diff-summary,
+  .text-diff-column-heads,
+  .text-diff-body {
+    background: #111b22;
+  }
+
+  .text-diff-column-heads span,
+  .text-diff-code {
+    color: #dfeaf0;
+  }
+
+  .text-diff-line-number {
+    background: rgba(255, 255, 255, .025);
+    color: #7f929f;
   }
 }
 </style>

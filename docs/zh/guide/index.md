@@ -96,7 +96,7 @@ Full 包已内置 `preset-all`，业务代码不需要再次安装或传入 pres
 - EPUB 按需加载包内固化的本地引擎并提供目录和滚动阅读，UMD 解析目录和压缩正文，音频使用浏览器原生播放器打开，MIDI 展示轨道和时长信息，HLS 视频按需加载 `hls.js`。
 - 代码和文本由 `@file-viewer/renderer-text` 使用 `highlight.js` 轻量高亮，覆盖 JSONC、JSON5、Notebook、TOML、Proto、HCL、TeX、Graphviz、HTTP、Ruby、Swift、Kotlin 等常见工程文本；patch 会进入左右比对视图，git bundle 会展示 refs、历史记录、文件树和可读文件内容；HTML 会按源码展示。
 - 字体、PSD、AI/EPS、SQLite、WASM、Parquet、Avro 和 WebArchive 走 `@file-viewer/renderer-data` 独立资产/数据预览链路，优先展示结构摘要、字体样张、图层或数据预览，不执行不可信内容。
-- 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置、同步滚动、聚焦文档浮层搜索和行级定位，适合上线前核对两份附件的视觉差异。
+- 独立文档比对入口 `/compare.html` 支持两侧示例、URL、本地上传、交换、重置、同步滚动、聚焦搜索和行级定位，并可把两侧提取文字做逐行对齐与字符级增删标记；DOCX / 文本为稳定主路径，PDF 文字层对比仍为实验能力。
 
 ## 常用入口
 

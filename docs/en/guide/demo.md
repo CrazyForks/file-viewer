@@ -85,7 +85,7 @@ pnpm install
 pnpm dev
 ```
 
-The Vite dev server serves the main demo. Open `/compare.html` on the same host to test side-by-side comparison.
+The Vite dev server serves the main demo. Open `/compare.html` on the same host to test side-by-side preview and the jsdiff-powered extracted-text view. DOCX and text files get aligned lines plus character-level additions and removals. PDF work is staged: it follows the PDF text layer, scanned PDFs need OCR, and an incomplete multi-page text layer stops instead of being presented as a complete diff.
 
 ## Production Smoke
 
