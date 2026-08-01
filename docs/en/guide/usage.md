@@ -255,6 +255,23 @@ await displayViewer.applyViewState(lastState, {
 })
 ```
 
-For synchronization, send the full `state` snapshot instead of replaying individual button clicks. PDF page changes, zooming, scrolling, XMind panning, Geo map movement, and 3D camera updates all use the same event shape; the display side only needs to call `applyViewState()`.
+A custom PDF toolbar can read the page snapshot and apply a partial state for previous, next, or page-input navigation:
+
+```ts
+const state = viewerRef.value?.getViewState()
+const page = Number(pageInput.value)
+
+await viewerRef.value?.applyViewState(
+  { page },
+  { source: 'api', action: 'page-change' }
+)
+
+await viewerRef.value?.applyViewState(
+  { page: Math.min((state?.page || 1) + 1, state?.pageCount || 1) },
+  { source: 'api', action: 'page-step' }
+)
+```
+
+For synchronization, send the full `state` snapshot instead of replaying individual button clicks. PDF page changes, zooming, scrolling, XMind panning, Geo map movement, and 3D camera updates all use the same event shape; the display side only needs to call `applyViewState()`. High-frequency projection updates may be coalesced to one snapshot per animation frame, but do not use a trailing-only debounce that waits until scrolling stops.
 
 PDF default assets are probed from the site root (`/vendor/pdf/...`) so Vue Router, React Router, and other deep routes do not accidentally request `vendor/pdf/pdf.worker.mjs` from the current page path. When the static worker is missing or an app server falls back to HTML, the PDF renderer lazy-loads the packaged PDF.js worker handler as a compatibility fallback. Use absolute `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, and `pdf.standardFontDataUrl` when deploying under a sub-path, a dedicated static asset domain, or a strict CSP. PPTX uses the `@file-viewer/pptx` worker on demand; set `presentation.workerUrl` and, when necessary, `presentation.workerType` for custom worker routes. Binary `.ppt` uses `@file-viewer/ppt@0.3.2`; standard distributions keep its verified ESM/Worker/WASM/font files together under `vendor/ppt/`. Configure `presentation.pptModuleUrl`, `pptWorkerUrl`, `pptWasmUrl`, and `pptFontUrl` only for a custom layout.

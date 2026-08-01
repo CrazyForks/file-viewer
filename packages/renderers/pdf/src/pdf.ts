@@ -63,6 +63,12 @@ import {
   resolvePdfFitViewportSize,
 } from './pdfFit.js';
 import {
+  clampPdfScale,
+  normalizePdfRotation,
+  resolvePdfViewStateUpdate,
+  type PdfRotation,
+} from './pdfViewState.js';
+import {
   capturePdfJsWorkerGlobal,
   scopePdfJsWorkerMessageHandler,
   type PdfJsWorkerGlobal,
@@ -108,7 +114,6 @@ const normalizedPdfViewerStyle = `${scopePdfJsRootVariables(pdfViewerStyle)}
   .replace(/background:\s*url\("\.\/images\/loading-icon\.gif"\)\s*center no-repeat;/g, 'background:none;');
 
 type PdfNavMode = 'pages' | 'outline';
-type PdfRotation = 0 | 90 | 180 | 270;
 type PdfLoadingTask = ReturnType<typeof getDocument>;
 type PdfDocumentProxy = Awaited<PdfLoadingTask['promise']>;
 type PdfWorkerInstance = InstanceType<typeof PdfJsWorker>;
@@ -234,12 +239,8 @@ const createButton = (
   return button;
 };
 
-const normalizeRotation = (rotation: number): PdfRotation => {
-  const normalized = ((Math.round(rotation / 90) * 90) % 360 + 360) % 360;
-  return (normalized === 90 || normalized === 180 || normalized === 270 ? normalized : 0) as PdfRotation;
-};
-
-const clampScale = (scale: number) => Number(Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale)).toFixed(2));
+const normalizeRotation = normalizePdfRotation;
+const clampScale = (scale: number) => clampPdfScale(scale, MIN_SCALE, MAX_SCALE);
 
 const createPdfSearchState = (query = ''): FileViewerSearchState => ({
   query,
@@ -1327,32 +1328,47 @@ export default async function renderPdf(
     const applyVersion = ++viewStateApplyVersion;
     activeViewStateApplyVersion = applyVersion;
     suppressProgrammaticScrollEvents();
-    const nextRotation = Number(state.rotation);
-    const nextScale = Number(state.scale ?? state.zoom?.scale);
-    const nextPage = Number(state.page);
+    const update = resolvePdfViewStateUpdate(state, {
+      rotation: currentRotation,
+      scale: currentScale,
+      page: currentPage,
+      pageCount,
+    }, {
+      minScale: MIN_SCALE,
+      maxScale: MAX_SCALE,
+    });
 
     try {
       if (state.navigation) {
+        let navigationChanged = false;
         if (navigationEnabled && typeof state.navigation.visible === 'boolean') {
+          navigationChanged = navVisible !== state.navigation.visible;
           navVisible = state.navigation.visible;
         }
         if (state.navigation.mode === 'pages' || state.navigation.mode === 'outline') {
+          navigationChanged = navigationChanged || navMode !== state.navigation.mode;
           navMode = state.navigation.mode;
         }
-        syncUi();
+        if (navigationChanged) {
+          syncUi();
+        }
       }
 
-      if (Number.isFinite(nextRotation)) {
-        applyRotation(nextRotation, 'rotation-change', source, false);
+      if (update.rotation !== undefined) {
+        applyRotation(update.rotation, 'rotation-change', source, false);
       }
-      if (Number.isFinite(nextScale)) {
+      if (update.scale !== undefined) {
         autoFitWidth = false;
-        setScale(nextScale, 'zoom-change', source, false);
+        setScale(update.scale, 'zoom-change', source, false);
       }
-      if (Number.isFinite(nextPage)) {
-        goToPage(nextPage, 'page-change', source, false);
+      if (update.page !== undefined) {
+        goToPage(update.page, 'page-change', source, false);
       }
 
+      // A remote presenter can send scroll snapshots faster than one animation
+      // frame. Apply the latest offset before yielding so superseded promises
+      // cannot starve the projected screen until the presenter stops scrolling.
+      restoreScrollState(state.scroll, false);
       await waitForPaint(targetWindow);
       if (applyVersion !== viewStateApplyVersion) {
         return getPdfViewState();

@@ -28,7 +28,8 @@ const options = {
 
 - Common image formats use native browser decoding without extra runtime work.
 - HEIC / HEIF dynamically imports `heic2any` only when those formats are opened.
-- Includes lightbox viewing, a unified zoom provider, theme-aware background, and unmount cleanup.
+- Rotates left or right in 90° steps and refits both the main view and lightbox without clipping.
+- Includes lightbox viewing, unified zoom and view-state providers, a theme-aware background, and unmount cleanup.
 
 ## Migration Note
 

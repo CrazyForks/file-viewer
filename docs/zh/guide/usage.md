@@ -438,7 +438,24 @@ await displayViewer.applyViewState(lastState.value, {
 })
 ```
 
-业务侧同步时建议发送完整 `state` 快照，而不是只发送单个按钮事件。PDF 页码点击、缩放、滚动，XMind 拖动画布，Geo 地图移动和 3D 相机变化都会归并成同一种事件结构，展示端只需要调用 `applyViewState()`。
+自定义 PDF 工具栏可直接读取页码快照，并用部分状态完成上一页、下一页或页码输入跳转：
+
+```ts
+const state = viewerRef.value?.getViewState()
+const page = Number(pageInput.value)
+
+await viewerRef.value?.applyViewState(
+  { page },
+  { source: 'api', action: 'page-change' }
+)
+
+await viewerRef.value?.applyViewState(
+  { page: Math.min((state?.page || 1) + 1, state?.pageCount || 1) },
+  { source: 'api', action: 'page-step' }
+)
+```
+
+业务侧同步时建议发送完整 `state` 快照，而不是只发送单个按钮事件。PDF 页码点击、缩放、滚动，XMind 拖动画布，Geo 地图移动和 3D 相机变化都会归并成同一种事件结构，展示端只需要调用 `applyViewState()`。滚动投屏可以按动画帧合并高频快照，但不要使用“停止滚动后才发送”的尾触发防抖，否则大屏无法实时跟随。
 
 ## 搜索、定位与 AI 友好结构
 
