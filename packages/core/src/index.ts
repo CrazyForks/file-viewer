@@ -851,6 +851,7 @@ export {
   applyFileViewerPagePrintMasksToHtml,
   normalizeFileViewerPrintMaskOptions,
   normalizeFileViewerPrintMaskRegion,
+  normalizeFileViewerPrintStamp,
   FILE_VIEWER_PRINT_MASK_STYLE,
 } from './features/printMask';
 export {
@@ -1133,6 +1134,9 @@ export type {
   FileViewerPdfOptions,
   FileViewerPresentationOptions,
   FileViewerPrintOptions,
+  FileViewerPrintMaskOptions,
+  FileViewerPrintMaskRegion,
+  FileViewerPrintStamp,
   FileViewerPublicApi,
   FileViewerRenderedInstance,
   FileViewerRendererMode,

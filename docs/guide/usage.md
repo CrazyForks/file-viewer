@@ -201,8 +201,8 @@ Built-in operation keys are `download`, `print`, `export-html`, `zoom-in`, `zoom
 Print delivery notes:
 
 - `printRenderedHtml()` prints the full rendered document and keeps the current watermark when `options.watermark` is enabled.
-- `printWithMask()` opens the black-cover mask designer, then prints with the chosen regions under the watermark. The designer is loaded asynchronously inside core, so installing a component package is enough—no extra subpath alias is required.
-- Custom toolbars can call either API directly; `printRenderedHtml({ mask })` also accepts precomputed cover regions.
+- `printWithMask()` opens the page-aware mask and stamp designer. It can draw black cover regions or upload a local PNG, JPEG, WebP, GIF, or SVG stamp, then move, resize, remove, and print it under the watermark. Uploaded files stay in the browser as data URLs. The designer is loaded asynchronously inside core, so installing a component package is enough—no extra subpath alias is required.
+- Custom toolbars can call either API directly; `printRenderedHtml({ mask })` also accepts precomputed `regions` and `stamps`. Stamp geometry uses percent `left`, `top`, `width`, and `height`, with optional `pageIndex`, `opacity`, `rotate`, and `alt` fields.
 - Export / print HTML inlines ephemeral `blob:` image URLs as portable `data:` URLs, so DOCX figures remain visible after download or in the print window.
 
 Component teardown follows the host framework lifecycle. Vue 3 / Vue 2 component unmount, React unmount, Web Component `disconnectedCallback`, Svelte action `destroy`, and jQuery plugin `destroy` all enter the same controller teardown path: active loading is cancelled, the renderer session is destroyed, rendered DOM is cleared, zoom/search/view-state observers are stopped, and `unload-start` / `unload-complete` fire with `reason: "component-unmount"`. In Element Plus `el-dialog destroy-on-close`, route switches, tab closing, or `v-if` removal, host code does not need to clear the viewer container manually.

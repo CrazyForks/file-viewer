@@ -30,6 +30,9 @@ export type FileViewerMessageKey =
   | 'toolbar.printMaskCancel'
   | 'toolbar.printMaskConfirm'
   | 'toolbar.printMaskHint'
+  | 'toolbar.printStampUpload'
+  | 'toolbar.printStampRemove'
+  | 'toolbar.printStampResize'
   | 'toolbar.exportHtml'
   | 'toolbar.exportHtmlTitle'
   | 'toolbar.search'
@@ -1569,9 +1572,22 @@ export interface FileViewerPrintMaskRegion {
   pageIndex?: number;
 }
 
+/** Page-aware image placed above rendered content for printing, such as a seal or signature. */
+export interface FileViewerPrintStamp extends FileViewerPrintMaskRegion {
+  /** Image URL. Uploaded stamps are converted to a local data URL by the designer. */
+  src: string;
+  /** Image opacity from 0 to 1. Defaults to 1. */
+  opacity?: number;
+  /** Clockwise rotation in degrees. Defaults to 0. */
+  rotate?: number;
+  alt?: string;
+}
+
 export interface FileViewerPrintMaskOptions {
   /** Solid black cover blocks, matching common OFD/business redaction UX. */
   regions?: FileViewerPrintMaskRegion[];
+  /** Image overlays, including locally uploaded seals and signatures. */
+  stamps?: FileViewerPrintStamp[];
   /** Fill color for print masks. Defaults to opaque black. */
   color?: string;
 }

@@ -591,8 +591,8 @@ Vanilla JS / Pure Web、React、jQuery 和 Svelte 接入时，搜索和定位仍
 
 - 下载原文件会保留用户传入的原始二进制内容，不会把渲染后的页面反向写回文件。
 - 打印会生成只包含预览内容和水印的独立打印窗口，不带 Demo 侧边栏、示例选择器或操作工具条；开启 `options.watermark` 后，打印输出会附带同一套水印样式（`print-color-adjust: exact`）。
-- 内置工具栏的「打印」保持紧凑单按钮：点击后下拉可选「直接打印」或「掩膜打印」。掩膜打印会打开拖拽黑块设计器，确认后把遮盖块叠在内容之上、水印之下再打印；设计器由 core 内部异步加载，安装组件即可开箱使用，无需额外配置子路径 alias。
-- 自定义工具栏可调用 `printRenderedHtml()` 直接打印，或 `printWithMask()` 进入掩膜设计后再打印；也可向 `printRenderedHtml({ mask })` 传入已有遮盖区域。
+- 内置工具栏的「打印」保持紧凑单按钮：点击后下拉可选「直接打印」或「遮罩/盖章打印」。后者会打开页级设计器，可以拖拽绘制黑色遮盖块，也可以上传 PNG、JPEG、WebP、GIF 或 SVG 印章图片；图片只在本地读取为 data URL，并可在当前页拖动、缩放或删除，确认后叠在内容之上、水印之下再打印。设计器由 core 内部异步加载，安装组件即可开箱使用，无需额外配置子路径 alias。
+- 自定义工具栏可调用 `printRenderedHtml()` 直接打印，或 `printWithMask()` 进入遮罩/盖章设计后再打印；也可向 `printRenderedHtml({ mask })` 传入已有 `regions` 与 `stamps`。`stamps` 使用百分比 `left`、`top`、`width`、`height`，并支持 `pageIndex`、`opacity`、`rotate`、`alt` 与 `src`。
 - PDF 打印和导出 HTML 使用 PDF 专属导出适配器逐页生成完整页面，和当前滚动位置、当前可见页、导航窗格显隐状态都解耦，避免只输出当前页或被滚动容器截断。
 - Word 打印和导出会清理预览阶段的缩放、绝对定位、滚动容器和 Demo 全局布局样式，把 `.docx` / `.doc` 还原成完整白色文档内容，避免只打印当前视口或第一页。
 - 图片、Markdown、代码、PPTX、OFD、CAD、绘图、XMind、UMD、OLB/DRA/GDS/OASIS 等可以稳定克隆当前渲染结果的格式会保留打印按钮；Excel 当前使用 `styled-exceljs` + `e-virt-table` 虚拟渲染，完整工作表不会一次性存在于 DOM 中，因此表格、压缩包、邮件、EPUB、音视频、3D / 模型等更适合交互查看或原文件下载的格式会隐藏打印按钮。
