@@ -30,6 +30,25 @@ Vue3 和 Vue2 的安装器都会自动带上组件样式，不需要额外引入
 
 Vanilla JS / Pure Web、React、jQuery 和 Svelte 标准组件包允许直接传 `Blob` 或 `ArrayBuffer`，但仍然需要同时提供 `name`，例如 `contract.pdf`。共享 core 会按文件名扩展名选择渲染链路。
 
+## 渲染前预检
+
+上传完成后若要先判断文件能否进入预览流程，可以直接调用 core 的 `precheckFileViewerSource()`，不需要创建或隐藏一个 viewer。它会核对扩展名能力，并对 PDF、DOCX/XLSX/PPTX、OpenDocument、旧版 OLE Office 和 RTF 做轻量签名/包结构检查。
+
+```ts
+import { precheckFileViewerSource } from '@file-viewer/core/headless'
+
+const result = await precheckFileViewerSource(file, {
+  // 推荐传当前业务实际装配的格式，避免把未安装 preset 的格式报成可用
+  supportedExtensions: ['pdf', 'docx', 'xlsx', 'pptx']
+})
+
+if (!result.previewable) {
+  console.warn(result.status, result.reason, result.missingParts)
+}
+```
+
+`supported` 表示当前能力列表是否包含该扩展名，`valid` 表示内容结构检查结论。`valid: null` 不是验证通过，而是该格式没有轻量结构校验或当前只有 URL、尚未读取内容；真正的 renderer 仍负责最终解析。对 Blob 形式的 ZIP/Office 文件，预检只读取 ZIP 尾部和 central directory 元数据，不会为了找包内文件名复制整份大文件。
+
 ## 行为规则
 
 - 预览器会根据文件名扩展名自动选择渲染器
@@ -245,6 +264,7 @@ const options = {
 | `pdf.toolbar` | 是否显示 PDF 渲染器自己的页码、缩放和旋转工具栏。独立预览建议显示；左右文档比对等紧凑场景可设为 `false`，让 PDF 与其他格式的正文区域对齐 |
 | `pdf.navigation` / `pdf.defaultNavigationVisible` | 是否启用左侧导航窗格以及初始是否展开。导航窗格支持页面列表和目录树切换 |
 | `pdf.thumbnails` | 页面列表是否显示真实页面缩略图，默认 `false`；开启后只对可见页懒渲染缩略图，避免大 PDF 一次性生成所有 canvas |
+| `pdf.bbox` | 首次打开时框选并定位一个或多个 PDF 区域；支持比例、百分比、PDF points，以及带原图尺寸的 OCR 像素坐标 |
 | `pdf.rangeChunkSize` | PDF.js Range 请求分片大小，默认 64KB；仅在文件服务支持 Range 时生效 |
 | `pdf.withCredentials` | PDF.js URL 读取是否携带浏览器凭据，默认 `false` |
 | `pdf.workerUrl` | 自托管 PDF.js Worker 地址。默认先从站点根路径探测 `/vendor/pdf/pdf.worker.mjs`，可用时使用真实 Worker；资源不存在、返回 HTML 或本地临时服务未复制 viewer assets 时，会懒加载包内 PDF.js worker handler 兜底，保证轻量组件 + preset 也能预览。子路径、独立静态域或严格 CSP 部署时请显式传入绝对 URL |
@@ -456,6 +476,38 @@ await viewerRef.value?.applyViewState(
 ```
 
 业务侧同步时建议发送完整 `state` 快照，而不是只发送单个按钮事件。PDF 页码点击、缩放、滚动，XMind 拖动画布，Geo 地图移动和 3D 相机变化都会归并成同一种事件结构，展示端只需要调用 `applyViewState()`。滚动投屏可以按动画帧合并高频快照，但不要使用“停止滚动后才发送”的尾触发防抖，否则大屏无法实时跟随。
+
+PDF 可通过 `pdf.bbox` 在首次打开时直接框选并定位区域，也可通过 `applyViewState()` 动态替换或清除框选。页码从 1 开始；OCR 像素坐标使用 `pixel` 并提供原图宽高，PDF 原生坐标使用 `pdf-point`（默认左下原点），`ratio` / `percent` 默认使用左上原点。单个对象和数组都支持，旋转与缩放后高亮会继续贴合页面。
+
+```ts
+const options = {
+  pdf: {
+    bbox: {
+      page: 3,
+      x: 120,
+      y: 240,
+      width: 360,
+      height: 64,
+      unit: 'pixel',
+      sourceWidth: 1440,
+      sourceHeight: 2036,
+      label: '合同金额'
+    }
+  }
+}
+
+await viewer.applyViewState({
+  page: 5,
+  extra: {
+    bbox: { page: 5, x: 72, y: 640, width: 220, height: 36, unit: 'pdf-point' }
+  }
+}, { source: 'api', action: 'bbox-focus' })
+
+await viewer.applyViewState(
+  { extra: { bbox: null } },
+  { source: 'api', action: 'bbox-clear' }
+)
+```
 
 ## 搜索、定位与 AI 友好结构
 

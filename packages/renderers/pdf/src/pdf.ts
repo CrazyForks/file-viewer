@@ -63,6 +63,10 @@ import {
   resolvePdfFitViewportSize,
 } from './pdfFit.js';
 import {
+  createPdfBoundingBoxController,
+  type PdfBoundingBoxController,
+} from './pdfBboxController.js';
+import {
   clampPdfScale,
   normalizePdfRotation,
   resolvePdfViewStateUpdate,
@@ -178,6 +182,8 @@ const createStyle = (documentRef: Document) => {
 .pdf-page-thumb--thumbnail{width:46px;height:60px;overflow:hidden;background:#fff}
 .pdf-page-thumb--thumbnail img{display:block;width:100%;height:100%;object-fit:contain}
 .pdf-page-thumb--thumbnail span{display:inline-flex;align-items:center;justify-content:center;width:100%;height:100%}
+.pdf-bbox-layer{position:absolute;inset:0;z-index:20;pointer-events:none;overflow:hidden}
+.pdf-bbox-highlight{position:absolute;box-sizing:border-box;border:2px solid var(--pdf-bbox-color,#f97316);border-radius:3px;background:rgba(249,115,22,.16);background:color-mix(in srgb,var(--pdf-bbox-color,#f97316) 18%,transparent);box-shadow:0 0 0 1px rgba(255,255,255,.8),0 2px 8px rgba(15,23,42,.16)}
 [data-viewer-theme='dark'] .pdf-shell{background:#101820;color:#e5eef8}
 [data-viewer-theme='dark'] .pdf-toolbar,[data-viewer-theme='dark'] .pdf-nav-pane,[data-viewer-theme='dark'] .pdf-nav-head,[data-viewer-theme='dark'] .pdf-nav-tabs{border-color:rgba(148,163,184,.18);background:#111827;box-shadow:none}
 [data-viewer-theme='dark'] .pdf-toolbar-group,[data-viewer-theme='dark'] .pdf-page-button,[data-viewer-theme='dark'] .pdf-outline-empty,[data-viewer-theme='dark'] .pdf-state{border-color:rgba(148,163,184,.18);background:#151f2b;color:#cbd5e1}
@@ -529,6 +535,7 @@ export default async function renderPdf(
   let suppressScrollEventUntil = 0;
   let userScrollIntentUntil = 0;
   let scrollStateFrame = 0;
+  let pdfBoundingBoxController: PdfBoundingBoxController;
   let pdfSearchState = createPdfSearchState();
   let pdfMatchesCount: PdfFindMatchesCount = { current: 0, total: 0 };
   let pdfSearchOptions: FileViewerSearchOptions | undefined;
@@ -1225,6 +1232,7 @@ export default async function renderPdf(
 
   const getPdfViewState = (): FileViewerViewState => {
     const zoom = getPdfZoomState();
+    const bbox = pdfBoundingBoxController.getStateValue();
     return {
       renderer: 'pdf',
       page: currentPage,
@@ -1237,6 +1245,7 @@ export default async function renderPdf(
         visible: navigationEnabled ? navVisible : false,
         mode: navMode,
       },
+      extra: bbox ? { bbox } : undefined,
     };
   };
 
@@ -1271,6 +1280,21 @@ export default async function renderPdf(
   const suppressProgrammaticScrollEvents = () => {
     suppressScrollEventUntil = Math.max(suppressScrollEventUntil, Date.now() + 180);
   };
+
+  pdfBoundingBoxController = createPdfBoundingBoxController({
+    documentRef,
+    targetWindow,
+    viewerRoot: pdfViewerRoot,
+    scrollContainer: container,
+    initial: options?.bbox,
+    getDocument: () => pdfContext.document,
+    getPageCount: () => pageCount,
+    getCurrentPage: () => currentPage,
+    getRotation: () => currentRotation,
+    goToPage: (page, source) => goToPage(page, 'bbox-focus', source, false),
+    suppressProgrammaticScrollEvents,
+    waitForPaint,
+  });
 
   const markFitInteraction = (source: FileViewerViewStateChangeSource) => {
     if (source !== 'user' && source !== 'api') {
@@ -1337,6 +1361,8 @@ export default async function renderPdf(
       minScale: MIN_SCALE,
       maxScale: MAX_SCALE,
     });
+    const hasBboxUpdate = !!state.extra && Object.prototype.hasOwnProperty.call(state.extra, 'bbox');
+    const bboxUpdate = hasBboxUpdate ? state.extra?.bbox : undefined;
 
     try {
       if (state.navigation) {
@@ -1379,6 +1405,9 @@ export default async function renderPdf(
         return getPdfViewState();
       }
       restoreScrollState(state.scroll, false);
+      if (hasBboxUpdate) {
+        await pdfBoundingBoxController.set(bboxUpdate, { focus: true, source });
+      }
       syncUi();
 
       if (notify && applyVersion === viewStateApplyVersion) {
@@ -1623,10 +1652,18 @@ export default async function renderPdf(
     }
     pdfContext.viewer.pagesRotation = normalized;
     void waitForPaint(targetWindow).then(() => {
+      const refocusBoundingBoxes = () => {
+        if (pdfBoundingBoxController.hasBoxes()) {
+          void waitForPaint(targetWindow)
+            .then(() => waitForPaint(targetWindow))
+            .then(() => pdfBoundingBoxController.render({ focus: true, source }));
+        }
+      };
       if (reapplyFitAfterLayout(source, notifyViewState)) {
         if (notifyViewState) {
           emitViewStateChange(action, source);
         }
+        refocusBoundingBoxes();
         return;
       }
       pdfContext.viewer?.update();
@@ -1635,6 +1672,7 @@ export default async function renderPdf(
       if (notifyViewState) {
         emitViewStateChange(action, source);
       }
+      refocusBoundingBoxes();
     });
   };
 
@@ -1917,6 +1955,12 @@ export default async function renderPdf(
         if (pdfContext.search) {
           eventBus.dispatch('find', { type: '', query: pdfContext.search });
         }
+        if (pdfBoundingBoxController.hasBoxes()) {
+          void waitForPaint(targetWindow).then(() => pdfBoundingBoxController.render({
+            focus: true,
+            source: 'initial',
+          }));
+        }
       });
       eventBus.on('pagechanging', ({ pageNumber }: { pageNumber: number }) => {
         const previousPage = currentPage;
@@ -1938,6 +1982,9 @@ export default async function renderPdf(
       });
       eventBus.on('pagerendered', ({ pageNumber }: { pageNumber: number }) => {
         scheduleLegacyPageDimensionPatch();
+        if (pdfBoundingBoxController.hasBoxes()) {
+          void pdfBoundingBoxController.render({ pageNumber, source: 'viewer' });
+        }
         if (
           !pdfCjkFontFallbackManager ||
           pdfCjkFontFallbackRenderHandledPages.has(pageNumber)
@@ -2249,6 +2296,7 @@ export default async function renderPdf(
       unregisterFileViewerSearchProvider(root);
       unregisterFileViewerZoomProvider(root);
       unregisterFileViewerViewStateProvider(root);
+      pdfBoundingBoxController.destroy();
       outlineItems = [];
       context?.registerExportAdapter?.(null);
       context?.registerThumbnailAdapter?.(null);

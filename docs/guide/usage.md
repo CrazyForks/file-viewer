@@ -54,6 +54,24 @@ export const viewerOptions = {
 
 `builtinRenderers` remains available for advanced baseline control and historical compatibility, but normal integrations should start with `preset` or `renderers`.
 
+## Preflight Before Rendering
+
+Call `precheckFileViewerSource()` after file selection when the product must reject an unsupported or obviously malformed file before mounting a viewer. It checks extension capability and validates known PDF, OpenXML / OpenDocument, legacy OLE Office, and RTF signatures or package parts without loading a renderer.
+
+```ts
+import { precheckFileViewerSource } from '@file-viewer/core/headless'
+
+const result = await precheckFileViewerSource(file, {
+  supportedExtensions: ['pdf', 'docx', 'xlsx', 'pptx']
+})
+
+if (!result.previewable) {
+  console.warn(result.status, result.reason, result.missingParts)
+}
+```
+
+`supported` describes the supplied capability list; `valid` describes the content check. `valid: null` means the format has no lightweight validator or only a URL was supplied, not that a full parse passed. The renderer remains the final authority for malformed content. Blob-backed ZIP/Office files read only ZIP metadata instead of copying the complete file.
+
 ## Common Options
 
 | Option area | Purpose |
@@ -147,6 +165,7 @@ Every renderer below can be passed through `options.renderers`:
 | `pdf.streaming` / `pdf.rangeChunkSize` | Controls URL-based progressive PDF loading and PDF.js range chunk size. |
 | `pdf.toolbar` | Shows or hides the PDF renderer's own page / zoom / rotation toolbar. Useful for comparison layouts. |
 | `pdf.navigation` / `pdf.defaultNavigationVisible` | Enables the left page / outline navigation pane and initial visibility. |
+| `pdf.bbox` | Highlights and focuses one or more PDF regions. Supports normalized ratios, percentages, native PDF points, and OCR pixels with explicit source dimensions. |
 | `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, `pdf.standardFontDataUrl` | Self-host PDF.js worker, CMap, WASM, and standard font assets. The default worker path is probed first and falls back to the packaged PDF.js handler when unavailable. |
 | `cad.wasmPath`, `cad.workerUrl`, `cad.dwfWasmUrl` | Self-host LibreDWG and DWF / DWFx / XPS assets. |
 | `cad.renderer` | `auto`, `webgl`, or `canvas2d`; default is `auto`. |
@@ -273,5 +292,37 @@ await viewerRef.value?.applyViewState(
 ```
 
 For synchronization, send the full `state` snapshot instead of replaying individual button clicks. PDF page changes, zooming, scrolling, XMind panning, Geo map movement, and 3D camera updates all use the same event shape; the display side only needs to call `applyViewState()`. High-frequency projection updates may be coalesced to one snapshot per animation frame, but do not use a trailing-only debounce that waits until scrolling stops.
+
+Use `pdf.bbox` to highlight and focus a region on first load, or replace/clear it dynamically through `applyViewState()`. Pages are one-based. OCR pixel coordinates use `pixel` plus the source image dimensions. Native PDF coordinates use `pdf-point` and default to a bottom-left origin. `ratio` and `percent` default to a top-left origin. A single box or an array is accepted, and highlights stay attached through zoom and rotation.
+
+```ts
+const options = {
+  pdf: {
+    bbox: {
+      page: 3,
+      x: 120,
+      y: 240,
+      width: 360,
+      height: 64,
+      unit: 'pixel',
+      sourceWidth: 1440,
+      sourceHeight: 2036,
+      label: 'Contract amount'
+    }
+  }
+}
+
+await viewer.applyViewState({
+  page: 5,
+  extra: {
+    bbox: { page: 5, x: 72, y: 640, width: 220, height: 36, unit: 'pdf-point' }
+  }
+}, { source: 'api', action: 'bbox-focus' })
+
+await viewer.applyViewState(
+  { extra: { bbox: null } },
+  { source: 'api', action: 'bbox-clear' }
+)
+```
 
 PDF default assets are probed from the site root (`/vendor/pdf/...`) so Vue Router, React Router, and other deep routes do not accidentally request `vendor/pdf/pdf.worker.mjs` from the current page path. When the static worker is missing or an app server falls back to HTML, the PDF renderer lazy-loads the packaged PDF.js worker handler as a compatibility fallback. Use absolute `pdf.workerUrl`, `pdf.cMapUrl`, `pdf.wasmUrl`, and `pdf.standardFontDataUrl` when deploying under a sub-path, a dedicated static asset domain, or a strict CSP. PPTX uses the `@file-viewer/pptx` worker on demand; set `presentation.workerUrl` and, when necessary, `presentation.workerType` for custom worker routes. Binary `.ppt` uses `@file-viewer/ppt@0.3.2`; standard distributions keep its verified ESM/Worker/WASM/font files together under `vendor/ppt/`. Configure `presentation.pptModuleUrl`, `pptWorkerUrl`, `pptWasmUrl`, and `pptFontUrl` only for a custom layout.

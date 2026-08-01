@@ -611,6 +611,12 @@ export interface FileViewerPdfOptions {
   thumbnails?: boolean;
   rotation?: number;
   /**
+   * Highlights and focuses one or more PDF regions after the document loads.
+   * Use `pixel` with `sourceWidth` / `sourceHeight` for OCR coordinates, or
+   * `pdf-point` for native PDF coordinates. Page numbers are one-based.
+   */
+  bbox?: FileViewerPdfBoundingBox | readonly FileViewerPdfBoundingBox[];
+  /**
    * Initial PDF view position. Prefer the top-level `initialViewState` when the
    * same state should be passed through framework-neutral viewer APIs.
    */
@@ -645,6 +651,32 @@ export interface FileViewerPdfOptions {
    * the bundled font license. The path is resolved against the document base.
    */
   cjkFontFallbackPath?: string;
+}
+
+export type FileViewerPdfBoundingBoxUnit = 'ratio' | 'percent' | 'pixel' | 'pdf-point';
+
+export type FileViewerPdfBoundingBoxOrigin = 'top-left' | 'bottom-left';
+
+export interface FileViewerPdfBoundingBox {
+  id?: string;
+  /** One-based PDF page number. Defaults to the current page, then page 1. */
+  page?: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Defaults to `pdf-point`. */
+  unit?: FileViewerPdfBoundingBoxUnit;
+  /** Defaults to `bottom-left` for PDF points and `top-left` otherwise. */
+  origin?: FileViewerPdfBoundingBoxOrigin;
+  /** Required when `unit` is `pixel`; this is the OCR/source image width. */
+  sourceWidth?: number;
+  /** Required when `unit` is `pixel`; this is the OCR/source image height. */
+  sourceHeight?: number;
+  /** CSS color used for the outline and translucent fill. */
+  color?: string;
+  /** Optional accessible description for the highlighted region. */
+  label?: string;
 }
 
 export interface FileViewerDocxOptions {
