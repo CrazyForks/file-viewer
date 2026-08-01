@@ -64,13 +64,11 @@ import {
 } from './pdfFit.js';
 import {
   createPdfBoundingBoxController,
-  type PdfBoundingBoxController,
 } from './pdfBboxController.js';
 import {
   clampPdfScale,
   normalizePdfRotation,
   resolvePdfViewStateUpdate,
-  type PdfRotation,
 } from './pdfViewState.js';
 import {
   capturePdfJsWorkerGlobal,
@@ -535,7 +533,6 @@ export default async function renderPdf(
   let suppressScrollEventUntil = 0;
   let userScrollIntentUntil = 0;
   let scrollStateFrame = 0;
-  let pdfBoundingBoxController: PdfBoundingBoxController;
   let pdfSearchState = createPdfSearchState();
   let pdfMatchesCount: PdfFindMatchesCount = { current: 0, total: 0 };
   let pdfSearchOptions: FileViewerSearchOptions | undefined;
@@ -1281,7 +1278,7 @@ export default async function renderPdf(
     suppressScrollEventUntil = Math.max(suppressScrollEventUntil, Date.now() + 180);
   };
 
-  pdfBoundingBoxController = createPdfBoundingBoxController({
+  const pdfBoundingBoxController = createPdfBoundingBoxController({
     documentRef,
     targetWindow,
     viewerRoot: pdfViewerRoot,

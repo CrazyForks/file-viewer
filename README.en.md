@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <strong>v2.2.4 · 208 extensions across 25 preview pipelines · 54 npm targets.</strong> Heavy paths load only when the active format needs them.
+  <strong>v2.2.5 · 208 extensions across 25 preview pipelines · 54 npm targets.</strong> Heavy paths load only when the active format needs them.
 </p>
 
 <p align="center">
@@ -36,7 +36,7 @@
 </p>
 
 <p align="center">
-  <a href="https://demo.file-viewer.app/"><img src="docs/public/_media/file-viewer-demo-v2.2.4-formats-en.gif" width="920" alt="File Viewer v2.2.4 English product demo showing rich DOCX, PPTX, DWG, and interactive 3D STEP previews in the immersive workspace"></a>
+  <a href="https://demo.file-viewer.app/"><img src="docs/public/_media/file-viewer-demo-v2.2.5-formats-en.gif" width="920" alt="File Viewer v2.2.5 English product demo showing rich DOCX, PPTX, DWG, and interactive 3D STEP previews in the immersive workspace"></a>
 </p>
 
 ## Why File Viewer
@@ -161,7 +161,7 @@ See [on-demand renderers and presets](https://doc.file-viewer.app/guide/on-deman
 
 ## Capability at a Glance
 
-The v2.2.4 registry maps **208 file extensions** into **25 rendering pipelines**, distributed through **54 npm targets**. Presentation preview deliberately keeps two engine boundaries: PowerPoint 97–2003 `.ppt` uses the native-WASM `@file-viewer/ppt@0.3.2` engine, while PPTX/OpenXML uses the `@file-viewer/pptx` Worker engine. STEP/STP, IGES/IGS, and BREP use the packaged local OCCT Worker/WASM path instead of a conversion hint. EPUB uses a packaged lazy engine built against the pinned safe XML DOM implementation, so it adds no external runtime or CDN dependency. Other major groups include PDF; Word and spreadsheets; OFD; DWG/DXF/DWF/DWFX; archives; EML/MSG; Markdown and source code; Draw.io, Excalidraw, Mermaid and PlantUML; PSD and images; audio/video; ebooks; mind maps; 3D/geo/data/EDA formats; and Typst.
+The v2.2.5 registry maps **208 file extensions** into **25 rendering pipelines**, distributed through **54 npm targets**. Presentation preview deliberately keeps two engine boundaries: PowerPoint 97–2003 `.ppt` uses the native-WASM `@file-viewer/ppt@0.3.2` engine, while PPTX/OpenXML uses the `@file-viewer/pptx` Worker engine. STEP/STP, IGES/IGS, and BREP use the packaged local OCCT Worker/WASM path instead of a conversion hint. EPUB uses a packaged lazy engine built against the pinned safe XML DOM implementation, so it adds no external runtime or CDN dependency. Other major groups include PDF; Word and spreadsheets; OFD; DWG/DXF/DWF/DWFX; archives; EML/MSG; Markdown and source code; Draw.io, Excalidraw, Mermaid and PlantUML; PSD and images; audio/video; ebooks; mind maps; 3D/geo/data/EDA formats; and Typst.
 
 The exact implementation and support level varies by format. Use the maintained [format matrix](https://doc.file-viewer.app/guide/formats) as the source of truth rather than inferring support from an extension alone.
 
@@ -178,12 +178,6 @@ The standalone [comparison demo](https://demo.file-viewer.app/compare.html) keep
 - A light component does not silently include every renderer. Install a preset, individual renderers, or a full package.
 
 If a documented format fails on a real file, the most useful contribution is a **sanitized sample**, browser/version details and a minimal reproduction.
-
-## OpenAI Build Week 2026
-
-File Viewer started in 2022. The OpenAI Build Week submission covers only the work added from July 13, 2026: the v2.2 workspace, native PPT and STEP/OCCT preview paths, the bundled EPUB engine, and the release checks that keep Worker, WASM, font, and vendor assets working offline. The older core and format pipelines are context, not claimed as hackathon work.
-
-[Read the exact scope, Codex session, public commits, and test evidence](docs/en/guide/openai-build-week-2026.md).
 
 ## Support the Work
 

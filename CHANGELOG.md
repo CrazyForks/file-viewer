@@ -2,6 +2,26 @@
 
 完整对外更新日志见 [docs/changelog.md](docs/changelog.md)。
 
+## File Viewer v2.2.5 — 2026-08-01
+
+这是文档审阅、打印和复杂 Office 图形渲染补丁。能力矩阵保持 54 个 npm 目标、208 个扩展名和 25 条预览链路。
+
+### Highlights
+
+- 独立文档比对页新增基于 `jsdiff` 的真实文字 diff：逐行对齐、字符级增删标记、差异统计和上下导航；DOCX / 文本为稳定路径，PDF 文本层不完整时主动中止，扫描件明确提示 OCR 边界（#145）。
+- 打印蒙版新增本地印章图片上传、跨页定位、拖动、缩放、删除和打印 HTML 导出，原有蒙版工作流保持兼容（#157）。
+- 新增文件加载前检查与 PDF 可视区域聚焦定位；PDF 区域边界、同步滚动、图片旋转和 Lightbox 交互完成回归（#151/#154）。
+- Geo renderer 新增天地图矢量、影像和地形底图预设，并保持离线和显式配置边界（#153）。
+- 修复 DOCX 页面背景与覆盖层、PPTX 图表残留、组合梯形几何和层级渲染，以及首页静态 HTML 返回给模块脚本导致的 MIME 错误。
+- Vue 2.6 / webpack 4 客户样例、Docker 上下文、组件构建和公开仓发布链路完成稳定性加固。
+
+### Upgrade
+
+```bash
+pnpm add @file-viewer/vue3-full@2.2.5
+pnpm add -D @file-viewer/vite-plugin@2.2.5
+```
+
 ## File Viewer v2.2.4 — 2026-07-28
 
 这是 DOCX/CAD 运行时升级和沉浸式预览稳定性补丁。能力矩阵保持 54 个 npm 目标、208 个扩展名和 25 条预览链路。

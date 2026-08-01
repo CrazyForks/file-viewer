@@ -2297,14 +2297,23 @@ code.hljs {
   line-height: 1.6;
 }
 
-.kittylaunch-badge {
-  display: inline-flex;
-  flex: 0 0 auto;
+.footer-badges {
+  display: grid;
+  grid-template-columns: minmax(0, 280fr) minmax(0, 204fr);
+  align-items: center;
+  gap: 12px;
+  width: min(496px, 100%);
+  flex: 0 1 496px;
 }
 
-.kittylaunch-badge img {
+.footer-badge {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.footer-badge img {
   display: block;
-  width: min(280px, 100%);
+  width: 100%;
   height: auto;
 }
 

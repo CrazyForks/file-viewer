@@ -156,7 +156,7 @@ const githubUrl = 'https://github.com/flyfish-dev/file-viewer'
 const githubApiUrl = 'https://api.github.com/repos/flyfish-dev/file-viewer'
 const githubStarCountFallback = 739
 const releasesUrl = 'https://github.com/flyfish-dev/file-viewer/releases'
-const currentReleaseVersion = '2.2.4'
+const currentReleaseVersion = '2.2.5'
 const currentReleaseUrl = `${releasesUrl}/tag/v${currentReleaseVersion}`
 const githubSponsorsUrl = 'https://github.com/sponsors/wybaby168'
 const domesticSponsorUrl = 'https://dev.flyfish.group/sponsor?source=github'
@@ -167,12 +167,12 @@ const commercialDemoUrl = 'https://office.flyfish.dev/'
 const siteRootUrl = 'https://file-viewer.app/'
 const siteEnglishUrl = `${siteRootUrl}en/`
 const demoPreviewDesktopPaths = {
-  zh: '/file-viewer-demo-v2.2.4-desktop-zh.webp',
-  en: '/file-viewer-demo-v2.2.4-desktop-en.webp'
+  zh: '/file-viewer-demo-v2.2.5-desktop-zh.webp',
+  en: '/file-viewer-demo-v2.2.5-desktop-en.webp'
 } satisfies Record<Locale, string>
 const demoPreviewMobilePaths = {
-  zh: '/file-viewer-demo-v2.2.4-mobile-zh.webp',
-  en: '/file-viewer-demo-v2.2.4-mobile-en.webp'
+  zh: '/file-viewer-demo-v2.2.5-mobile-zh.webp',
+  en: '/file-viewer-demo-v2.2.5-mobile-en.webp'
 } satisfies Record<Locale, string>
 const sitePreviewImageUrls = {
   zh: `${siteRootUrl}${demoPreviewDesktopPaths.zh.slice(1)}`,
@@ -199,7 +199,7 @@ const siteMetadata = {
       'File Viewer by Flyfish 是浏览器原生、离线优先的多格式预览组件：208 个扩展名通过 25 条独立预览链路按需加载，54 个 npm 目标覆盖主流前端生态。',
     ogLocale: 'zh_CN',
     ogLocaleAlternate: 'en_US',
-    imageAlt: 'File Viewer v2.2.4 浏览器原生 DOCX 预览工作区'
+    imageAlt: 'File Viewer v2.2.5 浏览器原生 DOCX 预览工作区'
   },
   en: {
     lang: 'en',
@@ -209,7 +209,7 @@ const siteMetadata = {
       'File Viewer by Flyfish is a browser-native, offline-first preview component. It routes 208 extensions through 25 lazy preview pipelines and ships 54 npm targets for the main frontend stacks.',
     ogLocale: 'en_US',
     ogLocaleAlternate: 'zh_CN',
-    imageAlt: 'File Viewer v2.2.4 browser-native DOCX preview workspace'
+    imageAlt: 'File Viewer v2.2.5 browser-native DOCX preview workspace'
   }
 } satisfies Record<Locale, SiteMetadata>
 
@@ -309,7 +309,7 @@ const copy = {
       demo: '在线体验'
     },
     hero: {
-      eyebrow: 'v2.2.4 · 208 个扩展名 · 无需转码服务器',
+      eyebrow: 'v2.2.5 · 208 个扩展名 · 无需转码服务器',
       title: '文件预览，全部在浏览器完成。',
       subtitle:
         '为了预览一份内部 DOCX 就把它上传到服务器，糟透了。File Viewer 让 Office、PDF、CAD、压缩包、邮件等文件留在浏览器里，并且可以完整离线部署。',
@@ -341,7 +341,7 @@ const copy = {
     supportTitle: '支持 File Viewer 持续维护，也为企业需求保留清晰入口。',
     supportIntro:
       'GitHub Sponsors 支持一次性或持续赞助，国内用户也可使用微信或支付宝。赞助用于开源维护，不影响开源功能；私有化、定制与明确响应时间请使用企业技术支持入口。',
-    releaseTitle: 'v2.2.4 已发布：DOCX 0.3.26、CAD 0.8.0，以及 OFD 闪烁与 STEP 清晰度修复已上线。',
+    releaseTitle: 'v2.2.5 已发布：DOCX 0.3.26、CAD 0.8.0，以及 OFD 闪烁与 STEP 清晰度修复已上线。',
     footer:
       '本仓库源码与软件包采用 Apache-2.0；可选外部依赖保留各自许可。由 Flyfish Dev 持续维护。'
   },
@@ -357,7 +357,7 @@ const copy = {
       demo: 'Live Demo'
     },
     hero: {
-      eyebrow: 'v2.2.4 · 208 extensions · no conversion server',
+      eyebrow: 'v2.2.5 · 208 extensions · no conversion server',
       title: 'Preview files entirely in the browser.',
       subtitle:
         'Uploading a private DOCX just to preview it is awful. File Viewer keeps Office, PDF, CAD, archives, email, and more in the browser, with every runtime asset ready for self-hosting.',
@@ -389,7 +389,7 @@ const copy = {
     supportTitle: 'Support sustainable maintenance, with a clear path for enterprise help.',
     supportIntro:
       'Back the open-source work through GitHub Sponsors, buy us a lemonade in the support shop, or explore the commercial edition when Office fidelity, private delivery, and committed support matter.',
-    releaseTitle: 'v2.2.4 is live: DOCX 0.3.26, CAD 0.8.0, and fixes for OFD flashing and blurry repeated STEP previews.',
+    releaseTitle: 'v2.2.5 is live: DOCX 0.3.26, CAD 0.8.0, and fixes for OFD flashing and blurry repeated STEP previews.',
     footer:
       'Repository source and packages use Apache-2.0; optional external dependencies keep their own licenses. Maintained by Flyfish Dev.'
   }
@@ -645,7 +645,7 @@ const quickStartItems = computed<QuickStartItem[]>(() => [
   {
     label: isZh.value ? 'Vanilla JS Full' : 'Vanilla JS Full',
     packageName: '@file-viewer/web-full',
-    install: 'npm install @file-viewer/web-full@2.2.4',
+    install: 'npm install @file-viewer/web-full@2.2.5',
     title: isZh.value ? '完整部署 dist，零 copy 直接预览' : 'Deploy the complete dist with zero copy steps',
     summary: isZh.value
       ? 'web-full 内置 preset-all；完整 dist 已包含 renderer、Worker、WASM、字体和 vendor，保持目录结构部署即可。'
@@ -2229,7 +2229,7 @@ onBeforeUnmount(() => {
                 <source media="(max-width: 760px)" :srcset="demoPreviewMobilePath" />
                 <img
                   :src="demoPreviewDesktopPath"
-                  :alt="isZh ? 'File Viewer v2.2.4 沉浸式 DOCX 预览界面' : 'File Viewer v2.2.4 immersive DOCX preview UI'"
+                  :alt="isZh ? 'File Viewer v2.2.5 沉浸式 DOCX 预览界面' : 'File Viewer v2.2.5 immersive DOCX preview UI'"
                   width="1600"
                   height="900"
                   loading="lazy"
@@ -2634,21 +2634,40 @@ onBeforeUnmount(() => {
       </div>
       <div class="footer-bottom">
         <p>{{ currentCopy.footer }}</p>
-        <a
-          class="kittylaunch-badge"
-          href="https://kittylaunch.com/p/file-viewer"
-          target="_blank"
-          rel="noopener"
-        >
-          <img
-            src="https://kittylaunch.com/api/public/badges/launch_badge.svg?theme=light&name=File%20Viewer"
-            width="280"
-            alt="File Viewer on KittyLaunch"
-            data-kittylaunch-badge="1"
-            loading="lazy"
-            decoding="async"
-          />
-        </a>
+        <div class="footer-badges" aria-label="File Viewer directory badges">
+          <a
+            class="footer-badge kittylaunch-badge"
+            href="https://kittylaunch.com/p/file-viewer"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              src="https://kittylaunch.com/api/public/badges/launch_badge.svg?theme=light&name=File%20Viewer"
+              width="280"
+              height="68"
+              alt="File Viewer on KittyLaunch"
+              data-kittylaunch-badge="1"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+          <a
+            class="footer-badge saashub-badge"
+            href="https://www.saashub.com/fileviewer-app"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1"
+              width="300"
+              height="100"
+              alt="FileViewer.app is approved on SaaSHub"
+              data-saashub-badge="1"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+        </div>
       </div>
     </footer>
   </main>
