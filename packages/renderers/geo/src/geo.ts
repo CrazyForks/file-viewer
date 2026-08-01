@@ -87,6 +87,14 @@ const MAX_MAP_ZOOM = 22;
 const OPENFREEMAP_TILE_ORIGIN = 'https://tiles.openfreemap.org';
 const OSM_RASTER_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const OSM_ATTRIBUTION = '&copy; OpenStreetMap contributors';
+const TIANDITU_ATTRIBUTION = '天地图';
+const TIANDITU_SUBDOMAINS = Array.from({ length: 8 }, (_, index) => `t${index}`);
+
+const TIANDITU_STYLE_PRESETS = {
+  'tianditu-vector': { mapStyle: 'vector', label: 'Tianditu Vector' },
+  'tianditu-imagery': { mapStyle: 'imagery', label: 'Tianditu Imagery' },
+  'tianditu-terrain': { mapStyle: 'terrain', label: 'Tianditu Terrain' },
+} as const;
 
 const OPENFREEMAP_STYLE_PRESETS: Record<string, { style: string; label: string }> = {
   openfreemap: { style: 'liberty', label: 'OpenFreeMap Liberty' },
@@ -858,6 +866,83 @@ const createRasterBasemapStyle = (
   };
 };
 
+const createTiandituTileUrls = (layer: string, token: string) => (
+  TIANDITU_SUBDOMAINS.map(subdomain => (
+    `https://${subdomain}.tianditu.gov.cn/DataServer?T=${layer}&x={x}&y={y}&l={z}&tk=${encodeURIComponent(token)}`
+  ))
+);
+
+const createTiandituBasemapStyle = (
+  token: string,
+  mapStyle: NonNullable<FileViewerGeoBasemapOptions['mapStyle']>,
+  labels: boolean
+) => {
+  const layerCodes = {
+    vector: ['vec_w', 'cva_w'],
+    imagery: ['img_w', 'cia_w'],
+    terrain: ['ter_w', 'cta_w'],
+  } as const;
+  const [baseLayer, labelLayer] = layerCodes[mapStyle];
+  const sources: Record<string, unknown> = {
+    'geo-tianditu-base': {
+      type: 'raster',
+      tiles: createTiandituTileUrls(baseLayer, token),
+      tileSize: 256,
+      minzoom: 0,
+      maxzoom: 18,
+      attribution: TIANDITU_ATTRIBUTION,
+    },
+  };
+  const layers: Record<string, unknown>[] = [
+    {
+      id: 'geo-background',
+      type: 'background',
+      paint: { 'background-color': '#eef2f5' },
+    },
+    {
+      id: 'geo-tianditu-base',
+      type: 'raster',
+      source: 'geo-tianditu-base',
+    },
+  ];
+  if (labels) {
+    sources['geo-tianditu-labels'] = {
+      type: 'raster',
+      tiles: createTiandituTileUrls(labelLayer, token),
+      tileSize: 256,
+      minzoom: 0,
+      maxzoom: 18,
+      attribution: TIANDITU_ATTRIBUTION,
+    };
+    layers.push({
+      id: 'geo-tianditu-labels',
+      type: 'raster',
+      source: 'geo-tianditu-labels',
+    });
+  }
+  return { version: 8, sources, layers };
+};
+
+const createTiandituBasemapConfig = (
+  token: string | undefined,
+  mapStyle: NonNullable<FileViewerGeoBasemapOptions['mapStyle']>,
+  labels: boolean,
+  label: string,
+  t: FileViewerTranslator
+): ResolvedGeoBasemapConfig => {
+  const normalizedToken = token?.trim();
+  if (!normalizedToken) {
+    console.warn('[file-viewer] Tianditu basemap requires options.geo.tiandituToken or basemap.token; using the offline basemap.');
+    return createOfflineBasemapConfig(t);
+  }
+  return {
+    kind: 'raster',
+    label,
+    style: createTiandituBasemapStyle(normalizedToken, mapStyle, labels),
+    attributionControl: true,
+  };
+};
+
 const createOfflineBasemapConfig = (t: FileViewerTranslator): ResolvedGeoBasemapConfig => ({
   kind: 'offline',
   label: t('geo.basemap.offline'),
@@ -901,10 +986,30 @@ export const resolveFileViewerGeoBasemapConfig = (
         'OpenStreetMap Raster'
       );
     }
+    const tiandituPreset = TIANDITU_STYLE_PRESETS[basemap as keyof typeof TIANDITU_STYLE_PRESETS];
+    if (tiandituPreset) {
+      return createTiandituBasemapConfig(
+        options?.tiandituToken,
+        tiandituPreset.mapStyle,
+        true,
+        tiandituPreset.label,
+        t
+      );
+    }
   }
   if (isRecord(basemap)) {
     const config = basemap as FileViewerGeoBasemapOptions;
     const label = config.label?.trim() || t('geo.basemap.custom');
+    if (config.type === 'tianditu') {
+      const mapStyle = config.mapStyle || 'vector';
+      return createTiandituBasemapConfig(
+        config.token || options?.tiandituToken,
+        mapStyle,
+        config.labels !== false,
+        config.label?.trim() || `Tianditu ${mapStyle[0].toUpperCase()}${mapStyle.slice(1)}`,
+        t
+      );
+    }
     if ((config.type === 'vector-style' || config.styleUrl || config.style) && (config.styleUrl || config.style)) {
       return {
         kind: 'vector-style',

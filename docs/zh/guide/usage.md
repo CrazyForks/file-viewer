@@ -683,6 +683,20 @@ const options = {
 
 中国大陆生产环境推荐把 OpenFreeMap / OpenMapTiles 这类国际化开源底图栈自托管或镜像后，通过 `geo.basemap.styleUrl` 或 `geo.tileUrl` 接入；OpenStreetMap 官方 raster 瓦片只作为 `osm-raster` 显式 opt-in preset 提供，适合 demo 或低频访问，不应当作为高并发生产默认底图。
 
+也可以使用天地图矢量、影像或地形底图。调用方需要自行申请与部署域名匹配的 token；viewer 会同时加载对应的底图和注记图层，且不会内置或保存 token：
+
+```ts
+const options = {
+  renderers: [geoRenderer],
+  geo: {
+    basemap: 'tianditu-vector',
+    tiandituToken: import.meta.env.VITE_TIANDITU_TOKEN,
+  },
+}
+```
+
+另外两个 preset 是 `tianditu-imagery` 和 `tianditu-terrain`。需要隐藏注记时使用 `{ type: 'tianditu', token, mapStyle: 'imagery', labels: false }`；缺少 token 时会回退到离线空底图。
+
 坐标系默认归一化到 WGS84。标准 GeoJSON 按 `EPSG:4326` 读取；带 `crs` 的 GeoJSON 会按声明转换；未声明但坐标超出经纬度范围时会自动推断 Web Mercator；业务系统也可以通过 `options.geo.projection` 显式指定 `EPSG:3857`、`EPSG:4490`、`GCJ02`、`BD09` 或 proj4 字符串。WebGL 不可用时会回退 SVG 矢量预览。海量要素抽稀或空间分析仍建议在业务 GIS 模块中处理。
 
 `.excalidraw` 默认使用 `roughjs` 生成只读 SVG 预览，运行环境提供官方 `@excalidraw/excalidraw` ESM 模块时会优先尝试 `exportToSvg`；`.drawio` / `.dio` 默认使用随 viewer assets 分发的官方 diagrams.net `GraphViewer` 离线预览。静态路径特殊时可通过 `options.drawing.viewerScriptUrl` 指定自托管 `viewer-static.min.js`，组件会把同目录下的 styles、shapes、stencils、img、mxgraph 和 math 资源用于离线渲染；官方 viewer 异常时会回退内置 SVG。

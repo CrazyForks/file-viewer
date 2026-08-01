@@ -86,7 +86,21 @@ const options = {
 }
 ```
 
-内置 preset 包含 `openfreemap-liberty`、`openfreemap-bright`、`openfreemap-positron`、`openfreemap-dark`、`openfreemap-fiord` 和显式 opt-in 的 `osm-raster`。`osm-raster` 只建议用于 demo 或低频访问，生产环境请遵守 OpenStreetMap 官方 tile policy，配置可替换 URL、缓存和正确 attribution。中国大陆生产环境更推荐用 OpenFreeMap / OpenMapTiles 栈自托管到内网或国内 CDN，再通过 `styleUrl` 或 `tileUrl` 接入。
+天地图需要使用在天地图控制台为部署域名申请的 token。内置 preset 会同时加载对应的底图和中文注记图层：
+
+```ts
+const options = {
+  renderers: [geoRenderer],
+  geo: {
+    basemap: 'tianditu-vector', // 也支持 tianditu-imagery / tianditu-terrain
+    tiandituToken: import.meta.env.VITE_TIANDITU_TOKEN,
+  },
+}
+```
+
+需要隐藏注记时可使用对象形式：`basemap: { type: 'tianditu', token, mapStyle: 'imagery', labels: false }`。组件不会内置、保存或代理 token；未提供 token 时会安全回退到离线空底图。
+
+内置 preset 包含 `openfreemap-liberty`、`openfreemap-bright`、`openfreemap-positron`、`openfreemap-dark`、`openfreemap-fiord`、显式 opt-in 的 `osm-raster`，以及需要调用方 token 的 `tianditu-vector`、`tianditu-imagery`、`tianditu-terrain`。`osm-raster` 只建议用于 demo 或低频访问，生产环境请遵守 OpenStreetMap 官方 tile policy，配置可替换 URL、缓存和正确 attribution。中国大陆也可以把 OpenFreeMap / OpenMapTiles 栈自托管到内网或国内 CDN，再通过 `styleUrl` 或 `tileUrl` 接入。
 
 ## 迁移说明
 

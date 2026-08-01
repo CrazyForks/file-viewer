@@ -148,6 +148,7 @@
 - `geojson` 会直接读取标准 GeoJSON；`kml` / `gpx` 使用 `@file-viewer/renderer-geo` 内部按需加载的 `@tmcw/togeojson` 转换为 GeoJSON；`shp` 使用同包内按需加载的 `shpjs` 解析 Shapefile 压缩包或二进制内容。
 - 默认通过离线 MapLibre 空底图渲染点、线、面叠加层，支持平移、缩放、适配范围和统一工具栏缩放；不依赖在线地图底图或公网 CDN。
 - 需要真实底图时可显式配置 `options.geo.tileUrl`，例如 `/tiles/world/{z}/{x}/{y}.png`，也可以通过 `options.geo.basemap` 使用 `openfreemap-liberty` 等 OpenFreeMap 国际化开源底图 preset，或传入 `{ type: 'vector-style', styleUrl: '/maps/styles/liberty/style.json' }` 指向内网 / 国内 CDN / 离线静态目录。
+- 天地图可使用 `tianditu-vector`、`tianditu-imagery`、`tianditu-terrain` preset，并通过 `options.geo.tiandituToken` 传入调用方为部署域名申请的 token。底图与注记图层会成对加载；viewer 不内置或保存 token，缺少 token 时回退离线空底图。
 - `osm-raster` 作为显式 opt-in preset 仅适合 demo 或低频访问；生产环境应遵守 OpenStreetMap 官方 tile policy，保留可替换 URL、缓存和 attribution。中国大陆生产环境更推荐把 OpenFreeMap / OpenMapTiles 栈自托管或镜像后再接入。
 - 坐标系会归一化到 WGS84：标准 GeoJSON 默认按 `EPSG:4326`，也会读取 GeoJSON `crs`、自动推断 Web Mercator，并支持通过 `options.geo.projection` 声明 `EPSG:3857`、`EPSG:4490`、`GCJ02`、`BD09` 或 proj4 字符串。
 - WebGL 或 MapLibre 初始化不可用时会回退 SVG 矢量预览，仍会展示要素数量、坐标范围和点线面结构。

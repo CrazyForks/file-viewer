@@ -897,14 +897,21 @@ export type FileViewerGeoBasemapPreset =
   | 'openfreemap-positron'
   | 'openfreemap-dark'
   | 'openfreemap-fiord'
-  | 'osm-raster';
+  | 'osm-raster'
+  | 'tianditu-vector'
+  | 'tianditu-imagery'
+  | 'tianditu-terrain';
+
+export type FileViewerTiandituMapStyle = 'vector' | 'imagery' | 'terrain';
 
 export interface FileViewerGeoBasemapOptions {
   /**
    * `raster` uses XYZ/TMS image tiles. `vector-style` uses a MapLibre style
    * object or URL, which is the best path for OpenFreeMap/OpenMapTiles stacks.
+   * `tianditu` builds the official base and annotation raster layers from the
+   * caller-provided Tianditu token.
    */
-  type?: 'raster' | 'vector-style';
+  type?: 'raster' | 'vector-style' | 'tianditu';
   /**
    * Raster XYZ/TMS tile template, for example `/tiles/{z}/{x}/{y}.png`.
    */
@@ -928,6 +935,12 @@ export interface FileViewerGeoBasemapOptions {
   maxZoom?: number;
   scheme?: 'xyz' | 'tms';
   rasterOpacity?: number;
+  /** Tianditu API token. Required when `type` is `tianditu`. */
+  token?: string;
+  /** Tianditu map family. Defaults to `vector`. */
+  mapStyle?: FileViewerTiandituMapStyle;
+  /** Include the matching Tianditu annotation layer. Defaults to true. */
+  labels?: boolean;
 }
 
 export interface FileViewerGeoOptions {
@@ -954,6 +967,11 @@ export interface FileViewerGeoOptions {
    * self-hosted or intranet style/tile URL.
    */
   basemap?: false | FileViewerGeoBasemapPreset | FileViewerGeoBasemapOptions;
+  /**
+   * Tianditu API token used by the `tianditu-*` presets. The viewer never
+   * supplies or persists a token; obtain one for the deployment's own domain.
+   */
+  tiandituToken?: string;
   /**
    * Defaults to true. When no CRS is declared and coordinates exceed longitude
    * or latitude ranges, the geo renderer treats Web Mercator-sized values as

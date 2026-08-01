@@ -88,7 +88,21 @@ const options = {
 }
 ```
 
-Built-in presets include `openfreemap-liberty`, `openfreemap-bright`, `openfreemap-positron`, `openfreemap-dark`, `openfreemap-fiord`, and explicit opt-in `osm-raster`. Use `osm-raster` only for demos or low-volume traffic; production deployments should follow the official OpenStreetMap tile policy, keep the URL replaceable, cache correctly, and show attribution. For China mainland production deployments, prefer self-hosting or mirroring the OpenFreeMap / OpenMapTiles stack to an intranet or domestic CDN, then connect it through `styleUrl` or `tileUrl`.
+Tianditu requires a token registered for the deployment's domain. Each built-in preset combines its base and annotation layers:
+
+```ts
+const options = {
+  renderers: [geoRenderer],
+  geo: {
+    basemap: 'tianditu-vector', // or tianditu-imagery / tianditu-terrain
+    tiandituToken: import.meta.env.VITE_TIANDITU_TOKEN,
+  },
+}
+```
+
+Use `basemap: { type: 'tianditu', token, mapStyle: 'imagery', labels: false }` to omit annotations. The viewer never bundles, stores, or proxies the token; a missing token safely falls back to the offline empty basemap.
+
+Built-in presets include `openfreemap-liberty`, `openfreemap-bright`, `openfreemap-positron`, `openfreemap-dark`, `openfreemap-fiord`, explicit opt-in `osm-raster`, and the caller-token-based `tianditu-vector`, `tianditu-imagery`, and `tianditu-terrain` presets. Use `osm-raster` only for demos or low-volume traffic; production deployments should follow the official OpenStreetMap tile policy, keep the URL replaceable, cache correctly, and show attribution. OpenFreeMap / OpenMapTiles can also be self-hosted or mirrored to an intranet or domestic CDN and connected through `styleUrl` or `tileUrl`.
 
 ## Migration Note
 

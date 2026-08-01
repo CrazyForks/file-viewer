@@ -1102,6 +1102,7 @@ export type {
   FileViewerGeoBasemapOptions,
   FileViewerGeoBasemapPreset,
   FileViewerGeoOptions,
+  FileViewerTiandituMapStyle,
   FileRenderContext,
   FileRenderExportAdapter,
   FileRenderThumbnailAdapter,
