@@ -1,4 +1,5 @@
 import type { DocxProgressEvent, Options, renderAsync } from '@file-viewer/docx'
+import JSZip from 'jszip'
 import {
   resolveFileViewerDocxWorkerJsZipUrl,
   resolveFileViewerDocxWorkerUrl,
@@ -36,6 +37,26 @@ const DOCX_MAX_SCALE = 3
 const DOCX_ZOOM_STEP = 0.15
 const DOCX_VENDOR_ASSET_VERSION = '0.3.26'
 const ZIP_SIGNATURE_PK = 0x504b
+const WORDPROCESSINGML_NAMESPACE = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+const OFFICE_RELATIONSHIP_NAMESPACE =
+  'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
+const PACKAGE_RELATIONSHIP_NAMESPACE =
+  'http://schemas.openxmlformats.org/package/2006/relationships'
+const VML_NAMESPACE = 'urn:schemas-microsoft-com:vml'
+const DOCX_DOCUMENT_PART = 'word/document.xml'
+const DOCX_DOCUMENT_RELATIONSHIPS_PART = 'word/_rels/document.xml.rels'
+const DOCX_PAGE_BACKGROUND_CLASS = 'docx-page-background'
+const DOCX_BACKGROUND_MIME_TYPES: Record<string, string> = {
+  bmp: 'image/bmp',
+  gif: 'image/gif',
+  jpeg: 'image/jpeg',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  svg: 'image/svg+xml',
+  tif: 'image/tiff',
+  tiff: 'image/tiff',
+  webp: 'image/webp'
+}
 
 type DocxLibrary = {
   defaultOptions: Options
@@ -130,6 +151,11 @@ const getTargetWindow = (target: HTMLDivElement) => {
   return target.ownerDocument.defaultView
 }
 
+const createTargetXmlParser = (target: HTMLDivElement) => {
+  const DOMParserCtor = getTargetWindow(target)?.DOMParser ?? globalThis.DOMParser
+  return new DOMParserCtor()
+}
+
 const getTargetProtocol = (target: HTMLDivElement) => {
   const candidates = [
     target.ownerDocument.URL,
@@ -146,6 +172,142 @@ const getTargetProtocol = (target: HTMLDivElement) => {
   }
 
   return ''
+}
+
+type DocxXmlSearchRoot = Pick<XMLDocument, 'getElementsByTagName' | 'getElementsByTagNameNS'>
+
+const getElementsByLocalName = (root: DocxXmlSearchRoot, namespace: string, localName: string) => {
+  const namespaced = Array.from(root.getElementsByTagNameNS(namespace, localName))
+  if (namespaced.length) {
+    return namespaced
+  }
+
+  return Array.from(root.getElementsByTagName('*')).filter(
+    element => element.localName === localName
+  )
+}
+
+const parseDocxXml = (source: string, parser: Pick<DOMParser, 'parseFromString'>) => {
+  const xml = parser.parseFromString(source, 'application/xml')
+  return getElementsByLocalName(
+    xml,
+    'http://www.mozilla.org/newlayout/xml/parsererror.xml',
+    'parsererror'
+  ).length
+    ? null
+    : xml
+}
+
+const resolvePackagePartPath = (basePart: string, relationshipTarget: string) => {
+  const segments = relationshipTarget.startsWith('/') ? [] : basePart.split('/').slice(0, -1)
+
+  relationshipTarget
+    .replace(/^\/+/, '')
+    .split('/')
+    .forEach(segment => {
+      if (!segment || segment === '.') {
+        return
+      }
+      if (segment === '..') {
+        segments.pop()
+        return
+      }
+      segments.push(segment)
+    })
+
+  return segments.join('/')
+}
+
+const resolveDocxImageMimeType = (partName: string) => {
+  const extension = partName.split('.').pop()?.toLowerCase() || ''
+  return DOCX_BACKGROUND_MIME_TYPES[extension]
+}
+
+/**
+ * WPS and Word can store a page background as a document-level VML fill. The
+ * DOCX engine intentionally ignores that legacy drawing node, so resolve only
+ * its package-local image relationship here and leave all body layout to it.
+ */
+export const resolveDocxPageBackgroundImage = async (
+  buffer: ArrayBuffer,
+  createXmlParser: () => Pick<DOMParser, 'parseFromString'> = () => new DOMParser()
+) => {
+  try {
+    const archive = await JSZip.loadAsync(buffer)
+    const documentEntry = archive.file(DOCX_DOCUMENT_PART)
+    const relationshipsEntry = archive.file(DOCX_DOCUMENT_RELATIONSHIPS_PART)
+    if (!documentEntry || !relationshipsEntry) {
+      return undefined
+    }
+
+    const parser = createXmlParser()
+    const documentXml = parseDocxXml(await documentEntry.async('string'), parser)
+    const relationshipsXml = parseDocxXml(await relationshipsEntry.async('string'), parser)
+    if (!documentXml || !relationshipsXml) {
+      return undefined
+    }
+
+    const background = getElementsByLocalName(
+      documentXml,
+      WORDPROCESSINGML_NAMESPACE,
+      'background'
+    )[0]
+    const fill = background && getElementsByLocalName(background, VML_NAMESPACE, 'fill')[0]
+    const relationshipId =
+      fill?.getAttributeNS(OFFICE_RELATIONSHIP_NAMESPACE, 'id') || fill?.getAttribute('r:id')
+    if (!relationshipId) {
+      return undefined
+    }
+
+    const relationship = getElementsByLocalName(
+      relationshipsXml,
+      PACKAGE_RELATIONSHIP_NAMESPACE,
+      'Relationship'
+    ).find(candidate => candidate.getAttribute('Id') === relationshipId)
+    const target = relationship?.getAttribute('Target')
+    if (!target || relationship?.getAttribute('TargetMode') === 'External') {
+      return undefined
+    }
+
+    const partName = resolvePackagePartPath(DOCX_DOCUMENT_PART, target)
+    const mimeType = resolveDocxImageMimeType(partName)
+    const imageEntry = archive.file(partName) || archive.file(decodeURIComponent(partName))
+    if (!mimeType || !imageEntry) {
+      return undefined
+    }
+
+    return `data:${mimeType};base64,${await imageEntry.async('base64')}`
+  } catch {
+    // A page background is optional and must never make an otherwise readable
+    // document fail. The DOCX engine remains responsible for package errors.
+    return undefined
+  }
+}
+
+export const applyDocxPageBackgroundImage = (
+  target: HTMLDivElement,
+  imageUrl: string | undefined
+) => {
+  if (!imageUrl) {
+    return 0
+  }
+
+  let applied = 0
+  target.querySelectorAll<HTMLElement>('section.docx').forEach(page => {
+    const existing = Array.from(page.children).find(child =>
+      child.classList.contains(DOCX_PAGE_BACKGROUND_CLASS)
+    ) as HTMLElement | undefined
+    const background = existing || target.ownerDocument.createElement('div')
+    background.className = DOCX_PAGE_BACKGROUND_CLASS
+    background.setAttribute('aria-hidden', 'true')
+    background.style.backgroundImage = `url("${imageUrl}")`
+    if (!existing) {
+      page.prepend(background)
+    }
+    applied += 1
+  })
+
+  return applied
 }
 
 const shouldUseDocxWorker = (
@@ -326,6 +488,15 @@ const DOCX_RESPONSIVE_CSS = `
   box-sizing: border-box;
   overflow: hidden;
   transform-origin: top center;
+}
+.docx-fit-viewer .docx-page-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 .docx-fit-viewer[data-docx-dark-mode='true'] .docx-page-frame > section.docx,
 .docx-fit-viewer[data-docx-dark-mode='true'] .docx-flow-frame > section.docx {
@@ -666,7 +837,10 @@ export default async function(buffer: ArrayBuffer, target: HTMLDivElement, conte
     context?.onProgressiveRender?.()
   }
   const docxOptions = createDocxOptions(target, context, notifyProgressiveRender)
-  const { defaultOptions, renderAsync } = await loadLibrary()
+  const [{ defaultOptions, renderAsync }, pageBackgroundImage] = await Promise.all([
+    loadLibrary(),
+    resolveDocxPageBackgroundImage(buffer, () => createTargetXmlParser(target))
+  ])
 
   target.dataset.docxWorker = docxOptions.useWorker ? 'self' : 'false'
   target.dataset.docxDarkMode = docxOptions.darkMode ? 'true' : 'false'
@@ -675,6 +849,8 @@ export default async function(buffer: ArrayBuffer, target: HTMLDivElement, conte
     ...docxOptions
   })
   target.dataset.docxHeaderFooterFallback = usedHeaderFooterFallback ? 'true' : 'false'
+  target.dataset.docxPageBackground =
+    applyDocxPageBackgroundImage(target, pageBackgroundImage) > 0 ? 'true' : 'false'
   notifyProgressiveRender()
 
   const disposeResponsive = makeDocxResponsive(target, context)
@@ -705,6 +881,7 @@ export default async function(buffer: ArrayBuffer, target: HTMLDivElement, conte
       delete target.dataset.docxWorker
       delete target.dataset.docxDarkMode
       delete target.dataset.docxHeaderFooterFallback
+      delete target.dataset.docxPageBackground
       target.innerHTML = ''
     }
   }
